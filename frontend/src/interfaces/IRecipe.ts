@@ -1,20 +1,19 @@
 import type { IIngredient } from "./IIngredient";
-import type { MeasurementUnit, PreparationType } from "./IKitchenItem";
 
 export interface IRecipe {
   recipeId: number;
+  recipeType: RecipeType;
   name: string;
   imageUrl: string | null;
-  description: string;
-  instructions: string;
-  ingredients: IRecipeIngredient[];
+  description: string | null;
+  instructions: string | null;
+  ingredients: IIngredient[];
 }
 
-export interface IRecipeIngredient {
-  recipeIngredientId: number;
-  ingredientId: number;
-  ingredient: IIngredient;
-  amount: number | null;
-  unit: MeasurementUnit | null;
-  preparation: PreparationType | null;
-}
+export type RecipeType =
+  | "Dish"
+  | "Dessert"
+  | "Sauce"
+  | "Dip"
+  | "Side"
+  | "SpiceMix";

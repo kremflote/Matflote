@@ -3143,7 +3143,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\flyin\\.nuget\\packages": {}
+    "C:\\Users\\flyin\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
@@ -3151,11 +3151,11 @@
       "projectUniqueName": "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\backend.csproj",
       "projectName": "backend",
       "projectPath": "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\backend.csproj",
-      "packagesPath": "C:\\Users\\flyin\\.nuget\\packages",
+      "packagesPath": "C:\\Users\\flyin\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\NuGet.Config"
+        "C:\\Users\\flyin\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -3222,13 +3222,5 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.315/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json."
-    }
-  ]
+  }
 }

@@ -15,6 +15,20 @@ public class ImageUploadsController(IWebHostEnvironment environment) : Controlle
         ".webp"
     };
 
+    private static readonly HashSet<string> AllowedFolders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "general",
+        "ingredients",
+        "recipes",
+        "dishes",
+        "sauces",
+        "dips",
+        "sides",
+        "desserts",
+        "marinades",
+        "spice-mixes"
+    };
+
     [HttpPost]
     [RequestSizeLimit(5 * 1024 * 1024)]
     public async Task<ActionResult<ImageUploadDto>> UploadImage(IFormFile file, [FromForm] string folder = "general")
@@ -31,6 +45,11 @@ public class ImageUploadsController(IWebHostEnvironment environment) : Controlle
         }
 
         var safeFolder = MakeSafePathSegment(folder);
+        if (!AllowedFolders.Contains(safeFolder))
+        {
+            return BadRequest($"Unsupported image folder. Use one of: {string.Join(", ", AllowedFolders.Order())}.");
+        }
+
         var fileName = $"{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
         var webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
         var uploadFolder = Path.Combine(webRootPath, "images", safeFolder);

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "VORU6NrTu8U=",
+  "dgSpecHash": "wfq0aqxV/6Q=",
   "success": true,
   "projectFilePath": "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\backend.csproj",
   "expectedPackageFiles": [
@@ -54,15 +54,5 @@
     "C:\\Users\\flyin\\.nuget\\packages\\system.text.json\\9.0.0\\system.text.json.9.0.0.nupkg.sha512",
     "C:\\Users\\flyin\\.nuget\\packages\\system.threading.channels\\7.0.0\\system.threading.channels.7.0.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.",
-      "projectPath": "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\backend.csproj",
-      "warningLevel": 1,
-      "filePath": "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\backend.csproj",
-      "targetGraphs": []
-    }
-  ]
+  "logs": []
 }

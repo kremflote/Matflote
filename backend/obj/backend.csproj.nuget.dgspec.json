@@ -10,11 +10,11 @@
         "projectUniqueName": "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\backend.csproj",
         "projectName": "backend",
         "projectPath": "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\backend.csproj",
-        "packagesPath": "C:\\Users\\flyin\\.nuget\\packages",
+        "packagesPath": "C:\\Users\\flyin\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\flyin\\Documents\\Projects\\DinnerPlanner\\backend\\NuGet.Config"
+          "C:\\Users\\flyin\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"

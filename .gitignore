@@ -172,6 +172,11 @@ bld/
 wwwroot/lib/
 *.staticwebassets.runtime.json
 staticwebassets/
+backend/wwwroot/assets/
+backend/wwwroot/images/
+backend/wwwroot/index.html
+backend/wwwroot/favicon.svg
+backend/wwwroot/icons.svg
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
@@ -199,5 +204,6 @@ nCrunchTemp_*
 *.sln.docstates
 
 # SQLite temporary files
+*.db
 *.db-shm
 *.db-wal

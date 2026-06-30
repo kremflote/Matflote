@@ -32,21 +32,32 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseExceptionHandler(exceptionApp =>
+{
+    exceptionApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            Error = "An unexpected server error occurred."
+        });
+    });
+});
+
 app.UseCors();
 app.UseHttpsRedirection();
+app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapControllers();
-
-app.MapGet("/", () => Results.Ok(new
-{
-    Name = "DinnerPlanner API",
-    Status = "Ready"
-}));
 
 app.MapGet("/health", () => Results.Ok(new
 {
     Status = "Healthy",
     CheckedAt = DateTimeOffset.UtcNow
 }));
+
+app.MapFallbackToFile("index.html");
 
 app.Run();

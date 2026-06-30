@@ -1,6 +1,124 @@
 @backend_HostAddress = http://localhost:5132
 
-GET {{backend_HostAddress}}/weatherforecast/
+GET {{backend_HostAddress}}/health
 Accept: application/json
 
 ###
+
+GET {{backend_HostAddress}}/api/ingredients
+Accept: application/json
+
+###
+
+GET {{backend_HostAddress}}/api/recipes
+Accept: application/json
+
+###
+
+GET {{backend_HostAddress}}/api/dishes
+Accept: application/json
+
+###
+
+GET {{backend_HostAddress}}/api/desserts
+Accept: application/json
+
+###
+
+GET {{backend_HostAddress}}/api/mealplans?from=2026-07-01&to=2026-07-31
+Accept: application/json
+
+###
+
+POST {{backend_HostAddress}}/api/ingredients
+Content-Type: application/json
+
+{
+  "ingredientName": "Chicken thigh",
+  "brand": null,
+  "price": 79.90,
+  "amount": 1,
+  "unit": "Kilogram",
+  "category": "Chicken",
+  "nutritionPer100": null,
+  "color": "#e8b48f"
+}
+
+###
+
+POST {{backend_HostAddress}}/api/recipes
+Content-Type: application/json
+
+{
+  "recipeType": "Side",
+  "name": "Simple rice",
+  "imageUrl": null,
+  "description": "Plain boiled rice.",
+  "instructions": "Rinse rice and boil until tender.",
+  "ingredientIds": [4]
+}
+
+###
+
+POST {{backend_HostAddress}}/api/dishes
+Content-Type: application/json
+
+{
+  "name": "Chicken rice bowl",
+  "imageUrl": null,
+  "description": "Simple chicken bowl with rice.",
+  "instructions": "Cook rice. Fry chicken until done.",
+  "ingredientIds": [1, 4],
+  "types": ["Bowl"],
+  "cuisine": "Asian"
+}
+
+###
+
+POST {{backend_HostAddress}}/api/desserts
+Content-Type: application/json
+
+{
+  "name": "Lemon yogurt dessert",
+  "imageUrl": null,
+  "description": "Fresh yogurt dessert with lemon.",
+  "instructions": "Mix yogurt and lemon, then chill.",
+  "ingredientIds": [3, 5],
+  "type": "Pudding"
+}
+
+###
+
+POST {{backend_HostAddress}}/api/mealplans
+Content-Type: application/json
+
+{
+  "date": "2026-07-01",
+  "slot": "Dinner",
+  "notes": null,
+  "recipes": [
+    {
+      "recipeId": 2,
+      "role": "Main",
+      "sortOrder": 0
+    },
+    {
+      "recipeId": 1,
+      "role": "Sauce",
+      "sortOrder": 1
+    },
+    {
+      "recipeId": 3,
+      "role": "Side",
+      "sortOrder": 2
+    }
+  ]
+}
+
+###
+
+# Image upload example:
+# POST {{backend_HostAddress}}/api/imageuploads
+# Content-Type: multipart/form-data
+# file: image file
+# folder: dishes

@@ -1,0 +1,333 @@
+# Ideas
+Spice Manager (not to be implemented now)
+
+# Web Design Ruleset
+
+Single source of truth for designing the webpage in Figma and later implementing it in code.
+
+## 1. Core design direction
+
+The design should feel clean, friendly, readable, and structured. Use soft spacing, rounded corners, clear hierarchy, and a consistent 12-column layout.
+
+Avoid random values. Reuse the values defined here unless there is a strong design reason not to.
+
+---
+
+## 2. Typography
+
+### Font families
+
+```
+defaultFont: Nunito
+heroFont: Segoe Print
+```
+
+### Font usage
+
+```
+Segoe Print:
+Use only for hero headings, brand/logo text, or major landing-page statements.
+
+Nunito:
+Use for all normal interface text, body text, buttons, labels, cards, forms, navigation, and section headings.
+```
+
+Do not overuse the hero font. It should create contrast, not become the whole visual identity.
+
+### Nunito weights
+
+```
+Nunito Light 300:
+Use sparingly for subtle supporting text.
+
+Nunito Regular 400:
+Default body text.
+
+Nunito SemiBold 600:
+Buttons, labels, navigation, small headings.
+
+Nunito Bold 700:
+Card titles, section headings, important UI text.
+
+Nunito ExtraBold / Black:
+Use rarely for strong emphasis only.
+```
+
+### Type scale
+
+```
+Hero heading: 64px / Segoe Print
+H1 page heading: 56px / Nunito Bold
+H2 section heading: 40px / Nunito Bold
+H3 card heading: 24px / Nunito Bold or SemiBold
+Body text: 16px / Nunito Regular
+Large body text: 18px / Nunito Regular
+Small text: 14px / Nunito Regular
+Caption: 12px / Nunito Regular
+```
+
+### Line height
+
+```
+Hero heading: 110%
+Headings: 115–120%
+Body text: 150%
+Small text: 140–150%
+```
+
+### Text width
+
+```
+Paragraph max-width: 600–720px
+Hero text max-width: 500–640px
+Form max-width: 480–640px
+```
+
+Long text should never stretch across the full 12-column grid.
+
+---
+
+## 3. Grid system
+
+Use a 12-column grid on desktop.
+
+### Desktop
+
+```
+Frame width: 1440px
+Content max-width: 1200px
+Left/right margin: 120px
+Columns: 12
+Gutter: 24px
+```
+
+### Smaller desktop / laptop
+
+```
+Frame width: 1280px
+Content max-width: 1120px
+Left/right margin: 80px
+Columns: 12
+Gutter: 24px
+```
+
+### Mobile
+
+```
+Frame width: 390px
+Columns: 4
+Margin: 16px
+Gutter: 16px
+```
+
+### Column usage
+
+```
+Full-width content block: 12 columns
+Large text block + image: 6 columns + 6 columns
+Wide feature card: 6 columns
+Normal card in 3-card row: 4 columns
+Small card in 4-card row: 3 columns
+Form container: 5–6 columns
+Text-heavy content: 6–8 columns
+```
+
+---
+
+## 4. Spacing system
+
+Use an 8px spacing system.
+
+```
+4px  = tiny detail spacing
+8px  = small spacing
+12px = compact meal planner grid spacing
+16px = default spacing
+24px = medium spacing
+32px = large spacing
+48px = small section spacing
+64px = normal section spacing
+96px = hero / major section spacing
+```
+
+Allowed spacing values:
+
+```
+4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96
+```
+
+Do not use values like 13px, 27px, 35px, or 70px unless solving a very specific visual issue.
+
+Use 12px only for compact repeated planner grids where 16px feels too loose, such as the meal calendar cell gaps.
+
+---
+
+## 5. Page structure
+
+### Navbar
+
+```
+Height: 80px
+Content max-width: 1200px
+Horizontal alignment: follow page grid
+```
+
+### Hero section
+
+```
+Padding top: 96px
+Padding bottom: 96px
+Use Segoe Print for the main hero heading.
+Use Nunito for subtitle and buttons.
+```
+
+### Normal section
+
+```
+Padding top: 64px
+Padding bottom: 64px
+```
+
+### Compact section
+
+```
+Padding top: 48px
+Padding bottom: 48px
+```
+
+### Section title spacing
+
+```
+Gap between section heading and content: 32px
+Gap between large content groups: 48px or 64px
+```
+
+Do not create section height by forcing fixed heights. Use padding and content.
+
+---
+
+## 6. Components
+
+### Buttons
+
+```
+Default height: 48px
+Small height: 36px
+Large height: 56px
+Horizontal padding: 24px
+Border radius: 12px
+Font: Nunito SemiBold 600
+Text size: 16px
+```
+
+### Input fields
+
+```
+Height: 48px
+Horizontal padding: 16px
+Border radius: 12px
+Font: Nunito Regular 400
+Text size: 16px
+Gap between label and input: 8px
+Gap between fields: 16px
+```
+
+### Textareas
+
+```
+Height: 120–160px
+Padding: 16px
+Border radius: 12px
+```
+
+### Cards
+
+Cards should usually have automatic height based on content.
+
+```
+Padding: 24px
+Border radius: 24px
+Internal gap: 16px
+Image height: 220–260px
+Card title: 20–24px
+Card text: 16px
+Button height: 48px
+```
+
+Do not define cards mainly by fixed height. Define width, padding, gap, image height, and typography. Let the content determine the final height.
+
+### Recommended card layout
+
+```
+Food/dish cards:
+3 cards per row on desktop
+Each card uses 4 columns
+Image height: 220–260px
+Card padding: 24px
+Gap between cards: 24px
+```
+
+---
+
+## 7. Border radius
+
+Use only these radius values.
+
+```
+Small elements / badges: 6px
+Buttons: 6px
+Inputs: 6px
+Cards: 6px
+Images: 6px
+```
+
+Do not mix many different corner radius values.
+
+---
+
+## 8. Icons
+
+```
+Small icons: 16px
+Default icons: 24px
+Large icons: 32px
+```
+
+Icons should align visually with text and buttons.
+
+
+# Features
+
+- Weekplanner
+	- 7 day week overview. Each day you can fill in 3 (will be configurable later) slots:
+		- Recipe
+			- can have up to 4 "sides", meaning any recipe that is not a dish
+	- Week generator button
+		- Generate dinner plan based on protein, cuisines and so on
+	- Prep helper
+		- Generate a list of all vegetables you need to prepare for week
+		- Automatically generate vikunja shopping list
+- Cookbook
+	- Create dishes, desserts, sauces, dips, marinades, spice mixes
+	- Add ingredients
+	- Overview of all recipes and ingredients
+- Settings page
+	- Configure amount of meals one can plan each day
+	- other settings
+
+
+# Overview
+
+**Frontend:** React (Vite + TypeScript + TailwindCSS)
+**Backend:** ASP.NET Core Web API in C# (running on .NET 9)
+**Design reference:** 
+
+---
+# Architecture
+
+- **REST API endpoints** via controllers
+- **Entity Framework Core** for database access
+- **SQLite** as the database
+- **OpenAPI (Swagger)** for API documentation
+- **CORS enabled** (currently allows all origins)
+

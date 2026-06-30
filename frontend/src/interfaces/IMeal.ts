@@ -1,39 +1,28 @@
-import type { IDish } from "./IDish";
-import type { IKitchenItem } from "./IKitchenItem";
-import type { IRecipeIngredient } from "./IRecipe";
-import type { IRecipe } from "./IRecipe";
-
-export interface IMeal {
-  mealId: number;
-  dish: IDish | null;
-  sides: IDish[];
-}
-
-export interface IWeeklyMealPlan {
-  weekStartsOn: string;
-  days: IDayMealPlan[];
-}
-
-export interface IDayMealPlan {
+export interface IMealPlanEntry {
+  mealPlanEntryId: number;
   date: string;
-  breakfast: IMealSlot;
-  lunch: IMealSlot;
-  dinner: IDinnerSlot;
+  slot: MealSlot;
+  notes: string | null;
+  recipes: IMealPlanRecipe[];
 }
 
-export interface IMealSlot {
-  recipe: IRecipe | null;
-  notes: string;
+export interface IMealPlanRecipe {
+  mealPlanRecipeId: number;
+  recipeId: number;
+  role: MealRecipeRole;
+  sortOrder: number;
 }
 
-export interface IDinnerSlot {
-  dish: IDish | null;
-  sauce: IKitchenItem | null;
-  side: IKitchenItem | null;
-  notes: string;
-}
+export type MealSlot = "Breakfast" | "Lunch" | "Dinner" | "Snack1" | "Snack2";
+
+export type MealRecipeRole = "Main" | "Sauce" | "Side" | "Extra";
 
 export interface IWeeklyPrepSummary {
-  vegetables: IRecipeIngredient[];
-  shoppingList: IRecipeIngredient[];
+  vegetables: IIngredientPrepItem[];
+  shoppingList: IIngredientPrepItem[];
+}
+
+export interface IIngredientPrepItem {
+  ingredientId: number;
+  amount: number | null;
 }
