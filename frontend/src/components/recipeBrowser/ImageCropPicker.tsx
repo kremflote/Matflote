@@ -101,10 +101,10 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
   const hasImage = useMemo(() => sourceFile !== null && previewUrl !== null, [previewUrl, sourceFile]);
 
   return (
-    <div className="grid gap-3">
+    <div className={recipeBrowserStyles.imageCropper}>
       <input
         accept="image/jpeg,image/png,image/webp"
-        className="sr-only"
+        className={recipeBrowserStyles.hiddenFileInput}
         id={inputId}
         type="file"
         onChange={(event) => {
@@ -118,28 +118,28 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
 
       <div className={recipeBrowserStyles.cropPreview(theme)}>
         {previewUrl ? (
-          <img className="h-full w-full object-cover" src={previewUrl} alt="Recipe image crop preview" />
+          <img className={recipeBrowserStyles.cropImage} src={previewUrl} alt="Recipe image crop preview" />
         ) : currentImageUrl ? (
           <img
-            className="h-full w-full object-cover"
+            className={recipeBrowserStyles.cropImage}
             src={currentImageUrl}
             alt="Current recipe"
           />
         ) : placeholderImageUrl ? (
           <img
-            className="h-full w-full object-cover"
+            className={recipeBrowserStyles.cropImage}
             src={placeholderImageUrl}
             alt="Top-down recipe photo guide"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center px-4 text-center text-sm font-semibold opacity-60">
+          <div className={recipeBrowserStyles.cropFallback}>
             Image preview
           </div>
         )}
       </div>
 
       {hasImage && !cropConfirmed && (
-        <div className="grid gap-3">
+        <div className={recipeBrowserStyles.cropControls}>
           <SliderField label="Zoom" max={3} min={1} step={0.05} value={zoom} onChange={setZoom} />
           <SliderField label="Horizontal crop" max={100} min={-100} step={1} value={offsetX} onChange={setOffsetX} />
           <SliderField label="Vertical crop" max={100} min={-100} step={1} value={offsetY} onChange={setOffsetY} />
@@ -167,7 +167,7 @@ type SliderFieldProps = {
 
 function SliderField({ label, min, max, step, value, onChange }: SliderFieldProps) {
   return (
-    <label className="grid gap-1 text-xs font-bold">
+    <label className={recipeBrowserStyles.sliderField}>
       <span>{label}</span>
       <input
         max={max}

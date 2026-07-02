@@ -88,6 +88,11 @@ function RecipeCreateForm({
       return;
     }
 
+    if (selectedIngredients.length === 0) {
+      setError("Choose at least one ingredient.");
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
 
@@ -160,7 +165,9 @@ function RecipeCreateForm({
         <div className={recipeBrowserStyles.recipeCreateTopGrid}>
           <div className={recipeBrowserStyles.recipePrimaryFields}>
             <label className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>Recipe type</span>
+              <span className={recipeBrowserStyles.label(theme)}>
+                Recipe type<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+              </span>
               <select
                 className={recipeBrowserStyles.textField(theme)}
                 disabled={isEditing}
@@ -176,7 +183,9 @@ function RecipeCreateForm({
             </label>
 
             <label className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>Name</span>
+              <span className={recipeBrowserStyles.label(theme)}>
+                Name<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+              </span>
               <input
                 className={recipeBrowserStyles.textField(theme)}
                 maxLength={160}
@@ -255,7 +264,9 @@ function RecipeCreateForm({
         </section>
 
         <section className={recipeBrowserStyles.field}>
-          <span className={recipeBrowserStyles.label(theme)}>Ingredients</span>
+          <span className={recipeBrowserStyles.label(theme)}>
+            Ingredients<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+          </span>
           <input
             className={recipeBrowserStyles.textField(theme)}
             placeholder="search ingredients..."
@@ -393,7 +404,7 @@ function IngredientPickerRow({
         onChange={onToggle}
       />
       <IngredientThumbnail
-        className="h-8 px-3"
+        className={recipeBrowserStyles.recipeIngredientThumbnailCompact}
         ingredient={ingredient}
         selected={selected}
         theme={theme}

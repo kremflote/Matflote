@@ -111,10 +111,10 @@ function NumberFilterGroup({
 }: NumberFilterGroupProps) {
   return (
     <fieldset className={recipeBrowserStyles.filterGroup(theme)}>
-      <div className="flex items-center justify-between gap-2">
+      <div className={recipeBrowserStyles.filterGroupHeader}>
         <legend className={recipeBrowserStyles.filterLegend(theme)}>{title}</legend>
       </div>
-      <div className="mt-2 flex flex-col gap-1">
+      <div className={recipeBrowserStyles.filterOptionList}>
         {values.map((value) => (
           <label className={recipeBrowserStyles.checkboxLabel(theme)} key={value.id}>
             <input
@@ -148,10 +148,10 @@ function FilterGroup<TValue extends string>({
 }: FilterGroupProps<TValue>) {
   return (
     <fieldset className={recipeBrowserStyles.filterGroup(theme)}>
-      <div className="flex items-center justify-between gap-2">
+      <div className={recipeBrowserStyles.filterGroupHeader}>
         <legend className={recipeBrowserStyles.filterLegend(theme)}>{title}</legend>
       </div>
-      <div className="mt-2 flex flex-col gap-1">
+      <div className={recipeBrowserStyles.filterOptionList}>
         {values.map((value) => (
           <label className={recipeBrowserStyles.checkboxLabel(theme)} key={value}>
             <input

@@ -95,7 +95,7 @@ function IngredientCreateForm({
   const [color, setColor] = useState(initialIngredient?.color ?? "");
   const [colorDraft, setColorDraft] = useState("#00d83b");
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [showNutrition, setShowNutrition] = useState(initialIngredient?.nutritionPer100 !== null);
+  const [showNutrition, setShowNutrition] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const colorControlRef = useRef<HTMLElement | null>(null);
@@ -282,7 +282,7 @@ function IngredientCreateForm({
                 onChange={setDietaryFiberGrams}
               />
               <NutritionNumberField
-                className="md:col-start-1"
+                className={recipeBrowserStyles.nutritionSecondRowStart}
                 label="Saturated fats per 100g"
                 theme={theme}
                 value={saturatedFatGrams}
@@ -378,7 +378,7 @@ function IngredientCreateForm({
                 value={colorDraft}
                 onChange={(event) => setColorDraft(event.target.value)}
               />
-              <div className="flex items-center justify-end gap-3">
+              <div className={recipeBrowserStyles.colorPickerActions}>
                 <button
                   className={recipeBrowserStyles.secondaryButton(theme)}
                   type="button"

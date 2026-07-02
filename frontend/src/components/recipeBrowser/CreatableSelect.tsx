@@ -158,7 +158,7 @@ function CreatableSelect({
                     setIsOpen(false);
                   }}
                 >
-                  <span className="min-w-0 truncate">{option.name}</span>
+                  <span className={recipeBrowserStyles.customSelectOptionLabel}>{option.name}</span>
                   <span
                     aria-label={`Delete ${option.name}`}
                     className={recipeBrowserStyles.customSelectDeleteButton(theme)}
@@ -291,7 +291,7 @@ function CreateOptionPanel({
         value={name}
         onChange={(event) => setName(event.target.value)}
       />
-      <div className="flex items-center justify-end gap-3">
+      <div className={recipeBrowserStyles.createOptionActions}>
         <button
           className={recipeBrowserStyles.secondaryButton(theme)}
           disabled={isSaving}

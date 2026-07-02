@@ -1,5 +1,5 @@
 import type { IIngredient } from "../interfaces/IIngredient";
-import { colorPalette, type SiteTheme } from "../styles/appStyles";
+import { colorPalette, thumbnailStyles, type SiteTheme } from "../styles/appStyles";
 
 type IngredientThumbnailProps = {
   ingredient: Pick<IIngredient, "ingredientName" | "tags" | "brand" | "color">;
@@ -26,7 +26,7 @@ function IngredientThumbnail({
 }: IngredientThumbnailProps) {
   const brandName = ingredient.brand?.name ?? "";
   const tone = getIngredientTone(ingredient.color, theme);
-  const sharedClassName = `grid h-8 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 text-left transition ${className} ${
+  const sharedClassName = `${thumbnailStyles.ingredientShell} ${className} ${
     selected ? "outline outline-2 outline-current" : ""
   } ${disabled ? "cursor-not-allowed" : onClick ? "cursor-pointer" : ""}`;
   const style = {
@@ -38,14 +38,14 @@ function IngredientThumbnail({
     <>
       <span
         aria-hidden="true"
-        className="h-2.5 w-2.5 rounded-full"
+        className={thumbnailStyles.ingredientDot}
         style={{ backgroundColor: tone.dot }}
       />
-      <span className="min-w-0 truncate text-sm font-semibold leading-tight">
+      <span className={thumbnailStyles.ingredientName}>
         {ingredient.ingredientName}
       </span>
       {brandName && (
-        <span className="shrink-0 truncate text-[11px] font-semibold leading-tight">
+        <span className={thumbnailStyles.ingredientBrand}>
           {brandName}
         </span>
       )}
@@ -79,8 +79,8 @@ function getIngredientTone(color: string | null, theme: SiteTheme): IngredientTo
     theme === "paletteLight"
       ? colorPalette.ivory
       : theme === "dark"
-        ? "#171717"
-        : "#F5F5F5";
+        ? colorPalette.nearBlack
+        : colorPalette.softGray;
   const dot = color ?? colorPalette.ingredientIconText;
   const text = colorPalette.ingredientIconText;
 

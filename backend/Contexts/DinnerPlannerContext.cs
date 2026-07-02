@@ -189,15 +189,16 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     private static void SeedData(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Cuisine>().HasData(
-            new { CuisineId = 1, Name = "Asian" },
+            new { CuisineId = 1, Name = "Korean" },
             new { CuisineId = 2, Name = "Indian" },
             new { CuisineId = 3, Name = "Mediterranean" },
             new { CuisineId = 4, Name = "French" },
             new { CuisineId = 5, Name = "Norwegian" },
             new { CuisineId = 6, Name = "Mexican" },
             new { CuisineId = 7, Name = "Italian" },
-            new { CuisineId = 8, Name = "Grill" },
-            new { CuisineId = 9, Name = "Other" }
+            new { CuisineId = 8, Name = "Japanese" },
+            new { CuisineId = 9, Name = "Vietnamese" },
+            new { CuisineId = 10, Name = "Other" }
         );
 
         modelBuilder.Entity<Ingredient>().HasData(

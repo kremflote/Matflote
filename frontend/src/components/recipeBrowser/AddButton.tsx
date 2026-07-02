@@ -40,10 +40,10 @@ function AddButton({ target, theme }: AddButtonProps) {
             className={recipeBrowserStyles.modalPanel(theme)}
             role="dialog"
           >
-            <div className="flex items-start justify-between gap-4">
+            <div className={recipeBrowserStyles.modalHeaderIntro}>
               <div>
-                <h2 className="text-2xl font-bold leading-tight">Create</h2>
-                <p className="mt-2 text-sm font-semibold leading-[1.5] opacity-75">
+                <h2 className={recipeBrowserStyles.modalTitle}>Create</h2>
+                <p className={recipeBrowserStyles.modalIntroText}>
                   Add recipes, desserts, sauces, ingredients, and the rest of the kitchen library.
                 </p>
               </div>

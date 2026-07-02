@@ -3,40 +3,68 @@ export type SiteTheme = "dark" | "light" | "paletteLight";
 export const colorPalette = {
   dustyBlue: "#A9BDD1",
   olive: "#7A8864",
+  oliveDark: "#556145",
+  oliveDeep: "#6A7658",
   stone: "#C8C0B5",
   ingredientIcon: "#F8F0D7",
   ingredientIconText: "#333929",
   champagne: "#E5D5BC",
+  paleGold: "#F4EBCF",
+  addGold: "#FFD64F",
+  addGoldHover: "#EEC642",
   ivory: "#FAF7F2",
+  nearBlack: "#171717",
+  softGray: "#F5F5F5",
 } as const;
 
 export const colorPaletteClasses = {
   background: {
     dustyBlue: "bg-[#A9BDD1]",
     olive: "bg-[#7A8864]",
+    oliveDark: "bg-[#556145]",
+    oliveDeep: "bg-[#6A7658]",
     stone: "bg-[#C8C0B5]",
     ingredientIcon: "bg-[#F8F0D7]",
     ingredientIconText: "bg-[#333929]",
     champagne: "bg-[#E5D5BC]",
+    paleGold: "bg-[#F4EBCF]",
+    addGold: "bg-[#FFD64F]",
+    addGoldHover: "bg-[#EEC642]",
     ivory: "bg-[#FAF7F2]",
+    nearBlack: "bg-[#171717]",
+    softGray: "bg-[#F5F5F5]",
   },
   border: {
     dustyBlue: "border-[#A9BDD1]",
     olive: "border-[#7A8864]",
+    oliveDark: "border-[#556145]",
+    oliveDeep: "border-[#6A7658]",
     stone: "border-[#C8C0B5]",
     ingredientIcon: "border-[#F8F0D7]",
     ingredientIconText: "border-[#333929]",
     champagne: "border-[#E5D5BC]",
+    paleGold: "border-[#F4EBCF]",
+    addGold: "border-[#FFD64F]",
+    addGoldHover: "border-[#EEC642]",
     ivory: "border-[#FAF7F2]",
+    nearBlack: "border-[#171717]",
+    softGray: "border-[#F5F5F5]",
   },
   text: {
     dustyBlue: "text-[#A9BDD1]",
     olive: "text-[#7A8864]",
+    oliveDark: "text-[#556145]",
+    oliveDeep: "text-[#6A7658]",
     stone: "text-[#C8C0B5]",
     ingredientIcon: "text-[#F8F0D7]",
     ingredientIconText: "text-[#333929]",
     champagne: "text-[#E5D5BC]",
+    paleGold: "text-[#F4EBCF]",
+    addGold: "text-[#FFD64F]",
+    addGoldHover: "text-[#EEC642]",
     ivory: "text-[#FAF7F2]",
+    nearBlack: "text-[#171717]",
+    softGray: "text-[#F5F5F5]",
   },
 } as const;
 
@@ -56,7 +84,7 @@ export const siteColorClasses = {
     plannerToggle: "border-white/[0.14] bg-black/50 text-neutral-300",
     plannerToggleSelected: "bg-white/[0.14] text-white",
     plannerToggleIdle: "hover:bg-white/[0.08] hover:text-white",
-    switchTrack: "border-white/[0.14] bg-white/[0.12]",
+  switchTrack: "border-white/[0.14] bg-white/[0.12]",
     switchThumb: "bg-neutral-50 text-[#111111]",
     dayCell: "bg-black/30 text-white",
     mealHeaderCell: "bg-black/30 text-white",
@@ -98,8 +126,8 @@ export const siteColorClasses = {
     plannerToggle: "border-[#7A8864]/35 bg-[#7A8864] text-[#FAF7F2]/75",
     plannerToggleSelected: "bg-[#FAF7F2] text-[#556145]",
     plannerToggleIdle: "hover:bg-[#A9BDD1]/35 hover:text-[#FAF7F2]",
-    switchTrack: "border-[#7A8864]/35 bg-[#C8C0B5]",
-    switchThumb: "bg-[#FAF7F2] text-[#7A8864]",
+    switchTrack: "border-[#7A8864]/35 bg-[#556145]",
+    switchThumb: "bg-[#FAF7F2] text-[#FFD64F]",
     dayCell: "bg-[#7A8864] text-[#FAF7F2]",
     mealHeaderCell: "bg-[#7A8864] text-[#FAF7F2]",
     focus: "focus-visible:outline-[#7A8864]",
@@ -137,14 +165,25 @@ export const radiusClasses = {
 } as const;
 
 export const thumbnailStyles = {
+  recipeShell: "relative aspect-square w-full overflow-hidden rounded-md bg-neutral-800 text-left",
+  recipeShellInteractive: "cursor-pointer transition-transform hover:scale-[1.01]",
+  recipeImage: "h-full w-full object-cover",
+  recipeImageFallback: "h-full w-full bg-neutral-700",
   recipeImageOverlay: (theme: SiteTheme) =>
     theme === "dark"
       ? "pointer-events-none absolute inset-0 bg-black/20"
       : "hidden",
   recipeTitleBand: (theme: SiteTheme) =>
     theme === "paletteLight" ? "bg-[#7A8864]/95" : "bg-neutral-700/95",
+  recipeTitleBandLayout: "absolute inset-x-0 bottom-0 flex h-1/4 min-h-14 flex-col justify-center px-3",
+  recipeTitle: "truncate text-base font-bold leading-tight text-white",
   recipeSubtitle: (theme: SiteTheme) =>
     theme === "paletteLight" ? "text-white/75" : "text-neutral-300",
+  recipeSubtitleLayout: "mt-1 truncate text-xs font-semibold leading-tight",
+  ingredientShell: "grid h-8 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 text-left transition",
+  ingredientDot: "h-2.5 w-2.5 rounded-full",
+  ingredientName: "min-w-0 truncate text-sm font-semibold leading-tight",
+  ingredientBrand: "shrink-0 truncate text-[11px] font-semibold leading-tight",
 } as const;
 
 const focusBase =
@@ -183,7 +222,7 @@ export const headerStyles = {
 
 export const pageStyles = {
   shell: `${layoutClasses.contentWidth} relative py-16`,
-  showColumnDebugOverlay: true,
+  showColumnDebugOverlay: false,
   columnDebugOverlay:
     "pointer-events-none absolute inset-y-0 left-0 right-0 grid grid-cols-12 gap-6 opacity-100",
   columnDebugCell: "bg-red-500/10 outline outline-1 outline-red-500/30",
