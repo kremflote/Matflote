@@ -24,6 +24,8 @@ type RecipeCreateFormProps = {
   onCancel: () => void;
 };
 
+const RECIPE_NAME_MAX_LENGTH = 20;
+
 function RecipeCreateForm({
   imageInputId,
   initialRecipe = null,
@@ -80,6 +82,11 @@ function RecipeCreateForm({
 
     if (trimmedName.length === 0) {
       setError("Recipe needs a name.");
+      return;
+    }
+
+    if (trimmedName.length > RECIPE_NAME_MAX_LENGTH) {
+      setError(`Recipe name can be at most ${RECIPE_NAME_MAX_LENGTH} characters.`);
       return;
     }
 
@@ -185,10 +192,13 @@ function RecipeCreateForm({
             <label className={recipeBrowserStyles.field}>
               <span className={recipeBrowserStyles.label(theme)}>
                 Name<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+                <span className={recipeBrowserStyles.inlineHint(theme)}>
+                  {name.length}/{RECIPE_NAME_MAX_LENGTH}
+                </span>
               </span>
               <input
                 className={recipeBrowserStyles.textField(theme)}
-                maxLength={160}
+                maxLength={RECIPE_NAME_MAX_LENGTH}
                 required
                 type="text"
                 value={name}

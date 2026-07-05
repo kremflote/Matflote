@@ -6,6 +6,7 @@ public class Ingredient
 {
     [Key]
     public int IngredientId { get; set; }
+    [StringLength(30, MinimumLength = 1)]
     public string IngredientName { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int? BrandId { get; set; }

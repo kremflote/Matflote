@@ -5,7 +5,7 @@ namespace DinnerPlanner.Api.Dtos;
 
 public record IngredientRequest(
     [Required]
-    [StringLength(160, MinimumLength = 1)]
+    [StringLength(30, MinimumLength = 1)]
     string IngredientName,
     [StringLength(600)]
     string? Description,

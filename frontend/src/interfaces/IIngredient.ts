@@ -27,7 +27,8 @@ export type IngredientTag =
   | "Sauce"
   | "Pantry"
   | "Frozen"
-  | "Other";
+  | "Other"
+  | "LeafyGreen";
 
 export interface INutritionFacts {
   calories: number | null;

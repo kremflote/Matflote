@@ -8,15 +8,28 @@ type RecipeThumbnailProps = {
     subtitle?: string | null;
   };
   className?: string;
+  interactiveEffect?: boolean;
+  textScale?: "default" | "compact";
   theme?: SiteTheme;
   onClick?: () => void;
 };
 
-function RecipeThumbnail({ recipe, className = "", theme = "dark", onClick }: RecipeThumbnailProps) {
+function RecipeThumbnail({
+  recipe,
+  className = "",
+  interactiveEffect = true,
+  textScale = "default",
+  theme = "dark",
+  onClick,
+}: RecipeThumbnailProps) {
   const subtitle = recipe.subtitle ?? recipe.cuisine ?? "No cuisine";
   const imageUrl = getApiAssetUrl(recipe.imageUrl);
+  const titleClassName =
+    textScale === "compact" ? thumbnailStyles.recipeTitleCompact : thumbnailStyles.recipeTitle;
+  const subtitleLayoutClassName =
+    textScale === "compact" ? thumbnailStyles.recipeSubtitleLayoutCompact : thumbnailStyles.recipeSubtitleLayout;
   const sharedClassName = `${thumbnailStyles.recipeShell} ${className} ${
-    onClick ? thumbnailStyles.recipeShellInteractive : ""
+    onClick ? (interactiveEffect ? thumbnailStyles.recipeShellInteractive : "cursor-pointer") : ""
   }`;
   const content = (
     <>
@@ -34,8 +47,8 @@ function RecipeThumbnail({ recipe, className = "", theme = "dark", onClick }: Re
       <div className={thumbnailStyles.recipeImageOverlay(theme)} aria-hidden="true" />
 
       <div className={`${thumbnailStyles.recipeTitleBandLayout} ${thumbnailStyles.recipeTitleBand(theme)}`}>
-        <h3 className={thumbnailStyles.recipeTitle}>{recipe.name}</h3>
-        <p className={`${thumbnailStyles.recipeSubtitleLayout} ${thumbnailStyles.recipeSubtitle(theme)}`}>{subtitle}</p>
+        <h3 className={titleClassName}>{recipe.name}</h3>
+        <p className={`${subtitleLayoutClassName} ${thumbnailStyles.recipeSubtitle(theme)}`}>{subtitle}</p>
       </div>
     </>
   );

@@ -215,17 +215,19 @@ Default height: 48px
 Small height: 36px
 Large height: 56px
 Horizontal padding: 24px
-Border radius: 12px
+Border radius: 6px
 Font: Nunito SemiBold 600
 Text size: 16px
 ```
+
+Use the small 36px height for compact app toolbars and dense control rows, such as the cookbook browser header buttons and the week planner controls. Related controls in the same first row should share this height.
 
 ### Input fields
 
 ```
 Height: 48px
 Horizontal padding: 16px
-Border radius: 12px
+Border radius: 6px
 Font: Nunito Regular 400
 Text size: 16px
 Gap between label and input: 8px
@@ -237,7 +239,7 @@ Gap between fields: 16px
 ```
 Height: 120–160px
 Padding: 16px
-Border radius: 12px
+Border radius: 6px
 ```
 
 ### Cards
@@ -246,7 +248,7 @@ Cards should usually have automatic height based on content.
 
 ```
 Padding: 24px
-Border radius: 24px
+Border radius: 6px
 Internal gap: 16px
 Image height: 220–260px
 Card title: 20–24px
@@ -285,7 +287,26 @@ Do not mix many different corner radius values.
 
 ---
 
-## 8. Icons
+## 8. Elevation / shadows
+
+Use shadows sparingly to clarify interactive surfaces and layered UI. Do not invent one-off shadow values in component files; use the centralized shadow classes from `frontend/src/styles/appStyles.ts`.
+
+```
+Subtle shadow:
+Use for compact controls, search fields, filters, thumbnails, and small interactive surfaces.
+
+Raised shadow:
+Use for persistent page structure such as the main header.
+
+Overlay shadow:
+Use for popovers, dropdowns, and modal panels.
+```
+
+Shadows should support hierarchy without becoming decorative. If a surface already has strong color contrast and does not need depth, do not add a shadow.
+
+---
+
+## 9. Icons
 
 ```
 Small icons: 16px

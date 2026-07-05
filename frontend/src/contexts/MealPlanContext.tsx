@@ -35,16 +35,100 @@ export function MealPlanProvider({ children }: IProviderProps) {
     await loadMealPlan(loadedRange.from, loadedRange.to);
   }, [loadedRange, loadMealPlan]);
 
+  const saveMealPlanEntry = useCallback(
+    async (id: number | null, entry: Parameters<typeof mealPlanService.create>[0]) => {
+      setMealPlanIsLoading(true);
+      setInitError(null);
+
+      try {
+        if (id === null) {
+          await mealPlanService.create(entry);
+        } else {
+          await mealPlanService.update(id, entry);
+        }
+
+        if (loadedRange !== null) {
+          setMealPlanEntries(await mealPlanService.getRange(loadedRange.from, loadedRange.to));
+        }
+      } catch (error) {
+        setInitError(getErrorMessage(error));
+        throw error;
+      } finally {
+        setMealPlanIsLoading(false);
+      }
+    },
+    [loadedRange],
+  );
+
+  const clearMealPlanRange = useCallback(
+    async (from: string, to: string) => {
+      setMealPlanIsLoading(true);
+      setInitError(null);
+
+      try {
+        const entriesToDelete = mealPlanEntries.filter((entry) => entry.date >= from && entry.date <= to);
+
+        await Promise.all(
+          entriesToDelete.map((entry) => mealPlanService.delete(entry.mealPlanEntryId)),
+        );
+
+        if (loadedRange !== null) {
+          setMealPlanEntries(await mealPlanService.getRange(loadedRange.from, loadedRange.to));
+        }
+      } catch (error) {
+        setInitError(getErrorMessage(error));
+        throw error;
+      } finally {
+        setMealPlanIsLoading(false);
+      }
+    },
+    [loadedRange, mealPlanEntries],
+  );
+
+  const deleteMealPlanEntry = useCallback(
+    async (id: number) => {
+      setMealPlanIsLoading(true);
+      setInitError(null);
+
+      try {
+        await mealPlanService.delete(id);
+
+        if (loadedRange !== null) {
+          setMealPlanEntries(await mealPlanService.getRange(loadedRange.from, loadedRange.to));
+        }
+      } catch (error) {
+        setInitError(getErrorMessage(error));
+        throw error;
+      } finally {
+        setMealPlanIsLoading(false);
+      }
+    },
+    [loadedRange],
+  );
+
   const value = useMemo<IMealPlanContext>(
     () => ({
       mealPlanEntries,
       mealPlanIsLoading,
       initError,
       loadedRange,
+      clearMealPlanRange,
+      deleteMealPlanEntry,
       loadMealPlan,
       refreshMealPlan,
+      saveMealPlanEntry,
     }),
-    [mealPlanEntries, mealPlanIsLoading, initError, loadedRange, loadMealPlan, refreshMealPlan],
+    [
+      mealPlanEntries,
+      mealPlanIsLoading,
+      initError,
+      loadedRange,
+      clearMealPlanRange,
+      deleteMealPlanEntry,
+      loadMealPlan,
+      refreshMealPlan,
+      saveMealPlanEntry,
+    ],
   );
 
   return <MealPlanContext.Provider value={value}>{children}</MealPlanContext.Provider>;

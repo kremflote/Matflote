@@ -16,5 +16,6 @@ public enum IngredientTag
     Sauce,
     Pantry,
     Frozen,
-    Other
+    Other,
+    LeafyGreen
 }

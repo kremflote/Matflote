@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { INutritionFacts } from "../../interfaces/IIngredient";
+import type { IIngredient, INutritionFacts } from "../../interfaces/IIngredient";
 import { getApiAssetUrl } from "../../services/apiClient";
 import type { SiteTheme } from "../../styles/appStyles";
 import { DetailSection, DetailText, DetailTextWithMeta, NutritionGrid } from "./detailComponents";
@@ -9,9 +9,10 @@ import type { EnrichedRecipe } from "./types";
 type RecipeDetailContentProps = {
   recipe: EnrichedRecipe;
   theme: SiteTheme;
+  onIngredientClick?: (ingredient: IIngredient) => void;
 };
 
-function RecipeDetailContent({ recipe, theme }: RecipeDetailContentProps) {
+function RecipeDetailContent({ recipe, theme, onIngredientClick }: RecipeDetailContentProps) {
   const imageUrl = getApiAssetUrl(recipe.imageUrl);
   const nutrition = calculateRecipeNutrition(recipe);
   const [ingredientMultiplier, setIngredientMultiplier] = useState("1");
@@ -73,15 +74,25 @@ function RecipeDetailContent({ recipe, theme }: RecipeDetailContentProps) {
           ) : (
             <div className={recipeBrowserStyles.detailRows}>
               {recipe.ingredients.map((recipeIngredient) => (
-                <div
+                <button
                   className={recipeBrowserStyles.detailIngredientRow(theme)}
                   key={recipeIngredient.recipeIngredientId}
+                  type="button"
+                  onClick={() => onIngredientClick?.(recipeIngredient.ingredient)}
                 >
+                  <span
+                    aria-hidden="true"
+                    className={recipeBrowserStyles.detailIngredientDot}
+                    style={{ backgroundColor: recipeIngredient.ingredient.color ?? "currentColor" }}
+                  />
                   <span className={recipeBrowserStyles.detailIngredientName}>{recipeIngredient.ingredient.ingredientName}</span>
-                  <span className={recipeBrowserStyles.detailRowValue}>
+                  <span className={recipeBrowserStyles.detailIngredientBrand}>
+                    {recipeIngredient.ingredient.brand?.name ?? "no brand"}
+                  </span>
+                  <span className={recipeBrowserStyles.detailIngredientAmount}>
                     {formatRecipeIngredientAmount(recipeIngredient.amount, recipeIngredient.unit, amountMultiplier)}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           )}

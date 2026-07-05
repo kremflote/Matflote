@@ -106,6 +106,11 @@ public class IngredientsController(DinnerPlannerContext context) : ControllerBas
             return NotFound();
         }
 
+        var recipeIngredients = await context.RecipeIngredients
+            .Where(recipeIngredient => recipeIngredient.IngredientId == id)
+            .ToListAsync();
+
+        context.RecipeIngredients.RemoveRange(recipeIngredients);
         context.Ingredients.Remove(ingredient);
         await context.SaveChangesAsync();
         return NoContent();

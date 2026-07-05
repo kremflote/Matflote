@@ -13,9 +13,10 @@ type BrowserDetailModalProps = {
   detail: BrowserDetail;
   theme: SiteTheme;
   onClose: () => void;
+  onSelectDetail: (detail: BrowserDetail) => void;
 };
 
-function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps) {
+function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserDetailModalProps) {
   const editRecipeImageInputId = useId();
   const { refreshRecipes } = useRecipes();
   const { refreshIngredients } = useIngredients();
@@ -165,7 +166,11 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
         {deleteError !== null && <p className={`mt-4 ${recipeBrowserStyles.statusError(theme)}`}>{deleteError}</p>}
 
         {detail.kind === "recipe" ? (
-          <RecipeDetailContent recipe={detail.recipe} theme={theme} />
+          <RecipeDetailContent
+            recipe={detail.recipe}
+            theme={theme}
+            onIngredientClick={(ingredient) => onSelectDetail({ kind: "ingredient", ingredient })}
+          />
         ) : (
           <IngredientDetailContent ingredient={detail.ingredient} theme={theme} />
         )}

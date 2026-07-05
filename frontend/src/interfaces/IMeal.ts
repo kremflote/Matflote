@@ -17,6 +17,8 @@ export type MealSlot = "Breakfast" | "Lunch" | "Dinner" | "Snack1" | "Snack2";
 
 export type MealRecipeRole = "Main" | "Sauce" | "Side" | "Extra";
 
+export type PlannerViewMode = "week" | "month";
+
 export interface IWeeklyPrepSummary {
   vegetables: IIngredientPrepItem[];
   shoppingList: IIngredientPrepItem[];

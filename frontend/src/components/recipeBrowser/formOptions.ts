@@ -58,6 +58,7 @@ export const ingredientTags: IngredientTag[] = [
   "Pantry",
   "Frozen",
   "Other",
+  "LeafyGreen",
 ];
 
 export const measurementUnits: MeasurementUnit[] = [

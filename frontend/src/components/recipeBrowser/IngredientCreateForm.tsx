@@ -15,6 +15,8 @@ type IngredientCreateFormProps = {
   onCancel: () => void;
 };
 
+const INGREDIENT_NAME_MAX_LENGTH = 30;
+
 type NutritionNumberFieldProps = {
   label: string;
   theme: SiteTheme;
@@ -133,6 +135,11 @@ function IngredientCreateForm({
       return;
     }
 
+    if (trimmedName.length > INGREDIENT_NAME_MAX_LENGTH) {
+      setError(`Ingredient name can be at most ${INGREDIENT_NAME_MAX_LENGTH} characters.`);
+      return;
+    }
+
     if (selectedTags.length === 0) {
       setError("Choose at least one ingredient tag.");
       return;
@@ -188,10 +195,13 @@ function IngredientCreateForm({
           <label className={recipeBrowserStyles.field}>
             <span className={recipeBrowserStyles.label(theme)}>
               Name<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+              <span className={recipeBrowserStyles.inlineHint(theme)}>
+                {ingredientName.length}/{INGREDIENT_NAME_MAX_LENGTH}
+              </span>
             </span>
             <input
               className={recipeBrowserStyles.textField(theme)}
-              maxLength={160}
+              maxLength={INGREDIENT_NAME_MAX_LENGTH}
               required
               type="text"
               value={ingredientName}

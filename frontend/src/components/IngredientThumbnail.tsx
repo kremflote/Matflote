@@ -1,10 +1,11 @@
 import type { IIngredient } from "../interfaces/IIngredient";
-import { colorPalette, thumbnailStyles, type SiteTheme } from "../styles/appStyles";
+import { colorPalette, siteColorClasses, thumbnailStyles, type SiteTheme } from "../styles/appStyles";
 
 type IngredientThumbnailProps = {
   ingredient: Pick<IIngredient, "ingredientName" | "tags" | "brand" | "color">;
   theme?: SiteTheme;
   selected?: boolean;
+  selectedPresentation?: "outline" | "muted";
   disabled?: boolean;
   className?: string;
   onClick?: () => void;
@@ -17,7 +18,9 @@ type IngredientTone = {
 
 function IngredientThumbnail({
   ingredient,
+  theme = "dark",
   selected = false,
+  selectedPresentation = "outline",
   disabled = false,
   className = "",
   onClick,
@@ -25,9 +28,13 @@ function IngredientThumbnail({
   const brandName = ingredient.brand?.name ?? "";
   const displayBrand = brandName || "no brand";
   const tone = getIngredientTone(ingredient.color);
+  const selectedClassName =
+    selectedPresentation === "muted"
+      ? thumbnailStyles.ingredientSelectedMuted
+      : thumbnailStyles.ingredientSelectedOutline;
   const sharedClassName = `${thumbnailStyles.ingredientShell} ${className} ${
-    selected ? "outline outline-2 outline-current" : ""
-  } ${disabled ? "cursor-not-allowed" : onClick ? "cursor-pointer" : ""}`;
+    selected ? selectedClassName : ""
+  } ${disabled ? "cursor-not-allowed" : onClick ? `cursor-pointer ${siteColorClasses[theme].ingredientThumbnailInteractive}` : ""}`;
   const style = {
     color: tone.text,
   };
@@ -43,7 +50,6 @@ function IngredientThumbnail({
         <span className={thumbnailStyles.ingredientName}>
           {ingredient.ingredientName}
         </span>
-        <span aria-hidden="true" className={thumbnailStyles.ingredientDivider} />
         <span className={thumbnailStyles.ingredientBrand}>
           {displayBrand}
         </span>

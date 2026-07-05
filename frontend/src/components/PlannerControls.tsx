@@ -1,20 +1,44 @@
+import type { PlannerViewMode } from "../interfaces/IMeal";
 import { plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
 
 type PlannerControlsProps = {
+  anchorLabel: string;
+  anchorYear: string;
   theme?: SiteTheme;
+  viewMode: PlannerViewMode;
+  onNextRange: () => void;
+  onPreviousRange: () => void;
+  onClearRange: () => void;
+  onGenerateRange: () => void;
+  onViewModeChange: (value: PlannerViewMode) => void;
 };
 
-function PlannerControls({ theme = "dark" }: PlannerControlsProps) {
-  const weekInfo = getCurrentWeekInfo();
-
+function PlannerControls({
+  anchorLabel,
+  anchorYear,
+  theme = "dark",
+  viewMode,
+  onNextRange,
+  onPreviousRange,
+  onClearRange,
+  onGenerateRange,
+  onViewModeChange,
+}: PlannerControlsProps) {
   return (
     <section className={plannerControlsStyles.shell} aria-label="Planner controls">
       <div className={plannerControlsStyles.leftCell}>
         <div className={plannerControlsStyles.counterActions}>
           <div className={plannerControlsStyles.actionSlotLeft}>
-            <button aria-label="Clear meals" className={plannerControlsStyles.iconOnlyButton(theme)} type="button">
+            <button
+              aria-label={viewMode === "week" ? "Clear week" : "Clear month"}
+              className={plannerControlsStyles.iconOnlyButton(theme)}
+              type="button"
+              onClick={onClearRange}
+            >
               <ClearIcon />
-              <span className={plannerControlsStyles.tooltip(theme)}>Clear meals</span>
+              <span className={plannerControlsStyles.tooltip(theme)}>
+                {viewMode === "week" ? "Clear week" : "Clear month"}
+              </span>
             </button>
           </div>
           <div className={plannerControlsStyles.actionSlotCenter}>
@@ -22,6 +46,7 @@ function PlannerControls({ theme = "dark" }: PlannerControlsProps) {
               aria-label="Generate meal plan"
               className={plannerControlsStyles.iconOnlyButton(theme)}
               type="button"
+              onClick={onGenerateRange}
             >
               <GenerateIcon />
               <span className={plannerControlsStyles.tooltip(theme)}>Generate meal plan</span>
@@ -40,50 +65,51 @@ function PlannerControls({ theme = "dark" }: PlannerControlsProps) {
         </div>
       </div>
       <div className={plannerControlsStyles.centerCell}>
+        <div className={plannerControlsStyles.dateYearRow}>
+          <div className={plannerControlsStyles.dateYear(theme)}>{anchorYear}</div>
+        </div>
         <div className={plannerControlsStyles.datePrimaryRow}>
           <button
-            aria-label="Previous week"
+            aria-label={viewMode === "week" ? "Previous week" : "Previous month"}
             className={plannerControlsStyles.iconButton(theme)}
             type="button"
+            onClick={onPreviousRange}
           >
             <ArrowIcon direction="left" />
           </button>
-          <div className={plannerControlsStyles.datePrimary(theme)}>Week {weekInfo.week}</div>
-          <button aria-label="Next week" className={plannerControlsStyles.iconButton(theme)} type="button">
+          <div className={plannerControlsStyles.datePrimary(theme)}>{anchorLabel}</div>
+          <button
+            aria-label={viewMode === "week" ? "Next week" : "Next month"}
+            className={plannerControlsStyles.iconButton(theme)}
+            type="button"
+            onClick={onNextRange}
+          >
             <ArrowIcon direction="right" />
           </button>
         </div>
       </div>
       <div className={plannerControlsStyles.rightCell}>
         <div className={plannerControlsStyles.viewToggle(theme)} role="group" aria-label="Planner view">
-          <button className={plannerControlsStyles.viewToggleOption(theme, true)} type="button">
+          <button
+            aria-pressed={viewMode === "week"}
+            className={plannerControlsStyles.viewToggleOption(theme, viewMode === "week")}
+            type="button"
+            onClick={() => onViewModeChange("week")}
+          >
             Week
           </button>
-          <button className={plannerControlsStyles.viewToggleOption(theme, false)} type="button">
+          <button
+            aria-pressed={viewMode === "month"}
+            className={plannerControlsStyles.viewToggleOption(theme, viewMode === "month")}
+            type="button"
+            onClick={() => onViewModeChange("month")}
+          >
             Month
           </button>
         </div>
       </div>
     </section>
   );
-}
-
-function getCurrentWeekInfo() {
-  const today = new Date();
-  const week = getIsoWeek(today);
-
-  return {
-    week: String(week),
-  };
-}
-
-function getIsoWeek(date: Date) {
-  const nextDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const day = nextDate.getUTCDay() || 7;
-  nextDate.setUTCDate(nextDate.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(nextDate.getUTCFullYear(), 0, 1));
-
-  return Math.ceil(((nextDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 function ArrowIcon({ direction }: { direction: "left" | "right" }) {

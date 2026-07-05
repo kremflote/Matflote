@@ -1,11 +1,11 @@
-import { siteColorClasses, type SiteTheme } from "../../styles/appStyles";
+import { shadowClasses, siteColorClasses, type SiteTheme } from "../../styles/appStyles";
 
 export const recipeBrowserStyles = {
   title: (theme: SiteTheme) =>
     `whitespace-nowrap text-[40px] font-bold leading-[1.15] ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
   headerTitle: "col-span-2 max-lg:col-span-12",
   searchInput: (theme: SiteTheme) =>
-    `h-9 w-full rounded-md border px-3 text-sm font-semibold outline-none placeholder:text-neutral-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+    `h-9 w-full rounded-md border px-3 text-sm font-semibold ${shadowClasses.subtle} outline-none placeholder:text-neutral-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-200 text-neutral-900 focus-visible:outline-white"
         : theme === "paletteLight"
@@ -14,7 +14,9 @@ export const recipeBrowserStyles = {
     }`,
   headerControlsRow: "mt-3 grid grid-cols-12 items-center gap-3",
   searchControls: "relative col-span-2 max-lg:col-span-12 max-lg:flex max-lg:items-center max-lg:gap-3",
-  headerActions: "col-span-10 flex items-center justify-end gap-3 max-lg:col-span-12 max-lg:justify-start",
+  headerActions: "col-span-10 grid grid-cols-4 items-center gap-3 max-xl:grid-cols-3 max-lg:col-span-12 max-md:grid-cols-2 max-sm:grid-cols-1",
+  headerActionButtonSlot: "col-start-3 flex justify-end max-xl:col-start-2 max-md:col-start-1 max-sm:row-start-1",
+  headerModeToggleSlot: "col-start-4 w-full max-xl:col-start-3 max-md:col-start-2 max-sm:col-start-1 max-sm:row-start-2",
   filterButtonSlot: "absolute left-[calc(100%+0.75rem)] top-0 h-9 w-9 shrink-0 max-lg:static",
   searchFilterRow: "mt-3 grid grid-cols-12 items-start gap-3",
   activeFilterChips: (mode: "recipes" | "ingredients") =>
@@ -23,7 +25,7 @@ export const recipeBrowserStyles = {
     }`,
   browserBodyGrid: "mt-3 grid grid-cols-12 gap-3",
   filterButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-9 items-center justify-center rounded-md border transition-colors ${
+    `inline-flex h-9 w-9 items-center justify-center rounded-md border ${shadowClasses.subtle} transition-colors ${
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-500 text-neutral-950 hover:bg-neutral-400"
         : theme === "paletteLight"
@@ -47,7 +49,7 @@ export const recipeBrowserStyles = {
           : "text-neutral-500 hover:text-neutral-900"
     }`,
   ingredientPicker: (theme: SiteTheme) =>
-    `fixed z-50 w-72 rounded-md border p-3 shadow-xl ${
+    `fixed z-50 w-72 rounded-md border p-3 ${shadowClasses.overlay} ${
       theme === "dark"
         ? "border-white/[0.12] bg-neutral-950 text-neutral-100"
         : theme === "paletteLight"
@@ -59,7 +61,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-200 text-neutral-900 focus-visible:outline-white"
         : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-white text-[#556145] focus-visible:outline-[#7A8864]"
+          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] focus-visible:outline-[#7A8864]"
           : "border-neutral-300 bg-white text-neutral-900 focus-visible:outline-neutral-800"
     }`,
   ingredientPickerEmpty: (theme: SiteTheme) =>
@@ -73,16 +75,10 @@ export const recipeBrowserStyles = {
   ingredientPickerList: "mt-3 flex max-h-72 flex-col gap-2 overflow-y-auto pr-1",
   ingredientPickerItem: "h-9 px-3",
   addButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-32 items-center justify-center rounded-md border px-3 text-xs font-extrabold transition-colors ${
-      theme === "dark"
-        ? "border-white/[0.08] bg-black/50 text-white hover:bg-white/[0.08]"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#FAF7F2] text-[#556145] hover:bg-[#F4EBCF]"
-          : "border-neutral-300 bg-neutral-200 text-neutral-950 hover:bg-neutral-300"
-    }`,
+    `inline-flex h-9 w-32 items-center justify-center rounded-md border px-3 text-xs font-extrabold ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookAddButton}`,
   modalBackdrop: "fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4",
   modalPanel: (theme: SiteTheme) =>
-    `max-h-[calc(100vh_-_48px)] w-full max-w-3xl overflow-y-auto rounded-md border p-5 shadow-xl ${
+    `max-h-[calc(100vh_-_48px)] w-full max-w-3xl overflow-y-auto rounded-md border p-5 ${shadowClasses.overlay} ${
       theme === "dark"
         ? "border-white/[0.12] bg-neutral-950 text-neutral-100"
         : theme === "paletteLight"
@@ -90,7 +86,7 @@ export const recipeBrowserStyles = {
           : "border-neutral-200 bg-white text-neutral-900"
     }`,
   modalCloseButton: (theme: SiteTheme) =>
-    `rounded-md px-3 py-2 text-sm font-bold transition-colors ${
+    `inline-flex h-8 items-center justify-center rounded-md px-3 text-xs font-bold transition-colors ${
       theme === "dark"
         ? "bg-white/[0.08] text-neutral-200 hover:bg-white/[0.14]"
         : theme === "paletteLight"
@@ -158,7 +154,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-900 text-neutral-100 focus-visible:outline-white"
         : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-white text-[#556145] focus-visible:outline-[#7A8864]"
+          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] focus-visible:outline-[#7A8864]"
           : "border-neutral-300 bg-white text-neutral-900 focus-visible:outline-neutral-800"
     }`,
   customSelectWrap: "relative",
@@ -167,11 +163,11 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-900 text-neutral-100 focus-visible:outline-white"
         : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-white text-[#556145] focus-visible:outline-[#7A8864]"
+          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] focus-visible:outline-[#7A8864]"
           : "border-neutral-300 bg-white text-neutral-900 focus-visible:outline-neutral-800"
     }`,
   customSelectMenu: (theme: SiteTheme) =>
-    `absolute left-0 right-0 top-[calc(100%+0.25rem)] z-30 grid max-h-56 gap-1 overflow-y-auto rounded-md border p-2 shadow-xl ${
+    `absolute left-0 right-0 top-[calc(100%+0.25rem)] z-30 grid max-h-56 gap-1 overflow-y-auto rounded-md border p-2 ${shadowClasses.overlay} ${
       theme === "dark"
         ? "border-white/[0.12] bg-neutral-950 text-neutral-100"
         : theme === "paletteLight"
@@ -184,12 +180,12 @@ export const recipeBrowserStyles = {
         ? theme === "dark"
           ? "bg-white/[0.12] text-white"
           : theme === "paletteLight"
-            ? "bg-[#F4EBCF] text-[#556145]"
+            ? "bg-[#FAF7F2] text-[#556145]"
             : "bg-neutral-900 text-white"
         : theme === "dark"
           ? "text-neutral-300 hover:bg-white/[0.08] hover:text-white"
           : theme === "paletteLight"
-            ? "text-[#556145] hover:bg-[#F4EBCF]"
+            ? "text-[#556145] hover:bg-[#FAF7F2]"
             : "text-neutral-700 hover:bg-neutral-100"
     }`,
   customSelectDeleteButton: (theme: SiteTheme) =>
@@ -206,7 +202,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-900 text-neutral-100 focus-visible:outline-white"
         : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-white text-[#556145] focus-visible:outline-[#7A8864]"
+          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] focus-visible:outline-[#7A8864]"
           : "border-neutral-300 bg-white text-neutral-900 focus-visible:outline-neutral-800"
     }`,
   numberFieldSuffix: (theme: SiteTheme) =>
@@ -218,7 +214,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-900 text-neutral-100 focus-visible:outline-white"
         : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-white text-[#556145] focus-visible:outline-[#7A8864]"
+          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] focus-visible:outline-[#7A8864]"
           : "border-neutral-300 bg-white text-neutral-900 focus-visible:outline-neutral-800"
     }`,
   colorSwatch: "h-5 w-5 shrink-0 rounded-md border border-white/25",
@@ -244,7 +240,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-900 text-neutral-100 focus-visible:outline-white"
         : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-white text-[#556145] focus-visible:outline-[#7A8864]"
+          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] focus-visible:outline-[#7A8864]"
           : "border-neutral-300 bg-white text-neutral-900 focus-visible:outline-neutral-800"
     }`,
   helperText: (theme: SiteTheme) =>
@@ -264,7 +260,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-900 text-neutral-100 focus-visible:outline-white disabled:opacity-45"
         : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-white text-[#556145] focus-visible:outline-[#7A8864] disabled:opacity-45"
+          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] focus-visible:outline-[#7A8864] disabled:opacity-45"
           : "border-neutral-300 bg-white text-neutral-900 focus-visible:outline-neutral-800 disabled:opacity-45"
     }`,
   checkboxGridPanel: (theme: SiteTheme) =>
@@ -290,7 +286,7 @@ export const recipeBrowserStyles = {
           : "border-neutral-300 bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
     }`,
   imageUploadFloatingButton: (theme: SiteTheme) =>
-    `absolute left-1/2 top-1/2 z-10 inline-flex h-9 w-fit -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center gap-2 rounded-md border px-4 text-center text-[10px] font-bold leading-none shadow-sm transition-colors ${
+    `absolute left-1/2 top-1/2 z-10 inline-flex h-9 w-fit -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center gap-2 rounded-md border px-4 text-center text-[10px] font-bold leading-none ${shadowClasses.subtle} transition-colors ${
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-950/85 text-neutral-200 hover:bg-neutral-950"
         : theme === "paletteLight"
@@ -316,7 +312,7 @@ export const recipeBrowserStyles = {
           : "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-700"
     }`,
   detailHeaderEditButton: (theme: SiteTheme) =>
-    `inline-flex h-9 min-w-28 items-center justify-center rounded-md border px-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
+    `inline-flex h-8 min-w-28 items-center justify-center rounded-md border px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
       theme === "dark"
         ? "border-white/[0.12] bg-white/[0.14] text-white hover:bg-white/[0.2]"
         : theme === "paletteLight"
@@ -324,12 +320,12 @@ export const recipeBrowserStyles = {
           : "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-700"
     }`,
   detailHeaderRemoveButton: (theme: SiteTheme) =>
-    `inline-flex h-9 min-w-24 items-center justify-center rounded-md border px-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
+    `inline-flex h-8 min-w-24 items-center justify-center rounded-md border px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
       theme === "dark"
-        ? "border-red-400/25 bg-red-400/25 text-white hover:bg-red-400/35"
+        ? "border-red-950 bg-red-950 text-white hover:bg-red-900"
         : theme === "paletteLight"
-          ? "border-red-800/25 bg-red-800/25 text-[#FAF7F2] hover:bg-red-800/35"
-          : "border-red-200 bg-red-200 text-white hover:bg-red-300"
+          ? "border-red-950 bg-red-950 text-[#FAF7F2] hover:bg-red-900"
+          : "border-red-900 bg-red-900 text-white hover:bg-red-800"
     }`,
   detailHeaderShell: "grid gap-2",
   detailHeaderRow: "flex flex-wrap items-center gap-3",
@@ -355,11 +351,11 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-900"
         : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-white"
+          ? "border-[#C8C0B5] bg-[#FAF7F2]"
           : "border-neutral-300 bg-neutral-100"
     }`,
   tabs: (theme: SiteTheme) =>
-    `inline-flex h-9 overflow-hidden rounded-md border p-1 ${
+    `flex h-9 w-full overflow-hidden rounded-md border p-1 ${shadowClasses.subtle} ${
       theme === "dark"
         ? "border-white/[0.08] bg-black/50"
         : theme === "paletteLight"
@@ -367,12 +363,12 @@ export const recipeBrowserStyles = {
           : "border-neutral-300 bg-neutral-200"
     }`,
   tab: (theme: SiteTheme, selected: boolean) =>
-    `flex h-7 min-w-32 items-center justify-center rounded-md px-5 text-xs font-semibold transition-colors ${
+    `flex h-7 min-w-0 flex-1 items-center justify-center rounded-md px-3 text-xs font-semibold transition-colors ${
       selected
         ? theme === "dark"
           ? "bg-black text-white"
           : theme === "paletteLight"
-            ? "bg-[#F4EBCF] text-[#556145]"
+            ? "bg-[#FAF7F2] text-[#556145]"
             : "bg-neutral-900 text-white"
         : theme === "dark"
           ? "text-neutral-400 hover:text-white"
@@ -381,7 +377,7 @@ export const recipeBrowserStyles = {
             : "text-neutral-600 hover:text-neutral-900"
     }`,
   filterRail: (theme: SiteTheme) =>
-    `col-span-2 rounded-md p-3 max-lg:col-span-12 ${
+    `col-span-2 rounded-md p-3 ${shadowClasses.subtle} max-lg:col-span-12 ${
       theme === "dark"
         ? "bg-white/[0.04]"
         : theme === "paletteLight"
@@ -414,11 +410,13 @@ export const recipeBrowserStyles = {
   ingredientGrid: "grid grid-cols-3 items-start gap-3 max-lg:grid-cols-2 max-sm:grid-cols-1",
   emptyFilterChipSlot: "h-9",
   recipeCard: (theme: SiteTheme) =>
-    theme === "dark"
-      ? "ring-1 ring-white/[0.08]"
-      : theme === "paletteLight"
-        ? "ring-1 ring-[#7A8864]/20"
-        : "ring-1 ring-neutral-200",
+    `${shadowClasses.subtle} ${
+      theme === "dark"
+        ? "ring-1 ring-white/[0.08]"
+        : theme === "paletteLight"
+          ? "ring-1 ring-[#7A8864]/20"
+          : "ring-1 ring-neutral-200"
+    }`,
   emptyState: (theme: SiteTheme) =>
     `flex min-h-80 flex-col items-center justify-center rounded-md border p-8 text-center ${
       theme === "dark"
@@ -453,8 +451,18 @@ export const recipeBrowserStyles = {
   detailRows: "grid gap-2",
   detailRowLabel: "font-bold",
   detailRowValue: "shrink-0",
-  detailIngredientRow: (theme: SiteTheme) => `${recipeBrowserStyles.detailRow(theme)} flex-wrap`,
-  detailIngredientName: "min-w-0 font-bold",
+  detailIngredientRow: (theme: SiteTheme) =>
+    `relative flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-sm font-semibold transition-colors ${
+      theme === "dark"
+        ? "bg-white/[0.05] text-neutral-200 hover:bg-white/[0.09]"
+        : theme === "paletteLight"
+          ? "bg-[#E5D5BC]/45 text-[#556145] hover:bg-[#E5D5BC]/70"
+          : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+    }`,
+  detailIngredientDot: "h-2.5 w-2.5 rounded-full",
+  detailIngredientName: "min-w-0 max-w-[45%] truncate font-bold",
+  detailIngredientBrand: "pointer-events-none absolute left-1/2 max-w-[32%] -translate-x-1/2 truncate text-center text-xs font-semibold opacity-75",
+  detailIngredientAmount: "ml-auto shrink-0 pl-3",
   ingredientDetailMetaGrid: "grid grid-cols-2 gap-3 max-sm:grid-cols-1",
   detailChipSection: "grid gap-2",
   detailChipList: "flex flex-wrap gap-2",

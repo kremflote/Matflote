@@ -8,7 +8,7 @@ const navItems: Array<{
   icon: "settings" | "calendar" | "book";
 }> = [
   { id: "settings", label: "Settings", icon: "settings" },
-  { id: "weekPlanner", label: "Week planner", icon: "calendar" },
+  { id: "weekPlanner", label: "Planner", icon: "calendar" },
   { id: "cookbook", label: "Cookbook", icon: "book" },
 ];
 
@@ -29,9 +29,14 @@ function Header({ activePage, onPageChange, theme, onThemeChange }: HeaderProps)
   return (
     <header className={headerStyles.shell(theme)}>
       <div className={headerStyles.inner}>
-        <a className={headerStyles.logo(theme)} href="/" aria-label="DinnerPlanner home">
+        <button
+          className={headerStyles.logo(theme)}
+          type="button"
+          aria-label="DinnerPlanner home"
+          onClick={() => onPageChange("weekPlanner")}
+        >
           DinnerPlanner
-        </a>
+        </button>
 
         <nav className={headerStyles.nav} aria-label="Primary">
           {navItems.map((item) => (

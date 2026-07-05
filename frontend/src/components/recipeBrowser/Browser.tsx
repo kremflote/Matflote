@@ -278,6 +278,7 @@ function Browser({ mode, theme, headerActions }: BrowserProps) {
           detail={selectedDetail}
           theme={theme}
           onClose={() => setSelectedDetail(null)}
+          onSelectDetail={setSelectedDetail}
         />
       )}
     </>
@@ -463,6 +464,7 @@ function IngredientPickerPopover({
               ingredient={ingredient}
               key={ingredient.ingredientId}
               selected={selectedIngredientIds.includes(ingredient.ingredientId)}
+              selectedPresentation="muted"
               theme={theme}
               onClick={() => onToggleIngredient(ingredient.ingredientId)}
             />
@@ -600,6 +602,7 @@ const ingredientTagByIndex: IngredientTag[] = [
   "Pantry",
   "Frozen",
   "Other",
+  "LeafyGreen",
 ];
 
 export default Browser;

@@ -3,30 +3,9 @@ import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { ICuisine } from "../../interfaces/ILookup";
 import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
-import { ingredientTags } from "./formOptions";
+import { ingredientTags, recipeTags, recipeTypes } from "./formOptions";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import type { BrowserMode } from "./types";
-
-const recipeTypeFilters: RecipeType[] = ["Dish", "Dessert", "Sauce", "Dip", "Side", "SpiceMix"];
-
-const recipeTagFilters: RecipeTag[] = [
-  "Breakfast",
-  "Lunch",
-  "Dinner",
-  "Bowl",
-  "Grill",
-  "Pasta",
-  "Vegetarian",
-  "Soup",
-  "Stew",
-  "Salad",
-  "Pizza",
-  "Sandwich",
-  "Taco",
-  "Curry",
-  "Casserole",
-  "Other",
-];
 
 type BrowserFilterSectionProps = {
   mode: BrowserMode;
@@ -71,14 +50,14 @@ function BrowserFilterSection({
             selectedValues={selectedRecipeTypes}
             theme={theme}
             title="Recipe Type"
-            values={recipeTypeFilters}
+            values={recipeTypes}
             onToggle={(value) => toggleSelection(value, setSelectedRecipeTypes)}
           />
           <FilterGroup
             selectedValues={selectedRecipeTags}
             theme={theme}
             title="Tags"
-            values={recipeTagFilters}
+            values={recipeTags}
             onToggle={(value) => toggleSelection(value, setSelectedRecipeTags)}
           />
           <NumberFilterGroup

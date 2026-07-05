@@ -6,6 +6,7 @@ public abstract class Recipe
 {
     [Key]
     public int RecipeId { get; set; }
+    [StringLength(20, MinimumLength = 1)]
     public string Name { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
     public string? Description { get; set; }
