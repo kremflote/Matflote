@@ -250,6 +250,16 @@ Padding: 16px
 Border radius: 6px
 ```
 
+### Create/edit form bodies
+
+```
+Max height: 40vh
+Padding: 24px
+Border radius: 6px
+```
+
+Use this max height on the inner form-body container in create/edit windows. Keep destructive, cancel, and confirm/save action rows outside this scroll area so they remain visible. The value lives in `sizeClasses.modalFormBodyMaxHeight` in `frontend/src/styles/appStyles.ts`.
+
 ### Cards
 
 Cards should usually have automatic height based on content.

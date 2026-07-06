@@ -528,7 +528,7 @@ function PlannerRecipePickerModal({
         />
 
         {saveError !== null && (
-          <p className={`${plannerPickerStyles.statusError(theme)} mt-4`}>{saveError}</p>
+          <p className={plannerPickerStyles.statusErrorWithOffset(theme)}>{saveError}</p>
         )}
 
         <div className={plannerPickerStyles.footer}>

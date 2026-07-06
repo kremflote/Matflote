@@ -191,7 +191,7 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
           </div>
         </div>
 
-        {deleteError !== null && <p className={`mt-4 ${recipeBrowserStyles.statusError(theme)}`}>{deleteError}</p>}
+        {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{deleteError}</p>}
 
         {detail.kind === "recipe" ? (
           <RecipeDetailContent

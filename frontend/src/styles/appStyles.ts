@@ -172,9 +172,10 @@ export const layoutClasses = {
 export const sizeClasses = {
   mealCalendarHeaderHeight: "h-14",
   mealCalendarCellHeight: "h-36",
+  modalFormBodyMaxHeight: "max-h-[68vh]",
   plannerPickerBrowserHeight: "h-[44vh]",
   plannerControlHeight: "h-9",
-  segmentedControlWidth: "w-60",
+  thumbnailControlWidth: "w-64",
   dayLabelHeight: "h-auto",
   mealSlotPlaceholder: "h-12 w-12",
 } as const;
@@ -242,7 +243,7 @@ export const thumbnailStyles = {
     }`,
   ingredientSelectedOutline: "outline outline-2 outline-current",
   ingredientSelectedMuted: "opacity-45",
-  ingredientDot: "h-2 w-2 rounded-full",
+  ingredientDot: "h-2 w-2 rounded-md",
   ingredientContent:
     "grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,45%)] items-center gap-2",
   ingredientName: "min-w-0 truncate text-xs font-semibold leading-tight",
@@ -252,6 +253,66 @@ export const thumbnailStyles = {
 
 const focusBase =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+
+export const controlStyles = {
+  modalCloseButton: (theme: SiteTheme) =>
+    `inline-flex h-9 items-center justify-center ${radiusClasses.figma6} px-3 text-xs font-bold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "bg-white/[0.08] text-neutral-200 hover:bg-white/[0.14]"
+        : theme === "paletteLight"
+          ? "bg-[#E5D5BC] text-[#556145] hover:bg-[#C8C0B5]"
+          : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+    }`,
+  primaryButton: (theme: SiteTheme) =>
+    `inline-flex h-12 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-white/[0.12] bg-white/[0.14] text-white hover:bg-white/[0.2]"
+        : theme === "paletteLight"
+          ? "border-[#7A8864]/35 bg-[#7A8864] text-[#FAF7F2] hover:bg-[#6A7658]"
+          : "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-700"
+    }`,
+  secondaryButton: (theme: SiteTheme) =>
+    `inline-flex h-12 min-w-28 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-transparent text-neutral-200 hover:bg-white/[0.08]"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-transparent text-[#556145] hover:bg-[#E5D5BC]/55"
+          : "border-neutral-300 bg-transparent text-neutral-800 hover:bg-neutral-100"
+    }`,
+  removeButton: (theme: SiteTheme) =>
+    `inline-flex h-12 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-red-950 bg-red-950 text-white hover:bg-red-900"
+        : theme === "paletteLight"
+          ? "border-red-950 bg-red-950 text-[#FAF7F2] hover:bg-red-900"
+          : "border-red-900 bg-red-900 text-white hover:bg-red-800"
+    }`,
+  compactSearchInput: (theme: SiteTheme) =>
+    `h-9 w-full ${radiusClasses.figma6} border px-3 text-sm font-semibold ${shadowClasses.subtle} outline-none placeholder:text-neutral-500 ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-neutral-200 text-neutral-900"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
+          : "border-neutral-300 bg-white text-neutral-900"
+    }`,
+  formField: (theme: SiteTheme) =>
+    `h-12 rounded-md border px-4 text-base font-normal outline-none placeholder:text-neutral-500 ${focusBase} ${surfaceClasses.field(theme)}`,
+  compactTextField: (theme: SiteTheme) =>
+    `h-8 min-w-0 rounded-md border px-2 text-xs font-semibold outline-none placeholder:text-neutral-500 disabled:opacity-45 ${focusBase} ${surfaceClasses.field(theme)}`,
+  textArea: (theme: SiteTheme) =>
+    `min-h-32 resize-y rounded-md border px-4 py-3 text-base font-normal leading-[1.5] outline-none placeholder:text-neutral-500 ${focusBase} ${surfaceClasses.field(theme)}`,
+} as const;
+
+export const segmentedToggleStyles = {
+  shell: (theme: SiteTheme, widthClass = "w-full") =>
+    `${sizeClasses.plannerControlHeight} ${widthClass} inline-flex max-w-full items-center overflow-hidden ${radiusClasses.figma6} border p-1 ${shadowClasses.subtle} ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerToggle}`,
+  option: (theme: SiteTheme, selected: boolean) =>
+    `flex h-7 min-w-0 flex-1 items-center justify-center ${radiusClasses.figma6} px-3 text-xs font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${
+      selected
+        ? siteColorClasses[theme].plannerToggleSelected
+        : siteColorClasses[theme].plannerToggleIdle
+    }`,
+} as const;
 
 export const appStyles = {
   shell: (theme: SiteTheme) =>
@@ -264,7 +325,7 @@ export const confirmationDialogStyles = {
   backdrop:
     "fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-4",
   panel: (theme: SiteTheme) =>
-    `grid w-full max-w-md gap-4 rounded-md border p-5 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+    `grid w-full max-w-md gap-4 rounded-md border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   title: "text-xl font-bold leading-tight",
   body: (theme: SiteTheme) =>
     `text-sm font-semibold leading-[1.5] ${
@@ -275,26 +336,13 @@ export const confirmationDialogStyles = {
           : "text-neutral-700"
     }`,
   actions: "flex flex-wrap items-center justify-end gap-3",
-  cancelButton: (theme: SiteTheme) =>
-    `inline-flex h-9 min-w-24 items-center justify-center rounded-md border px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-transparent text-neutral-200 hover:bg-white/[0.08]"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-transparent text-[#556145] hover:bg-[#E5D5BC]/55"
-          : "border-neutral-300 bg-transparent text-neutral-800 hover:bg-neutral-100"
-    }`,
+  cancelButton: controlStyles.secondaryButton,
   confirmButton: (theme: SiteTheme, tone: "danger" | "default") => {
     if (tone === "danger") {
-      return "inline-flex h-9 min-w-24 items-center justify-center rounded-md border border-red-950 bg-red-950 px-3 text-xs font-bold text-[#FAF7F2] transition-colors hover:bg-red-900 disabled:cursor-not-allowed disabled:opacity-55";
+      return controlStyles.removeButton(theme);
     }
 
-    return `inline-flex h-9 min-w-24 items-center justify-center rounded-md border px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
-      theme === "dark"
-        ? "border-white/[0.12] bg-white/[0.14] text-white hover:bg-white/[0.2]"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#7A8864] text-[#FAF7F2] hover:bg-[#6A7658]"
-          : "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-700"
-    }`;
+    return controlStyles.primaryButton(theme);
   },
 } as const;
 
@@ -306,7 +354,7 @@ export const headerStyles = {
     `justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses[theme].headerForeground}`,
   nav: "flex items-center justify-center gap-2 max-md:col-span-2 max-md:row-start-2 max-md:justify-self-center",
   navButton: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-16 min-w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border px-3 transition-colors duration-150 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-16 min-w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border px-3 transition-colors duration-150 ${focusBase} ${siteColorClasses[theme].focus} ${
       selected
         ? siteColorClasses[theme].controlSelected
         : `border-transparent bg-transparent ${siteColorClasses[theme].control}`
@@ -314,7 +362,8 @@ export const headerStyles = {
   icon: "h-8 w-8 fill-current",
   navLabel: "text-xs font-semibold leading-none",
   themeButton: (theme: SiteTheme) =>
-    `inline-flex h-8 w-14 cursor-pointer items-center justify-center justify-self-end rounded-full border border-transparent bg-transparent p-0 ${focusBase} ${siteColorClasses[theme].focus}`,
+    `inline-flex h-8 w-14 cursor-pointer items-center justify-center justify-self-end rounded-md border border-transparent bg-transparent p-0 ${focusBase} ${siteColorClasses[theme].focus}`,
+  // Exception to the rectangular control rule: the theme switch keeps the familiar rounded toggle shape.
   themeTrack: (theme: SiteTheme) =>
     `relative h-8 w-14 rounded-full border ${siteColorClasses[theme].switchTrack}`,
   themeThumb: (theme: SiteTheme) =>
@@ -333,11 +382,11 @@ export const pageStyles = {
 };
 
 export const settingsStyles = {
-  shell: "grid max-w-2xl gap-5",
+  shell: "grid max-w-2xl gap-6",
   title: (theme: SiteTheme) =>
     `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
   panel: (theme: SiteTheme) =>
-    `grid gap-4 rounded-md border p-5 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+    `grid gap-4 rounded-md border p-6 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
   panelTitle: "text-xl font-bold leading-tight",
   panelBody: (theme: SiteTheme) =>
     `text-sm font-semibold leading-[1.5] ${
@@ -367,8 +416,10 @@ export const settingsStyles = {
 } as const;
 
 export const plannerControlsStyles = {
-  shell: `mb-12 mt-3 grid w-full grid-cols-12 ${layoutClasses.gridGap}`,
+  /* mb-15 so grid starts at same point as cookbook grid */
+  shell: `mb-15 mt-3 grid w-full grid-cols-12 ${layoutClasses.gridGap}`,
   datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap}`,
+  // The year floats above the range label without increasing the top-control row height.
   dateYearRow: (theme: SiteTheme) =>
     `pointer-events-none absolute inset-x-0 -top-4 z-0 flex h-0 justify-center overflow-visible text-sm font-bold leading-none ${
       theme === "dark"
@@ -394,13 +445,9 @@ export const plannerControlsStyles = {
   tooltip: (theme: SiteTheme) =>
     `pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold opacity-0 ${shadowClasses.subtle} transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${siteColorClasses[theme].plannerControl}`,
   viewToggle: (theme: SiteTheme) =>
-    `${sizeClasses.plannerControlHeight} ${sizeClasses.segmentedControlWidth} inline-flex max-w-full items-center overflow-hidden ${radiusClasses.figma6} border p-1 ${shadowClasses.subtle} ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerToggle}`,
+    segmentedToggleStyles.shell(theme, sizeClasses.thumbnailControlWidth),
   viewToggleOption: (theme: SiteTheme, selected: boolean) =>
-    `flex h-full min-w-0 flex-1 items-center justify-center ${radiusClasses.figma6} px-3 text-xs font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${
-      selected
-        ? siteColorClasses[theme].plannerToggleSelected
-        : siteColorClasses[theme].plannerToggleIdle
-    }`,
+    segmentedToggleStyles.option(theme, selected),
   statusError: (theme: SiteTheme) =>
     `mb-4 ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
       theme === "dark"
@@ -422,6 +469,7 @@ export const mealCalendarStyles = {
   dayCell: (theme: SiteTheme) =>
     `absolute right-full top-0 grid w-20 ${sizeClasses.mealCalendarCellHeight} grid-rows-[1fr_auto_1fr] items-center justify-items-center ${siteColorClasses[theme].plannerCounterAccent}`,
   dayLabel: `${sizeClasses.dayLabelHeight} row-start-2 flex items-center justify-center text-center ${typographyClasses.dayLabel}`,
+  // Keeps the date close to the weekday while the weekday remains vertically centered to the meal slots.
   dayDate: (theme: SiteTheme) =>
     `row-start-3 -mt-12 text-sm font-light leading-none ${
       theme === "dark"
@@ -471,7 +519,7 @@ export const mealCalendarStyles = {
     }`,
   mealSlotRecipeList: "flex min-w-0 flex-wrap items-start gap-1.5",
   mealSlotRecipe: (theme: SiteTheme) =>
-    `max-w-full truncate rounded-full border px-2 py-1 text-[10px] font-bold leading-none ${
+    `max-w-full truncate rounded-md border px-2 py-1 text-[10px] font-bold leading-none ${
       theme === "dark"
         ? "border-white/[0.10] bg-white/[0.08] text-neutral-100"
         : theme === "paletteLight"
@@ -487,6 +535,7 @@ export const mealCalendarStyles = {
           : "text-neutral-500"
     }`,
   monthGrid: `grid min-w-[840px] grid-cols-7 ${layoutClasses.calendarGap}`,
+  monthGridWithOffset: `grid min-w-[840px] grid-cols-7 ${layoutClasses.calendarGap} mt-3`,
   monthHeaderCell: (theme: SiteTheme) =>
     `flex h-9 items-center justify-center ${radiusClasses.figma6} text-center text-xs font-bold uppercase ${
       theme === "dark"
@@ -544,7 +593,7 @@ export const plannerPickerStyles = {
   modalBackdrop:
     "fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4",
   modalPanel: (theme: SiteTheme) =>
-    `max-h-[calc(100vh_-_48px)] w-full max-w-5xl overflow-y-auto ${radiusClasses.figma6} border p-5 ${shadowClasses.overlay} ${
+    `max-h-[calc(100vh_-_48px)] w-full max-w-5xl overflow-y-auto ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${
       theme === "dark"
         ? "border-white/[0.12] bg-neutral-950 text-neutral-100"
         : theme === "paletteLight"
@@ -561,24 +610,10 @@ export const plannerPickerStyles = {
           ? "text-[#7A8864]"
           : "text-neutral-500"
     }`,
-  closeButton: (theme: SiteTheme) =>
-    `inline-flex h-8 items-center justify-center ${radiusClasses.figma6} px-3 text-xs font-bold transition-colors ${
-      theme === "dark"
-        ? "bg-white/[0.08] text-neutral-200 hover:bg-white/[0.14]"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC] text-[#556145] hover:bg-[#C8C0B5]"
-          : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
-    }`,
+  closeButton: controlStyles.modalCloseButton,
   controls:
     "mt-4 grid grid-cols-[13rem_auto_minmax(0,1fr)_auto] items-start gap-3 max-md:grid-cols-[13rem_auto_minmax(0,1fr)] max-sm:grid-cols-[minmax(0,1fr)_auto]",
-  searchInput: (theme: SiteTheme) =>
-    `h-9 w-full ${radiusClasses.figma6} border px-3 text-sm font-semibold ${shadowClasses.subtle} outline-none placeholder:text-neutral-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-neutral-200 text-neutral-900"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
-          : "border-neutral-300 bg-white text-neutral-900"
-    }`,
+  searchInput: controlStyles.compactSearchInput,
   phaseBadge: (theme: SiteTheme) =>
     `inline-flex h-9 items-center justify-center ${radiusClasses.figma6} border px-3 text-xs font-bold max-sm:col-span-2 ${siteColorClasses[theme].plannerControl}`,
   ingredientFilterChips:
@@ -596,7 +631,7 @@ export const plannerPickerStyles = {
     "grid grid-cols-[9rem_minmax(12rem,22rem)] items-start gap-3 max-sm:grid-cols-1",
   selectedMainThumbnail: "h-36 w-36",
   selectedItem: (theme: SiteTheme) =>
-    `inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs font-bold ${siteColorClasses[theme].plannerControl}`,
+    `inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-bold ${siteColorClasses[theme].plannerControl}`,
   bodyGrid: `mt-4 grid ${sizeClasses.plannerPickerBrowserHeight} grid-cols-[13rem_minmax(0,1fr)] gap-3 overflow-y-auto pr-1 max-lg:grid-cols-1`,
   filterRail: (theme: SiteTheme) =>
     `rounded-md p-3 ${shadowClasses.subtle} ${
@@ -622,31 +657,10 @@ export const plannerPickerStyles = {
             ? "ring-1 ring-[#7A8864]/20"
             : "ring-1 ring-neutral-200"
     }`,
-  footer: "mt-5 flex flex-wrap items-center justify-end gap-3",
-  secondaryButton: (theme: SiteTheme) =>
-    `inline-flex h-10 min-w-28 items-center justify-center ${radiusClasses.figma6} border px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-transparent text-neutral-200 hover:bg-white/[0.08]"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-transparent text-[#556145] hover:bg-[#E5D5BC]/55"
-          : "border-neutral-300 bg-transparent text-neutral-800 hover:bg-neutral-100"
-    }`,
-  primaryButton: (theme: SiteTheme) =>
-    `inline-flex h-10 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
-      theme === "dark"
-        ? "border-white/[0.12] bg-white/[0.14] text-white hover:bg-white/[0.2]"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#7A8864] text-[#FAF7F2] hover:bg-[#6A7658]"
-          : "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-700"
-    }`,
-  removeButton: (theme: SiteTheme) =>
-    `inline-flex h-10 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${
-      theme === "dark"
-        ? "border-red-950 bg-red-950 text-white hover:bg-red-900"
-        : theme === "paletteLight"
-          ? "border-red-950 bg-red-950 text-[#FAF7F2] hover:bg-red-900"
-          : "border-red-900 bg-red-900 text-white hover:bg-red-800"
-    }`,
+  footer: "mt-6 flex flex-wrap items-center justify-end gap-3",
+  secondaryButton: controlStyles.secondaryButton,
+  primaryButton: controlStyles.primaryButton,
+  removeButton: controlStyles.removeButton,
   emptyState: (theme: SiteTheme) =>
     `flex min-h-72 items-center justify-center ${radiusClasses.figma6} border p-8 text-center text-sm font-bold ${
       theme === "dark"
@@ -663,4 +677,6 @@ export const plannerPickerStyles = {
           ? "border-red-700/25 bg-red-700/10 text-red-800"
           : "border-red-200 bg-red-50 text-red-700"
     }`,
+  statusErrorWithOffset: (theme: SiteTheme) =>
+    `mt-4 ${plannerPickerStyles.statusError(theme)}`,
 };

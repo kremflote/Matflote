@@ -151,181 +151,183 @@ function RecipeCreateForm({
 
   return (
     <form className={recipeBrowserStyles.form} onSubmit={submitRecipe}>
-      {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
+      <div className={recipeBrowserStyles.formBodyScrollArea}>
+        {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
 
-      {showRecipeDetails && (
-        <div className={recipeBrowserStyles.detailsPanel(theme)}>
-          <div className={recipeBrowserStyles.formGrid}>
-            <label className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>Description</span>
-              <textarea
-                className={recipeBrowserStyles.textArea(theme)}
-                maxLength={600}
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-              />
-            </label>
-
-            <label className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>Instructions</span>
-              <textarea
-                className={recipeBrowserStyles.textArea(theme)}
-                value={instructions}
-                onChange={(event) => setInstructions(event.target.value)}
-              />
-            </label>
-          </div>
-        </div>
-      )}
-
-      <div className={recipeBrowserStyles.recipeCreateScrollArea(theme)}>
-        <div className={recipeBrowserStyles.recipeCreateTopGrid}>
-          <div className={recipeBrowserStyles.recipePrimaryFields}>
-            <label className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>
-                Recipe type<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-              </span>
-              <select
-                className={recipeBrowserStyles.textField(theme)}
-                disabled={isEditing}
-                value={recipeType}
-                onChange={(event) => setRecipeType(event.target.value as RecipeType)}
-              >
-                {recipeTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {formatLabel(type)}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>
-                Name<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-                <span className={recipeBrowserStyles.inlineHint(theme)}>
-                  {name.length}/{RECIPE_NAME_MAX_LENGTH}
-                </span>
-              </span>
-              <input
-                className={recipeBrowserStyles.textField(theme)}
-                maxLength={RECIPE_NAME_MAX_LENGTH}
-                required
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </label>
-
-            {recipeType === "Dish" && (
-              <CreatableSelect
-                createLabel="Create New"
-                label="Cuisine"
-                options={cuisines.map((cuisine) => ({ id: cuisine.cuisineId, name: cuisine.name }))}
-                placeholder="Select cuisine"
-                theme={theme}
-                value={cuisineId}
-                onChange={setCuisineId}
-                onCreate={async (name) => {
-                  const cuisine = await cuisineService.create({ name });
-                  await refreshCuisines();
-                  return { id: cuisine.cuisineId, name: cuisine.name };
-                }}
-              />
-            )}
-
-            {recipeType === "Dessert" && (
+        {showRecipeDetails && (
+          <div className={recipeBrowserStyles.detailsPanel(theme)}>
+            <div className={recipeBrowserStyles.formGrid}>
               <label className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>Dessert type</span>
+                <span className={recipeBrowserStyles.label(theme)}>Description</span>
+                <textarea
+                  className={recipeBrowserStyles.textArea(theme)}
+                  maxLength={600}
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                />
+              </label>
+
+              <label className={recipeBrowserStyles.field}>
+                <span className={recipeBrowserStyles.label(theme)}>Instructions</span>
+                <textarea
+                  className={recipeBrowserStyles.textArea(theme)}
+                  value={instructions}
+                  onChange={(event) => setInstructions(event.target.value)}
+                />
+              </label>
+            </div>
+          </div>
+        )}
+
+        <div className={recipeBrowserStyles.recipeCreateScrollArea(theme)}>
+          <div className={recipeBrowserStyles.recipeCreateTopGrid}>
+            <div className={recipeBrowserStyles.recipePrimaryFields}>
+              <label className={recipeBrowserStyles.field}>
+                <span className={recipeBrowserStyles.label(theme)}>
+                  Recipe type<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+                </span>
                 <select
                   className={recipeBrowserStyles.textField(theme)}
-                  value={dessertType}
-                  onChange={(event) => setDessertType(event.target.value as DessertType)}
+                  disabled={isEditing}
+                  value={recipeType}
+                  onChange={(event) => setRecipeType(event.target.value as RecipeType)}
                 >
-                  {dessertTypes.map((value) => (
-                    <option key={value} value={value}>
-                      {formatLabel(value)}
+                  {recipeTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {formatLabel(type)}
                     </option>
                   ))}
                 </select>
               </label>
-            )}
-          </div>
 
-          <div className={recipeBrowserStyles.recipeImageField}>
-            <label className={recipeBrowserStyles.imageUploadFloatingButton(theme)} htmlFor={imageInputId}>
-              <ImageUploadIcon />
-              Choose file
-            </label>
-            <ImageCropPicker
-              inputId={imageInputId}
-              initialImageUrl={initialRecipe?.imageUrl}
-              theme={theme}
-              onCroppedFileChange={handleCroppedFileChange}
-            />
-          </div>
-        </div>
-
-        <section className={recipeBrowserStyles.field}>
-          <span className={recipeBrowserStyles.label(theme)}>
-            Tags<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-            <span className={recipeBrowserStyles.inlineHint(theme)}>Pick 1 or more</span>
-          </span>
-          <div className={`${recipeBrowserStyles.tagCheckboxGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
-            {recipeTags.map((tag) => (
-              <CheckboxRow
-                checked={selectedTags.includes(tag)}
-                key={tag}
-                label={formatLabel(tag)}
-                theme={theme}
-                onChange={() => setSelectedTags((currentTags) => toggleValue(currentTags, tag))}
-              />
-            ))}
-          </div>
-        </section>
-
-        <section className={recipeBrowserStyles.field}>
-          <span className={recipeBrowserStyles.label(theme)}>
-            Ingredients<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-          </span>
-          <input
-            className={recipeBrowserStyles.textField(theme)}
-            placeholder="search ingredients..."
-            type="search"
-            value={ingredientSearch}
-            onChange={(event) => setIngredientSearch(event.target.value)}
-          />
-          <div className={`${recipeBrowserStyles.recipeIngredientPickerGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
-            {visibleIngredients.length === 0 ? (
-              <p className={recipeBrowserStyles.helperText(theme)}>No ingredients found.</p>
-            ) : (
-              visibleIngredients.map((ingredient) => (
-                <IngredientPickerRow
-                  amount={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.amount ?? ""}
-                  ingredient={ingredient}
-                  key={ingredient.ingredientId}
-                  selected={selectedIngredientIds.includes(ingredient.ingredientId)}
-                  theme={theme}
-                  unit={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.unit ?? "Gram"}
-                  onAmountChange={(amount) =>
-                    setSelectedIngredients((currentIngredients) =>
-                      updateSelectedIngredient(currentIngredients, ingredient.ingredientId, { amount }),
-                    )
-                  }
-                  onToggle={() =>
-                    setSelectedIngredients((currentIngredients) =>
-                      toggleRecipeIngredient(currentIngredients, ingredient.ingredientId),
-                    )
-                  }
-                  onUnitChange={(unit) =>
-                    setSelectedIngredients((currentIngredients) =>
-                      updateSelectedIngredient(currentIngredients, ingredient.ingredientId, { unit }),
-                    )
-                  }
+              <label className={recipeBrowserStyles.field}>
+                <span className={recipeBrowserStyles.label(theme)}>
+                  Name<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+                  <span className={recipeBrowserStyles.inlineHint(theme)}>
+                    {name.length}/{RECIPE_NAME_MAX_LENGTH}
+                  </span>
+                </span>
+                <input
+                  className={recipeBrowserStyles.textField(theme)}
+                  maxLength={RECIPE_NAME_MAX_LENGTH}
+                  required
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
                 />
-              ))
-            )}
+              </label>
+
+              {recipeType === "Dish" && (
+                <CreatableSelect
+                  createLabel="Create New"
+                  label="Cuisine"
+                  options={cuisines.map((cuisine) => ({ id: cuisine.cuisineId, name: cuisine.name }))}
+                  placeholder="Select cuisine"
+                  theme={theme}
+                  value={cuisineId}
+                  onChange={setCuisineId}
+                  onCreate={async (name) => {
+                    const cuisine = await cuisineService.create({ name });
+                    await refreshCuisines();
+                    return { id: cuisine.cuisineId, name: cuisine.name };
+                  }}
+                />
+              )}
+
+              {recipeType === "Dessert" && (
+                <label className={recipeBrowserStyles.field}>
+                  <span className={recipeBrowserStyles.label(theme)}>Dessert type</span>
+                  <select
+                    className={recipeBrowserStyles.textField(theme)}
+                    value={dessertType}
+                    onChange={(event) => setDessertType(event.target.value as DessertType)}
+                  >
+                    {dessertTypes.map((value) => (
+                      <option key={value} value={value}>
+                        {formatLabel(value)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+
+            <div className={recipeBrowserStyles.recipeImageField}>
+              <label className={recipeBrowserStyles.imageUploadFloatingButton(theme)} htmlFor={imageInputId}>
+                <ImageUploadIcon />
+                Choose file
+              </label>
+              <ImageCropPicker
+                inputId={imageInputId}
+                initialImageUrl={initialRecipe?.imageUrl}
+                theme={theme}
+                onCroppedFileChange={handleCroppedFileChange}
+              />
+            </div>
           </div>
-        </section>
+
+          <section className={recipeBrowserStyles.field}>
+            <span className={recipeBrowserStyles.label(theme)}>
+              Tags<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+              <span className={recipeBrowserStyles.inlineHint(theme)}>Pick 1 or more</span>
+            </span>
+            <div className={`${recipeBrowserStyles.tagCheckboxGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
+              {recipeTags.map((tag) => (
+                <CheckboxRow
+                  checked={selectedTags.includes(tag)}
+                  key={tag}
+                  label={formatLabel(tag)}
+                  theme={theme}
+                  onChange={() => setSelectedTags((currentTags) => toggleValue(currentTags, tag))}
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className={recipeBrowserStyles.field}>
+            <span className={recipeBrowserStyles.label(theme)}>
+              Ingredients<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+            </span>
+            <input
+              className={recipeBrowserStyles.textField(theme)}
+              placeholder="search ingredients..."
+              type="search"
+              value={ingredientSearch}
+              onChange={(event) => setIngredientSearch(event.target.value)}
+            />
+            <div className={`${recipeBrowserStyles.recipeIngredientPickerGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
+              {visibleIngredients.length === 0 ? (
+                <p className={recipeBrowserStyles.helperText(theme)}>No ingredients found.</p>
+              ) : (
+                visibleIngredients.map((ingredient) => (
+                  <IngredientPickerRow
+                    amount={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.amount ?? ""}
+                    ingredient={ingredient}
+                    key={ingredient.ingredientId}
+                    selected={selectedIngredientIds.includes(ingredient.ingredientId)}
+                    theme={theme}
+                    unit={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.unit ?? "Gram"}
+                    onAmountChange={(amount) =>
+                      setSelectedIngredients((currentIngredients) =>
+                        updateSelectedIngredient(currentIngredients, ingredient.ingredientId, { amount }),
+                      )
+                    }
+                    onToggle={() =>
+                      setSelectedIngredients((currentIngredients) =>
+                        toggleRecipeIngredient(currentIngredients, ingredient.ingredientId),
+                      )
+                    }
+                    onUnitChange={(unit) =>
+                      setSelectedIngredients((currentIngredients) =>
+                        updateSelectedIngredient(currentIngredients, ingredient.ingredientId, { unit }),
+                      )
+                    }
+                  />
+                ))
+              )}
+            </div>
+          </section>
+        </div>
       </div>
 
       <div className={recipeBrowserStyles.formActions}>

@@ -42,7 +42,7 @@ function MealCalendar({
             </div>
           ))}
         </div>
-        <div className={`${mealCalendarStyles.monthGrid} mt-3`}>
+        <div className={mealCalendarStyles.monthGridWithOffset}>
           {dates.map((date) => {
             const dateKey = toDateInputValue(date);
             const muted = date.getMonth() !== anchorDate.getMonth();
