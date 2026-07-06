@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import type { SiteTheme } from "../../styles/appStyles";
 import IngredientCreateForm from "./IngredientCreateForm";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
@@ -12,6 +12,7 @@ type AddButtonProps = {
 
 function AddButton({ target, theme }: AddButtonProps) {
   const recipeImageInputId = useId();
+  const modalTitleId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTarget, setActiveTarget] = useState<BrowserAddTarget>(target);
   const [showRecipeDetails, setShowRecipeDetails] = useState(false);
@@ -24,6 +25,23 @@ function AddButton({ target, theme }: AddButtonProps) {
 
   const closeModal = () => setIsOpen(false);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeModal();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   return (
     <>
       <button
@@ -34,15 +52,17 @@ function AddButton({ target, theme }: AddButtonProps) {
         + Add
       </button>
       {isOpen && (
-        <div className={recipeBrowserStyles.modalBackdrop} role="presentation">
+        <div className={recipeBrowserStyles.modalBackdrop} role="presentation" onMouseDown={closeModal}>
           <section
+            aria-labelledby={modalTitleId}
             aria-modal="true"
             className={recipeBrowserStyles.modalPanel(theme)}
             role="dialog"
+            onMouseDown={(event) => event.stopPropagation()}
           >
             <div className={recipeBrowserStyles.modalHeaderIntro}>
               <div>
-                <h2 className={recipeBrowserStyles.modalTitle}>Create</h2>
+                <h2 className={recipeBrowserStyles.modalTitle} id={modalTitleId}>Create</h2>
                 <p className={recipeBrowserStyles.modalIntroText}>
                   Add recipes, desserts, sauces, ingredients, and the rest of the kitchen library.
                 </p>

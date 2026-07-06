@@ -1,7 +1,7 @@
 import Browser from "./Browser";
 import AddButton from "./AddButton";
 import RecipeIngredientToggle from "./RecipeIngredientToggle";
-import { layoutClasses, type SiteTheme } from "../../styles/appStyles";
+import { pageStyles, type SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 import type { BrowserMode } from "./types";
 
@@ -13,7 +13,7 @@ type RecipeBrowserProps = {
 
 function RecipeBrowser({ mode, theme, onModeChange }: RecipeBrowserProps) {
   return (
-    <main className={`${layoutClasses.contentWidth} relative py-12`}>
+    <main className={pageStyles.shell}>
       <Browser
         mode={mode}
         theme={theme}

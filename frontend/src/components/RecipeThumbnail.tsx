@@ -9,6 +9,7 @@ type RecipeThumbnailProps = {
   };
   className?: string;
   interactiveEffect?: boolean;
+  ariaPressed?: boolean;
   textScale?: "default" | "compact";
   theme?: SiteTheme;
   onClick?: () => void;
@@ -18,6 +19,7 @@ function RecipeThumbnail({
   recipe,
   className = "",
   interactiveEffect = true,
+  ariaPressed,
   textScale = "default",
   theme = "dark",
   onClick,
@@ -55,7 +57,13 @@ function RecipeThumbnail({
 
   if (onClick) {
     return (
-      <button className={sharedClassName} type="button" aria-label={`Open ${recipe.name}`} onClick={onClick}>
+      <button
+        aria-label={`Open ${recipe.name}`}
+        aria-pressed={ariaPressed}
+        className={sharedClassName}
+        type="button"
+        onClick={onClick}
+      >
         {content}
       </button>
     );

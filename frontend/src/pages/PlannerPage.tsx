@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import MealCalendar from "../components/MealCalendar";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 import PlannerControls from "../components/PlannerControls";
 import PlannerRecipePickerModal from "../components/PlannerRecipePickerModal";
 import { useMealPlan, useRecipes } from "../contexts";
 import type { MealRecipeRole, MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
-import { pageStyles, type SiteTheme } from "../styles/appStyles";
+import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
 
 type PlannerPageProps = {
   theme: SiteTheme;
@@ -22,6 +23,9 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const [viewMode, setViewMode] = useState<PlannerViewMode>("week");
   const [anchorDate, setAnchorDate] = useState(() => stripTime(new Date()));
   const [selectedSlot, setSelectedSlot] = useState<SelectedPlannerSlot | null>(null);
+  const [plannerAction, setPlannerAction] = useState<"clear" | "generate" | null>(null);
+  const [pendingPlannerAction, setPendingPlannerAction] = useState<"clear" | "generate" | null>(null);
+  const [plannerActionError, setPlannerActionError] = useState<string | null>(null);
   const {
     mealPlanEntries,
     mealPlanIsLoading,
@@ -66,74 +70,110 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const getEntryForSlot = (date: string, slot: MealSlot) =>
     entriesByDateSlot.get(getMealPlanEntryKey(date, slot));
 
-  const moveToPreviousRange = () =>
+  const moveToPreviousRange = () => {
+    setPlannerActionError(null);
     setAnchorDate((currentDate) => addCalendarRange(currentDate, viewMode, -1));
+  };
 
-  const moveToNextRange = () =>
+  const moveToNextRange = () => {
+    setPlannerActionError(null);
     setAnchorDate((currentDate) => addCalendarRange(currentDate, viewMode, 1));
+  };
+
+  const changeViewMode = (nextViewMode: PlannerViewMode) => {
+    setPlannerActionError(null);
+    setViewMode(nextViewMode);
+  };
+
+  const requestClearCurrentRange = () => {
+    if (plannerAction !== null || mealPlanIsLoading) {
+      return;
+    }
+
+    setPendingPlannerAction("clear");
+  };
 
   const clearCurrentRange = async () => {
     const clearRange = getClearRange(anchorDate, viewMode);
     const rangeLabel = viewMode === "week" ? "week" : "month";
-    const confirmed = window.confirm(`Are you sure you want to clear this ${rangeLabel}?`);
 
-    if (!confirmed) {
+    setPlannerAction("clear");
+    setPendingPlannerAction(null);
+    setPlannerActionError(null);
+
+    try {
+      await clearMealPlanRange(clearRange.from, clearRange.to);
+    } catch (error) {
+      setPlannerActionError(getPlannerActionError(error, `Could not clear this ${rangeLabel}.`));
+    } finally {
+      setPlannerAction(null);
+    }
+  };
+
+  const requestGenerateCurrentRange = () => {
+    if (plannerAction !== null || mealPlanIsLoading) {
       return;
     }
 
-    await clearMealPlanRange(clearRange.from, clearRange.to);
+    setPendingPlannerAction("generate");
   };
 
   const generateCurrentRange = async () => {
     const generationDates = getGenerationDates(anchorDate, viewMode);
     const rangeLabel = viewMode === "week" ? "week" : "month";
-    const confirmed = window.confirm(`Are you sure you want to generate meals for empty slots in this ${rangeLabel}? Existing meals will stay unchanged.`);
-
-    if (!confirmed) {
-      return;
-    }
 
     const mainRecipes = recipes.filter((recipe) => recipe.recipeType === "Dish");
     const sideRecipes = recipes.filter(isGeneratedSideRecipe);
 
     if (mainRecipes.length === 0) {
-      window.alert("No main dish recipes found.");
+      setPendingPlannerAction(null);
+      setPlannerActionError("No main dish recipes found.");
       return;
     }
 
-    for (const date of generationDates) {
-      const dateKey = toDateInputValue(date);
+    setPlannerAction("generate");
+    setPendingPlannerAction(null);
+    setPlannerActionError(null);
 
-      for (const slot of visibleMealSlots) {
-        if (getEntryForSlot(dateKey, slot) !== undefined) {
-          continue;
+    try {
+      for (const date of generationDates) {
+        const dateKey = toDateInputValue(date);
+
+        for (const slot of visibleMealSlots) {
+          if (getEntryForSlot(dateKey, slot) !== undefined) {
+            continue;
+          }
+
+          const mainRecipe = pickRandomItem(mainRecipes);
+          const sideRecipe = sideRecipes.length > 0 ? pickRandomItem(sideRecipes) : null;
+
+          await saveMealPlanEntry(null, {
+            date: dateKey,
+            slot,
+            notes: null,
+            recipes: [
+              {
+                recipeId: mainRecipe.recipeId,
+                role: "Main",
+                sortOrder: 0,
+              },
+              ...(sideRecipe === null
+                ? []
+                : [
+                    {
+                      recipeId: sideRecipe.recipeId,
+                      role: getGeneratedSideRole(sideRecipe),
+                      sortOrder: 1,
+                    },
+                  ]),
+            ],
+          });
         }
-
-        const mainRecipe = pickRandomItem(mainRecipes);
-        const sideRecipe = sideRecipes.length > 0 ? pickRandomItem(sideRecipes) : null;
-
-        await saveMealPlanEntry(null, {
-          date: dateKey,
-          slot,
-          notes: null,
-          recipes: [
-            {
-              recipeId: mainRecipe.recipeId,
-              role: "Main",
-              sortOrder: 0,
-            },
-            ...(sideRecipe === null
-              ? []
-              : [
-                  {
-                    recipeId: sideRecipe.recipeId,
-                    role: getGeneratedSideRole(sideRecipe),
-                    sortOrder: 1,
-                  },
-                ]),
-          ],
-        });
       }
+    } catch (error) {
+      setPlannerActionError(getPlannerActionError(error, `Could not generate meals for this ${rangeLabel}.`));
+    } finally {
+      setPlannerAction(null);
     }
   };
 
@@ -149,14 +189,20 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
       <PlannerControls
         anchorLabel={getAnchorLabel(anchorDate, viewMode)}
         anchorYear={getAnchorYear(anchorDate)}
+        isClearRangeRunning={plannerAction === "clear"}
+        isGenerateRangeRunning={plannerAction === "generate"}
+        isRangeBusy={mealPlanIsLoading}
         theme={theme}
         viewMode={viewMode}
-        onClearRange={clearCurrentRange}
-        onGenerateRange={generateCurrentRange}
+        onClearRange={requestClearCurrentRange}
+        onGenerateRange={requestGenerateCurrentRange}
         onNextRange={moveToNextRange}
         onPreviousRange={moveToPreviousRange}
-        onViewModeChange={setViewMode}
+        onViewModeChange={changeViewMode}
       />
+      {plannerActionError !== null && (
+        <p className={plannerControlsStyles.statusError(theme)}>{plannerActionError}</p>
+      )}
       <MealCalendar
         anchorDate={anchorDate}
         dates={visibleDates}
@@ -179,6 +225,29 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           onClose={() => setSelectedSlot(null)}
           onDelete={deleteMealPlanEntry}
           onSave={saveMealPlanEntry}
+        />
+      )}
+      {pendingPlannerAction !== null && (
+        <ConfirmationDialog
+          body={
+            pendingPlannerAction === "clear"
+              ? `This will clear the current ${viewMode}.`
+              : `This will generate meals for empty slots in the current ${viewMode}. Existing meals will stay unchanged.`
+          }
+          confirmLabel={pendingPlannerAction === "clear" ? "Clear" : "Generate"}
+          isBusy={plannerAction !== null}
+          theme={theme}
+          title={pendingPlannerAction === "clear" ? `Clear this ${viewMode}?` : `Generate this ${viewMode}?`}
+          tone={pendingPlannerAction === "clear" ? "danger" : "default"}
+          onCancel={() => setPendingPlannerAction(null)}
+          onConfirm={() => {
+            if (pendingPlannerAction === "clear") {
+              void clearCurrentRange();
+              return;
+            }
+
+            void generateCurrentRange();
+          }}
         />
       )}
     </main>
@@ -330,6 +399,12 @@ function getGeneratedSideRole(recipe: IRecipe): MealRecipeRole {
 
 function pickRandomItem<TItem>(items: TItem[]) {
   return items[Math.floor(Math.random() * items.length)];
+}
+
+function getPlannerActionError(error: unknown, fallbackMessage: string) {
+  return error instanceof Error && error.message.trim().length > 0
+    ? error.message
+    : fallbackMessage;
 }
 
 export default PlannerPage;

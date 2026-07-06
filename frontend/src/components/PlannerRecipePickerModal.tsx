@@ -1,25 +1,44 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type Dispatch,
-  type RefObject,
-  type SetStateAction,
-} from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useCuisines, useIngredients } from "../contexts";
-import type { IIngredient, IngredientTag } from "../interfaces/IIngredient";
-import type { IMealPlanEntry, MealRecipeRole, MealSlot } from "../interfaces/IMeal";
-import type { IRecipe, RecipeTag, RecipeType } from "../interfaces/IRecipe";
+import type { IngredientTag } from "../interfaces/IIngredient";
+import type { IMealPlanEntry, MealSlot } from "../interfaces/IMeal";
+import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
 import { plannerPickerStyles, type SiteTheme } from "../styles/appStyles";
-import IngredientThumbnail from "./IngredientThumbnail";
-import { ingredientTags, recipeTags, recipeTypes } from "./recipeBrowser/formOptions";
-import { formatLabel, recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
-import RecipeThumbnail from "./RecipeThumbnail";
-
-type PickerPhase = "main" | "supplements";
-type SupplementaryFilter = RecipeType | RecipeTag;
+import { recipeTags } from "./recipeBrowser/formOptions";
+import { recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
+import {
+  excludedSupplementaryTags,
+  getSupplementaryRole,
+  isMainDish,
+  isSupplementaryRecipe,
+  mainProteinFilters,
+  matchesSearch,
+  matchesSelectedCuisines,
+  matchesIngredientSearch,
+  matchesSelectedIngredients,
+  matchesSelectedIngredientTags,
+  matchesSelectedRecipeTags,
+  maxSupplementaryRecipes,
+  recipeHasIngredientTag,
+  supplementaryFilters,
+  supplementaryRecipeTagFilters,
+  supplementaryRecipeTypeFilters,
+  toggleSelection,
+} from "./plannerRecipePicker/plannerRecipePickerFilters";
+import { FilterGroup, NumberFilterGroup } from "./recipeBrowser/BrowserFilterGroups";
+import {
+  FilterIcon,
+  IngredientFilterChips,
+  IngredientPickerPopover,
+} from "./plannerRecipePicker/PlannerRecipePickerIngredients";
+import PlannerRecipePickerGrid from "./plannerRecipePicker/PlannerRecipePickerGrid";
+import PlannerRecipePickerSelection from "./plannerRecipePicker/PlannerRecipePickerSelection";
+import type {
+  PickerPhase,
+  SupplementaryFilter,
+} from "./plannerRecipePicker/plannerRecipePickerTypes";
+import ConfirmationDialog from "./ConfirmationDialog";
 
 type PlannerRecipePickerModalProps = {
   date: string;
@@ -32,32 +51,6 @@ type PlannerRecipePickerModalProps = {
   onSave: (entryId: number | null, request: MealPlanEntryRequest) => Promise<void>;
 };
 
-const mainRecipeTypes: RecipeType[] = recipeTypes.filter((recipeType) => recipeType === "Dish");
-const supplementaryRecipeTypeFilters: RecipeType[] = recipeTypes.filter(
-  (recipeType) =>
-    recipeType === "Side" ||
-    recipeType === "Sauce" ||
-    recipeType === "Dip" ||
-    recipeType === "SpiceMix",
-);
-const supplementaryRecipeTagFilters: RecipeTag[] = recipeTags.filter((recipeTag) => recipeTag === "Salad");
-const supplementaryFilters: SupplementaryFilter[] = [
-  ...supplementaryRecipeTypeFilters,
-  ...supplementaryRecipeTagFilters,
-];
-const excludedSupplementaryTags: RecipeTag[] = recipeTags.filter(
-  (recipeTag) => recipeTag === "Breakfast" || recipeTag === "Dinner",
-);
-const mainProteinFilters: IngredientTag[] = ingredientTags.filter(
-  (ingredientTag) =>
-    ingredientTag === "Chicken" ||
-    ingredientTag === "Fish" ||
-    ingredientTag === "Beef" ||
-    ingredientTag === "Lamb" ||
-    ingredientTag === "Mince",
-);
-const maxSupplementaryRecipes = 6;
-
 function PlannerRecipePickerModal({
   date,
   entry,
@@ -68,6 +61,7 @@ function PlannerRecipePickerModal({
   onDelete,
   onSave,
 }: PlannerRecipePickerModalProps) {
+  const titleId = useId();
   const { cuisines } = useCuisines();
   const { ingredients } = useIngredients();
   const initialMainRecipeId = entry?.recipes
@@ -80,7 +74,7 @@ function PlannerRecipePickerModal({
       .sort((first, second) => first.sortOrder - second.sortOrder)
       .filter((plannedRecipe) => plannedRecipe.role !== "Main")
       .map((plannedRecipe) => plannedRecipe.recipeId) ?? [];
-  const [phase, setPhase] = useState<PickerPhase>(initialMainRecipeId === null ? "main" : "supplements");
+  const [phase, setPhase] = useState<PickerPhase>("main");
   const [searchTerm, setSearchTerm] = useState("");
   const [mainRecipeId, setMainRecipeId] = useState<number | null>(initialMainRecipeId);
   const [highlightedMainRecipeId, setHighlightedMainRecipeId] = useState<number | null>(initialMainRecipeId);
@@ -94,9 +88,12 @@ function PlannerRecipePickerModal({
   const [ingredientPickerSearch, setIngredientPickerSearch] = useState("");
   const [ingredientPickerPosition, setIngredientPickerPosition] = useState<{ x: number; y: number } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [isConfirmingRemove, setIsConfirmingRemove] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const ingredientFilterButtonRef = useRef<HTMLButtonElement | null>(null);
   const ingredientPickerRef = useRef<HTMLDivElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const recipeById = useMemo(
     () => new Map(recipes.map((recipe) => [recipe.recipeId, recipe])),
@@ -216,34 +213,9 @@ function PlannerRecipePickerModal({
     .map((recipeId) => recipeById.get(recipeId))
     .filter((recipe): recipe is IRecipe => recipe !== undefined);
 
-  const highlightMainRecipe = (recipe: IRecipe) => {
-    setHighlightedMainRecipeId((currentRecipeId) => {
-      if (currentRecipeId !== recipe.recipeId) {
-        return recipe.recipeId;
-      }
-
-      if (mainRecipeId === recipe.recipeId) {
-        setMainRecipeId(null);
-        setSupplementaryRecipeIds([]);
-      }
-
-      return null;
-    });
-  };
-
-  const confirmHighlightedMainRecipe = () => {
-    if (highlightedMainRecipeId === null) {
-      return;
-    }
-
-    setMainRecipeId(highlightedMainRecipeId);
-    setPhase("supplements");
-    setSearchTerm("");
-  };
-
-  const clearIngredientFilters = () => {
-    setSelectedIngredientIds([]);
-  };
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     if (ingredientPickerPosition === null) {
@@ -271,6 +243,46 @@ function PlannerRecipePickerModal({
     return () => document.removeEventListener("pointerdown", handleOutsidePointerDown);
   }, [ingredientPickerPosition]);
 
+  useEffect(() => {
+    if (isConfirmingRemove) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isConfirmingRemove, onClose]);
+
+  const highlightMainRecipe = (recipe: IRecipe) => {
+    if (mainRecipeId === recipe.recipeId) {
+      setHighlightedMainRecipeId(null);
+      setMainRecipeId(null);
+      setSupplementaryRecipeIds([]);
+      return;
+    }
+
+    setHighlightedMainRecipeId(recipe.recipeId);
+    setMainRecipeId(recipe.recipeId);
+    setSupplementaryRecipeIds([]);
+  };
+
+  const confirmHighlightedMainRecipe = () => {
+    if (mainRecipeId === null) {
+      return;
+    }
+
+    setHighlightedMainRecipeId(mainRecipeId);
+    setPhase("supplements");
+    setSearchTerm("");
+  };
+
   const toggleSupplementaryRecipe = (recipe: IRecipe) => {
     setSupplementaryRecipeIds((currentIds) => {
       if (currentIds.includes(recipe.recipeId)) {
@@ -285,22 +297,27 @@ function PlannerRecipePickerModal({
     });
   };
 
+  const removeMealSlot = async () => {
+    if (entry === undefined) {
+      return;
+    }
+
+    setIsRemoving(true);
+    setSaveError(null);
+
+    try {
+      await onDelete(entry.mealPlanEntryId);
+      onClose();
+    } catch {
+      setSaveError("Could not remove this meal. Please try again.");
+    } finally {
+      setIsRemoving(false);
+      setIsConfirmingRemove(false);
+    }
+  };
+
   const saveMealSlot = async () => {
     if (mainRecipe === null) {
-      if (entry !== undefined) {
-        setIsSaving(true);
-        setSaveError(null);
-
-        try {
-          await onDelete(entry.mealPlanEntryId);
-          onClose();
-        } catch {
-          setSaveError("Could not remove this meal. Please try again.");
-        } finally {
-          setIsSaving(false);
-        }
-      }
-
       return;
     }
 
@@ -334,15 +351,17 @@ function PlannerRecipePickerModal({
   };
 
   return (
-    <div className={plannerPickerStyles.modalBackdrop} role="presentation">
+    <div className={plannerPickerStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
       <section
+        aria-labelledby={titleId}
         aria-modal="true"
         className={plannerPickerStyles.modalPanel(theme)}
         role="dialog"
+        onMouseDown={(event) => event.stopPropagation()}
       >
         <div className={plannerPickerStyles.header}>
           <div>
-            <h2 className={plannerPickerStyles.title}>
+            <h2 className={plannerPickerStyles.title} id={titleId}>
               {phase === "main" ? "Choose main dish" : "Choose supplements"}
             </h2>
             <p className={plannerPickerStyles.subtitle(theme)}>
@@ -361,6 +380,7 @@ function PlannerRecipePickerModal({
             aria-label="Search recipes"
             className={plannerPickerStyles.searchInput(theme)}
             placeholder="search recipes..."
+            ref={searchInputRef}
             type="search"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
@@ -386,7 +406,7 @@ function PlannerRecipePickerModal({
           <IngredientFilterChips
             selectedIngredients={selectedIngredients}
             theme={theme}
-            onClear={clearIngredientFilters}
+            onClear={() => setSelectedIngredientIds([])}
             onRemoveIngredient={(ingredientId) =>
               setSelectedIngredientIds((currentIds) =>
                 currentIds.filter((currentId) => currentId !== ingredientId),
@@ -467,7 +487,7 @@ function PlannerRecipePickerModal({
             )}
           </aside>
 
-          <RecipePickerGrid
+          <PlannerRecipePickerGrid
             highlightedMainRecipeId={highlightedMainRecipeId}
             phase={phase}
             recipes={visibleRecipes}
@@ -478,61 +498,30 @@ function PlannerRecipePickerModal({
           />
         </div>
 
-        {(mainRecipe !== null || supplementaryRecipes.length > 0) && (
-          <section className={`${plannerPickerStyles.selectedSection} ${plannerPickerStyles.selectedSectionBorder(theme)}`}>
-            {mainRecipe !== null && (
-              <div className={plannerPickerStyles.selectedMainGrid}>
-                <RecipeThumbnail
-                  className={plannerPickerStyles.selectedMainThumbnail}
-                  recipe={{
-                    imageUrl: mainRecipe.imageUrl,
-                    name: mainRecipe.name,
-                    subtitle: mainRecipe.cuisine?.name ?? mainRecipe.recipeType,
-                  }}
-                  theme={theme}
-                />
-                {supplementaryRecipes.length > 0 && (
-                  <div className={plannerPickerStyles.selectedStrip}>
-                    {supplementaryRecipes.map((recipe) => (
-                      <button
-                        className={plannerPickerStyles.selectedItem(theme)}
-                        key={recipe.recipeId}
-                        type="button"
-                        onClick={() => toggleSupplementaryRecipe(recipe)}
-                      >
-                        {recipe.name} x
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {mainRecipe === null && supplementaryRecipes.length > 0 && (
-              <div className={plannerPickerStyles.selectedStrip}>
-                {supplementaryRecipes.map((recipe) => (
-                  <button
-                    className={plannerPickerStyles.selectedItem(theme)}
-                    key={recipe.recipeId}
-                    type="button"
-                    onClick={() => toggleSupplementaryRecipe(recipe)}
-                  >
-                    {recipe.name} x
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
+        <PlannerRecipePickerSelection
+          mainRecipe={mainRecipe}
+          supplementaryRecipes={supplementaryRecipes}
+          theme={theme}
+          onToggleSupplementaryRecipe={toggleSupplementaryRecipe}
+        />
 
         {saveError !== null && (
           <p className={`${plannerPickerStyles.statusError(theme)} mt-4`}>{saveError}</p>
         )}
 
         <div className={plannerPickerStyles.footer}>
+          <button
+            className={plannerPickerStyles.secondaryButton(theme)}
+            disabled={isSaving || isRemoving}
+            type="button"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
           {phase === "main" ? (
             <button
               className={plannerPickerStyles.primaryButton(theme)}
-              disabled={highlightedMainRecipeId === null}
+              disabled={mainRecipeId === null || isSaving || isRemoving}
               type="button"
               onClick={confirmHighlightedMainRecipe}
             >
@@ -541,6 +530,7 @@ function PlannerRecipePickerModal({
           ) : (
             <button
               className={plannerPickerStyles.secondaryButton(theme)}
+              disabled={isSaving || isRemoving}
               type="button"
               onClick={() => {
                 setHighlightedMainRecipeId(mainRecipeId);
@@ -550,446 +540,39 @@ function PlannerRecipePickerModal({
               Back
             </button>
           )}
-          <button
-            className={plannerPickerStyles.secondaryButton(theme)}
-            type="button"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
+          {entry !== undefined && (
+            <button
+              className={plannerPickerStyles.removeButton(theme)}
+              disabled={isSaving || isRemoving}
+              type="button"
+              onClick={() => setIsConfirmingRemove(true)}
+            >
+              {isRemoving ? "Removing..." : "Remove meal"}
+            </button>
+          )}
           <button
             className={plannerPickerStyles.primaryButton(theme)}
-            disabled={(mainRecipe === null && entry === undefined) || isSaving}
+            disabled={mainRecipe === null || isSaving || isRemoving}
             type="button"
             onClick={saveMealSlot}
           >
-            Save meal
+            {isSaving ? "Saving..." : "Save meal"}
           </button>
         </div>
+        {isConfirmingRemove && (
+          <ConfirmationDialog
+            body="This will clear the meal slot."
+            confirmLabel="Remove"
+            isBusy={isRemoving}
+            theme={theme}
+            title="Remove this meal?"
+            onCancel={() => setIsConfirmingRemove(false)}
+            onConfirm={() => void removeMealSlot()}
+          />
+        )}
       </section>
     </div>
   );
 }
-
-type RecipePickerGridProps = {
-  highlightedMainRecipeId: number | null;
-  phase: PickerPhase;
-  recipes: IRecipe[];
-  supplementaryRecipeIds: number[];
-  theme: SiteTheme;
-  onSelectMainRecipe: (recipe: IRecipe) => void;
-  onToggleSupplementaryRecipe: (recipe: IRecipe) => void;
-};
-
-function RecipePickerGrid({
-  highlightedMainRecipeId,
-  phase,
-  recipes,
-  supplementaryRecipeIds,
-  theme,
-  onSelectMainRecipe,
-  onToggleSupplementaryRecipe,
-}: RecipePickerGridProps) {
-  if (recipes.length === 0) {
-    return (
-      <div className={plannerPickerStyles.emptyState(theme)}>No matching recipes found.</div>
-    );
-  }
-
-  return (
-    <div className={plannerPickerStyles.recipeGrid}>
-      {recipes.map((recipe) => {
-        const selected =
-          phase === "main"
-            ? recipe.recipeId === highlightedMainRecipeId
-            : supplementaryRecipeIds.includes(recipe.recipeId);
-
-        return (
-          <RecipeThumbnail
-            className={plannerPickerStyles.recipeCard(theme, selected)}
-            key={recipe.recipeId}
-            recipe={{
-              imageUrl: recipe.imageUrl,
-              name: recipe.name,
-              subtitle: recipe.cuisine?.name ?? recipe.recipeType,
-            }}
-            interactiveEffect={false}
-            theme={theme}
-            onClick={() =>
-              phase === "main"
-                ? onSelectMainRecipe(recipe)
-                : onToggleSupplementaryRecipe(recipe)
-            }
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-type IngredientFilterChipsProps = {
-  selectedIngredients: IIngredient[];
-  theme: SiteTheme;
-  onClear: () => void;
-  onRemoveIngredient: (ingredientId: number) => void;
-};
-
-function IngredientFilterChips({
-  selectedIngredients,
-  theme,
-  onClear,
-  onRemoveIngredient,
-}: IngredientFilterChipsProps) {
-  if (selectedIngredients.length === 0) {
-    return <span className={plannerPickerStyles.emptyIngredientChipSlot} aria-hidden="true" />;
-  }
-
-  return (
-    <div className={plannerPickerStyles.ingredientFilterChips}>
-      {selectedIngredients.map((ingredient) => (
-        <FilterChip
-          key={ingredient.ingredientId}
-          label={`includes: ${ingredient.ingredientName}`}
-          theme={theme}
-          onClick={() => onRemoveIngredient(ingredient.ingredientId)}
-        />
-      ))}
-      <button className={recipeBrowserStyles.clearFilterChip(theme)} type="button" onClick={onClear}>
-        Clear filters
-      </button>
-    </div>
-  );
-}
-
-type FilterChipProps = {
-  label: string;
-  theme: SiteTheme;
-  onClick: () => void;
-};
-
-function FilterChip({ label, theme, onClick }: FilterChipProps) {
-  return (
-    <button className={recipeBrowserStyles.filterChip(theme)} type="button" onClick={onClick}>
-      {label}
-      <span aria-hidden="true">x</span>
-    </button>
-  );
-}
-
-type IngredientPickerPopoverProps = {
-  ingredients: IIngredient[];
-  popoverRef: RefObject<HTMLDivElement | null>;
-  searchTerm: string;
-  selectedIngredientIds: number[];
-  theme: SiteTheme;
-  x: number;
-  y: number;
-  onSearchChange: (value: string) => void;
-  onToggleIngredient: (ingredientId: number) => void;
-};
-
-function IngredientPickerPopover({
-  ingredients,
-  popoverRef,
-  searchTerm,
-  selectedIngredientIds,
-  theme,
-  x,
-  y,
-  onSearchChange,
-  onToggleIngredient,
-}: IngredientPickerPopoverProps) {
-  return (
-    <div
-      className={recipeBrowserStyles.ingredientPicker(theme)}
-      ref={popoverRef}
-      style={{
-        left: `min(${x}px, calc(100vw - 304px))`,
-        top: `min(${y + 8}px, calc(100vh - 360px))`,
-      }}
-    >
-      <input
-        aria-label="Search ingredients to include"
-        className={recipeBrowserStyles.ingredientPickerSearch(theme)}
-        placeholder="search ingredient..."
-        type="search"
-        value={searchTerm}
-        onChange={(event) => onSearchChange(event.target.value)}
-      />
-      <div className={recipeBrowserStyles.ingredientPickerList}>
-        {ingredients.length === 0 ? (
-          <p className={recipeBrowserStyles.ingredientPickerEmpty(theme)}>No ingredients found</p>
-        ) : (
-          ingredients.map((ingredient) => (
-            <IngredientThumbnail
-              className={recipeBrowserStyles.ingredientPickerItem}
-              ingredient={ingredient}
-              key={ingredient.ingredientId}
-              selected={selectedIngredientIds.includes(ingredient.ingredientId)}
-              selectedPresentation="muted"
-              theme={theme}
-              onClick={() => onToggleIngredient(ingredient.ingredientId)}
-            />
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function FilterIcon() {
-  return (
-    <svg className={recipeBrowserStyles.filterIcon} viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M4 5h16l-6.25 7.2v5.2l-3.5 1.9v-7.1L4 5Z"
-        fill="none"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-type NumberFilterGroupProps = {
-  title: string;
-  values: readonly { disabled?: boolean; id: number; label: string }[];
-  selectedValues: readonly number[];
-  theme: SiteTheme;
-  onToggle: (value: number) => void;
-};
-
-function NumberFilterGroup({
-  title,
-  values,
-  selectedValues,
-  theme,
-  onToggle,
-}: NumberFilterGroupProps) {
-  return (
-    <fieldset className={recipeBrowserStyles.filterGroup(theme)}>
-      <div className={recipeBrowserStyles.filterGroupHeader}>
-        <legend className={recipeBrowserStyles.filterLegend(theme)}>{title}</legend>
-      </div>
-      <div className={recipeBrowserStyles.filterOptionList}>
-        {values.map((value) => (
-          <label
-            className={`${recipeBrowserStyles.checkboxLabel(theme)} ${
-              value.disabled === true ? plannerPickerStyles.disabledFilterOption(theme) : ""
-            }`}
-            key={value.id}
-          >
-            <input
-              checked={value.disabled === true ? false : selectedValues.includes(value.id)}
-              className={recipeBrowserStyles.checkbox}
-              disabled={value.disabled === true}
-              type="checkbox"
-              onChange={() => onToggle(value.id)}
-            />
-            {value.label}
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
-
-type FilterGroupProps<TValue extends string> = {
-  title: string;
-  disabledValues?: readonly TValue[];
-  values: readonly TValue[];
-  selectedValues: readonly TValue[];
-  theme: SiteTheme;
-  onToggle: (value: TValue) => void;
-};
-
-function FilterGroup<TValue extends string>({
-  title,
-  disabledValues = [],
-  values,
-  selectedValues,
-  theme,
-  onToggle,
-}: FilterGroupProps<TValue>) {
-  return (
-    <fieldset className={recipeBrowserStyles.filterGroup(theme)}>
-      <div className={recipeBrowserStyles.filterGroupHeader}>
-        <legend className={recipeBrowserStyles.filterLegend(theme)}>{title}</legend>
-      </div>
-      <div className={recipeBrowserStyles.filterOptionList}>
-        {values.map((value) => {
-          const disabled = disabledValues.includes(value);
-
-          return (
-            <label
-              className={`${recipeBrowserStyles.checkboxLabel(theme)} ${
-                disabled ? plannerPickerStyles.disabledFilterOption(theme) : ""
-              }`}
-              key={value}
-            >
-              <input
-                checked={disabled ? false : selectedValues.includes(value)}
-                className={recipeBrowserStyles.checkbox}
-                disabled={disabled}
-                type="checkbox"
-                onChange={() => onToggle(value)}
-              />
-              {formatLabel(value)}
-            </label>
-          );
-        })}
-      </div>
-    </fieldset>
-  );
-}
-
-function toggleSelection<TValue extends string | number>(
-  value: TValue,
-  setSelectedValues: Dispatch<SetStateAction<TValue[]>>,
-) {
-  setSelectedValues((selectedValues) =>
-    selectedValues.includes(value)
-      ? selectedValues.filter((selectedValue) => selectedValue !== value)
-      : [...selectedValues, value],
-  );
-}
-
-function isMainDish(recipe: IRecipe) {
-  return mainRecipeTypes.includes(recipe.recipeType);
-}
-
-function isSupplementaryRecipe(recipe: IRecipe, selectedFilters: SupplementaryFilter[]) {
-  const matchesRecipeType =
-    supplementaryRecipeTypeFilters.includes(recipe.recipeType) &&
-    selectedFilters.includes(recipe.recipeType);
-  const matchesRecipeTag = supplementaryRecipeTagFilters.some(
-    (recipeTag) => selectedFilters.includes(recipeTag) && recipe.tags.includes(recipeTag),
-  );
-
-  return (
-    (matchesRecipeType || matchesRecipeTag) &&
-    !excludedSupplementaryTags.some((tag) => recipe.tags.includes(tag))
-  );
-}
-
-function matchesSelectedCuisines(recipe: IRecipe, selectedCuisineIds: number[]) {
-  if (selectedCuisineIds.length === 0) {
-    return true;
-  }
-
-  return recipe.cuisineId !== null && selectedCuisineIds.includes(recipe.cuisineId);
-}
-
-function matchesSelectedIngredients(recipe: IRecipe, selectedIngredientIds: number[]) {
-  if (selectedIngredientIds.length === 0) {
-    return true;
-  }
-
-  return recipe.ingredients.some((recipeIngredient) =>
-    selectedIngredientIds.includes(recipeIngredient.ingredient.ingredientId),
-  );
-}
-
-function matchesSelectedIngredientTags(recipe: IRecipe, selectedIngredientTags: IngredientTag[]) {
-  if (selectedIngredientTags.length === 0) {
-    return true;
-  }
-
-  return selectedIngredientTags.some((ingredientTag) => recipeHasIngredientTag(recipe, ingredientTag));
-}
-
-function matchesSelectedRecipeTags(recipe: IRecipe, selectedRecipeTags: RecipeTag[]) {
-  if (selectedRecipeTags.length === 0) {
-    return true;
-  }
-
-  return recipe.tags.some((recipeTag) => selectedRecipeTags.includes(recipeTag));
-}
-
-function matchesSearch(recipe: IRecipe, searchTerm: string) {
-  const normalizedSearch = searchTerm.trim().toLowerCase();
-  if (normalizedSearch.length === 0) {
-    return true;
-  }
-
-  return [
-    recipe.name,
-    recipe.recipeType,
-    recipe.cuisine?.name,
-    ...recipe.tags,
-  ]
-    .filter((value): value is string => Boolean(value))
-    .join(" ")
-    .toLowerCase()
-    .includes(normalizedSearch);
-}
-
-function matchesIngredientSearch(ingredient: IIngredient, searchTerm: string) {
-  const normalizedSearch = searchTerm.trim().toLowerCase();
-  if (normalizedSearch.length === 0) {
-    return true;
-  }
-
-  return [
-    ingredient.ingredientName,
-    ...ingredient.tags.map(normalizeIngredientTag),
-    ingredient.brand?.name,
-  ]
-    .filter((value): value is string => Boolean(value))
-    .join(" ")
-    .toLowerCase()
-    .includes(normalizedSearch);
-}
-
-function recipeHasIngredientTag(recipe: IRecipe, ingredientTag: IngredientTag) {
-  return recipe.ingredients.some((recipeIngredient) =>
-    recipeIngredient.ingredient.tags
-      .map(normalizeIngredientTag)
-      .includes(ingredientTag),
-  );
-}
-
-function normalizeIngredientTag(tag: IngredientTag | number | string): IngredientTag {
-  if (typeof tag === "string" && ingredientTagByIndex.includes(tag as IngredientTag)) {
-    return tag as IngredientTag;
-  }
-
-  if (typeof tag === "number" && ingredientTagByIndex[tag]) {
-    return ingredientTagByIndex[tag];
-  }
-
-  return "Other";
-}
-
-function getSupplementaryRole(recipe: IRecipe): MealRecipeRole {
-  if (recipe.recipeType === "Sauce" || recipe.recipeType === "Dip") {
-    return "Sauce";
-  }
-
-  if (recipe.recipeType === "Side" || recipe.tags.includes("Salad")) {
-    return "Side";
-  }
-
-  return "Extra";
-}
-
-const ingredientTagByIndex: IngredientTag[] = [
-  "Vegetable",
-  "Fruit",
-  "Chicken",
-  "Fish",
-  "Beef",
-  "Lamb",
-  "Mince",
-  "Dairy",
-  "Grain",
-  "Spice",
-  "Herb",
-  "Sauce",
-  "Pantry",
-  "Frozen",
-  "Other",
-  "LeafyGreen",
-];
 
 export default PlannerRecipePickerModal;

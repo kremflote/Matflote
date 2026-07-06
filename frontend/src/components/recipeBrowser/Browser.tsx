@@ -1,15 +1,28 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
-import IngredientThumbnail from "../IngredientThumbnail";
-import RecipeThumbnail from "../RecipeThumbnail";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useCuisines, useIngredients, useRecipes } from "../../contexts";
-import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
-import type { ICuisine } from "../../interfaces/ILookup";
+import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
+import ActiveFilterChips from "./ActiveFilterChips";
 import BrowserDetailModal from "./BrowserDetailModal";
 import BrowserFilterSection from "./BrowserFilterSection";
-import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
-import type { BrowserDetail, BrowserMode, EnrichedRecipe } from "./types";
+import BrowserResults from "./BrowserResults";
+import {
+  matchesCuisines,
+  matchesIngredientSearch,
+  matchesIngredientTags,
+  matchesRecipeSearch,
+  matchesRecipeTags,
+  matchesRecipeTypes,
+  matchesSelectedIngredients,
+} from "./browserFilterUtils";
+import IngredientPickerPopover, { FilterIcon } from "./IngredientFilterPopover";
+import { recipeBrowserStyles } from "./recipeBrowserStyles";
+import type { BrowserDetail, BrowserMode } from "./types";
+
+type BrowserDetailKey =
+  | { id: number; kind: "ingredient" }
+  | { id: number; kind: "recipe" };
 
 type BrowserProps = {
   mode: BrowserMode;
@@ -31,7 +44,7 @@ function Browser({ mode, theme, headerActions }: BrowserProps) {
   const [selectedRecipeTags, setSelectedRecipeTags] = useState<RecipeTag[]>([]);
   const [selectedCuisineIds, setSelectedCuisineIds] = useState<number[]>([]);
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
-  const [selectedDetail, setSelectedDetail] = useState<BrowserDetail | null>(null);
+  const [selectedDetailKey, setSelectedDetailKey] = useState<BrowserDetailKey | null>(null);
   const [ingredientPickerSearch, setIngredientPickerSearch] = useState("");
   const [ingredientPickerPosition, setIngredientPickerPosition] = useState<{ x: number; y: number } | null>(null);
   const ingredientFilterButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -77,6 +90,33 @@ function Browser({ mode, theme, headerActions }: BrowserProps) {
         .sort((first, second) => first.ingredientName.localeCompare(second.ingredientName)),
     [ingredients, ingredientPickerSearch],
   );
+
+  const selectedDetail = useMemo<BrowserDetail | null>(() => {
+    if (selectedDetailKey === null) {
+      return null;
+    }
+
+    if (selectedDetailKey.kind === "recipe") {
+      const recipe = recipes.find((item) => item.recipeId === selectedDetailKey.id);
+      return recipe === undefined ? null : { kind: "recipe", recipe };
+    }
+
+    const ingredient = ingredients.find((item) => item.ingredientId === selectedDetailKey.id);
+    return ingredient === undefined ? null : { kind: "ingredient", ingredient };
+  }, [ingredients, recipes, selectedDetailKey]);
+
+  const selectDetail = (detail: BrowserDetail | null) => {
+    if (detail === null) {
+      setSelectedDetailKey(null);
+      return;
+    }
+
+    setSelectedDetailKey(
+      detail.kind === "recipe"
+        ? { kind: "recipe", id: detail.recipe.recipeId }
+        : { kind: "ingredient", id: detail.ingredient.ingredientId },
+    );
+  };
 
   const clearFilters = () => {
     setSelectedIngredientTags([]);
@@ -226,50 +266,17 @@ function Browser({ mode, theme, headerActions }: BrowserProps) {
         />
 
         <div className={recipeBrowserStyles.resultsWithFilters}>
-          {mode === "ingredients" ? (
-            ingredientIsLoading ? (
-              <EmptyState theme={theme} title="Loading ingredients" body="Fetching the pantry." />
-            ) : ingredientError !== null ? (
-              <EmptyState theme={theme} title="Could not load ingredients" body={ingredientError} />
-            ) : filteredIngredients.length === 0 ? (
-              <EmptyState theme={theme} title="No ingredients found" body="Try changing search or filters." />
-            ) : (
-              <div className={recipeBrowserStyles.ingredientGridPanel(theme)}>
-                <div className={recipeBrowserStyles.ingredientGrid}>
-                  {filteredIngredients.map((ingredient) => (
-                    <IngredientThumbnail
-                      ingredient={ingredient}
-                      key={ingredient.ingredientId}
-                      theme={theme}
-                      onClick={() => setSelectedDetail({ kind: "ingredient", ingredient })}
-                    />
-                  ))}
-                </div>
-              </div>
-            )
-          ) : recipeIsLoading ? (
-            <EmptyState theme={theme} title="Loading recipes" body="Fetching the cookbook." />
-          ) : recipeError !== null ? (
-            <EmptyState theme={theme} title="Could not load recipes" body={recipeError} />
-          ) : filteredRecipes.length === 0 ? (
-            <EmptyState theme={theme} title="No recipes found" body="Try changing search or filters." />
-          ) : (
-            <div className={recipeBrowserStyles.recipeGrid}>
-              {filteredRecipes.map((recipe) => (
-                <RecipeThumbnail
-                  className={recipeBrowserStyles.recipeCard(theme)}
-                  key={recipe.recipeId}
-                  theme={theme}
-                  recipe={{
-                    imageUrl: recipe.imageUrl,
-                    name: recipe.name,
-                    subtitle: recipe.cuisine?.name ?? recipe.recipeType,
-                  }}
-                  onClick={() => setSelectedDetail({ kind: "recipe", recipe })}
-                />
-              ))}
-            </div>
-          )}
+          <BrowserResults
+            filteredIngredients={filteredIngredients}
+            filteredRecipes={filteredRecipes}
+            ingredientError={ingredientError}
+            ingredientIsLoading={ingredientIsLoading}
+            mode={mode}
+            recipeError={recipeError}
+            recipeIsLoading={recipeIsLoading}
+            theme={theme}
+            onSelectDetail={selectDetail}
+          />
         </div>
       </section>
 
@@ -277,332 +284,12 @@ function Browser({ mode, theme, headerActions }: BrowserProps) {
         <BrowserDetailModal
           detail={selectedDetail}
           theme={theme}
-          onClose={() => setSelectedDetail(null)}
-          onSelectDetail={setSelectedDetail}
+          onClose={() => selectDetail(null)}
+          onSelectDetail={selectDetail}
         />
       )}
     </>
   );
 }
-
-type ActiveFilterChipsProps = {
-  mode: BrowserMode;
-  cuisines: ICuisine[];
-  selectedIngredientTags: IngredientTag[];
-  selectedRecipeTypes: RecipeType[];
-  selectedRecipeTags: RecipeTag[];
-  selectedCuisineIds: number[];
-  selectedIngredients: IIngredient[];
-  theme: SiteTheme;
-  onClear: () => void;
-  onRemoveIngredientTag: (value: IngredientTag) => void;
-  onRemoveRecipeType: (value: RecipeType) => void;
-  onRemoveRecipeTag: (value: RecipeTag) => void;
-  onRemoveCuisine: (value: number) => void;
-  onRemoveIngredient: (ingredientId: number) => void;
-};
-
-function ActiveFilterChips({
-  mode,
-  cuisines,
-  selectedIngredientTags,
-  selectedRecipeTypes,
-  selectedRecipeTags,
-  selectedCuisineIds,
-  selectedIngredients,
-  theme,
-  onClear,
-  onRemoveIngredientTag,
-  onRemoveRecipeType,
-  onRemoveRecipeTag,
-  onRemoveCuisine,
-  onRemoveIngredient,
-}: ActiveFilterChipsProps) {
-  const hasIngredientFilters = selectedIngredientTags.length > 0;
-  const hasRecipeFilters =
-    selectedIngredients.length > 0 ||
-    selectedRecipeTypes.length > 0 ||
-    selectedRecipeTags.length > 0 ||
-    selectedCuisineIds.length > 0;
-
-  const hasVisibleFilters = mode === "ingredients" ? hasIngredientFilters : hasRecipeFilters;
-
-  return (
-    <div className={recipeBrowserStyles.activeFilterChips(mode)}>
-      {!hasVisibleFilters && <span className={recipeBrowserStyles.emptyFilterChipSlot} aria-hidden="true" />}
-      {mode === "ingredients" &&
-        selectedIngredientTags.map((tag) => (
-          <FilterChip
-            key={tag}
-            label={formatLabel(tag)}
-            theme={theme}
-            onClick={() => onRemoveIngredientTag(tag)}
-          />
-        ))}
-      {mode === "recipes" &&
-        selectedIngredients.map((ingredient) => (
-          <FilterChip
-            key={`ingredient-${ingredient.ingredientId}`}
-            label={`includes: ${ingredient.ingredientName}`}
-            theme={theme}
-            onClick={() => onRemoveIngredient(ingredient.ingredientId)}
-          />
-        ))}
-      {mode === "recipes" &&
-        selectedRecipeTypes.map((type) => (
-          <FilterChip
-            key={type}
-            label={formatLabel(type)}
-            theme={theme}
-            onClick={() => onRemoveRecipeType(type)}
-          />
-        ))}
-      {mode === "recipes" &&
-        selectedRecipeTags.map((tag) => (
-          <FilterChip
-            key={tag}
-            label={formatLabel(tag)}
-            theme={theme}
-            onClick={() => onRemoveRecipeTag(tag)}
-          />
-        ))}
-      {mode === "recipes" &&
-        selectedCuisineIds.map((cuisineId) => (
-          <FilterChip
-            key={cuisineId}
-            label={cuisines.find((cuisine) => cuisine.cuisineId === cuisineId)?.name ?? "Cuisine"}
-            theme={theme}
-            onClick={() => onRemoveCuisine(cuisineId)}
-          />
-        ))}
-      {hasVisibleFilters && (
-        <button className={recipeBrowserStyles.clearFilterChip(theme)} type="button" onClick={onClear}>
-          Clear filters
-        </button>
-      )}
-    </div>
-  );
-}
-
-type FilterChipProps = {
-  label: string;
-  theme: SiteTheme;
-  onClick: () => void;
-};
-
-function FilterChip({ label, theme, onClick }: FilterChipProps) {
-  return (
-    <button className={recipeBrowserStyles.filterChip(theme)} type="button" onClick={onClick}>
-      {label}
-      <span aria-hidden="true">x</span>
-    </button>
-  );
-}
-
-type EmptyStateProps = {
-  title: string;
-  body: string;
-  theme: SiteTheme;
-};
-
-function EmptyState({ title, body, theme }: EmptyStateProps) {
-  return (
-    <div className={recipeBrowserStyles.emptyState(theme)}>
-      <h2 className={recipeBrowserStyles.emptyStateTitle}>{title}</h2>
-      <p className={recipeBrowserStyles.emptyStateBody}>{body}</p>
-    </div>
-  );
-}
-
-type IngredientPickerPopoverProps = {
-  ingredients: IIngredient[];
-  popoverRef: RefObject<HTMLDivElement | null>;
-  searchTerm: string;
-  selectedIngredientIds: number[];
-  theme: SiteTheme;
-  x: number;
-  y: number;
-  onSearchChange: (value: string) => void;
-  onToggleIngredient: (ingredientId: number) => void;
-};
-
-function IngredientPickerPopover({
-  ingredients,
-  popoverRef,
-  searchTerm,
-  selectedIngredientIds,
-  theme,
-  x,
-  y,
-  onSearchChange,
-  onToggleIngredient,
-}: IngredientPickerPopoverProps) {
-  return (
-    <div
-      className={recipeBrowserStyles.ingredientPicker(theme)}
-      ref={popoverRef}
-      style={{
-        left: `min(${x}px, calc(100vw - 304px))`,
-        top: `min(${y + 8}px, calc(100vh - 360px))`,
-      }}
-    >
-      <input
-        aria-label="Search ingredients to include"
-        className={recipeBrowserStyles.ingredientPickerSearch(theme)}
-        placeholder="search ingredient..."
-        type="search"
-        value={searchTerm}
-        onChange={(event) => onSearchChange(event.target.value)}
-      />
-      <div className={recipeBrowserStyles.ingredientPickerList}>
-        {ingredients.length === 0 ? (
-          <p className={recipeBrowserStyles.ingredientPickerEmpty(theme)}>No ingredients found</p>
-        ) : (
-          ingredients.map((ingredient) => (
-            <IngredientThumbnail
-              className={recipeBrowserStyles.ingredientPickerItem}
-              ingredient={ingredient}
-              key={ingredient.ingredientId}
-              selected={selectedIngredientIds.includes(ingredient.ingredientId)}
-              selectedPresentation="muted"
-              theme={theme}
-              onClick={() => onToggleIngredient(ingredient.ingredientId)}
-            />
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function FilterIcon() {
-  return (
-    <svg className={recipeBrowserStyles.filterIcon} viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M4 5h16l-6.25 7.2v5.2l-3.5 1.9v-7.1L4 5Z"
-        fill="none"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-function matchesRecipeSearch(recipe: EnrichedRecipe, searchTerm: string) {
-  const normalizedSearch = searchTerm.trim().toLowerCase();
-  if (normalizedSearch.length === 0) {
-    return true;
-  }
-
-  const searchableText = [
-    recipe.name,
-    recipe.description,
-    recipe.instructions,
-    recipe.recipeType,
-    recipe.cuisine?.name,
-    ...recipe.tags,
-    ...recipe.ingredients.map((recipeIngredient) => recipeIngredient.ingredient.ingredientName),
-  ]
-    .filter((value): value is string => Boolean(value))
-    .join(" ")
-    .toLowerCase();
-
-  return searchableText.includes(normalizedSearch);
-}
-
-function matchesIngredientSearch(ingredient: IIngredient, searchTerm: string) {
-  const normalizedSearch = searchTerm.trim().toLowerCase();
-  if (normalizedSearch.length === 0) {
-    return true;
-  }
-
-  const searchableText = [
-    ingredient.ingredientName,
-    ...ingredient.tags,
-    ingredient.brand?.name,
-  ]
-    .filter((value): value is string => Boolean(value))
-    .join(" ")
-    .toLowerCase();
-
-  return searchableText.includes(normalizedSearch);
-}
-
-function matchesSelectedIngredients(recipe: EnrichedRecipe, selectedIngredientIds: number[]) {
-  if (selectedIngredientIds.length === 0) {
-    return true;
-  }
-
-  return recipe.ingredients.some((recipeIngredient) =>
-    selectedIngredientIds.includes(recipeIngredient.ingredient.ingredientId),
-  );
-}
-
-function matchesRecipeTypes(recipe: EnrichedRecipe, selectedRecipeTypes: RecipeType[]) {
-  if (selectedRecipeTypes.length === 0) {
-    return true;
-  }
-
-  return selectedRecipeTypes.includes(recipe.recipeType);
-}
-
-function matchesRecipeTags(recipe: EnrichedRecipe, selectedRecipeTags: RecipeTag[]) {
-  if (selectedRecipeTags.length === 0) {
-    return true;
-  }
-
-  return recipe.tags.some((tag) => selectedRecipeTags.includes(tag));
-}
-
-function matchesCuisines(recipe: EnrichedRecipe, selectedCuisineIds: number[]) {
-  if (selectedCuisineIds.length === 0) {
-    return true;
-  }
-
-  return recipe.cuisineId !== null && selectedCuisineIds.includes(recipe.cuisineId);
-}
-
-function matchesIngredientTags(
-  ingredient: IIngredient,
-  selectedIngredientTags: IngredientTag[],
-) {
-  if (selectedIngredientTags.length === 0) {
-    return true;
-  }
-
-  return ingredient.tags.some((tag) => selectedIngredientTags.includes(normalizeIngredientTag(tag)));
-}
-
-function normalizeIngredientTag(tag: IngredientTag | number | string): IngredientTag {
-  if (typeof tag === "string" && ingredientTagByIndex.includes(tag as IngredientTag)) {
-    return tag as IngredientTag;
-  }
-
-  if (typeof tag === "number" && ingredientTagByIndex[tag]) {
-    return ingredientTagByIndex[tag];
-  }
-
-  return "Other";
-}
-
-const ingredientTagByIndex: IngredientTag[] = [
-  "Vegetable",
-  "Fruit",
-  "Chicken",
-  "Fish",
-  "Beef",
-  "Lamb",
-  "Mince",
-  "Dairy",
-  "Grain",
-  "Spice",
-  "Herb",
-  "Sauce",
-  "Pantry",
-  "Frozen",
-  "Other",
-  "LeafyGreen",
-];
 
 export default Browser;

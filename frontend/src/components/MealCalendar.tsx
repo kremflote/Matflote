@@ -43,21 +43,19 @@ function MealCalendar({
         <div className={`${mealCalendarStyles.monthGrid} mt-3`}>
           {dates.map((date) => {
             const dateKey = toDateInputValue(date);
-            const dayEntries = mealSlots
-              .map((slot) => ({ slot, entry: getEntryForSlot(dateKey, slot) }))
-              .filter((item): item is { slot: MealSlotId; entry: IMealPlanEntry } => item.entry !== undefined);
-
+            const muted = date.getMonth() !== anchorDate.getMonth();
             return (
               <div
-                className={mealCalendarStyles.monthDayCell(theme, date.getMonth() !== anchorDate.getMonth())}
+                className={mealCalendarStyles.monthDayCell(theme, muted)}
                 key={dateKey}
               >
-                <div className={mealCalendarStyles.monthDayNumber(theme)}>{date.getDate()}</div>
+                <div className={mealCalendarStyles.monthDayNumber(theme, muted)}>{date.getDate()}</div>
                 <div className={mealCalendarStyles.monthDayMeals}>
-                  {dayEntries.map(({ slot, entry }) => (
+                  {mealSlots.map((slot) => (
                     <MonthMealSummary
-                      entry={entry}
+                      entry={getEntryForSlot(dateKey, slot)}
                       key={`${dateKey}-${slot}`}
+                      onClick={() => onSlotClick(dateKey, slot)}
                       recipesById={recipesById}
                       slot={slot}
                       theme={theme}
@@ -98,6 +96,7 @@ function MealCalendar({
             <div className={mealCalendarStyles.row} key={dateKey}>
               <div className={mealCalendarStyles.dayCell(theme)}>
                 <span className={mealCalendarStyles.dayLabel}>{weekDayLabels[index] ?? ""}</span>
+                <span className={mealCalendarStyles.dayDate(theme)}>{formatDayMonth(date)}</span>
               </div>
               <div className={mealCalendarStyles.grid}>
                 {mealSlots.map((meal) => (
@@ -122,25 +121,36 @@ function MealCalendar({
 }
 
 type MonthMealSummaryProps = {
-  entry: IMealPlanEntry;
+  entry?: IMealPlanEntry;
+  onClick: () => void;
   recipesById: Map<number, IRecipe>;
   slot: MealSlotId;
   theme: SiteTheme;
 };
 
-function MonthMealSummary({ entry, recipesById, slot, theme }: MonthMealSummaryProps) {
-  const firstRecipe = entry.recipes
+function MonthMealSummary({ entry, onClick, recipesById, slot, theme }: MonthMealSummaryProps) {
+  const plannedRecipes = entry?.recipes ?? [];
+  const firstRecipe = plannedRecipes
     .slice()
     .sort((first, second) => first.sortOrder - second.sortOrder)[0];
   const recipe = firstRecipe ? recipesById.get(firstRecipe.recipeId) : undefined;
-  const extraCount = Math.max(entry.recipes.length - 1, 0);
-  const label = recipe?.name ?? (firstRecipe ? `Recipe ${firstRecipe.recipeId}` : slot);
+  const extraCount = Math.max(plannedRecipes.length - 1, 0);
+  const empty = entry === undefined;
+  const label = recipe?.name ?? (firstRecipe ? `Recipe ${firstRecipe.recipeId}` : `Add ${slot.toLowerCase()}`);
+  const title = entry === undefined ? `Add ${slot}` : `Edit ${slot}: ${label}`;
+  const buttonLabel = empty ? `Add ${slot.toLowerCase()}` : label;
 
   return (
-    <div className={mealCalendarStyles.monthMealPill(theme)} title={label}>
-      {slot}: {label}
+    <button
+      aria-label={title}
+      className={mealCalendarStyles.monthMealPill(theme, empty)}
+      title={title}
+      type="button"
+      onClick={onClick}
+    >
+      {buttonLabel}
       {extraCount > 0 ? ` +${extraCount}` : ""}
-    </div>
+    </button>
   );
 }
 
@@ -150,6 +160,13 @@ function toDateInputValue(date: Date) {
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function formatDayMonth(date: Date) {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = new Intl.DateTimeFormat(undefined, { month: "short" }).format(date);
+
+  return `${day}. ${month}`;
 }
 
 export default MealCalendar;

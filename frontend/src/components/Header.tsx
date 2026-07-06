@@ -19,7 +19,12 @@ type HeaderProps = {
   onThemeChange: (theme: SiteTheme) => void;
 };
 
-function Header({ activePage, onPageChange, theme, onThemeChange }: HeaderProps) {
+function Header({
+  activePage,
+  onPageChange,
+  theme,
+  onThemeChange,
+}: HeaderProps) {
   function toggleTheme() {
     onThemeChange(theme === "dark" ? "paletteLight" : "dark");
   }
@@ -32,10 +37,10 @@ function Header({ activePage, onPageChange, theme, onThemeChange }: HeaderProps)
         <button
           className={headerStyles.logo(theme)}
           type="button"
-          aria-label="DinnerPlanner home"
+          aria-label="Fløte home"
           onClick={() => onPageChange("weekPlanner")}
         >
-          DinnerPlanner
+          Matfløte
         </button>
 
         <nav className={headerStyles.nav} aria-label="Primary">
@@ -74,7 +79,11 @@ function Header({ activePage, onPageChange, theme, onThemeChange }: HeaderProps)
   );
 }
 
-function HeaderIcon({ icon }: { icon: "settings" | "calendar" | "book" | "moon" | "sun" }) {
+function HeaderIcon({
+  icon,
+}: {
+  icon: "settings" | "calendar" | "book" | "moon" | "sun";
+}) {
   if (icon === "settings") {
     return (
       <svg aria-hidden="true" className={headerStyles.icon} viewBox="0 0 24 24">
@@ -102,14 +111,22 @@ function HeaderIcon({ icon }: { icon: "settings" | "calendar" | "book" | "moon" 
 
   if (icon === "sun") {
     return (
-      <svg aria-hidden="true" className={headerStyles.themeIcon} viewBox="0 0 24 24">
+      <svg
+        aria-hidden="true"
+        className={headerStyles.themeIcon}
+        viewBox="0 0 24 24"
+      >
         <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm1-15h-2v3h2V2Zm0 17h-2v3h2v-3ZM5.6 4.2 4.2 5.6l2.1 2.1 1.4-1.4-2.1-2.1Zm12.1 12.1-1.4 1.4 2.1 2.1 1.4-1.4-2.1-2.1ZM2 11v2h3v-2H2Zm17 0v2h3v-2h-3ZM6.3 16.3l-2.1 2.1 1.4 1.4 2.1-2.1-1.4-1.4ZM19.8 5.6l-1.4-1.4-2.1 2.1 1.4 1.4 2.1-2.1Z" />
       </svg>
     );
   }
 
   return (
-    <svg aria-hidden="true" className={headerStyles.themeIcon} viewBox="0 0 24 24">
+    <svg
+      aria-hidden="true"
+      className={headerStyles.themeIcon}
+      viewBox="0 0 24 24"
+    >
       <path d="M20.8 14.4A8.6 8.6 0 0 1 9.6 3.2 9.1 9.1 0 1 0 20.8 14.4Z" />
     </svg>
   );

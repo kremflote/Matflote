@@ -59,18 +59,28 @@ function RecipeCreateForm({
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const visibleIngredients = useMemo(
-    () =>
-      ingredients.filter((ingredient) =>
-        ingredient.ingredientName.toLowerCase().includes(ingredientSearch.trim().toLowerCase()),
-      ),
-    [ingredientSearch, ingredients],
-  );
-
   const selectedIngredientIds = useMemo(
     () => selectedIngredients.map((ingredient) => ingredient.ingredientId),
     [selectedIngredients],
   );
+
+  const visibleIngredients = useMemo(() => {
+    const normalizedSearch = ingredientSearch.trim().toLowerCase();
+    const selectedIds = new Set(selectedIngredientIds);
+
+    return ingredients
+      .filter((ingredient) => ingredient.ingredientName.toLowerCase().includes(normalizedSearch))
+      .sort((first, second) => {
+        const firstIsSelected = selectedIds.has(first.ingredientId);
+        const secondIsSelected = selectedIds.has(second.ingredientId);
+
+        if (firstIsSelected !== secondIsSelected) {
+          return firstIsSelected ? -1 : 1;
+        }
+
+        return first.ingredientName.localeCompare(second.ingredientName);
+      });
+  }, [ingredientSearch, ingredients, selectedIngredientIds]);
 
   const handleCroppedFileChange = useCallback((file: File | null) => {
     setCroppedImageFile(file);

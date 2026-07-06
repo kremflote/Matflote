@@ -4,18 +4,24 @@ import { plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
 type PlannerControlsProps = {
   anchorLabel: string;
   anchorYear: string;
+  isClearRangeRunning?: boolean;
+  isGenerateRangeRunning?: boolean;
+  isRangeBusy?: boolean;
   theme?: SiteTheme;
   viewMode: PlannerViewMode;
   onNextRange: () => void;
   onPreviousRange: () => void;
-  onClearRange: () => void;
-  onGenerateRange: () => void;
+  onClearRange: () => void | Promise<void>;
+  onGenerateRange: () => void | Promise<void>;
   onViewModeChange: (value: PlannerViewMode) => void;
 };
 
 function PlannerControls({
   anchorLabel,
   anchorYear,
+  isClearRangeRunning = false,
+  isGenerateRangeRunning = false,
+  isRangeBusy = false,
   theme = "dark",
   viewMode,
   onNextRange,
@@ -32,12 +38,13 @@ function PlannerControls({
             <button
               aria-label={viewMode === "week" ? "Clear week" : "Clear month"}
               className={plannerControlsStyles.iconOnlyButton(theme)}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               type="button"
               onClick={onClearRange}
             >
               <ClearIcon />
               <span className={plannerControlsStyles.tooltip(theme)}>
-                {viewMode === "week" ? "Clear week" : "Clear month"}
+                {isClearRangeRunning ? "Clearing..." : viewMode === "week" ? "Clear week" : "Clear month"}
               </span>
             </button>
           </div>
@@ -45,17 +52,21 @@ function PlannerControls({
             <button
               aria-label="Generate meal plan"
               className={plannerControlsStyles.iconOnlyButton(theme)}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               type="button"
               onClick={onGenerateRange}
             >
               <GenerateIcon />
-              <span className={plannerControlsStyles.tooltip(theme)}>Generate meal plan</span>
+              <span className={plannerControlsStyles.tooltip(theme)}>
+                {isGenerateRangeRunning ? "Generating..." : "Generate meal plan"}
+              </span>
             </button>
           </div>
           <div className={plannerControlsStyles.actionSlotRight}>
             <button
               aria-label="Export grocery list"
               className={plannerControlsStyles.iconOnlyButton(theme)}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               type="button"
             >
               <ExportIcon />
@@ -65,13 +76,18 @@ function PlannerControls({
         </div>
       </div>
       <div className={plannerControlsStyles.centerCell}>
-        <div className={plannerControlsStyles.dateYearRow}>
-          <div className={plannerControlsStyles.dateYear(theme)}>{anchorYear}</div>
-        </div>
+        <time
+          aria-label={`Year ${anchorYear}`}
+          className={plannerControlsStyles.dateYearRow(theme)}
+          dateTime={anchorYear}
+        >
+          {anchorYear}
+        </time>
         <div className={plannerControlsStyles.datePrimaryRow}>
           <button
             aria-label={viewMode === "week" ? "Previous week" : "Previous month"}
             className={plannerControlsStyles.iconButton(theme)}
+            disabled={isClearRangeRunning || isGenerateRangeRunning}
             type="button"
             onClick={onPreviousRange}
           >
@@ -81,6 +97,7 @@ function PlannerControls({
           <button
             aria-label={viewMode === "week" ? "Next week" : "Next month"}
             className={plannerControlsStyles.iconButton(theme)}
+            disabled={isClearRangeRunning || isGenerateRangeRunning}
             type="button"
             onClick={onNextRange}
           >
@@ -93,6 +110,7 @@ function PlannerControls({
           <button
             aria-pressed={viewMode === "week"}
             className={plannerControlsStyles.viewToggleOption(theme, viewMode === "week")}
+            disabled={isClearRangeRunning || isGenerateRangeRunning}
             type="button"
             onClick={() => onViewModeChange("week")}
           >
@@ -101,6 +119,7 @@ function PlannerControls({
           <button
             aria-pressed={viewMode === "month"}
             className={plannerControlsStyles.viewToggleOption(theme, viewMode === "month")}
+            disabled={isClearRangeRunning || isGenerateRangeRunning}
             type="button"
             onClick={() => onViewModeChange("month")}
           >

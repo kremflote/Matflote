@@ -1,4 +1,5 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import ConfirmationDialog from "../ConfirmationDialog";
 import { useIngredients, useRecipes } from "../../contexts";
 import { ingredientService, recipeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
@@ -18,20 +19,35 @@ type BrowserDetailModalProps = {
 
 function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserDetailModalProps) {
   const editRecipeImageInputId = useId();
+  const editTitleId = useId();
+  const detailTitleId = useId();
   const { refreshRecipes } = useRecipes();
   const { refreshIngredients } = useIngredients();
   const [isEditingRecipe, setIsEditingRecipe] = useState(false);
   const [isEditingIngredient, setIsEditingIngredient] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
-  const handleRemove = async () => {
-    const itemName = detail.kind === "recipe" ? detail.recipe.name : detail.ingredient.ingredientName;
-    const itemLabel = detail.kind === "recipe" ? "recipe" : "ingredient";
-    const confirmed = window.confirm(`Remove ${itemName}? This will delete the ${itemLabel}.`);
-    if (!confirmed) {
+  useEffect(() => {
+    if (isConfirmingDelete) {
       return;
     }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isConfirmingDelete, onClose]);
+
+  const handleRemove = async () => {
+    const itemLabel = detail.kind === "recipe" ? "recipe" : "ingredient";
 
     setIsDeleting(true);
     setDeleteError(null);
@@ -51,6 +67,7 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
       setDeleteError(caughtError instanceof Error ? caughtError.message : `Could not remove ${itemLabel}.`);
     } finally {
       setIsDeleting(false);
+      setIsConfirmingDelete(false);
     }
   };
 
@@ -58,13 +75,14 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
     return (
       <div className={recipeBrowserStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
         <section
+          aria-labelledby={editTitleId}
           aria-modal="true"
           className={recipeBrowserStyles.modalPanel(theme)}
           role="dialog"
           onMouseDown={(event) => event.stopPropagation()}
         >
           <div className={recipeBrowserStyles.modalHeader}>
-            <h2 className={recipeBrowserStyles.modalTitle}>Edit {detail.recipe.name}</h2>
+            <h2 className={recipeBrowserStyles.modalTitle} id={editTitleId}>Edit {detail.recipe.name}</h2>
             <button className={recipeBrowserStyles.modalCloseAligned(theme)} type="button" onClick={onClose}>
               Close
             </button>
@@ -87,13 +105,14 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
     return (
       <div className={recipeBrowserStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
         <section
+          aria-labelledby={editTitleId}
           aria-modal="true"
           className={recipeBrowserStyles.modalPanel(theme)}
           role="dialog"
           onMouseDown={(event) => event.stopPropagation()}
         >
           <div className={recipeBrowserStyles.modalHeader}>
-            <h2 className={recipeBrowserStyles.modalTitle}>Edit {detail.ingredient.ingredientName}</h2>
+            <h2 className={recipeBrowserStyles.modalTitle} id={editTitleId}>Edit {detail.ingredient.ingredientName}</h2>
             <button className={recipeBrowserStyles.modalCloseAligned(theme)} type="button" onClick={onClose}>
               Close
             </button>
@@ -113,16 +132,40 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
   return (
     <div className={recipeBrowserStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
       <section
+        aria-labelledby={detailTitleId}
         aria-modal="true"
         className={recipeBrowserStyles.modalPanel(theme)}
         role="dialog"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className={recipeBrowserStyles.detailHeaderShell}>
-          <div className={recipeBrowserStyles.detailHeaderRow}>
-            <h2 className={recipeBrowserStyles.detailHeaderTitle}>
+          <div className={recipeBrowserStyles.detailHeaderTitleRow}>
+            <h2 className={recipeBrowserStyles.detailHeaderTitle} id={detailTitleId}>
               {detail.kind === "recipe" ? detail.recipe.name : detail.ingredient.ingredientName}
             </h2>
+            {detail.kind === "recipe" && (
+              <div className={recipeBrowserStyles.detailHeaderTagList}>
+                {detail.recipe.tags.map((tag) => (
+                  <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
+                    {formatLabel(tag)}
+                  </span>
+                ))}
+              </div>
+            )}
+            {detail.kind === "ingredient" && (
+              <div className={recipeBrowserStyles.detailHeaderTagList}>
+                {detail.ingredient.tags.map((tag) => (
+                  <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
+                    {formatLabel(tag)}
+                  </span>
+                ))}
+              </div>
+            )}
+            <button className={recipeBrowserStyles.modalCloseAligned(theme)} type="button" onClick={onClose}>
+              Close
+            </button>
+          </div>
+          <div className={recipeBrowserStyles.detailHeaderActionRow}>
             <button
               className={recipeBrowserStyles.detailHeaderEditButton(theme)}
               type="button"
@@ -134,32 +177,16 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
                 }
               }}
             >
-              {detail.kind === "recipe"
-                ? `Edit ${detail.recipe.recipeType === "Dish" ? "dish" : formatLabel(detail.recipe.recipeType).toLowerCase()}`
-                : "Edit ingredient"}
+              Edit
             </button>
             <button
               className={recipeBrowserStyles.detailHeaderRemoveButton(theme)}
               disabled={isDeleting}
               type="button"
-              onClick={handleRemove}
+              onClick={() => setIsConfirmingDelete(true)}
             >
               {isDeleting ? "Removing..." : "Remove"}
             </button>
-            <button className={recipeBrowserStyles.modalCloseAligned(theme)} type="button" onClick={onClose}>
-              Close
-            </button>
-          </div>
-          <div>
-            {detail.kind === "recipe" && (
-              <div className={recipeBrowserStyles.detailChipList}>
-                {detail.recipe.tags.map((tag) => (
-                  <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
-                    {formatLabel(tag)}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
@@ -173,6 +200,17 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
           />
         ) : (
           <IngredientDetailContent ingredient={detail.ingredient} theme={theme} />
+        )}
+        {isConfirmingDelete && (
+          <ConfirmationDialog
+            body={`This will delete ${detail.kind === "recipe" ? "the recipe" : "the ingredient"}.`}
+            confirmLabel="Remove"
+            isBusy={isDeleting}
+            theme={theme}
+            title={`Remove ${detail.kind === "recipe" ? detail.recipe.name : detail.ingredient.ingredientName}?`}
+            onCancel={() => setIsConfirmingDelete(false)}
+            onConfirm={() => void handleRemove()}
+          />
         )}
       </section>
     </div>

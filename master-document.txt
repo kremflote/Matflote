@@ -1,6 +1,10 @@
 # Ideas
 Spice Manager (not to be implemented now)
 
+# Product Identity
+
+App name: Fløte
+
 # Web Design Ruleset
 
 Single source of truth for designing the webpage in Figma and later implementing it in code.
@@ -20,13 +24,17 @@ Avoid random values. Reuse the values defined here unless there is a strong desi
 ```
 defaultFont: Nunito
 heroFont: Segoe Print
+logoFont: Ubuntu Bold 700
 ```
 
 ### Font usage
 
 ```
 Segoe Print:
-Use only for hero headings, brand/logo text, or major landing-page statements.
+Use only for hero headings or major landing-page statements.
+
+Ubuntu Bold 700:
+Use only for the Fløte logo/brand mark.
 
 Nunito:
 Use for all normal interface text, body text, buttons, labels, cards, forms, navigation, and section headings.
@@ -306,7 +314,52 @@ Shadows should support hierarchy without becoming decorative. If a surface alrea
 
 ---
 
-## 9. Icons
+## 9. Shared application patterns
+
+Use centralized frontend style objects and shared browser components before adding page-local styling.
+
+```
+Global design/style tokens:
+frontend/src/styles/appStyles.ts
+
+Cookbook/browser shared components and filter styles:
+frontend/src/components/recipeBrowser/
+
+Planner picker-specific layout:
+frontend/src/components/plannerRecipePicker/
+```
+
+Shared browser/filter UI should be reused across Cookbook and Planner when the interaction is the same:
+
+```
+Search fields
+Filter icon buttons
+Ingredient filter popovers
+Active removable filter chips
+Checkbox filter groups
+Disabled/greyed filter options
+```
+
+Page-specific files may define layout wrappers, but not duplicate the same browser controls.
+
+### Confirmation dialogs
+
+Use the shared `ConfirmationDialog` component for destructive or bulk actions. Do not use `window.confirm` for app workflows.
+
+Current uses:
+
+```
+Cookbook remove recipe / ingredient / brand
+Planner clear week / month
+Planner generate week / month
+Planner remove meal
+```
+
+Confirmation dialogs should support Escape-to-close, focus the cancel action first, and use the centralized overlay shadow.
+
+---
+
+## 10. Icons
 
 ```
 Small icons: 16px
@@ -323,8 +376,29 @@ Icons should align visually with text and buttons.
 	- 7 day week overview. Each day you can fill in 3 (will be configurable later) slots:
 		- Recipe
 			- can have up to 4 "sides", meaning any recipe that is not a dish
+	- Planner top controls:
+		- Use compact 36px controls, matching Cookbook first-row control height
+		- Year sits above week/month label as a non-layout overlay
+		- Week/month toggle uses the same visual language as Cookbook toggle tabs
+	- Week view meal card:
+		- Recipe image fills the full left half of the meal container
+		- Image has rounded top-left and bottom-left corners
+		- Right half contains main dish title at top-left and side capsules below
+		- Breakfast/lunch/dinner labels are currently hidden
+	- Month view:
+		- Each day shows clickable breakfast, lunch, and dinner rows
+		- Existing meals open the edit flow
+		- Empty rows open the same meal picker to add a meal
+	- Meal picker flow:
+		- Opening a slot always starts on main dish selection
+		- Clicking a main dish highlights it; the user confirms with the bottom-left action before choosing sides
+		- Supplement selection allows up to 6 sides/sauces/dips/spice mixes/salads
+		- The bottom selected section shows the main dish thumbnail and selected side capsules
+		- Save is disabled while the main dish highlight is unconfirmed
+		- Remove meal is an explicit destructive action in edit mode
 	- Week generator button
-		- Generate dinner plan based on protein, cuisines and so on
+		- Current implementation is intentionally simple: fill empty slots only with a random dish and optional side
+		- Future implementation should generate based on protein, cuisine, tags, repetition, and slot type
 	- Prep helper
 		- Generate a list of all vegetables you need to prepare for week
 		- Automatically generate vikunja shopping list
@@ -332,9 +406,27 @@ Icons should align visually with text and buttons.
 	- Create dishes, desserts, sauces, dips, marinades, spice mixes
 	- Add ingredients
 	- Overview of all recipes and ingredients
+	- Browser filters, ingredient popover, active filter chips, and checkbox filter groups are shared patterns used by Planner as well
 - Settings page
 	- Configure amount of meals one can plan each day
 	- other settings
+
+# Data Notes
+
+## Ingredient tags
+
+`IngredientTag.LeafyGreen` exists in both backend and frontend enum/type definitions.
+
+Existing database ingredients are tagged through the `TagLeafyGreenIngredients` migration when their names match common leafy greens such as spinach, kale, lettuce, arugula, rocket, cabbage, or chard.
+
+Future seeded leafy ingredients should normally receive both:
+
+```
+Vegetable
+LeafyGreen
+```
+
+Recipes do not store `LeafyGreen` directly. Planner filters infer it from the tags on recipe ingredients.
 
 
 # Overview

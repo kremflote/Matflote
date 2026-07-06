@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import ConfirmationDialog from "../ConfirmationDialog";
 import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
@@ -41,6 +42,7 @@ function CreatableSelect({
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingOptionId, setDeletingOptionId] = useState<number | null>(null);
+  const [optionPendingDelete, setOptionPendingDelete] = useState<CreatableOption | null>(null);
   const selectedOption = options.find((option) => option.id === value) ?? null;
 
   useEffect(() => {
@@ -94,11 +96,6 @@ function CreatableSelect({
       return;
     }
 
-    const confirmed = window.confirm(`Remove ${option.name}? This will delete the brand.`);
-    if (!confirmed) {
-      return;
-    }
-
     setDeletingOptionId(option.id);
     setError(null);
 
@@ -111,6 +108,7 @@ function CreatableSelect({
       setError(caughtError instanceof Error ? caughtError.message : "Could not delete option.");
     } finally {
       setDeletingOptionId(null);
+      setOptionPendingDelete(null);
     }
   };
 
@@ -166,13 +164,13 @@ function CreatableSelect({
                     tabIndex={0}
                     onClick={(event) => {
                       event.stopPropagation();
-                      void deleteOption(option);
+                      setOptionPendingDelete(option);
                     }}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
                         event.stopPropagation();
-                        void deleteOption(option);
+                        setOptionPendingDelete(option);
                       }
                     }}
                   >
@@ -208,6 +206,17 @@ function CreatableSelect({
               setName("");
             }}
             onSave={saveNewOption}
+          />
+        )}
+        {optionPendingDelete !== null && (
+          <ConfirmationDialog
+            body={`This will delete ${optionPendingDelete.name}.`}
+            confirmLabel="Remove"
+            isBusy={deletingOptionId === optionPendingDelete.id}
+            theme={theme}
+            title={`Remove ${optionPendingDelete.name}?`}
+            onCancel={() => setOptionPendingDelete(null)}
+            onConfirm={() => void deleteOption(optionPendingDelete)}
           />
         )}
       </div>

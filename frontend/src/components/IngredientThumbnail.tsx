@@ -32,7 +32,7 @@ function IngredientThumbnail({
     selectedPresentation === "muted"
       ? thumbnailStyles.ingredientSelectedMuted
       : thumbnailStyles.ingredientSelectedOutline;
-  const sharedClassName = `${thumbnailStyles.ingredientShell} ${className} ${
+  const sharedClassName = `${thumbnailStyles.ingredientShell(theme)} ${className} ${
     selected ? selectedClassName : ""
   } ${disabled ? "cursor-not-allowed" : onClick ? `cursor-pointer ${siteColorClasses[theme].ingredientThumbnailInteractive}` : ""}`;
   const style = {

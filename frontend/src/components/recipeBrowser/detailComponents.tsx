@@ -72,11 +72,12 @@ type ChipListProps = {
   label: string;
   values: string[];
   theme: SiteTheme;
+  compact?: boolean;
 };
 
-export function ChipList({ label, values, theme }: ChipListProps) {
+export function ChipList({ compact = false, label, values, theme }: ChipListProps) {
   return (
-    <section className={recipeBrowserStyles.detailChipSection}>
+    <section className={compact ? recipeBrowserStyles.detailChipSectionCompact : recipeBrowserStyles.detailChipSection}>
       <span className={recipeBrowserStyles.label(theme)}>{label}</span>
       <div className={recipeBrowserStyles.detailChipList}>
         {values.length === 0 ? (
