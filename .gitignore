@@ -186,6 +186,7 @@ backend/wwwroot/icons.svg
 ScaffoldingReadMe.txt
 
 # NuGet Packages
+.nuget-appdata/
 *.nupkg
 *.snupkg
 **/packages/*

@@ -1,11 +1,12 @@
 using DinnerPlanner.Api.Dtos;
+using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DinnerPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ImageUploadsController(IWebHostEnvironment environment) : ControllerBase
+public class ImageUploadsController(ImageStoragePathProvider imageStorage) : ControllerBase
 {
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -44,8 +45,7 @@ public class ImageUploadsController(IWebHostEnvironment environment) : Controlle
         }
 
         var fileName = $"{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
-        var webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
-        var uploadFolder = Path.Combine(webRootPath, "images", safeFolder);
+        var uploadFolder = imageStorage.GetFolderPath(safeFolder);
 
         Directory.CreateDirectory(uploadFolder);
 

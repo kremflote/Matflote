@@ -12,26 +12,33 @@ $wwwrootPath = Join-Path $backendPath "wwwroot"
 
 if ($Install) {
     Push-Location $frontendPath
-    npm install
-    Pop-Location
+    try {
+        & npm.cmd install
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm install failed with exit code $LASTEXITCODE."
+        }
+    } finally {
+        Pop-Location
+    }
 }
 
 Push-Location $frontendPath
-npm run build
-Pop-Location
+try {
+    & npm.cmd run build
+    if ($LASTEXITCODE -ne 0) {
+        throw "npm run build failed with exit code $LASTEXITCODE."
+    }
+} finally {
+    Pop-Location
+}
 
 New-Item -ItemType Directory -Path $wwwrootPath -Force | Out-Null
 
-$generatedPaths = @(
-    (Join-Path $wwwrootPath "assets"),
-    (Join-Path $wwwrootPath "index.html"),
-    (Join-Path $wwwrootPath "favicon.svg"),
-    (Join-Path $wwwrootPath "icons.svg")
-)
+$preservedRootEntries = @("images")
 
-foreach ($path in $generatedPaths) {
-    if (Test-Path $path) {
-        Remove-Item -LiteralPath $path -Recurse -Force
+Get-ChildItem -LiteralPath $wwwrootPath -Force | ForEach-Object {
+    if ($preservedRootEntries -notcontains $_.Name) {
+        Remove-Item -LiteralPath $_.FullName -Recurse -Force
     }
 }
 

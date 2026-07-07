@@ -253,7 +253,7 @@ Border radius: 6px
 ### Create/edit form bodies
 
 ```
-Max height: 40vh
+Max height: 68vh
 Padding: 24px
 Border radius: 6px
 ```
@@ -351,6 +351,12 @@ Disabled/greyed filter options
 ```
 
 Page-specific files may define layout wrappers, but not duplicate the same browser controls.
+
+### Production-style local builds
+
+The backend can serve the built frontend from `backend/wwwroot`, but those files are generated output. Refresh them through `scripts/deploy-frontend.ps1` before local production-style testing. Use `scripts/build-app.ps1` when both the frontend deployment and backend Release build should be refreshed together.
+
+Keep user-uploaded images separate from generated frontend assets. Runtime images are served from `/images/*` through the backend image storage configuration, while generated frontend files under `backend/wwwroot` can be replaced by the deployment script.
 
 ### Confirmation dialogs
 

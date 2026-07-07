@@ -125,7 +125,7 @@ export const recipeBrowserStyles = {
   recipeCreateTopGrid:
     "grid grid-cols-[minmax(0,1fr)_minmax(220px,280px)] gap-4 max-md:grid-cols-1",
   recipePrimaryFields: "grid content-start gap-4",
-  recipeImageField: "relative grid content-start",
+  recipeImageField: "relative mt-6 grid content-start",
   field: "grid gap-2",
   label: (theme: SiteTheme) =>
     `text-xs font-bold ${
@@ -141,8 +141,7 @@ export const recipeBrowserStyles = {
       : theme === "paletteLight"
         ? "text-red-700"
         : "text-red-600",
-  textField: (theme: SiteTheme) =>
-    controlStyles.formField(theme),
+  textField: (theme: SiteTheme) => controlStyles.formField(theme),
   customSelectWrap: "relative",
   customSelectButton: (theme: SiteTheme) =>
     `${controlStyles.formField(theme)} flex items-center justify-between gap-3 text-left`,
@@ -202,8 +201,7 @@ export const recipeBrowserStyles = {
           ? "border-[#C8C0B5] bg-[#E5D5BC]/35"
           : "border-neutral-200 bg-neutral-50"
     }`,
-  textArea: (theme: SiteTheme) =>
-    controlStyles.textArea(theme),
+  textArea: (theme: SiteTheme) => controlStyles.textArea(theme),
   helperText: (theme: SiteTheme) =>
     `text-xs font-semibold leading-[1.45] ${
       theme === "dark"
@@ -228,8 +226,7 @@ export const recipeBrowserStyles = {
     "grid max-h-56 gap-2 overflow-y-auto rounded-md p-2",
   recipeIngredientPickerRow:
     "grid grid-cols-[auto_minmax(0,1fr)_6rem_9rem] items-center gap-2 max-md:grid-cols-[auto_minmax(0,1fr)]",
-  compactTextField: (theme: SiteTheme) =>
-    controlStyles.compactTextField(theme),
+  compactTextField: (theme: SiteTheme) => controlStyles.compactTextField(theme),
   checkboxGridPanel: (theme: SiteTheme) =>
     theme === "dark"
       ? "bg-white/[0.04]"
@@ -305,8 +302,7 @@ export const recipeBrowserStyles = {
           ? "border-[#C8C0B5] bg-[#FAF7F2]"
           : "border-neutral-300 bg-neutral-100"
     }`,
-  tabs: (theme: SiteTheme) =>
-    segmentedToggleStyles.shell(theme),
+  tabs: (theme: SiteTheme) => segmentedToggleStyles.shell(theme),
   tab: (theme: SiteTheme, selected: boolean) =>
     segmentedToggleStyles.option(theme, selected),
   filterRail: (theme: SiteTheme) =>
@@ -347,8 +343,7 @@ export const recipeBrowserStyles = {
     }`,
   checkbox: "h-4 w-4 rounded border-neutral-400 accent-neutral-500",
   resultsWithFilters: "col-span-10 max-lg:col-span-12",
-  recipeGrid:
-    "grid grid-cols-3 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1",
+  recipeGrid: "grid grid-cols-3 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1",
   ingredientGridPanel: (theme: SiteTheme) =>
     `rounded-md border p-3 ${
       theme === "dark"

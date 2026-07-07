@@ -306,7 +306,7 @@ export const controlStyles = {
 
 export const segmentedToggleStyles = {
   shell: (theme: SiteTheme, widthClass = "w-full") =>
-    `${sizeClasses.plannerControlHeight} ${widthClass} inline-flex max-w-full items-center overflow-hidden ${radiusClasses.figma6} border p-1 ${shadowClasses.subtle} ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerToggle}`,
+    `${sizeClasses.plannerControlHeight} ${widthClass} flex max-w-full items-center overflow-hidden ${radiusClasses.figma6} border p-1 ${shadowClasses.subtle} ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerToggle}`,
   option: (theme: SiteTheme, selected: boolean) =>
     `flex h-7 min-w-0 flex-1 items-center justify-center ${radiusClasses.figma6} px-3 text-xs font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${
       selected
