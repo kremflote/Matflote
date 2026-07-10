@@ -14,7 +14,7 @@ import {
   type TranslationDictionary,
 } from "../i18n";
 
-const languageStorageKey = "flote-language";
+const languageStorageKey = "matflote-language";
 
 type LanguageContextValue = {
   language: SupportedLanguage;

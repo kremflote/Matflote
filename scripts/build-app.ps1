@@ -14,4 +14,4 @@ try {
     Pop-Location
 }
 
-Write-Host "Flote app build completed."
+Write-Host "MATFLOTE app build completed."

@@ -315,7 +315,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     locale: "en",
     nav: {
       cookbook: "Cookbook",
-      home: "Fløte home",
+      home: "MATFLOTE home",
       planner: "Planner",
       primary: "Primary",
       settings: "Settings",
@@ -541,7 +541,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     locale: "nb-NO",
     nav: {
       cookbook: "Kokeboka",
-      home: "Fløte hjem",
+      home: "MATFLOTE hjem",
       planner: "Planlegger",
       primary: "Hovednavigasjon",
       settings: "Innstillinger",

@@ -4,7 +4,7 @@ Add-Type -AssemblyName System.Net.Http
 $root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $frontendPath = Join-Path $root "frontend"
 $backendPath = Join-Path $root "backend"
-$tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("flote-smoke-" + [Guid]::NewGuid().ToString("N"))
+$tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("matflote-smoke-" + [Guid]::NewGuid().ToString("N"))
 $dataRoot = Join-Path $tempRoot "data"
 $imagesRoot = Join-Path $tempRoot "images"
 $logPath = Join-Path $tempRoot "backend.log"

@@ -44,7 +44,7 @@ function Header({
           aria-label={t.nav.home}
           onClick={() => onPageChange("weekPlanner")}
         >
-          Matfløte
+          MATFLOTE
         </button>
 
         <nav className={headerStyles.nav} aria-label={t.nav.primary}>

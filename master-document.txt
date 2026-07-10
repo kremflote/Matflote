@@ -3,7 +3,7 @@ Spice Manager (not to be implemented now)
 
 # Product Identity
 
-App name: Fløte
+App name: MATFLOTE
 
 # Web Design Ruleset
 
@@ -34,7 +34,7 @@ Segoe Print:
 Use only for hero headings or major landing-page statements.
 
 Ubuntu Bold 700:
-Use only for the Fløte logo/brand mark.
+Use only for the MATFLOTE logo/brand mark.
 
 Nunito:
 Use for all normal interface text, body text, buttons, labels, cards, forms, navigation, and section headings.
@@ -357,6 +357,14 @@ Page-specific files may define layout wrappers, but not duplicate the same brows
 The backend can serve the built frontend from `backend/wwwroot`, but those files are generated output. Refresh them through `scripts/deploy-frontend.ps1` before local production-style testing. Use `scripts/build-app.ps1` when both the frontend deployment and backend Release build should be refreshed together.
 
 Keep user-uploaded images separate from generated frontend assets. Runtime images are served from `/images/*` through the backend image storage configuration, while generated frontend files under `backend/wwwroot` can be replaced by the deployment script.
+
+### Docker deployment assumptions
+
+Docker v1 is a single-household, single-server deployment. Phones, tablets, and computers sync by connecting to the same MATFLOTE server over LAN or a hosted address.
+
+The Docker setup uses a separate nginx frontend container and backend API container. nginx provides one browser origin, serves the built frontend, and proxies `/api/*`, `/images/*`, and `/health` to the backend.
+
+SQLite is accepted for this mode because one backend process owns the database file. The Docker database and uploaded images live in persistent volumes. PostgreSQL, accounts, households, auth, and offline multi-device sync are deferred future architecture decisions.
 
 ### Confirmation dialogs
 

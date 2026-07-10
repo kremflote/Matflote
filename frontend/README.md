@@ -1,4 +1,4 @@
-# Fløte
+# MATFLOTE
 
 A meal planning app with a React frontend and ASP.NET Core backend.
 
