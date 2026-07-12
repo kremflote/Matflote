@@ -372,11 +372,35 @@ Shopping list export is provider-based. MATFLOTE first builds a neutral grocery 
 
 Provider config is server-side. Environment variables and appsettings files seed the first-run configuration, and the Settings page can store runtime overrides in the database. API tokens must not live in frontend code, committed source files, or generated static assets. The Settings UI must never show a saved token value; it may only show whether one is configured and accept a replacement token.
 
-Vikunja v1 export creates one task containing a checklist-style shopping list to avoid spamming the todo project. Separate tasks per ingredient can be added later as an exporter option.
+Vikunja export supports two task modes:
+
+```
+SingleTask:
+One Vikunja task containing a checklist-style shopping list in the task description.
+
+SeparateTasks:
+One Vikunja task per ingredient. Task titles include ingredient name, brand when present, compact amount, and source meal names.
+```
+
+SingleTask should remain the default to avoid spamming the todo project.
 
 The backend exposes a preview endpoint before export so the generated neutral grocery list can be inspected without calling external services. Export endpoints should build from the same neutral list instead of duplicating planner aggregation logic.
 
 The Settings page may expose exporter options such as one checklist task versus separate ingredient tasks, plus a connection test. Connection tests must use the same server-side validation and token handling rules as real exports.
+
+### Runtime verification
+
+Use `scripts/smoke-test.ps1` as the first verification pass after backend/frontend integration changes. The smoke script should remain external-service-free. It may check local endpoints, temporary SQLite migration/startup behavior, runtime settings persistence, grocery preview generation, and image upload storage, but it should not require a real Vikunja token.
+
+Use Docker checks for deployment readiness:
+
+```
+docker compose config
+docker compose build
+docker compose up -d --build
+```
+
+Fresh Docker runs should prove that backend startup migrations create or update the SQLite database, runtime settings can be persisted, and images remain in the persistent image volume after container restart.
 
 ### Confirmation dialogs
 

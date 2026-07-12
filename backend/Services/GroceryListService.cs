@@ -27,6 +27,11 @@ public class GroceryListService(DinnerPlannerContext context)
                     .ThenInclude(recipe => recipe.Ingredients)
                         .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                             .ThenInclude(ingredient => ingredient.Tags)
+            .Include(entry => entry.Recipes)
+                .ThenInclude(mealPlanRecipe => mealPlanRecipe.Recipe)
+                    .ThenInclude(recipe => recipe.Ingredients)
+                        .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
+                            .ThenInclude(ingredient => ingredient.Brand)
             .Where(entry => entry.Date >= from && entry.Date <= to)
             .ToListAsync(cancellationToken);
 
@@ -35,6 +40,7 @@ public class GroceryListService(DinnerPlannerContext context)
             .SelectMany(mealPlanRecipe => mealPlanRecipe.Recipe.Ingredients.Select(recipeIngredient => new GroceryIngredientRow(
                 recipeIngredient.IngredientId,
                 recipeIngredient.Ingredient.IngredientName,
+                recipeIngredient.Ingredient.Brand?.Name,
                 recipeIngredient.Amount,
                 recipeIngredient.Unit,
                 mealPlanRecipe.Recipe.Name,
@@ -66,6 +72,8 @@ public class GroceryListService(DinnerPlannerContext context)
                     new GroceryListItemDto(
                         group.Key.IngredientId,
                         group.Key.IngredientName,
+                        group.Select(row => row.BrandName)
+                            .FirstOrDefault(brandName => !string.IsNullOrWhiteSpace(brandName)),
                         amount,
                         group.Key.Unit,
                         amount is null,
@@ -157,6 +165,7 @@ public class GroceryListService(DinnerPlannerContext context)
     private record GroceryIngredientRow(
         int IngredientId,
         string IngredientName,
+        string? BrandName,
         decimal? Amount,
         MeasurementUnit Unit,
         string SourceRecipe,

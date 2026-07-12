@@ -18,6 +18,7 @@ public record GroceryListSectionDto(
 public record GroceryListItemDto(
     int IngredientId,
     string IngredientName,
+    string? BrandName,
     decimal? Amount,
     MeasurementUnit Unit,
     bool IsApproximate,

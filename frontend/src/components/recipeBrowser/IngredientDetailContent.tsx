@@ -13,7 +13,7 @@ function IngredientDetailContent({ ingredient, theme }: IngredientDetailContentP
     <div className={recipeBrowserStyles.detailShell}>
       <DetailSection title="Overview" theme={theme}>
         <div className={recipeBrowserStyles.ingredientDetailMetaGrid}>
-          <MetadataRow label="Brand" theme={theme} value={ingredient.brand?.name ?? "No brand"} />
+          <MetadataRow label="Brand" theme={theme} value={ingredient.brand?.name ?? ""} />
           <MetadataRow
             label="Price"
             theme={theme}

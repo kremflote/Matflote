@@ -101,15 +101,19 @@ public class GroceryListsController(
                     Items = section.Items
                         .Select(item =>
                         {
-                            if (item.SourceRecipes.Count > 0
-                                || !fullItemsByKey.TryGetValue(GetGroceryListItemKey(item), out var fullItem))
+                            if (!fullItemsByKey.TryGetValue(GetGroceryListItemKey(item), out var fullItem))
                             {
                                 return item;
                             }
 
                             return item with
                             {
-                                SourceRecipes = fullItem.SourceRecipes
+                                BrandName = string.IsNullOrWhiteSpace(item.BrandName)
+                                    ? fullItem.BrandName
+                                    : item.BrandName,
+                                SourceRecipes = item.SourceRecipes.Count > 0
+                                    ? item.SourceRecipes
+                                    : fullItem.SourceRecipes
                             };
                         })
                         .ToList()

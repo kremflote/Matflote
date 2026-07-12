@@ -87,7 +87,7 @@ function RecipeDetailContent({ recipe, theme, onIngredientClick }: RecipeDetailC
                   />
                   <span className={recipeBrowserStyles.detailIngredientName}>{recipeIngredient.ingredient.ingredientName}</span>
                   <span className={recipeBrowserStyles.detailIngredientBrand}>
-                    {recipeIngredient.ingredient.brand?.name ?? "no brand"}
+                    {recipeIngredient.ingredient.brand?.name ?? ""}
                   </span>
                   <span className={recipeBrowserStyles.detailIngredientAmount}>
                     {formatRecipeIngredientAmount(recipeIngredient.amount, recipeIngredient.unit, amountMultiplier)}

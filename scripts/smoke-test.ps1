@@ -22,6 +22,42 @@ function Invoke-SmokeEndpoint {
     Write-Host "OK $Path"
 }
 
+function Invoke-SmokeAppSettings {
+    $settings = Invoke-RestMethod -Uri "$baseUrl/api/app-settings" -Method Get
+
+    if ($settings.shoppingListExport.provider -ne "Vikunja") {
+        throw "Expected default shopping list provider to be Vikunja."
+    }
+
+    if ($settings.shoppingListExport.taskMode -ne "SingleTask") {
+        throw "Expected default shopping list task mode to be SingleTask."
+    }
+
+    $body = @{
+        shoppingListExport = @{
+            provider = "Vikunja"
+            taskMode = "SeparateTasks"
+            vikunja = @{
+                baseUrl = "https://vikunja.example.com"
+                projectId = 3
+                apiToken = $null
+            }
+        }
+    } | ConvertTo-Json -Depth 8
+
+    $updatedSettings = Invoke-RestMethod `
+        -Uri "$baseUrl/api/app-settings" `
+        -Method Put `
+        -ContentType "application/json" `
+        -Body $body
+
+    if ($updatedSettings.shoppingListExport.taskMode -ne "SeparateTasks") {
+        throw "App settings update did not persist SeparateTasks mode."
+    }
+
+    Write-Host "OK /api/app-settings"
+}
+
 function Invoke-SmokeImageUpload {
     $imagePath = Join-Path $root "backend/SeedImages/recipes/chicken-rice-bowl.png"
     $client = [System.Net.Http.HttpClient]::new()
@@ -109,6 +145,8 @@ try {
     Invoke-SmokeEndpoint "/api/recipes"
     Invoke-SmokeEndpoint "/api/ingredients"
     Invoke-SmokeEndpoint "/api/mealplans?from=2026-01-01&to=2026-01-07"
+    Invoke-SmokeEndpoint "/api/grocerylists/preview?from=2026-01-01&to=2026-01-07"
+    Invoke-SmokeAppSettings
     Invoke-SmokeImageUpload
 
     Write-Host "Smoke test completed."

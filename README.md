@@ -152,6 +152,40 @@ git pull
 docker compose up -d --build
 ```
 
+## Verify A Local Build
+
+Use the smoke script before Docker work or before committing backend/frontend integration changes:
+
+```powershell
+.\scripts\smoke-test.ps1
+```
+
+The smoke script builds the frontend, builds the backend in Release mode, starts the backend on a temporary port with a temporary SQLite database and image folder, then checks:
+
+- `/health`
+- `/api/recipes`
+- `/api/ingredients`
+- `/api/mealplans`
+- `/api/grocerylists/preview`
+- `/api/app-settings`
+- image upload storage
+
+It does not call Vikunja, because that would require a real external server and token.
+
+To inspect the Docker configuration without starting containers:
+
+```powershell
+docker compose config
+```
+
+To rebuild the Docker images:
+
+```powershell
+docker compose build
+```
+
+For a fresh-container check, start MATFLOTE with new volumes or after `docker compose down -v`. The backend applies migrations on startup, creates the SQLite database if needed, and seeds missing bundled images into the configured image storage volume.
+
 ## Sync Model
 
 Docker v1 uses shared-server sync. Phones, tablets, and computers stay in sync by connecting to the same MATFLOTE server.
@@ -166,6 +200,7 @@ Configure Vikunja through environment variables, not committed files. These valu
 
 ```env
 SHOPPING_LIST_EXPORT_PROVIDER=Vikunja
+SHOPPING_LIST_EXPORT_TASK_MODE=SingleTask
 VIKUNJA_BASE_URL=https://vikunja.example.com
 VIKUNJA_PROJECT_ID=3
 VIKUNJA_API_TOKEN=your-token-here
@@ -176,6 +211,11 @@ For development, `VIKUNJA_BASE_URL` can point at a Tailscale-only address as lon
 The API token must have permission to create tasks in the configured Vikunja project. Do not commit real tokens to the repository.
 
 The Settings page never shows a saved token value. Leave the token field blank to keep the existing token, or enter a new token to replace it.
+
+The task mode can be changed from the Settings page:
+
+- `SingleTask`: one Vikunja task with a checklist in the description.
+- `SeparateTasks`: one Vikunja task per ingredient, formatted with amount, source meals, and brand when available.
 
 Preview the generated list without exporting:
 
@@ -189,6 +229,4 @@ Export the generated list to the configured provider:
 POST /api/grocerylists/export?from=YYYY-MM-DD&to=YYYY-MM-DD
 ```
 
-The initial Vikunja exporter creates one task with a checklist in the description.
-
-From the Settings page, you can switch between one checklist task and separate tasks per ingredient. The Settings page also includes a connection test that uses the current form values and the saved token when the token field is left blank.
+The Settings page also includes a connection test that uses the current form values and the saved token when the token field is left blank.

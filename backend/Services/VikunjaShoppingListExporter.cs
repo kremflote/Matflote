@@ -142,7 +142,7 @@ public class VikunjaShoppingListExporter(
             foreach (var item in section.Items)
             {
                 builder.Append("- [ ] ");
-                builder.Append(CultureInfo.InvariantCulture.TextInfo.ToTitleCase(item.IngredientName));
+                builder.Append(BuildItemNameWithBrand(item));
                 builder.Append(" - ");
                 builder.Append(item.DisplayAmount);
 
@@ -184,6 +184,11 @@ public class VikunjaShoppingListExporter(
         builder.AppendLine($"Range: {groceryList.From:yyyy-MM-dd} - {groceryList.To:yyyy-MM-dd}");
         builder.AppendLine($"Section: {sectionName}");
 
+        if (!string.IsNullOrWhiteSpace(item.BrandName))
+        {
+            builder.AppendLine($"Brand: {item.BrandName}");
+        }
+
         if (item.SourceRecipes.Count > 0)
         {
             builder.AppendLine($"Recipes: {string.Join(", ", item.SourceRecipes)}");
@@ -194,11 +199,20 @@ public class VikunjaShoppingListExporter(
 
     private static string BuildItemTaskTitle(GroceryListItemDto item)
     {
-        var title = $"{CultureInfo.InvariantCulture.TextInfo.ToTitleCase(item.IngredientName)} - {FormatTitleAmount(item.DisplayAmount)}";
+        var title = $"{BuildItemNameWithBrand(item)} - {FormatTitleAmount(item.DisplayAmount)}";
 
         return item.SourceRecipes.Count == 0
             ? title
             : $"{title} - ({string.Join(", ", item.SourceRecipes)})";
+    }
+
+    private static string BuildItemNameWithBrand(GroceryListItemDto item)
+    {
+        var ingredientName = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(item.IngredientName);
+
+        return string.IsNullOrWhiteSpace(item.BrandName)
+            ? ingredientName
+            : $"{ingredientName} - {item.BrandName}";
     }
 
     private static string FormatTitleAmount(string displayAmount) =>

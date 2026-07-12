@@ -26,7 +26,6 @@ function IngredientThumbnail({
   onClick,
 }: IngredientThumbnailProps) {
   const brandName = ingredient.brand?.name ?? "";
-  const displayBrand = brandName || "no brand";
   const tone = getIngredientTone(ingredient.color);
   const selectedClassName =
     selectedPresentation === "muted"
@@ -51,7 +50,7 @@ function IngredientThumbnail({
           {ingredient.ingredientName}
         </span>
         <span className={thumbnailStyles.ingredientBrand}>
-          {displayBrand}
+          {brandName}
         </span>
       </span>
     </>

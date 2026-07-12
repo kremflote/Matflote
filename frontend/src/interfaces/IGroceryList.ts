@@ -15,6 +15,7 @@ export interface IGroceryListSection {
 export interface IGroceryListItem {
   ingredientId: number;
   ingredientName: string;
+  brandName: string | null;
   amount: number | null;
   unit: MeasurementUnit;
   isApproximate: boolean;
