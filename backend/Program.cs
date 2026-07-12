@@ -36,6 +36,9 @@ builder.Services.AddControllers()
     });
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<ImageStoragePathProvider>();
+builder.Services.AddScoped<GroceryListService>();
+builder.Services.AddScoped<ShoppingListExportService>();
+builder.Services.AddHttpClient<IShoppingListExporter, VikunjaShoppingListExporter>();
 
 var app = builder.Build();
 

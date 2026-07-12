@@ -366,6 +366,16 @@ The Docker setup uses a separate nginx frontend container and backend API contai
 
 SQLite is accepted for this mode because one backend process owns the database file. The Docker database and uploaded images live in persistent volumes. PostgreSQL, accounts, households, auth, and offline multi-device sync are deferred future architecture decisions.
 
+### Shopping list export assumptions
+
+Shopping list export is provider-based. MATFLOTE first builds a neutral grocery list from planner meals, then passes it to the configured exporter. Vikunja is the first exporter, but other todo systems should be implemented as additional exporters rather than by coupling planner logic directly to a third-party API.
+
+Provider config is server-side. API tokens must live in environment variables or local server configuration, not in frontend code, committed source files, or generated static assets.
+
+Vikunja v1 export creates one task containing a checklist-style shopping list to avoid spamming the todo project. Separate tasks per ingredient can be added later as an exporter option.
+
+The backend exposes a preview endpoint before export so the generated neutral grocery list can be inspected without calling external services. Export endpoints should build from the same neutral list instead of duplicating planner aggregation logic.
+
 ### Confirmation dialogs
 
 Use the shared `ConfirmationDialog` component for destructive or bulk actions. Do not use `window.confirm` for app workflows.

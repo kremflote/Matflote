@@ -10,6 +10,10 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DinnerPlanner: Data Source=/data/dinnerplanner.db
       ImageStorage__RootPath: /data/images
+      ShoppingListExport__Provider: ${SHOPPING_LIST_EXPORT_PROVIDER:-Vikunja}
+      Vikunja__BaseUrl: ${VIKUNJA_BASE_URL:-}
+      Vikunja__ApiToken: ${VIKUNJA_API_TOKEN:-}
+      Vikunja__ProjectId: ${VIKUNJA_PROJECT_ID:-}
     volumes:
       - matflote-data:/data
       - matflote-images:/data/images

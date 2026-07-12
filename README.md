@@ -157,3 +157,34 @@ docker compose up -d --build
 Docker v1 uses shared-server sync. Phones, tablets, and computers stay in sync by connecting to the same MATFLOTE server.
 
 There are no accounts, users, households, or offline multi-device sync in this milestone. Those would be future architecture decisions.
+
+## Shopping List Export
+
+MATFLOTE can export generated shopping lists through a provider model. Vikunja is the first supported provider; other todo systems can be added later as separate exporters without changing the grocery-list builder.
+
+Configure Vikunja through environment variables, not committed files:
+
+```env
+SHOPPING_LIST_EXPORT_PROVIDER=Vikunja
+VIKUNJA_BASE_URL=https://vikunja.example.com
+VIKUNJA_PROJECT_ID=3
+VIKUNJA_API_TOKEN=your-token-here
+```
+
+For development, `VIKUNJA_BASE_URL` can point at a Tailscale-only address as long as the machine or container running MATFLOTE can reach it.
+
+The API token must have permission to create tasks in the configured Vikunja project. Do not commit real tokens to the repository.
+
+Preview the generated list without exporting:
+
+```text
+GET /api/grocerylists/preview?from=YYYY-MM-DD&to=YYYY-MM-DD
+```
+
+Export the generated list to the configured provider:
+
+```text
+POST /api/grocerylists/export?from=YYYY-MM-DD&to=YYYY-MM-DD
+```
+
+The initial Vikunja exporter creates one task with a checklist in the description.
