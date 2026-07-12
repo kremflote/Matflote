@@ -162,7 +162,7 @@ There are no accounts, users, households, or offline multi-device sync in this m
 
 MATFLOTE can export generated shopping lists through a provider model. Vikunja is the first supported provider; other todo systems can be added later as separate exporters without changing the grocery-list builder.
 
-Configure Vikunja through environment variables, not committed files:
+Configure Vikunja through environment variables, not committed files. These values seed first-run/server config, and can later be overridden from the MATFLOTE Settings page:
 
 ```env
 SHOPPING_LIST_EXPORT_PROVIDER=Vikunja
@@ -174,6 +174,8 @@ VIKUNJA_API_TOKEN=your-token-here
 For development, `VIKUNJA_BASE_URL` can point at a Tailscale-only address as long as the machine or container running MATFLOTE can reach it.
 
 The API token must have permission to create tasks in the configured Vikunja project. Do not commit real tokens to the repository.
+
+The Settings page never shows a saved token value. Leave the token field blank to keep the existing token, or enter a new token to replace it.
 
 Preview the generated list without exporting:
 
@@ -188,3 +190,5 @@ POST /api/grocerylists/export?from=YYYY-MM-DD&to=YYYY-MM-DD
 ```
 
 The initial Vikunja exporter creates one task with a checklist in the description.
+
+From the Settings page, you can switch between one checklist task and separate tasks per ingredient. The Settings page also includes a connection test that uses the current form values and the saved token when the token field is left blank.

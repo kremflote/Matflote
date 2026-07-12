@@ -3,13 +3,13 @@ using DinnerPlanner.Api.Dtos;
 namespace DinnerPlanner.Api.Services;
 
 public class ShoppingListExportService(
-    IConfiguration configuration,
+    AppSettingsService appSettingsService,
     IEnumerable<IShoppingListExporter> exporters
 )
 {
-    public Task<ShoppingListExportResultDto> ExportAsync(GroceryListDto groceryList, CancellationToken cancellationToken)
+    public async Task<ShoppingListExportResultDto> ExportAsync(GroceryListDto groceryList, CancellationToken cancellationToken)
     {
-        var provider = configuration["ShoppingListExport:Provider"];
+        var provider = await appSettingsService.GetValueAsync(AppSettingKeys.ExportProvider, cancellationToken);
 
         if (string.IsNullOrWhiteSpace(provider))
         {
@@ -24,6 +24,6 @@ public class ShoppingListExportService(
             throw new ShoppingListExportConfigurationException($"Shopping list export provider '{provider}' is not supported.");
         }
 
-        return exporter.ExportAsync(groceryList, cancellationToken);
+        return await exporter.ExportAsync(groceryList, cancellationToken);
     }
 }

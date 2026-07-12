@@ -370,11 +370,13 @@ SQLite is accepted for this mode because one backend process owns the database f
 
 Shopping list export is provider-based. MATFLOTE first builds a neutral grocery list from planner meals, then passes it to the configured exporter. Vikunja is the first exporter, but other todo systems should be implemented as additional exporters rather than by coupling planner logic directly to a third-party API.
 
-Provider config is server-side. API tokens must live in environment variables or local server configuration, not in frontend code, committed source files, or generated static assets.
+Provider config is server-side. Environment variables and appsettings files seed the first-run configuration, and the Settings page can store runtime overrides in the database. API tokens must not live in frontend code, committed source files, or generated static assets. The Settings UI must never show a saved token value; it may only show whether one is configured and accept a replacement token.
 
 Vikunja v1 export creates one task containing a checklist-style shopping list to avoid spamming the todo project. Separate tasks per ingredient can be added later as an exporter option.
 
 The backend exposes a preview endpoint before export so the generated neutral grocery list can be inspected without calling external services. Export endpoints should build from the same neutral list instead of duplicating planner aggregation logic.
+
+The Settings page may expose exporter options such as one checklist task versus separate ingredient tasks, plus a connection test. Connection tests must use the same server-side validation and token handling rules as real exports.
 
 ### Confirmation dialogs
 

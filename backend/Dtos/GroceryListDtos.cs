@@ -1,4 +1,5 @@
 using DinnerPlanner.Api.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace DinnerPlanner.Api.Dtos;
 
@@ -29,4 +30,8 @@ public record ShoppingListExportResultDto(
     string ExternalId,
     string? ExternalUrl,
     string Message
+);
+
+public record GroceryListExportRequest(
+    [Required] GroceryListDto GroceryList
 );

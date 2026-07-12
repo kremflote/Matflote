@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import MealCalendar from "../components/MealCalendar";
 import ConfirmationDialog from "../components/ConfirmationDialog";
+import GroceryExportDialog from "../components/GroceryExportDialog";
 import PlannerControls from "../components/PlannerControls";
 import PlannerRecipePickerModal from "../components/PlannerRecipePickerModal";
 import { useLanguage, useMealPlan, useRecipes } from "../contexts";
+import type { IGroceryList } from "../interfaces/IGroceryList";
 import type { MealRecipeRole, MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
+import { groceryListService } from "../services";
 import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
 
 type PlannerPageProps = {
@@ -27,6 +30,9 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const [plannerAction, setPlannerAction] = useState<"clear" | "generate" | null>(null);
   const [pendingPlannerAction, setPendingPlannerAction] = useState<"clear" | "generate" | null>(null);
   const [plannerActionError, setPlannerActionError] = useState<string | null>(null);
+  const [groceryListPreview, setGroceryListPreview] = useState<IGroceryList | null>(null);
+  const [isGroceryListLoading, setIsGroceryListLoading] = useState(false);
+  const [groceryListLoadError, setGroceryListLoadError] = useState<string | null>(null);
   const {
     mealPlanEntries,
     mealPlanIsLoading,
@@ -119,6 +125,30 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     setPendingPlannerAction("generate");
   };
 
+  const openGroceryExportDialog = async () => {
+    if (plannerAction !== null || mealPlanIsLoading || isGroceryListLoading) {
+      return;
+    }
+
+    setGroceryListPreview(createEmptyGroceryList(visibleRange.from, visibleRange.to));
+    setIsGroceryListLoading(true);
+    setGroceryListLoadError(null);
+    setPlannerActionError(null);
+
+    try {
+      setGroceryListPreview(await groceryListService.preview(visibleRange.from, visibleRange.to));
+    } catch (_error) {
+      setGroceryListLoadError(t.planner.groceryExportCouldNotLoad);
+    } finally {
+      setIsGroceryListLoading(false);
+    }
+  };
+
+  const closeGroceryExportDialog = () => {
+    setGroceryListPreview(null);
+    setGroceryListLoadError(null);
+  };
+
   const generateCurrentRange = async () => {
     const generationDates = getGenerationDates(anchorDate, viewMode);
     const rangeLabel = t.planner.rangeNames[viewMode];
@@ -191,11 +221,13 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
         anchorLabel={getAnchorLabel(anchorDate, viewMode, locale, t.planner.weekLabel)}
         anchorYear={getAnchorYear(anchorDate, locale)}
         isClearRangeRunning={plannerAction === "clear"}
+        isExportRangeRunning={isGroceryListLoading}
         isGenerateRangeRunning={plannerAction === "generate"}
         isRangeBusy={mealPlanIsLoading}
         theme={theme}
         viewMode={viewMode}
         onClearRange={requestClearCurrentRange}
+        onExportRange={openGroceryExportDialog}
         onGenerateRange={requestGenerateCurrentRange}
         onNextRange={moveToNextRange}
         onPreviousRange={moveToPreviousRange}
@@ -226,6 +258,15 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           onClose={() => setSelectedSlot(null)}
           onDelete={deleteMealPlanEntry}
           onSave={saveMealPlanEntry}
+        />
+      )}
+      {groceryListPreview !== null && (
+        <GroceryExportDialog
+          groceryList={groceryListPreview}
+          isLoading={isGroceryListLoading}
+          loadError={groceryListLoadError}
+          theme={theme}
+          onClose={closeGroceryExportDialog}
         />
       )}
       {pendingPlannerAction !== null && (
@@ -315,6 +356,15 @@ function getGenerationDates(anchorDate: Date, viewMode: PlannerViewMode) {
   }
 
   return getDatesInRange(getWeekStart(anchorDate), getWeekEnd(anchorDate));
+}
+
+function createEmptyGroceryList(from: string, to: string): IGroceryList {
+  return {
+    from,
+    to,
+    generatedAt: new Date().toISOString(),
+    sections: [],
+  };
 }
 
 function getAnchorLabel(

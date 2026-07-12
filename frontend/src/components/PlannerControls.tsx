@@ -6,6 +6,7 @@ type PlannerControlsProps = {
   anchorLabel: string;
   anchorYear: string;
   isClearRangeRunning?: boolean;
+  isExportRangeRunning?: boolean;
   isGenerateRangeRunning?: boolean;
   isRangeBusy?: boolean;
   theme?: SiteTheme;
@@ -13,6 +14,7 @@ type PlannerControlsProps = {
   onNextRange: () => void;
   onPreviousRange: () => void;
   onClearRange: () => void | Promise<void>;
+  onExportRange: () => void | Promise<void>;
   onGenerateRange: () => void | Promise<void>;
   onViewModeChange: (value: PlannerViewMode) => void;
 };
@@ -21,6 +23,7 @@ function PlannerControls({
   anchorLabel,
   anchorYear,
   isClearRangeRunning = false,
+  isExportRangeRunning = false,
   isGenerateRangeRunning = false,
   isRangeBusy = false,
   theme = "dark",
@@ -28,6 +31,7 @@ function PlannerControls({
   onNextRange,
   onPreviousRange,
   onClearRange,
+  onExportRange,
   onGenerateRange,
   onViewModeChange,
 }: PlannerControlsProps) {
@@ -70,11 +74,14 @@ function PlannerControls({
             <button
               aria-label={t.planner.exportGroceryList}
               className={plannerControlsStyles.iconOnlyButton(theme)}
-              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning || isExportRangeRunning}
               type="button"
+              onClick={onExportRange}
             >
               <ExportIcon />
-              <span className={plannerControlsStyles.tooltip(theme)}>{t.planner.exportGroceryList}</span>
+              <span className={plannerControlsStyles.tooltip(theme)}>
+                {isExportRangeRunning ? t.planner.groceryExportLoading : t.planner.exportGroceryList}
+              </span>
             </button>
           </div>
         </div>

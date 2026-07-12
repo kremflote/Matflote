@@ -1,7 +1,9 @@
 export { ApiError, apiRequest } from "./apiClient";
+export { appSettingsService } from "./appSettingsService";
 export { brandService } from "./brandService";
 export { cuisineService } from "./cuisineService";
 export { imageUploadService } from "./imageUploadService";
+export { groceryListService } from "./groceryListService";
 export { ingredientService } from "./ingredientService";
 export { mealPlanService } from "./mealPlanService";
 export { recipeService } from "./recipeService";

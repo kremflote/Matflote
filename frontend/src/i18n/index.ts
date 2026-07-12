@@ -82,7 +82,9 @@ export type TranslationDictionary = {
   };
   language: {
     english: string;
+    englishShort: string;
     norwegian: string;
+    norwegianShort: string;
   };
   locale: string;
   nav: {
@@ -110,6 +112,18 @@ export type TranslationDictionary = {
     dish: string;
     editMeal: (slot: string, label: string) => string;
     exportGroceryList: string;
+    groceryExportCouldNotLoad: string;
+    groceryExportCouldNotSend: string;
+    groceryExportDescription: string;
+    groceryExportEmpty: string;
+    groceryExportLoading: string;
+    groceryExportSections: Record<string, string>;
+    groceryExportSelectedCount: (selected: number, total: number) => string;
+    groceryExportSend: string;
+    groceryExportSending: string;
+    groceryExportSent: string;
+    groceryExportSources: (sources: string) => string;
+    groceryExportTitle: string;
     generateCurrent: (range: string) => string;
     generateMealPlan: string;
     generateRangeBody: (range: string) => string;
@@ -138,9 +152,40 @@ export type TranslationDictionary = {
     yearLabel: (year: string) => string;
   };
   settings: {
+    apiToken: string;
+    apiTokenConfigured: string;
+    apiTokenHelp: string;
+    apiTokenPlaceholder: string;
+    couldNotLoad: string;
+    couldNotSave: string;
+    currentProvider: string;
+    currentProviderMode: string;
+    databaseProvider: string;
+    environment: string;
+    exportBody: string;
+    exportMode: string;
+    exportModeSeparateTasks: string;
+    exportModeSeparateTasksHelp: string;
+    exportModeSingleTask: string;
+    exportModeSingleTaskHelp: string;
+    exportTitle: string;
+    imageStorage: string;
     languageBody: string;
     languageTitle: string;
     pageTitle: string;
+    projectId: string;
+    provider: string;
+    saveSettings: string;
+    saved: string;
+    saving: string;
+    systemBody: string;
+    systemTitle: string;
+    vikunjaBaseUrl: string;
+    vikunjaBaseUrlPlaceholder: string;
+    testConnection: string;
+    testingConnection: string;
+    testConnectionSucceeded: string;
+    testConnectionFailed: string;
   };
   theme: {
     switchToDark: string;
@@ -310,7 +355,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     },
     language: {
       english: "English",
+      englishShort: "ENG",
       norwegian: "Norwegian",
+      norwegianShort: "NOR",
     },
     locale: "en",
     nav: {
@@ -338,6 +385,25 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       dish: "Dish",
       editMeal: (slot, label) => `Edit ${slot}: ${label}`,
       exportGroceryList: "Export grocery list",
+      groceryExportCouldNotLoad: "Could not load the grocery list.",
+      groceryExportCouldNotSend: "Could not export the grocery list. Check the export settings and try again.",
+      groceryExportDescription: "Review the ingredients before sending them to your shopping list.",
+      groceryExportEmpty: "No ingredients found for this range.",
+      groceryExportLoading: "Building grocery list...",
+      groceryExportSections: {
+        Dairy: "Dairy",
+        Frozen: "Frozen",
+        Other: "Other",
+        Pantry: "Pantry",
+        Produce: "Produce",
+        Protein: "Protein",
+      },
+      groceryExportSelectedCount: (selected, total) => `${selected}/${total} selected`,
+      groceryExportSend: "Send list",
+      groceryExportSending: "Sending...",
+      groceryExportSent: "Shopping list exported.",
+      groceryExportSources: (sources) => `From ${sources}`,
+      groceryExportTitle: "Export grocery list",
       generateCurrent: (range) => `Generate this ${range}?`,
       generateMealPlan: "Generate meal plan",
       generateRangeBody: (range) =>
@@ -370,9 +436,40 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       yearLabel: (year) => `Year ${year}`,
     },
     settings: {
+      apiToken: "API token",
+      apiTokenConfigured: "Token configured",
+      apiTokenHelp: "Leave blank to keep the current token. Tokens are never shown again after saving.",
+      apiTokenPlaceholder: "Paste a new token",
+      couldNotLoad: "Could not load settings.",
+      couldNotSave: "Could not save settings.",
+      currentProvider: "Current todo provider",
+      currentProviderMode: "Mode",
+      databaseProvider: "Database",
+      environment: "Environment",
+      exportBody: "Configure where MATFLOTE sends generated shopping lists.",
+      exportMode: "Export mode",
+      exportModeSeparateTasks: "Separate tasks",
+      exportModeSeparateTasksHelp: "Creates one Vikunja task per ingredient.",
+      exportModeSingleTask: "One task",
+      exportModeSingleTaskHelp: "Creates one Vikunja task with a checklist.",
+      exportTitle: "Shopping list export",
+      imageStorage: "Image storage",
       languageBody: "Choose which language the interface should use.",
       languageTitle: "Language",
       pageTitle: "Settings",
+      projectId: "Project ID",
+      provider: "Current todo provider",
+      saveSettings: "Save settings",
+      saved: "Settings saved.",
+      saving: "Saving...",
+      systemBody: "Read-only server details that are useful when running MATFLOTE on a homeserver.",
+      systemTitle: "System",
+      vikunjaBaseUrl: "Vikunja URL",
+      vikunjaBaseUrlPlaceholder: "https://vikunja.example.com/",
+      testConnection: "Test connection",
+      testingConnection: "Testing...",
+      testConnectionSucceeded: "Connection succeeded.",
+      testConnectionFailed: "Connection test failed.",
     },
     theme: {
       switchToDark: "Switch to dark mode",
@@ -536,7 +633,9 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     },
     language: {
       english: "Engelsk",
+      englishShort: "ENG",
       norwegian: "Norsk",
+      norwegianShort: "NOR",
     },
     locale: "nb-NO",
     nav: {
@@ -564,6 +663,25 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       dish: "Rett",
       editMeal: (slot, label) => `Rediger ${slot}: ${label}`,
       exportGroceryList: "Eksporter handleliste",
+      groceryExportCouldNotLoad: "Kunne ikke laste handlelisten.",
+      groceryExportCouldNotSend: "Kunne ikke eksportere handlelisten. Sjekk eksportinnstillingene og prøv igjen.",
+      groceryExportDescription: "Se over ingrediensene før de sendes til handlelisten.",
+      groceryExportEmpty: "Ingen ingredienser funnet for denne perioden.",
+      groceryExportLoading: "Bygger handleliste...",
+      groceryExportSections: {
+        Dairy: "Meieri",
+        Frozen: "Frossent",
+        Other: "Annet",
+        Pantry: "Tørrvarer",
+        Produce: "Frukt og grønt",
+        Protein: "Protein",
+      },
+      groceryExportSelectedCount: (selected, total) => `${selected}/${total} valgt`,
+      groceryExportSend: "Send liste",
+      groceryExportSending: "Sender...",
+      groceryExportSent: "Handlelisten er eksportert.",
+      groceryExportSources: (sources) => `Fra ${sources}`,
+      groceryExportTitle: "Eksporter handleliste",
       generateCurrent: (range) => `Generer denne ${range}?`,
       generateMealPlan: "Generer måltidsplan",
       generateRangeBody: (range) =>
@@ -596,9 +714,40 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       yearLabel: (year) => `År ${year}`,
     },
     settings: {
+      apiToken: "API-token",
+      apiTokenConfigured: "Token er konfigurert",
+      apiTokenHelp: "La feltet stå tomt for å beholde nåværende token. Tokens vises aldri igjen etter lagring.",
+      apiTokenPlaceholder: "Lim inn ny token",
+      couldNotLoad: "Kunne ikke laste innstillinger.",
+      couldNotSave: "Kunne ikke lagre innstillinger.",
+      currentProvider: "Gjeldende todo-tilbyder",
+      currentProviderMode: "Modus",
+      databaseProvider: "Database",
+      environment: "Miljø",
+      exportBody: "Konfigurer hvor MATFLOTE sender genererte handlelister.",
+      exportMode: "Eksportmodus",
+      exportModeSeparateTasks: "Separate oppgaver",
+      exportModeSeparateTasksHelp: "Oppretter én Vikunja-oppgave per ingrediens.",
+      exportModeSingleTask: "Én oppgave",
+      exportModeSingleTaskHelp: "Oppretter én Vikunja-oppgave med sjekkliste.",
+      exportTitle: "Handlelisteeksport",
+      imageStorage: "Bildelagring",
       languageBody: "Velg hvilket språk grensesnittet skal bruke.",
       languageTitle: "Språk",
       pageTitle: "Innstillinger",
+      projectId: "Prosjekt-ID",
+      provider: "Gjeldende todo-tilbyder",
+      saveSettings: "Lagre innstillinger",
+      saved: "Innstillinger lagret.",
+      saving: "Lagrer...",
+      systemBody: "Skrivebeskyttede serverdetaljer som er nyttige når MATFLOTE kjører på en hjemmeserver.",
+      systemTitle: "System",
+      vikunjaBaseUrl: "Vikunja-URL",
+      vikunjaBaseUrlPlaceholder: "https://vikunja.example.com/",
+      testConnection: "Test tilkobling",
+      testingConnection: "Tester...",
+      testConnectionSucceeded: "Tilkoblingen fungerer.",
+      testConnectionFailed: "Tilkoblingstest feilet.",
     },
     theme: {
       switchToDark: "Bytt til mørk modus",

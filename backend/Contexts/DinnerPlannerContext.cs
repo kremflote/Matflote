@@ -6,6 +6,7 @@ namespace DinnerPlanner.Api.Contexts;
 
 public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options) : DbContext(options)
 {
+    public DbSet<AppSetting> AppSettings => Set<AppSetting>();
     public DbSet<Brand> Brands => Set<Brand>();
     public DbSet<Cuisine> Cuisines => Set<Cuisine>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
@@ -25,6 +26,13 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<AppSetting>(entity =>
+        {
+            entity.HasKey(setting => setting.Key);
+            entity.Property(setting => setting.Key).HasMaxLength(160);
+            entity.Property(setting => setting.Value).HasMaxLength(2000);
+        });
 
         modelBuilder.Entity<Brand>(entity =>
         {
