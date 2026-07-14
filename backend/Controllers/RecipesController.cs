@@ -13,16 +13,7 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RecipeDto>>> GetRecipes([FromQuery] RecipeType? type)
     {
-        var recipes = await context.Recipes
-            .AsNoTracking()
-            .Include(recipe => recipe.Ingredients)
-                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                    .ThenInclude(ingredient => ingredient.Brand)
-            .Include(recipe => recipe.Ingredients)
-                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                    .ThenInclude(ingredient => ingredient.Tags)
-            .Include(recipe => (recipe as Dish)!.Cuisine)
-            .Include(recipe => recipe.Tags)
+        var recipes = await RecipeDetails(asNoTracking: true)
             .OrderBy(recipe => recipe.Name)
             .ToListAsync();
 
@@ -37,16 +28,7 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<RecipeDto>> GetRecipe(int id)
     {
-        var recipe = await context.Recipes
-            .AsNoTracking()
-            .Include(recipe => recipe.Ingredients)
-                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                    .ThenInclude(ingredient => ingredient.Brand)
-            .Include(recipe => recipe.Ingredients)
-                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                    .ThenInclude(ingredient => ingredient.Tags)
-            .Include(recipe => (recipe as Dish)!.Cuisine)
-            .Include(recipe => recipe.Tags)
+        var recipe = await RecipeDetails(asNoTracking: true)
             .FirstOrDefaultAsync(recipe => recipe.RecipeId == id);
 
         return recipe is null ? NotFound() : Ok(ToDto(recipe));
@@ -89,15 +71,7 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateRecipe(int id, RecipeRequest request)
     {
-        var recipe = await context.Recipes
-            .Include(recipe => recipe.Ingredients)
-                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                    .ThenInclude(ingredient => ingredient.Brand)
-            .Include(recipe => recipe.Ingredients)
-                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                    .ThenInclude(ingredient => ingredient.Tags)
-            .Include(recipe => (recipe as Dish)!.Cuisine)
-            .Include(recipe => recipe.Tags)
+        var recipe = await RecipeDetails()
             .FirstOrDefaultAsync(recipe => recipe.RecipeId == id);
 
         if (recipe is null)
@@ -163,8 +137,16 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         return NoContent();
     }
 
-    private Task<Recipe?> LoadRecipe(int id) => context.Recipes
-        .AsNoTracking()
+    private Task<Recipe?> LoadRecipe(int id) => RecipeDetails(asNoTracking: true)
+        .FirstOrDefaultAsync(recipe => recipe.RecipeId == id);
+
+    private IQueryable<Recipe> RecipeDetails(bool asNoTracking = false)
+    {
+        var query = asNoTracking
+            ? context.Recipes.AsNoTracking()
+            : context.Recipes;
+
+        return query
         .Include(recipe => recipe.Ingredients)
             .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                 .ThenInclude(ingredient => ingredient.Brand)
@@ -172,8 +154,8 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
             .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                 .ThenInclude(ingredient => ingredient.Tags)
         .Include(recipe => (recipe as Dish)!.Cuisine)
-        .Include(recipe => recipe.Tags)
-        .FirstOrDefaultAsync(recipe => recipe.RecipeId == id);
+        .Include(recipe => recipe.Tags);
+    }
 
     private async Task<List<Ingredient>> GetIngredients(IReadOnlyCollection<int> ingredientIds)
     {

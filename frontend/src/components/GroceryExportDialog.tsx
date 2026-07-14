@@ -3,6 +3,7 @@ import { useLanguage } from "../contexts";
 import type { IGroceryList, IGroceryListItem } from "../interfaces/IGroceryList";
 import { ApiError, groceryListService } from "../services";
 import { groceryExportStyles, type SiteTheme } from "../styles/appStyles";
+import Modal from "./Modal";
 
 type GroceryExportDialogProps = {
   groceryList: IGroceryList;
@@ -100,15 +101,13 @@ function GroceryExportDialog({
   };
 
   return (
-    <div className={groceryExportStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
-      <section
-        aria-describedby={descriptionId}
-        aria-labelledby={titleId}
-        aria-modal="true"
-        className={groceryExportStyles.modalPanel(theme)}
-        role="dialog"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
+    <Modal
+      backdropClassName={groceryExportStyles.modalBackdrop}
+      describedBy={descriptionId}
+      labelledBy={titleId}
+      panelClassName={groceryExportStyles.modalPanel(theme)}
+      onClose={onClose}
+    >
         <div className={groceryExportStyles.header}>
           <div>
             <h2 className={groceryExportStyles.title} id={titleId}>{t.planner.groceryExportTitle}</h2>
@@ -205,8 +204,7 @@ function GroceryExportDialog({
             </button>
           </div>
         </div>
-      </section>
-    </div>
+    </Modal>
   );
 }
 

@@ -2,15 +2,8 @@ import { useEffect, useId, useRef } from "react";
 import { useLanguage } from "../contexts";
 import type { MeasurementUnit } from "../interfaces/IIngredient";
 import { prepHelperStyles, type SiteTheme } from "../styles/appStyles";
-
-export type PrepHelperItem = {
-  ingredientId: number;
-  ingredientName: string;
-  amount: number | null;
-  unit: MeasurementUnit;
-  actions: string[];
-  sources: string[];
-};
+import type { PrepHelperItem } from "../utils/plannerPrepHelper";
+import Modal from "./Modal";
 
 type PrepHelperDialogProps = {
   from: string;
@@ -48,15 +41,13 @@ function PrepHelperDialog({
   }, [onClose]);
 
   return (
-    <div className={prepHelperStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
-      <section
-        aria-describedby={descriptionId}
-        aria-labelledby={titleId}
-        aria-modal="true"
-        className={prepHelperStyles.modalPanel(theme)}
-        role="dialog"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
+    <Modal
+      backdropClassName={prepHelperStyles.modalBackdrop}
+      describedBy={descriptionId}
+      labelledBy={titleId}
+      panelClassName={prepHelperStyles.modalPanel(theme)}
+      onClose={onClose}
+    >
         <div className={prepHelperStyles.header}>
           <div>
             <h2 className={prepHelperStyles.title} id={titleId}>{t.planner.prepHelperTitle}</h2>
@@ -118,8 +109,7 @@ function PrepHelperDialog({
             {t.common.close}
           </button>
         </div>
-      </section>
-    </div>
+    </Modal>
   );
 }
 

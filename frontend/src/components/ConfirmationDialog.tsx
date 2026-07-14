@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { useLanguage } from "../contexts";
-import { confirmationDialogStyles, type SiteTheme } from "../styles/appStyles";
+import type { SiteTheme } from "../styles/appStyles";
+import { confirmationDialogStyles } from "../styles/confirmationDialogStyles";
+import Modal from "./Modal";
 
 type ConfirmationDialogProps = {
   body: ReactNode;
@@ -44,15 +46,13 @@ function ConfirmationDialog({
   }, [onCancel]);
 
   return (
-    <div className={confirmationDialogStyles.backdrop} role="presentation" onMouseDown={onCancel}>
-      <section
-        aria-describedby={bodyId}
-        aria-labelledby={titleId}
-        aria-modal="true"
-        className={confirmationDialogStyles.panel(theme)}
-        role="dialog"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
+    <Modal
+      backdropClassName={confirmationDialogStyles.backdrop}
+      describedBy={bodyId}
+      labelledBy={titleId}
+      panelClassName={confirmationDialogStyles.panel(theme)}
+      onClose={onCancel}
+    >
         <h2 className={confirmationDialogStyles.title} id={titleId}>{title}</h2>
         <div className={confirmationDialogStyles.body(theme)} id={bodyId}>{body}</div>
         <div className={confirmationDialogStyles.actions}>
@@ -74,8 +74,7 @@ function ConfirmationDialog({
             {isBusy ? t.common.working : confirmLabel ?? t.common.confirm}
           </button>
         </div>
-      </section>
-    </div>
+    </Modal>
   );
 }
 
