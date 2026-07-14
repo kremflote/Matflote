@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLanguage } from "../contexts";
 import type { PlannerViewMode } from "../interfaces/IMeal";
 import { plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
@@ -38,7 +39,15 @@ function PlannerControls({
   onViewModeChange,
 }: PlannerControlsProps) {
   const { t } = useLanguage();
+  const [isMobileActionsOpen, setIsMobileActionsOpen] = useState(false);
   const rangeLabel = t.planner.rangeNames[viewMode];
+  const nextViewMode: PlannerViewMode = viewMode === "week" ? "month" : "week";
+  const nextViewLabel = t.enums.viewModes[nextViewMode];
+  const showMobileTools = viewMode === "week";
+  const runMobileAction = (action: () => void | Promise<void>) => {
+    setIsMobileActionsOpen(false);
+    void action();
+  };
 
   return (
     <section className={plannerControlsStyles.shell} aria-label={t.planner.plannerControls}>
@@ -53,6 +62,9 @@ function PlannerControls({
               onClick={onClearRange}
             >
               <ClearIcon />
+              <span className={plannerControlsStyles.actionButtonLabel}>
+                {isClearRangeRunning ? t.planner.clearing : t.planner.actionClear}
+              </span>
               <span className={plannerControlsStyles.tooltip(theme)}>
                 {isClearRangeRunning ? t.planner.clearing : t.planner.clearCurrent(rangeLabel)}
               </span>
@@ -67,6 +79,9 @@ function PlannerControls({
               onClick={onGenerateRange}
             >
               <GenerateIcon />
+              <span className={plannerControlsStyles.actionButtonLabel}>
+                {isGenerateRangeRunning ? t.planner.generating : t.planner.actionGenerate}
+              </span>
               <span className={plannerControlsStyles.tooltip(theme)}>
                 {isGenerateRangeRunning ? t.planner.generating : t.planner.generateMealPlan}
               </span>
@@ -81,6 +96,9 @@ function PlannerControls({
               onClick={onOpenPrepHelper}
             >
               <PrepIcon />
+              <span className={plannerControlsStyles.actionButtonLabel}>
+                {t.planner.actionPrep}
+              </span>
               <span className={plannerControlsStyles.tooltip(theme)}>
                 {t.planner.prepHelper}
               </span>
@@ -95,6 +113,9 @@ function PlannerControls({
               onClick={onExportRange}
             >
               <ExportIcon />
+              <span className={plannerControlsStyles.actionButtonLabel}>
+                {isExportRangeRunning ? t.planner.groceryExportLoading : t.planner.actionExport}
+              </span>
               <span className={plannerControlsStyles.tooltip(theme)}>
                 {isExportRangeRunning ? t.planner.groceryExportLoading : t.planner.exportGroceryList}
               </span>
@@ -154,6 +175,94 @@ function PlannerControls({
           </button>
         </div>
       </div>
+      <div className={plannerControlsStyles.mobileControlRow}>
+        {showMobileTools ? (
+          <button
+            aria-haspopup="dialog"
+            aria-expanded={isMobileActionsOpen}
+            aria-label={t.planner.openPlannerActions}
+            className={plannerControlsStyles.mobileControlButton(theme)}
+            disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
+            type="button"
+            onClick={() => setIsMobileActionsOpen(true)}
+          >
+            <PrepIcon />
+            <span className={plannerControlsStyles.actionButtonLabel}>{t.planner.plannerTools}</span>
+          </button>
+        ) : (
+          <div className={plannerControlsStyles.mobileControlPlaceholder} aria-hidden="true" />
+        )}
+        <button
+          aria-label={t.planner.switchToView(nextViewLabel)}
+          className={plannerControlsStyles.mobileControlButton(theme, true)}
+          disabled={isClearRangeRunning || isGenerateRangeRunning}
+          type="button"
+          onClick={() => onViewModeChange(nextViewMode)}
+        >
+          <span className={plannerControlsStyles.actionButtonLabel}>{t.enums.viewModes[viewMode]}</span>
+        </button>
+      </div>
+      {isMobileActionsOpen ? (
+        <div
+          className={plannerControlsStyles.mobileActionsBackdrop}
+          role="presentation"
+          onClick={() => setIsMobileActionsOpen(false)}
+        >
+          <div
+            aria-label={t.planner.openPlannerActions}
+            className={plannerControlsStyles.mobileActionsPanel(theme)}
+            role="dialog"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              aria-label={t.planner.clearCurrent(rangeLabel)}
+              className={plannerControlsStyles.iconOnlyButton(theme)}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
+              type="button"
+              onClick={() => runMobileAction(onClearRange)}
+            >
+              <ClearIcon />
+              <span className={plannerControlsStyles.actionButtonLabel}>
+                {isClearRangeRunning ? t.planner.clearing : t.planner.actionClear}
+              </span>
+            </button>
+            <button
+              aria-label={t.planner.generateMealPlan}
+              className={plannerControlsStyles.iconOnlyButton(theme)}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
+              type="button"
+              onClick={() => runMobileAction(onGenerateRange)}
+            >
+              <GenerateIcon />
+              <span className={plannerControlsStyles.actionButtonLabel}>
+                {isGenerateRangeRunning ? t.planner.generating : t.planner.actionGenerate}
+              </span>
+            </button>
+            <button
+              aria-label={t.planner.prepHelper}
+              className={plannerControlsStyles.iconOnlyButton(theme)}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
+              type="button"
+              onClick={() => runMobileAction(onOpenPrepHelper)}
+            >
+              <PrepIcon />
+              <span className={plannerControlsStyles.actionButtonLabel}>{t.planner.actionPrep}</span>
+            </button>
+            <button
+              aria-label={t.planner.exportGroceryList}
+              className={plannerControlsStyles.iconOnlyButton(theme)}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning || isExportRangeRunning}
+              type="button"
+              onClick={() => runMobileAction(onExportRange)}
+            >
+              <ExportIcon />
+              <span className={plannerControlsStyles.actionButtonLabel}>
+                {isExportRangeRunning ? t.planner.groceryExportLoading : t.planner.actionExport}
+              </span>
+            </button>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

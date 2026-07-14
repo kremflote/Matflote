@@ -21,6 +21,7 @@ type RecipeCreateFormProps = {
   initialRecipe?: IRecipe | null;
   showRecipeDetails: boolean;
   theme: SiteTheme;
+  onToggleRecipeDetails?: () => void;
   onCreated: () => void;
   onCancel: () => void;
 };
@@ -32,6 +33,7 @@ function RecipeCreateForm({
   initialRecipe = null,
   showRecipeDetails,
   theme,
+  onToggleRecipeDetails,
   onCreated,
   onCancel,
 }: RecipeCreateFormProps) {
@@ -58,6 +60,8 @@ function RecipeCreateForm({
   const [cuisineId, setCuisineId] = useState<number | null>(initialRecipe?.cuisineId ?? null);
   const [dessertType, setDessertType] = useState<DessertType>(initialRecipe?.dessertType ?? "Other");
   const [ingredientSearch, setIngredientSearch] = useState("");
+  const [isIngredientPickerOpen, setIsIngredientPickerOpen] = useState(false);
+  const [mobileIngredientDraft, setMobileIngredientDraft] = useState<SelectedRecipeIngredient[]>([]);
   const [croppedImageFile, setCroppedImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -85,9 +89,42 @@ function RecipeCreateForm({
       });
   }, [ingredientSearch, ingredients, selectedIngredientIds]);
 
+  const mobileSelectedIngredientIds = useMemo(
+    () => mobileIngredientDraft.map((ingredient) => ingredient.ingredientId),
+    [mobileIngredientDraft],
+  );
+
+  const visibleMobileIngredients = useMemo(() => {
+    const normalizedSearch = ingredientSearch.trim().toLowerCase();
+    const selectedIds = new Set(mobileSelectedIngredientIds);
+
+    return ingredients
+      .filter((ingredient) => ingredient.ingredientName.toLowerCase().includes(normalizedSearch))
+      .sort((first, second) => {
+        const firstIsSelected = selectedIds.has(first.ingredientId);
+        const secondIsSelected = selectedIds.has(second.ingredientId);
+
+        if (firstIsSelected !== secondIsSelected) {
+          return firstIsSelected ? -1 : 1;
+        }
+
+        return first.ingredientName.localeCompare(second.ingredientName);
+      });
+  }, [ingredientSearch, ingredients, mobileSelectedIngredientIds]);
+
   const handleCroppedFileChange = useCallback((file: File | null) => {
     setCroppedImageFile(file);
   }, []);
+
+  const openMobileIngredientPicker = () => {
+    setMobileIngredientDraft(selectedIngredients);
+    setIsIngredientPickerOpen(true);
+  };
+
+  const confirmMobileIngredients = () => {
+    setSelectedIngredients(mobileIngredientDraft);
+    setIsIngredientPickerOpen(false);
+  };
 
   const submitRecipe = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -157,31 +194,6 @@ function RecipeCreateForm({
     <form className={recipeBrowserStyles.form} onSubmit={submitRecipe}>
       <div className={recipeBrowserStyles.formBodyScrollArea}>
         {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
-
-        {showRecipeDetails && (
-          <div className={recipeBrowserStyles.detailsPanel(theme)}>
-            <div className={recipeBrowserStyles.formGrid}>
-              <label className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>Description</span>
-                <textarea
-                  className={recipeBrowserStyles.textArea(theme)}
-                  maxLength={600}
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                />
-              </label>
-
-              <label className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>Instructions</span>
-                <textarea
-                  className={recipeBrowserStyles.textArea(theme)}
-                  value={instructions}
-                  onChange={(event) => setInstructions(event.target.value)}
-                />
-              </label>
-            </div>
-          </div>
-        )}
 
         <div className={recipeBrowserStyles.recipeCreateScrollArea(theme)}>
           <div className={recipeBrowserStyles.recipeCreateTopGrid}>
@@ -257,10 +269,6 @@ function RecipeCreateForm({
             </div>
 
             <div className={recipeBrowserStyles.recipeImageField}>
-              <label className={recipeBrowserStyles.imageUploadFloatingButton(theme)} htmlFor={imageInputId}>
-                <ImageUploadIcon />
-                Choose file
-              </label>
               <ImageCropPicker
                 inputId={imageInputId}
                 initialImageUrl={initialRecipe?.imageUrl}
@@ -292,96 +300,152 @@ function RecipeCreateForm({
             <span className={recipeBrowserStyles.label(theme)}>
               Ingredients<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
             </span>
-            <input
-              className={recipeBrowserStyles.textField(theme)}
-              placeholder="search ingredients..."
-              type="search"
-              value={ingredientSearch}
-              onChange={(event) => setIngredientSearch(event.target.value)}
-            />
-            <div className={`${recipeBrowserStyles.recipeIngredientPickerGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
-              {visibleIngredients.length === 0 ? (
-                <p className={recipeBrowserStyles.helperText(theme)}>No ingredients found.</p>
-              ) : (
-                visibleIngredients.map((ingredient) => (
-                  <IngredientPickerRow
-                    amount={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.amount ?? ""}
-                    ingredient={ingredient}
-                    key={ingredient.ingredientId}
-                    selected={selectedIngredientIds.includes(ingredient.ingredientId)}
-                    theme={theme}
-                    unit={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.unit ?? "Gram"}
-                    preparation={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.preparation ?? "None"}
-                    preparationLabels={t.enums.ingredientPreparations}
-                    onAmountChange={(amount) =>
-                      setSelectedIngredients((currentIngredients) =>
-                        updateSelectedIngredient(currentIngredients, ingredient.ingredientId, { amount }),
-                      )
-                    }
-                    onToggle={() =>
-                      setSelectedIngredients((currentIngredients) =>
-                        toggleRecipeIngredient(currentIngredients, ingredient.ingredientId),
-                      )
-                    }
-                    onUnitChange={(unit) =>
-                      setSelectedIngredients((currentIngredients) =>
-                        updateSelectedIngredient(currentIngredients, ingredient.ingredientId, { unit }),
-                      )
-                    }
-                    onPreparationChange={(preparation) =>
-                      setSelectedIngredients((currentIngredients) =>
-                        updateSelectedIngredient(currentIngredients, ingredient.ingredientId, { preparation }),
-                      )
-                    }
-                  />
-                ))
-              )}
+            <div className={recipeBrowserStyles.mobileIngredientSummary}>
+              <button className={recipeBrowserStyles.detailsToggleFull(theme)} type="button" onClick={openMobileIngredientPicker}>
+                Choose ingredients
+              </button>
+              <SelectedIngredientCapsules
+                ingredients={ingredients}
+                selectedIngredients={selectedIngredients}
+                theme={theme}
+              />
+            </div>
+            <div className={recipeBrowserStyles.desktopIngredientPicker}>
+              <IngredientPickerContent
+                ingredientSearch={ingredientSearch}
+                ingredients={visibleIngredients}
+                preparationLabels={t.enums.ingredientPreparations}
+                selectedIngredientIds={selectedIngredientIds}
+                selectedIngredients={selectedIngredients}
+                theme={theme}
+                onAmountChange={(ingredientId, amount) =>
+                  setSelectedIngredients((currentIngredients) =>
+                    updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
+                  )
+                }
+                onPreparationChange={(ingredientId, preparation) =>
+                  setSelectedIngredients((currentIngredients) =>
+                    updateSelectedIngredient(currentIngredients, ingredientId, { preparation }),
+                  )
+                }
+                onSearchChange={setIngredientSearch}
+                onToggle={(ingredientId) =>
+                  setSelectedIngredients((currentIngredients) =>
+                    toggleRecipeIngredient(currentIngredients, ingredientId),
+                  )
+                }
+                onUnitChange={(ingredientId, unit) =>
+                  setSelectedIngredients((currentIngredients) =>
+                    updateSelectedIngredient(currentIngredients, ingredientId, { unit }),
+                  )
+                }
+              />
             </div>
           </section>
+
+          {onToggleRecipeDetails && (
+            <button
+              aria-expanded={showRecipeDetails}
+              className={recipeBrowserStyles.detailsToggleFull(theme)}
+              type="button"
+              onClick={onToggleRecipeDetails}
+            >
+              {showRecipeDetails ? t.cookbook.hideRecipeDetails : t.cookbook.addRecipeDetails}
+            </button>
+          )}
+
+          {showRecipeDetails && (
+            <div className={recipeBrowserStyles.detailsPanel(theme)}>
+              <div className={recipeBrowserStyles.formGrid}>
+                <label className={recipeBrowserStyles.field}>
+                  <span className={recipeBrowserStyles.label(theme)}>Description</span>
+                  <textarea
+                    className={recipeBrowserStyles.textArea(theme)}
+                    maxLength={600}
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                  />
+                </label>
+
+                <label className={recipeBrowserStyles.field}>
+                  <span className={recipeBrowserStyles.label(theme)}>Instructions</span>
+                  <textarea
+                    className={recipeBrowserStyles.textArea(theme)}
+                    value={instructions}
+                    onChange={(event) => setInstructions(event.target.value)}
+                  />
+                </label>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       <div className={recipeBrowserStyles.formActions}>
-        <button className={recipeBrowserStyles.secondaryButton(theme)} disabled={isSaving} type="button" onClick={onCancel}>
+        <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="button" onClick={onCancel}>
           Cancel
         </button>
-        <button className={recipeBrowserStyles.primaryButton(theme)} disabled={isSaving} type="submit">
+        <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="submit">
           {isSaving ? "Saving..." : isEditing ? "Save recipe" : "Create recipe"}
         </button>
       </div>
+      {isIngredientPickerOpen && (
+        <div className={recipeBrowserStyles.nestedModalBackdrop} role="presentation" onMouseDown={() => setIsIngredientPickerOpen(false)}>
+          <section
+            aria-modal="true"
+            className={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+            role="dialog"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className={recipeBrowserStyles.modalHeader}>
+              <h3 className={recipeBrowserStyles.modalTitle}>Ingredients</h3>
+              <button aria-label={t.common.close} className={recipeBrowserStyles.modalCloseAligned(theme)} type="button" onClick={() => setIsIngredientPickerOpen(false)}>
+                x
+              </button>
+            </div>
+            <div className={recipeBrowserStyles.nestedIngredientModalBody}>
+              <IngredientPickerContent
+                ingredientSearch={ingredientSearch}
+                ingredients={visibleMobileIngredients}
+                preparationLabels={t.enums.ingredientPreparations}
+                selectedIngredientIds={mobileSelectedIngredientIds}
+                selectedIngredients={mobileIngredientDraft}
+                theme={theme}
+                onAmountChange={(ingredientId, amount) =>
+                  setMobileIngredientDraft((currentIngredients) =>
+                    updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
+                  )
+                }
+                onPreparationChange={(ingredientId, preparation) =>
+                  setMobileIngredientDraft((currentIngredients) =>
+                    updateSelectedIngredient(currentIngredients, ingredientId, { preparation }),
+                  )
+                }
+                onSearchChange={setIngredientSearch}
+                onToggle={(ingredientId) =>
+                  setMobileIngredientDraft((currentIngredients) =>
+                    toggleRecipeIngredient(currentIngredients, ingredientId),
+                  )
+                }
+                onUnitChange={(ingredientId, unit) =>
+                  setMobileIngredientDraft((currentIngredients) =>
+                    updateSelectedIngredient(currentIngredients, ingredientId, { unit }),
+                  )
+                }
+              />
+            </div>
+            <div className={recipeBrowserStyles.formActions}>
+              <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={() => setIsIngredientPickerOpen(false)}>
+                Cancel
+              </button>
+              <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={confirmMobileIngredients}>
+                Confirm
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </form>
-  );
-}
-
-function ImageUploadIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className={recipeBrowserStyles.imageUploadIcon}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11Z"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path
-        d="m7 16 3.2-3.2a1.1 1.1 0 0 1 1.6 0L14 15l1.2-1.2a1.1 1.1 0 0 1 1.6 0L20 17"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-      <path
-        d="M15 4v6m0-6 2 2m-2-2-2 2"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-    </svg>
   );
 }
 
@@ -420,6 +484,68 @@ type IngredientPickerRowProps = {
   onUnitChange: (value: MeasurementUnit) => void;
 };
 
+type IngredientPickerContentProps = {
+  ingredientSearch: string;
+  ingredients: IIngredient[];
+  preparationLabels: Record<IngredientPreparation, string>;
+  selectedIngredientIds: number[];
+  selectedIngredients: SelectedRecipeIngredient[];
+  theme: SiteTheme;
+  onAmountChange: (ingredientId: number, value: string) => void;
+  onPreparationChange: (ingredientId: number, value: IngredientPreparation) => void;
+  onSearchChange: (value: string) => void;
+  onToggle: (ingredientId: number) => void;
+  onUnitChange: (ingredientId: number, value: MeasurementUnit) => void;
+};
+
+function IngredientPickerContent({
+  ingredientSearch,
+  ingredients,
+  preparationLabels,
+  selectedIngredientIds,
+  selectedIngredients,
+  theme,
+  onAmountChange,
+  onPreparationChange,
+  onSearchChange,
+  onToggle,
+  onUnitChange,
+}: IngredientPickerContentProps) {
+  return (
+    <>
+      <input
+        className={recipeBrowserStyles.textField(theme)}
+        placeholder="search ingredients..."
+        type="search"
+        value={ingredientSearch}
+        onChange={(event) => onSearchChange(event.target.value)}
+      />
+      <div className={`${recipeBrowserStyles.recipeIngredientPickerGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
+        {ingredients.length === 0 ? (
+          <p className={recipeBrowserStyles.helperText(theme)}>No ingredients found.</p>
+        ) : (
+          ingredients.map((ingredient) => (
+            <IngredientPickerRow
+              amount={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.amount ?? ""}
+              ingredient={ingredient}
+              key={ingredient.ingredientId}
+              selected={selectedIngredientIds.includes(ingredient.ingredientId)}
+              theme={theme}
+              unit={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.unit ?? "Gram"}
+              preparation={getSelectedIngredient(selectedIngredients, ingredient.ingredientId)?.preparation ?? "None"}
+              preparationLabels={preparationLabels}
+              onAmountChange={(amount) => onAmountChange(ingredient.ingredientId, amount)}
+              onPreparationChange={(preparation) => onPreparationChange(ingredient.ingredientId, preparation)}
+              onToggle={() => onToggle(ingredient.ingredientId)}
+              onUnitChange={(unit) => onUnitChange(ingredient.ingredientId, unit)}
+            />
+          ))
+        )}
+      </div>
+    </>
+  );
+}
+
 function IngredientPickerRow({
   amount,
   ingredient,
@@ -446,46 +572,78 @@ function IngredientPickerRow({
         className={recipeBrowserStyles.recipeIngredientThumbnailCompact}
         ingredient={ingredient}
         selected={selected}
+        selectedPresentation="colorBorder"
         theme={theme}
         onClick={onToggle}
       />
-      <input
-        aria-label={`${ingredient.ingredientName} amount`}
-        className={recipeBrowserStyles.compactTextField(theme)}
-        disabled={!selected}
-        min="0"
-        placeholder="amount"
-        step="0.01"
-        type="number"
-        value={amount}
-        onChange={(event) => onAmountChange(event.target.value)}
-      />
-      <select
-        aria-label={`${ingredient.ingredientName} unit`}
-        className={recipeBrowserStyles.compactTextField(theme)}
-        disabled={!selected}
-        value={unit}
-        onChange={(event) => onUnitChange(event.target.value as MeasurementUnit)}
-      >
-        {measurementUnits.map((value) => (
-          <option key={value} value={value}>
-            {formatLabel(value)}
-          </option>
-        ))}
-      </select>
-      <select
-        aria-label={`${ingredient.ingredientName} preparation`}
-        className={recipeBrowserStyles.compactTextField(theme)}
-        disabled={!selected}
-        value={preparation}
-        onChange={(event) => onPreparationChange(event.target.value as IngredientPreparation)}
-      >
-        {ingredientPreparations.map((value) => (
-          <option key={value} value={value}>
-            {preparationLabels[value]}
-          </option>
-        ))}
-      </select>
+      <div className={recipeBrowserStyles.recipeIngredientControlGrid}>
+        <input
+          aria-label={`${ingredient.ingredientName} amount`}
+          className={recipeBrowserStyles.compactTextField(theme)}
+          disabled={!selected}
+          min="0"
+          placeholder="amount"
+          step="0.01"
+          type="number"
+          value={amount}
+          onChange={(event) => onAmountChange(event.target.value)}
+        />
+        <select
+          aria-label={`${ingredient.ingredientName} unit`}
+          className={recipeBrowserStyles.compactTextField(theme)}
+          disabled={!selected}
+          value={unit}
+          onChange={(event) => onUnitChange(event.target.value as MeasurementUnit)}
+        >
+          {measurementUnits.map((value) => (
+            <option key={value} value={value}>
+              {formatLabel(value)}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label={`${ingredient.ingredientName} preparation`}
+          className={`${recipeBrowserStyles.compactTextField(theme)} ${recipeBrowserStyles.recipeIngredientPreparationField}`}
+          disabled={!selected}
+          value={preparation}
+          onChange={(event) => onPreparationChange(event.target.value as IngredientPreparation)}
+        >
+          {ingredientPreparations.map((value) => (
+            <option key={value} value={value}>
+              {preparationLabels[value]}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+type SelectedIngredientCapsulesProps = {
+  ingredients: IIngredient[];
+  selectedIngredients: SelectedRecipeIngredient[];
+  theme: SiteTheme;
+};
+
+function SelectedIngredientCapsules({ ingredients, selectedIngredients, theme }: SelectedIngredientCapsulesProps) {
+  if (selectedIngredients.length === 0) {
+    return <p className={recipeBrowserStyles.helperText(theme)}>No ingredients selected.</p>;
+  }
+
+  return (
+    <div className={recipeBrowserStyles.selectedIngredientCapsules}>
+      {selectedIngredients.map((selectedIngredient) => {
+        const ingredient = ingredients.find((currentIngredient) => currentIngredient.ingredientId === selectedIngredient.ingredientId);
+
+        return (
+          <span
+            className={recipeBrowserStyles.selectedIngredientCapsule(theme)}
+            key={selectedIngredient.ingredientId}
+          >
+            {ingredient?.ingredientName ?? "Ingredient"}
+          </span>
+        );
+      })}
     </div>
   );
 }

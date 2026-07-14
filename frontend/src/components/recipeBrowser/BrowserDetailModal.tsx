@@ -136,75 +136,77 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
       <section
         aria-labelledby={detailTitleId}
         aria-modal="true"
-        className={recipeBrowserStyles.modalPanel(theme)}
+        className={recipeBrowserStyles.detailModalPanel(theme)}
         role="dialog"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <div className={recipeBrowserStyles.detailHeaderShell}>
-          <div className={recipeBrowserStyles.detailHeaderTitleRow}>
-            <h2 className={recipeBrowserStyles.detailHeaderTitle} id={detailTitleId}>
-              {detail.kind === "recipe" ? detail.recipe.name : detail.ingredient.ingredientName}
-            </h2>
-            {detail.kind === "recipe" && (
-              <div className={recipeBrowserStyles.detailHeaderTagList}>
-                {detail.recipe.tags
-                  .filter((tag) => recipeTags.includes(tag))
-                  .map((tag) => (
+        <button aria-label={t.common.close} className={recipeBrowserStyles.detailCloseButton(theme)} type="button" onClick={onClose}>
+          x
+        </button>
+        <div className={recipeBrowserStyles.detailBodyScrollArea}>
+          <div className={recipeBrowserStyles.detailHeaderShell}>
+            <div className={recipeBrowserStyles.detailHeaderTitleRow}>
+              <h2 className={recipeBrowserStyles.detailHeaderTitle} id={detailTitleId}>
+                {detail.kind === "recipe" ? detail.recipe.name : detail.ingredient.ingredientName}
+              </h2>
+              {detail.kind === "recipe" && (
+                <div className={recipeBrowserStyles.detailHeaderTagList}>
+                  {detail.recipe.tags
+                    .filter((tag) => recipeTags.includes(tag))
+                    .map((tag) => (
+                      <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
+                        {t.enums.recipeTags[tag]}
+                      </span>
+                    ))}
+                </div>
+              )}
+              {detail.kind === "ingredient" && (
+                <div className={recipeBrowserStyles.detailHeaderTagList}>
+                  {detail.ingredient.tags.map((tag) => (
                     <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
-                      {t.enums.recipeTags[tag]}
+                      {t.enums.ingredientTags[tag]}
                     </span>
                   ))}
-              </div>
-            )}
-            {detail.kind === "ingredient" && (
-              <div className={recipeBrowserStyles.detailHeaderTagList}>
-                {detail.ingredient.tags.map((tag) => (
-                  <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
-                    {t.enums.ingredientTags[tag]}
-                  </span>
-                ))}
-              </div>
-            )}
-            <button aria-label={t.common.close} className={recipeBrowserStyles.modalCloseAligned(theme)} type="button" onClick={onClose}>
-              x
-            </button>
+                </div>
+              )}
+            </div>
           </div>
-          <div className={recipeBrowserStyles.detailHeaderActionRow}>
-            <button
-              className={recipeBrowserStyles.detailHeaderEditButton(theme)}
-              type="button"
-              onClick={() => {
-                if (detail.kind === "recipe") {
-                  setIsEditingRecipe(true);
-                } else {
-                  setIsEditingIngredient(true);
-                }
-              }}
-            >
-              {t.common.edit}
-            </button>
-            <button
-              className={recipeBrowserStyles.detailHeaderRemoveButton(theme)}
-              disabled={isDeleting}
-              type="button"
-              onClick={() => setIsConfirmingDelete(true)}
-            >
-              {isDeleting ? t.common.removing : t.common.remove}
-            </button>
-          </div>
+
+          {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{deleteError}</p>}
+
+          {detail.kind === "recipe" ? (
+            <RecipeDetailContent
+              recipe={detail.recipe}
+              theme={theme}
+              onIngredientClick={(ingredient) => onSelectDetail({ kind: "ingredient", ingredient })}
+            />
+          ) : (
+            <IngredientDetailContent ingredient={detail.ingredient} theme={theme} />
+          )}
         </div>
-
-        {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{deleteError}</p>}
-
-        {detail.kind === "recipe" ? (
-          <RecipeDetailContent
-            recipe={detail.recipe}
-            theme={theme}
-            onIngredientClick={(ingredient) => onSelectDetail({ kind: "ingredient", ingredient })}
-          />
-        ) : (
-          <IngredientDetailContent ingredient={detail.ingredient} theme={theme} />
-        )}
+        <div className={recipeBrowserStyles.detailHeaderActionRow}>
+          <button
+            className={recipeBrowserStyles.detailHeaderEditButton(theme)}
+            type="button"
+            onClick={() => {
+              if (detail.kind === "recipe") {
+                setIsEditingRecipe(true);
+              } else {
+                setIsEditingIngredient(true);
+              }
+            }}
+          >
+            {t.common.edit}
+          </button>
+          <button
+            className={recipeBrowserStyles.detailHeaderRemoveButton(theme)}
+            disabled={isDeleting}
+            type="button"
+            onClick={() => setIsConfirmingDelete(true)}
+          >
+            {isDeleting ? t.common.removing : t.common.remove}
+          </button>
+        </div>
         {isConfirmingDelete && (
           <ConfirmationDialog
             body={`This will delete ${detail.kind === "recipe" ? "the recipe" : "the ingredient"}.`}

@@ -80,9 +80,11 @@ export const siteColorClasses = {
     header: "border-white/[0.08] bg-white/[0.06]",
     headerForeground: "text-neutral-50",
     nav: "border-white/[0.08] bg-white/[0.04]",
+    bottomNav: "max-md:border-white/[0.14] max-md:bg-neutral-950/95",
     control:
-      "text-neutral-300 hover:border-white/[0.14] hover:bg-white/[0.12] hover:text-neutral-50",
-    controlSelected: "border-white/[0.14] bg-white/[0.12] text-neutral-50",
+      "border-white/[0.08] bg-white/[0.055] text-neutral-300 hover:border-white/[0.16] hover:bg-white/[0.14] hover:text-neutral-50 max-md:border-white/[0.16] max-md:bg-neutral-800 max-md:text-neutral-100",
+    controlSelected:
+      "border-white/[0.18] bg-white/[0.18] text-neutral-50 max-md:border-white/[0.24] max-md:bg-neutral-700",
     plannerControl: `border-white/[0.12] bg-white/[0.06] text-white ${plannerControlHoverClasses.dark}`,
     cookbookAddButton:
       "border-white/[0.08] bg-black/50 text-white hover:bg-black/70",
@@ -105,6 +107,7 @@ export const siteColorClasses = {
     header: "border-neutral-200 bg-neutral-50",
     headerForeground: "text-neutral-900",
     nav: "border-neutral-200 bg-neutral-100",
+    bottomNav: "max-md:border-neutral-300 max-md:bg-neutral-50",
     control:
       "text-neutral-600 hover:border-neutral-300 hover:bg-neutral-200 hover:text-neutral-900",
     controlSelected: "border-neutral-300 bg-neutral-200 text-neutral-900",
@@ -130,6 +133,7 @@ export const siteColorClasses = {
     header: "border-[#7A8864]/35 bg-[#7A8864]",
     headerForeground: "text-[#FAF7F2]",
     nav: "border-[#C8C0B5] bg-[#FAF7F2]/55",
+    bottomNav: "max-md:border-[#7A8864]/35 max-md:bg-[#7A8864]",
     control:
       "text-[#FAF7F2] hover:border-[#FAF7F2]/45 hover:bg-[#FAF7F2]/15 hover:text-[#FAF7F2]",
     controlSelected: "border-[#FAF7F2]/70 bg-[#FAF7F2] text-[#7A8864]",
@@ -174,7 +178,7 @@ export const responsiveClasses = {
   mobileStack: "max-md:grid-cols-1 max-md:gap-4",
   mobileToolbarWrap: "max-md:flex-wrap max-md:justify-start max-sm:w-full",
   mobileModalBackdrop: "max-sm:p-3",
-  mobileModalPanel: "max-sm:max-h-[calc(100vh_-_24px)] max-sm:p-4",
+  mobileModalPanel: "max-sm:max-h-[calc(100vh_-_16px)] max-sm:p-4",
   mobileTouchTarget: "max-sm:min-h-10",
 } as const;
 
@@ -182,7 +186,9 @@ export const sizeClasses = {
   mealCalendarHeaderHeight: "h-14",
   mealCalendarCellHeight: "h-36",
   mealSlotContentInset: "h-[calc(100%_-_16px)] w-[calc(100%_-_16px)]",
-  modalFormBodyMaxHeight: "max-h-[68vh]",
+  modalOuterMaxHeight: "max-h-[88vh]",
+  modalFormBodyMaxHeight: "max-h-[56vh]",
+  modalFormBodyMobileMaxHeight: "max-sm:max-h-[52vh]",
   plannerPickerBrowserHeight: "h-[44vh]",
   plannerControlHeight: "h-9",
   thumbnailControlWidth: "w-64",
@@ -223,8 +229,7 @@ export const surfaceClasses = {
 } as const;
 
 export const modalLayoutClasses = {
-  centeredBackdrop:
-    `fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
+  centeredBackdrop: `fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
 } as const;
 
 export const thumbnailStyles = {
@@ -258,6 +263,7 @@ export const thumbnailStyles = {
           : "border-neutral-200 bg-neutral-100"
     }`,
   ingredientSelectedOutline: "outline outline-2 outline-current",
+  ingredientSelectedColorBorder: "border-2",
   ingredientSelectedMuted: "opacity-45",
   ingredientDot: "h-2 w-2 rounded-md",
   ingredientContent:
@@ -351,7 +357,9 @@ export const confirmationDialogStyles = {
           ? "text-[#556145]"
           : "text-neutral-700"
     }`,
-  actions: "flex flex-wrap items-center justify-end gap-3",
+  actions: "flex flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap",
+  actionButton:
+    "max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3 max-sm:text-sm",
   cancelButton: controlStyles.secondaryButton,
   confirmButton: (theme: SiteTheme, tone: "danger" | "default") => {
     if (tone === "danger") {
@@ -365,15 +373,16 @@ export const confirmationDialogStyles = {
 export const headerStyles = {
   shell: (theme: SiteTheme) =>
     `relative z-10 border-b ${shadowClasses.raised} ${siteColorClasses[theme].header}`,
-  inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-md:grid-cols-[1fr_auto] max-md:grid-rows-[auto_auto] max-md:gap-x-4 max-md:gap-y-3 max-md:py-3 max-sm:min-h-0 max-sm:py-3`,
+  inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-md:min-h-0 max-md:grid-cols-[1fr_auto] max-md:gap-x-4 max-md:py-3 max-sm:py-3`,
   logo: (theme: SiteTheme) =>
     `justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses[theme].headerForeground}`,
-  nav: "flex items-center justify-center gap-2 max-md:col-span-2 max-md:row-start-2 max-md:w-full max-md:justify-self-stretch max-md:overflow-x-auto max-md:pb-0.5",
+  nav: (theme: SiteTheme) =>
+    `flex items-center justify-center gap-2 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-50 max-md:border-t max-md:px-4 max-md:pt-2 max-md:[padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))] ${siteColorClasses[theme].header} ${siteColorClasses[theme].bottomNav}`,
   navButton: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-16 min-w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border px-3 transition-colors duration-150 max-md:h-12 max-md:min-w-0 max-md:flex-1 max-md:px-2 max-sm:h-10 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-16 min-w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border px-3 transition-colors duration-150 max-md:h-14 max-md:min-w-0 max-md:flex-1 max-md:px-2 ${focusBase} ${siteColorClasses[theme].focus} ${
       selected
         ? siteColorClasses[theme].controlSelected
-        : `border-transparent bg-transparent ${siteColorClasses[theme].control}`
+        : siteColorClasses[theme].control
     }`,
   icon: "h-8 w-8 fill-current max-md:h-5 max-md:w-5",
   navLabel: "text-xs font-semibold leading-none max-sm:text-[11px]",
@@ -390,7 +399,7 @@ export const headerStyles = {
 };
 
 export const pageStyles = {
-  shell: `${layoutClasses.contentWidth} ${responsiveClasses.mobilePagePadding} relative py-12`,
+  shell: `${layoutClasses.contentWidth} ${responsiveClasses.mobilePagePadding} relative py-12 max-md:pb-28`,
   showColumnDebugOverlay: false,
   columnDebugOverlay:
     "pointer-events-none absolute inset-y-0 left-0 right-0 grid grid-cols-12 gap-6 opacity-100",
@@ -475,8 +484,10 @@ export const settingsStyles = {
           ? "border-[#C8C0B5] bg-[#FAF7F2]/55"
           : "border-neutral-200 bg-white"
     }`,
-  currentProviderLabel: "text-[10px] font-extrabold uppercase leading-tight opacity-60",
-  currentProviderValue: "mt-0.5 min-w-0 truncate text-sm font-bold leading-tight",
+  currentProviderLabel:
+    "text-[10px] font-extrabold uppercase leading-tight opacity-60",
+  currentProviderValue:
+    "mt-0.5 min-w-0 truncate text-sm font-bold leading-tight",
   systemGrid: "grid gap-4",
   systemRow: (theme: SiteTheme) =>
     `grid grid-cols-[10rem_minmax(0,1fr)] gap-4 rounded-md border px-4 py-2 text-sm max-sm:grid-cols-1 ${surfaceClasses.field(theme)}`,
@@ -485,8 +496,8 @@ export const settingsStyles = {
 } as const;
 
 export const plannerControlsStyles = {
-  /* mb-15 so grid starts at same point as cookbook grid */
-  shell: `mb-15 mt-3 grid w-full grid-cols-12 ${layoutClasses.gridGap}`,
+  /* Keep the planner content aligned with the cookbook grid using the shared spacing scale. */
+  shell: `mb-8 mt-3 grid w-full grid-cols-12 ${layoutClasses.gridGap} max-md:mb-4 max-md:grid-cols-1 max-md:gap-3`,
   datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap}`,
   // The year floats above the range label without increasing the top-control row height.
   dateYearRow: (theme: SiteTheme) =>
@@ -498,25 +509,39 @@ export const plannerControlsStyles = {
           : "text-neutral-500"
     }`,
   datePrimary: (theme: SiteTheme) =>
-    `min-w-52 whitespace-nowrap text-center text-[40px] font-semibold leading-[1.15] ${siteColorClasses[theme].plannerCounterAccent}`,
-  leftCell: "col-span-4 flex items-center justify-start",
-  centerCell: "relative col-span-4 flex items-center justify-center",
-  rightCell: "col-span-4 flex items-center justify-end",
-  counterActions: `flex w-full flex-wrap items-center justify-start ${layoutClasses.tightControlGap}`,
-  actionSlotLeft: "flex",
-  actionSlotCenter: "flex",
-  actionSlotRight: "flex",
+    `min-w-52 whitespace-nowrap text-center text-[40px] font-semibold leading-[1.15] max-md:min-w-0 max-md:text-[34px] max-sm:text-[32px] ${siteColorClasses[theme].plannerCounterAccent}`,
+  leftCell: "order-2 col-span-8 flex items-center justify-start max-md:hidden",
+  centerCell:
+    "relative order-1 col-span-12 flex items-center justify-center max-md:col-span-1 max-md:min-w-0",
+  rightCell: "order-2 col-span-4 flex items-center justify-end max-md:hidden",
+  counterActions: `grid w-full grid-cols-4 ${layoutClasses.calendarGap}`,
+  actionSlotLeft: "min-w-0",
+  actionSlotCenter: "min-w-0",
+  actionSlotRight: "min-w-0",
   iconOnlyButton: (theme: SiteTheme) =>
-    `${sizeClasses.plannerControlHeight} group relative inline-flex aspect-square items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+    `${sizeClasses.plannerControlHeight} group relative inline-flex w-full min-w-0 items-center justify-center gap-2 ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
   iconButton: (theme: SiteTheme) =>
     `${sizeClasses.plannerControlHeight} inline-flex aspect-square items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
-  buttonIcon: "h-4 w-4 fill-current",
+  buttonIcon: "h-4 w-4 shrink-0 fill-current",
+  actionButtonLabel: "min-w-0 truncate leading-none",
   tooltip: (theme: SiteTheme) =>
     `pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold opacity-0 ${shadowClasses.subtle} transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${siteColorClasses[theme].plannerControl}`,
   viewToggle: (theme: SiteTheme) =>
     segmentedToggleStyles.shell(theme, sizeClasses.thumbnailControlWidth),
   viewToggleOption: (theme: SiteTheme, selected: boolean) =>
     segmentedToggleStyles.option(theme, selected),
+  mobileControlRow: `hidden w-full grid-cols-2 ${layoutClasses.calendarGap} max-md:order-2 max-md:mt-4 max-md:grid`,
+  mobileControlPlaceholder: "hidden max-md:block",
+  mobileControlButton: (theme: SiteTheme, selected = false) =>
+    `${sizeClasses.plannerControlHeight} inline-flex min-w-0 items-center justify-center gap-2 ${radiusClasses.figma6} border px-3 text-sm font-bold ${shadowClasses.subtle} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
+      selected
+        ? siteColorClasses[theme].plannerToggleSelected
+        : siteColorClasses[theme].plannerControl
+    }`,
+  mobileActionsBackdrop:
+    "fixed inset-0 z-50 hidden items-center justify-center bg-black/35 p-4 max-md:flex",
+  mobileActionsPanel: (theme: SiteTheme) =>
+    `grid w-full max-w-xs gap-2 ${radiusClasses.figma6} border p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   statusError: (theme: SiteTheme) =>
     `mb-4 ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
       theme === "dark"
@@ -572,27 +597,60 @@ export const prepHelperStyles = {
 } as const;
 
 export const mealCalendarStyles = {
-  shell: "flex w-full flex-col overflow-visible",
-  grid: `grid w-full min-w-[720px] grid-cols-12 ${layoutClasses.calendarGap}`,
+  shell: "flex w-full flex-col overflow-visible max-md:overflow-x-auto",
+  grid: `grid w-full min-w-[720px] grid-cols-12 ${layoutClasses.calendarGap} max-md:min-w-0 max-md:grid-cols-1`,
   rows: `flex flex-col ${layoutClasses.calendarGap}`,
-  row: "relative min-w-[720px]",
+  row: `relative min-h-36 min-w-[720px] max-md:grid max-md:min-h-0 max-md:min-w-0 max-md:gap-2`,
   headerCell: (theme: SiteTheme) =>
     `flex ${sizeClasses.mealCalendarHeaderHeight} items-center justify-center ${radiusClasses.figma6} text-center ${typographyClasses.mealHeaderLabel} ${siteColorClasses[theme].mealHeaderCell}`,
   headerCellSpan: "col-span-4",
   dayCell: (theme: SiteTheme) =>
-    `absolute right-full top-0 grid w-20 ${sizeClasses.mealCalendarCellHeight} grid-rows-[1fr_auto_1fr] items-center justify-items-center ${siteColorClasses[theme].plannerCounterAccent}`,
-  dayLabel: `${sizeClasses.dayLabelHeight} row-start-2 flex items-center justify-center text-center ${typographyClasses.dayLabel}`,
+    `absolute right-full top-0 grid w-20 ${sizeClasses.mealCalendarCellHeight} grid-rows-[1fr_auto_auto_1fr] items-center justify-items-center border-0 bg-transparent p-0 max-md:static max-md:h-auto max-md:w-full max-md:grid-cols-[minmax(0,1fr)_auto] max-md:grid-rows-none max-md:justify-start max-md:justify-items-stretch max-md:gap-x-2 max-md:py-1 ${siteColorClasses[theme].plannerCounterAccent}`,
+  dayCellButton: (theme: SiteTheme) =>
+    `${mealCalendarStyles.dayCell(theme)} cursor-pointer transition-opacity hover:opacity-80 ${focusBase} ${siteColorClasses[theme].focus}`,
+  dayTitleGroup:
+    "row-start-2 flex items-center justify-center gap-1 max-md:row-auto",
+  dayHeaderTextGroup:
+    "grid min-w-0 items-center justify-self-start justify-items-start max-md:flex max-md:items-center max-md:gap-1.5",
+  dayToggleIcon: (collapsed: boolean) =>
+    `flex h-5 w-5 items-center justify-center transition-transform ${
+      collapsed ? "" : "rotate-90"
+    }`,
+  dayToggleSvg: "h-3.5 w-3.5 fill-current",
+  dayLabel: `${sizeClasses.dayLabelHeight} flex items-center justify-center text-center ${typographyClasses.dayLabel}`,
   // Keeps the date close to the weekday while the weekday remains vertically centered to the meal slots.
   dayDate: (theme: SiteTheme) =>
-    `row-start-3 -mt-12 text-sm font-light leading-none ${
+    `row-start-3 mt-1 text-sm font-light leading-none max-md:row-auto max-md:mt-0 ${
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
           ? "text-[#7A8864]"
           : "text-neutral-500"
     }`,
+  dayPreviewStrip: "hidden items-center justify-self-end gap-1.5 max-md:flex",
+  dayPreviewFilled: (theme: SiteTheme) =>
+    `block h-7 w-7 overflow-hidden ${radiusClasses.figma6} border ${shadowClasses.subtle} ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-white/[0.035]"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-[#FAF7F2]/70"
+          : "border-neutral-200 bg-white"
+    }`,
+  dayPreviewEmpty: (theme: SiteTheme) =>
+    `block h-7 w-7 ${radiusClasses.figma6} border border-dashed ${
+      theme === "dark"
+        ? "border-white/[0.14] bg-white/[0.035]"
+        : theme === "paletteLight"
+          ? "border-[#7A8864]/35 bg-[#FAF7F2]/70"
+          : "border-neutral-300 bg-white"
+    }`,
+  dayPreviewImage: "h-full w-full object-cover",
+  dayPreviewImageFallback: (theme: SiteTheme) =>
+    `block h-full w-full ${theme === "dark" ? "bg-neutral-800" : theme === "paletteLight" ? "bg-[#E5D5BC]/45" : "bg-neutral-100"}`,
+  dayMealGrid: (collapsed: boolean) =>
+    `${mealCalendarStyles.grid} ${collapsed ? "hidden" : ""}`,
   mealSlot: (theme: SiteTheme) =>
-    `col-span-4 flex ${sizeClasses.mealCalendarCellHeight} items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 ${
+    `col-span-4 flex ${sizeClasses.mealCalendarCellHeight} items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 max-md:col-span-1 max-md:h-32 max-sm:h-28 ${
       theme === "dark"
         ? "border-white/[0.08] bg-white/[0.035] hover:bg-white/[0.06]"
         : theme === "paletteLight"
@@ -608,8 +666,7 @@ export const mealCalendarStyles = {
           ? "border-[#7A8864]/35"
           : "border-neutral-300"
     }`,
-  mealSlotContent:
-    `grid ${sizeClasses.mealSlotContentInset} grid-cols-2 overflow-hidden ${radiusClasses.figma6}`,
+  mealSlotContent: `grid ${sizeClasses.mealSlotContentInset} grid-cols-2 overflow-hidden ${radiusClasses.figma6}`,
   mealSlotImageFrame: (theme: SiteTheme) =>
     `h-full w-full overflow-hidden rounded-l-md ${
       theme === "dark"
@@ -621,9 +678,10 @@ export const mealCalendarStyles = {
   mealSlotImage: "h-full w-full object-cover",
   mealSlotImageFallback: (theme: SiteTheme) =>
     `h-full w-full ${theme === "dark" ? "bg-neutral-800" : theme === "paletteLight" ? "bg-[#E5D5BC]/45" : "bg-neutral-100"}`,
-  mealSlotDetails: "grid min-w-0 content-start gap-2 p-3",
+  mealSlotDetails:
+    "grid min-w-0 content-start gap-2 px-3 pb-3 pt-2 max-sm:px-2 max-sm:pb-2 max-sm:pt-1.5",
   mealSlotTitle: (theme: SiteTheme) =>
-    `min-w-0 truncate text-left text-sm font-bold leading-tight ${
+    `min-w-0 whitespace-normal break-words text-left text-base font-bold leading-tight max-sm:text-sm ${
       theme === "dark"
         ? "text-neutral-100"
         : theme === "paletteLight"
@@ -632,7 +690,7 @@ export const mealCalendarStyles = {
     }`,
   mealSlotRecipeList: "flex min-w-0 flex-wrap items-start gap-1.5",
   mealSlotRecipe: (theme: SiteTheme) =>
-    `max-w-full truncate rounded-md border px-2 py-1 text-[10px] font-bold leading-none ${
+    `max-w-full truncate rounded-md border px-2 py-1 text-xs font-bold leading-none max-sm:text-[11px] ${
       theme === "dark"
         ? "border-white/[0.10] bg-white/[0.08] text-neutral-100"
         : theme === "paletteLight"
@@ -658,7 +716,7 @@ export const mealCalendarStyles = {
           : "bg-black/20 text-white"
     }`,
   monthDayCell: (theme: SiteTheme, muted: boolean) =>
-    `min-h-32 ${radiusClasses.figma6} border p-2 transition-colors duration-150 ${
+    `min-h-32 ${radiusClasses.figma6} border p-2 transition-colors duration-150 max-sm:min-h-28 ${
       muted
         ? theme === "dark"
           ? "border-white/[0.05] bg-white/[0.018]"
@@ -712,7 +770,7 @@ export const plannerPickerStyles = {
           ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
           : "border-neutral-200 bg-white text-neutral-900"
     }`,
-  header: "flex flex-wrap items-start justify-between gap-4",
+  header: "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4",
   title: "text-2xl font-bold leading-tight",
   subtitle: (theme: SiteTheme) =>
     `mt-1 text-sm font-semibold leading-[1.45] ${
@@ -724,14 +782,20 @@ export const plannerPickerStyles = {
     }`,
   closeButton: controlStyles.modalCloseButton,
   controls:
-    "mt-4 grid grid-cols-[13rem_auto_minmax(0,1fr)_auto] items-start gap-3 max-md:grid-cols-[13rem_auto_minmax(0,1fr)] max-sm:grid-cols-[minmax(0,1fr)_auto]",
+    "mt-4 grid grid-cols-[13rem_auto_auto_minmax(0,1fr)] items-start gap-3 max-md:grid-cols-[13rem_auto_auto_minmax(0,1fr)] max-sm:grid-cols-[minmax(0,1fr)_auto_auto]",
   searchInput: controlStyles.compactSearchInput,
-  phaseBadge: (theme: SiteTheme) =>
-    `inline-flex h-9 items-center justify-center ${radiusClasses.figma6} border px-3 text-xs font-bold max-sm:col-span-2 ${siteColorClasses[theme].plannerControl}`,
+  categoryButton: (theme: SiteTheme) =>
+    `inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-extrabold ${shadowClasses.subtle} transition-colors ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-neutral-500 text-neutral-950 hover:bg-neutral-400"
+        : theme === "paletteLight"
+          ? "border-[#7A8864]/35 bg-[#C8C0B5] text-[#556145] hover:bg-[#A9BDD1]/40"
+          : "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
+    }`,
   ingredientFilterChips:
-    "flex min-h-9 flex-wrap items-start gap-2 max-sm:col-span-2",
+    "flex min-h-9 flex-wrap items-start gap-2 max-sm:col-span-3",
   emptyIngredientChipSlot: "min-h-9 max-sm:hidden",
-  selectedSection: "mt-4 border-t pt-4",
+  selectedSection: "mt-4 border-t pt-4 max-sm:hidden",
   selectedSectionBorder: (theme: SiteTheme) =>
     theme === "dark"
       ? "border-white/[0.10]"
@@ -744,17 +808,16 @@ export const plannerPickerStyles = {
   selectedMainThumbnail: "h-36 w-36",
   selectedItem: (theme: SiteTheme) =>
     `inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-bold ${siteColorClasses[theme].plannerControl}`,
-  bodyGrid: `mt-4 grid ${sizeClasses.plannerPickerBrowserHeight} grid-cols-[13rem_minmax(0,1fr)] gap-3 overflow-y-auto pr-1 max-lg:grid-cols-1`,
+  bodyGrid: `mt-4 grid ${sizeClasses.plannerPickerBrowserHeight} overflow-y-auto pr-1`,
   filterRail: (theme: SiteTheme) =>
-    `rounded-md p-3 ${shadowClasses.subtle} ${
+    `max-h-[52vh] overflow-y-auto rounded-md p-3 max-sm:max-h-[44vh] ${shadowClasses.subtle} ${
       theme === "dark"
         ? "bg-white/[0.04]"
         : theme === "paletteLight"
           ? "bg-[#E5D5BC]/45"
           : "bg-neutral-100"
     }`,
-  recipeGrid:
-    "grid grid-cols-4 gap-3 max-xl:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1",
+  recipeGrid: "grid grid-cols-4 gap-3 max-xl:grid-cols-3 max-md:grid-cols-2",
   recipeCard: (theme: SiteTheme, selected: boolean) =>
     `${shadowClasses.subtle} ${
       selected

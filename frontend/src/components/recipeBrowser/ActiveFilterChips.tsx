@@ -51,7 +51,7 @@ function ActiveFilterChips({
   const hasVisibleFilters = mode === "ingredients" ? hasIngredientFilters : hasRecipeFilters;
 
   return (
-    <div className={recipeBrowserStyles.activeFilterChips(mode)}>
+    <div className={recipeBrowserStyles.activeFilterChips(mode, hasVisibleFilters)}>
       {!hasVisibleFilters && <span className={recipeBrowserStyles.emptyFilterChipSlot} aria-hidden="true" />}
       {mode === "ingredients" &&
         selectedIngredientTags.map((tag) => (

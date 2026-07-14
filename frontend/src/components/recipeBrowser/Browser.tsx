@@ -28,9 +28,10 @@ type BrowserProps = {
   mode: BrowserMode;
   theme: SiteTheme;
   headerActions: ReactNode;
+  modeToggle: ReactNode;
 };
 
-function Browser({ mode, theme, headerActions }: BrowserProps) {
+function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
   const { t } = useLanguage();
   const { cuisines } = useCuisines();
   const { recipes, recipeIsLoading, initError: recipeError } = useRecipes();
@@ -175,6 +176,9 @@ function Browser({ mode, theme, headerActions }: BrowserProps) {
     <>
       <header>
         <div className={recipeBrowserStyles.headerControlsRow}>
+          <div className={recipeBrowserStyles.headerModeToggleStackedSlot}>
+            {modeToggle}
+          </div>
           <div className={recipeBrowserStyles.headerTitle}>
             <h1 className={recipeBrowserStyles.title(theme)}>
               {mode === "recipes" ? t.cookbook.allRecipes : t.cookbook.allIngredients}
@@ -182,6 +186,9 @@ function Browser({ mode, theme, headerActions }: BrowserProps) {
           </div>
           <div className={recipeBrowserStyles.headerActions}>
             {headerActions}
+            <div className={recipeBrowserStyles.headerModeToggleSlot}>
+              {modeToggle}
+            </div>
           </div>
         </div>
         <div className={recipeBrowserStyles.searchFilterRow}>
@@ -196,11 +203,12 @@ function Browser({ mode, theme, headerActions }: BrowserProps) {
             />
             <div className={recipeBrowserStyles.filterButtonSlot}>
               <button
+                aria-label={t.filters.categories}
                 className={recipeBrowserStyles.categoryFilterButton(theme)}
                 type="button"
                 onClick={() => setIsCategoryFilterOpen(true)}
               >
-                {t.filters.categories}
+                <CategoryIcon />
               </button>
               {mode === "recipes" && (
                 <button
@@ -359,6 +367,17 @@ function Browser({ mode, theme, headerActions }: BrowserProps) {
         />
       )}
     </>
+  );
+}
+
+function CategoryIcon() {
+  return (
+    <svg className={recipeBrowserStyles.filterIcon} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M4 5.5h7v7H4v-7Zm9 0h7v7h-7v-7Zm-9 9h7v4H4v-4Zm9 0h7v4h-7v-4Z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }
 

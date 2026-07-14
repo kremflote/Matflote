@@ -47,7 +47,7 @@ function Header({
           MATFLOTE
         </button>
 
-        <nav className={headerStyles.nav} aria-label={t.nav.primary}>
+        <nav className={headerStyles.nav(theme)} aria-label={t.nav.primary}>
           {navItems.map((item) => {
             const label = t.nav[item.labelKey];
 

@@ -138,13 +138,18 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
         )}
       </div>
 
+      <label className={recipeBrowserStyles.imageUploadFloatingButton(theme)} htmlFor={inputId}>
+        <ImageUploadIcon />
+        Choose file
+      </label>
+
       {hasImage && !cropConfirmed && (
         <div className={recipeBrowserStyles.cropControls}>
           <SliderField label="Zoom" max={3} min={1} step={0.05} value={zoom} onChange={setZoom} />
           <SliderField label="Horizontal crop" max={100} min={-100} step={1} value={offsetX} onChange={setOffsetX} />
           <SliderField label="Vertical crop" max={100} min={-100} step={1} value={offsetY} onChange={setOffsetY} />
           <button
-            className={recipeBrowserStyles.secondaryButton(theme)}
+            className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.cropConfirmButton}`}
             type="button"
             onClick={() => setCropConfirmed(true)}
           >
@@ -153,6 +158,38 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
         </div>
       )}
     </div>
+  );
+}
+
+function ImageUploadIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className={recipeBrowserStyles.imageUploadIcon}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11Z"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <path
+        d="m7 16 3.2-3.2a1.1 1.1 0 0 1 1.6 0L14 15l1.2-1.2a1.1 1.1 0 0 1 1.6 0L20 17"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+      <path
+        d="M15 4v6m0-6 2 2m-2-2-2 2"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+    </svg>
   );
 }
 

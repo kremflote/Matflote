@@ -47,11 +47,13 @@ function AddButton({ target, theme }: AddButtonProps) {
   return (
     <>
       <button
+        aria-label={t.common.add}
         className={recipeBrowserStyles.addButton(theme)}
         type="button"
         onClick={openModal}
       >
-        + {t.common.add}
+        <span aria-hidden="true">+</span>
+        <span className={recipeBrowserStyles.addButtonLabel}>{t.common.add}</span>
       </button>
       {isOpen && (
         <div className={recipeBrowserStyles.modalBackdrop} role="presentation" onMouseDown={closeModal}>
@@ -65,9 +67,6 @@ function AddButton({ target, theme }: AddButtonProps) {
             <div className={recipeBrowserStyles.modalHeaderIntro}>
               <div>
                 <h2 className={recipeBrowserStyles.modalTitle} id={modalTitleId}>{t.cookbook.create}</h2>
-                <p className={recipeBrowserStyles.modalIntroText}>
-                  {t.cookbook.createIntro}
-                </p>
               </div>
               <button
                 aria-label={t.common.close}
@@ -97,16 +96,6 @@ function AddButton({ target, theme }: AddButtonProps) {
                 </button>
               </div>
 
-              {activeTarget === "recipe" && (
-                <button
-                  aria-expanded={showRecipeDetails}
-                  className={recipeBrowserStyles.detailsToggle(theme)}
-                  type="button"
-                  onClick={() => setShowRecipeDetails((currentValue) => !currentValue)}
-                >
-                  {showRecipeDetails ? t.cookbook.hideRecipeDetails : t.cookbook.addRecipeDetails}
-                </button>
-              )}
             </div>
 
             {activeTarget === "recipe" ? (
@@ -114,6 +103,7 @@ function AddButton({ target, theme }: AddButtonProps) {
                 imageInputId={recipeImageInputId}
                 showRecipeDetails={showRecipeDetails}
                 theme={theme}
+                onToggleRecipeDetails={() => setShowRecipeDetails((currentValue) => !currentValue)}
                 onCancel={closeModal}
                 onCreated={closeModal}
               />

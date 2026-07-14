@@ -5,7 +5,7 @@ type IngredientThumbnailProps = {
   ingredient: Pick<IIngredient, "ingredientName" | "tags" | "brand" | "color">;
   theme?: SiteTheme;
   selected?: boolean;
-  selectedPresentation?: "outline" | "muted";
+  selectedPresentation?: "outline" | "muted" | "colorBorder";
   disabled?: boolean;
   className?: string;
   onClick?: () => void;
@@ -28,7 +28,9 @@ function IngredientThumbnail({
   const brandName = ingredient.brand?.name ?? "";
   const tone = getIngredientTone(ingredient.color, theme);
   const selectedClassName =
-    selectedPresentation === "muted"
+    selectedPresentation === "colorBorder"
+      ? thumbnailStyles.ingredientSelectedColorBorder
+      : selectedPresentation === "muted"
       ? thumbnailStyles.ingredientSelectedMuted
       : thumbnailStyles.ingredientSelectedOutline;
   const sharedClassName = `${thumbnailStyles.ingredientShell(theme)} ${className} ${
@@ -36,6 +38,7 @@ function IngredientThumbnail({
   } ${disabled ? "cursor-not-allowed" : onClick ? `cursor-pointer ${siteColorClasses[theme].ingredientThumbnailInteractive}` : ""}`;
   const style = {
     color: tone.text,
+    ...(selected && selectedPresentation === "colorBorder" ? { borderColor: tone.dot } : {}),
   };
 
   const content = (

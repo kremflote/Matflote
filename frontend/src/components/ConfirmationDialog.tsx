@@ -57,7 +57,7 @@ function ConfirmationDialog({
         <div className={confirmationDialogStyles.body(theme)} id={bodyId}>{body}</div>
         <div className={confirmationDialogStyles.actions}>
           <button
-            className={confirmationDialogStyles.cancelButton(theme)}
+            className={`${confirmationDialogStyles.cancelButton(theme)} ${confirmationDialogStyles.actionButton}`}
             disabled={isBusy}
             ref={cancelButtonRef}
             type="button"
@@ -66,7 +66,7 @@ function ConfirmationDialog({
             {t.common.cancel}
           </button>
           <button
-            className={confirmationDialogStyles.confirmButton(theme, tone)}
+            className={`${confirmationDialogStyles.confirmButton(theme, tone)} ${confirmationDialogStyles.actionButton}`}
             disabled={isBusy}
             type="button"
             onClick={onConfirm}

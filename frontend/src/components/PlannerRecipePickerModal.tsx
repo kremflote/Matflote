@@ -88,6 +88,7 @@ function PlannerRecipePickerModal({
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
   const [ingredientPickerSearch, setIngredientPickerSearch] = useState("");
   const [ingredientPickerPosition, setIngredientPickerPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [isConfirmingRemove, setIsConfirmingRemove] = useState(false);
@@ -260,6 +261,11 @@ function PlannerRecipePickerModal({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
+        if (isCategoryFilterOpen) {
+          setIsCategoryFilterOpen(false);
+          return;
+        }
+
         onClose();
         return;
       }
@@ -272,7 +278,7 @@ function PlannerRecipePickerModal({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isConfirmingRemove, onClose]);
+  }, [isCategoryFilterOpen, isConfirmingRemove, onClose]);
 
   const highlightMainRecipe = (recipe: IRecipe) => {
     if (mainRecipeId === recipe.recipeId) {
@@ -364,6 +370,62 @@ function PlannerRecipePickerModal({
     }
   };
 
+  const filterSection = (
+    <aside className={plannerPickerStyles.filterRail(theme)} aria-label={t.filters.recipeFilters}>
+      {phase === "main" ? (
+        <>
+          <FilterGroup
+            disabledValues={mainProteinFilters.filter(
+              (filter) => !availableMainProteinTags.has(filter),
+            )}
+            selectedValues={selectedMainProteinTags}
+            theme={theme}
+            title={t.filters.protein}
+            values={mainProteinFilters}
+            formatValue={(value) => t.enums.ingredientTags[value]}
+            onToggle={(value) => toggleSelection(value, setSelectedMainProteinTags)}
+          />
+          <FilterGroup
+            disabledValues={recipeTags.filter(
+              (filter) => !availableMainRecipeTags.has(filter),
+            )}
+            selectedValues={selectedMainRecipeTags}
+            theme={theme}
+            title={t.filters.tags}
+            values={recipeTags}
+            formatValue={(value) => t.enums.recipeTags[value]}
+            onToggle={(value) => toggleSelection(value, setSelectedMainRecipeTags)}
+          />
+        </>
+      ) : (
+        <FilterGroup
+          disabledValues={supplementaryFilters.filter(
+            (filter) => !availableSupplementaryFilters.has(filter),
+          )}
+          selectedValues={selectedSupplementaryFilters}
+          theme={theme}
+          title={t.filters.type}
+          values={supplementaryFilters}
+          formatValue={(value) =>
+            value in t.enums.recipeTypes
+              ? t.enums.recipeTypes[value as keyof typeof t.enums.recipeTypes]
+              : t.enums.recipeTags[value as keyof typeof t.enums.recipeTags]
+          }
+          onToggle={(value) => toggleSelection(value, setSelectedSupplementaryFilters)}
+        />
+      )}
+      {cuisines.length > 0 && (
+        <NumberFilterGroup
+          selectedValues={selectedCuisineIds}
+          theme={theme}
+          title={t.filters.cuisine}
+          values={cuisineOptions}
+          onToggle={(value) => toggleSelection(value, setSelectedCuisineIds)}
+        />
+      )}
+    </aside>
+  );
+
   return (
     <div className={plannerPickerStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
       <section
@@ -401,6 +463,13 @@ function PlannerRecipePickerModal({
             onChange={(event) => setSearchTerm(event.target.value)}
           />
           <button
+            className={plannerPickerStyles.categoryButton(theme)}
+            type="button"
+            onClick={() => setIsCategoryFilterOpen(true)}
+          >
+            {t.filters.categories}
+          </button>
+          <button
             aria-label={t.browser.openIngredientFilter}
             className={recipeBrowserStyles.filterButton(theme)}
             ref={ingredientFilterButtonRef}
@@ -428,12 +497,37 @@ function PlannerRecipePickerModal({
               )
             }
           />
-          <span className={plannerPickerStyles.phaseBadge(theme)}>
-            {phase === "main"
-              ? t.planner.dish
-              : t.planner.selectedCount(supplementaryRecipeIds.length, maxSupplementaryRecipes)}
-          </span>
         </div>
+        {isCategoryFilterOpen && (
+          <div
+            className={recipeBrowserStyles.categoryFilterBackdrop}
+            role="presentation"
+            onMouseDown={() => setIsCategoryFilterOpen(false)}
+          >
+            <section
+              aria-labelledby="planner-category-filter-title"
+              aria-modal="true"
+              className={recipeBrowserStyles.categoryFilterPanel(theme)}
+              role="dialog"
+              onMouseDown={(event) => event.stopPropagation()}
+            >
+              <div className={recipeBrowserStyles.categoryFilterHeader}>
+                <h2 className={recipeBrowserStyles.modalTitle} id="planner-category-filter-title">
+                  {t.filters.categories}
+                </h2>
+                <button
+                  aria-label={t.common.close}
+                  className={recipeBrowserStyles.modalCloseButton(theme)}
+                  type="button"
+                  onClick={() => setIsCategoryFilterOpen(false)}
+                >
+                  x
+                </button>
+              </div>
+              {filterSection}
+            </section>
+          </div>
+        )}
         {ingredientPickerPosition !== null && (
           <IngredientPickerPopover
             ingredients={ingredientPickerOptions}
@@ -455,60 +549,6 @@ function PlannerRecipePickerModal({
         )}
 
         <div className={plannerPickerStyles.bodyGrid}>
-          <aside className={plannerPickerStyles.filterRail(theme)} aria-label={t.filters.recipeFilters}>
-            {phase === "main" ? (
-              <>
-                <FilterGroup
-                  disabledValues={mainProteinFilters.filter(
-                    (filter) => !availableMainProteinTags.has(filter),
-                  )}
-                  selectedValues={selectedMainProteinTags}
-                  theme={theme}
-                  title={t.filters.protein}
-                  values={mainProteinFilters}
-                  formatValue={(value) => t.enums.ingredientTags[value]}
-                  onToggle={(value) => toggleSelection(value, setSelectedMainProteinTags)}
-                />
-                <FilterGroup
-                  disabledValues={recipeTags.filter(
-                    (filter) => !availableMainRecipeTags.has(filter),
-                  )}
-                  selectedValues={selectedMainRecipeTags}
-                  theme={theme}
-                  title={t.filters.tags}
-                  values={recipeTags}
-                  formatValue={(value) => t.enums.recipeTags[value]}
-                  onToggle={(value) => toggleSelection(value, setSelectedMainRecipeTags)}
-                />
-              </>
-            ) : (
-              <FilterGroup
-                disabledValues={supplementaryFilters.filter(
-                  (filter) => !availableSupplementaryFilters.has(filter),
-                )}
-                selectedValues={selectedSupplementaryFilters}
-                theme={theme}
-                title={t.filters.type}
-                values={supplementaryFilters}
-                formatValue={(value) =>
-                  value in t.enums.recipeTypes
-                    ? t.enums.recipeTypes[value as keyof typeof t.enums.recipeTypes]
-                    : t.enums.recipeTags[value as keyof typeof t.enums.recipeTags]
-                }
-                onToggle={(value) => toggleSelection(value, setSelectedSupplementaryFilters)}
-              />
-            )}
-            {cuisines.length > 0 && (
-              <NumberFilterGroup
-                selectedValues={selectedCuisineIds}
-                theme={theme}
-                title={t.filters.cuisine}
-                values={cuisineOptions}
-                onToggle={(value) => toggleSelection(value, setSelectedCuisineIds)}
-              />
-            )}
-          </aside>
-
           <PlannerRecipePickerGrid
             highlightedMainRecipeId={highlightedMainRecipeId}
             phase={phase}
@@ -532,14 +572,16 @@ function PlannerRecipePickerModal({
         )}
 
         <div className={plannerPickerStyles.footer}>
-          <button
-            className={plannerPickerStyles.secondaryButton(theme)}
-            disabled={isSaving || isRemoving}
-            type="button"
-            onClick={onClose}
-          >
-            {t.common.cancel}
-          </button>
+          {entry !== undefined && (
+            <button
+              className={plannerPickerStyles.removeButton(theme)}
+              disabled={isSaving || isRemoving}
+              type="button"
+              onClick={() => setIsConfirmingRemove(true)}
+            >
+              {isRemoving ? t.planner.removing : t.planner.removeMeal}
+            </button>
+          )}
           {phase === "main" ? (
             <button
               className={plannerPickerStyles.primaryButton(theme)}
@@ -560,16 +602,6 @@ function PlannerRecipePickerModal({
               }}
             >
               {t.planner.backToMain}
-            </button>
-          )}
-          {entry !== undefined && (
-            <button
-              className={plannerPickerStyles.removeButton(theme)}
-              disabled={isSaving || isRemoving}
-              type="button"
-              onClick={() => setIsConfirmingRemove(true)}
-            >
-              {isRemoving ? t.planner.removing : t.planner.removeMeal}
             </button>
           )}
           <button

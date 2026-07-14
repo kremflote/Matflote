@@ -250,15 +250,19 @@ Padding: 16px
 Border radius: 6px
 ```
 
-### Create/edit form bodies
+### Modal form and info windows
 
 ```
-Max height: 68vh
+Outer modal max height: 88vh
+Inner form/info body max height: 56vh
+Mobile inner body max height: 52vh
 Padding: 24px
 Border radius: 6px
 ```
 
-Use this max height on the inner form-body container in create/edit windows. Keep destructive, cancel, and confirm/save action rows outside this scroll area so they remain visible. The value lives in `sizeClasses.modalFormBodyMaxHeight` in `frontend/src/styles/appStyles.ts`.
+Use the outer max height on the modal frame and the inner max height on the scrollable form/info body container in recipe create/edit and recipe/ingredient info windows. Keep destructive, cancel, and confirm/save action rows outside this scroll area so they remain visible. These values live in `sizeClasses.modalOuterMaxHeight`, `sizeClasses.modalFormBodyMaxHeight`, and `sizeClasses.modalFormBodyMobileMaxHeight` in `frontend/src/styles/appStyles.ts`.
+
+On phone widths, dense create/edit sections may move into a secondary modal using the same modal height tokens. The parent form should show a compact summary, such as selected ingredient capsules, and keep confirm/save actions visible outside the scroll body.
 
 ### Cards
 
@@ -359,9 +363,11 @@ Touch targets: at least 40px on small phones where controls are compact
 
 Mobile behavior rules:
 
-- Header uses two rows: logo/theme on the first row, primary navigation on the second row
+- Header keeps logo/theme at the top on mobile, while primary navigation moves to a fixed bottom bar
 - Header logo shrinks on small phones, but remains the first visual brand signal
-- Header navigation buttons become shorter and share available width
+- Header navigation buttons become bottom tab controls and share available width
+- Bottom navigation uses dedicated `siteColorClasses[theme].bottomNav` and mobile-strength nav button colors; do not rely on transparent header button styling for the fixed mobile bar
+- Mobile pages need enough bottom padding that fixed bottom navigation does not cover final content
 - Toolbars may wrap, but related controls should stay visually grouped
 - Page grids should collapse to one column before causing horizontal scrolling
 - Desktop data grids and calendars may remain horizontally scrollable only when a mobile-specific replacement has not yet been implemented
@@ -373,9 +379,12 @@ Mobile audit status:
 
 - Header/navigation: first responsive pass implemented
 - Shared modal/backdrop helpers: first responsive pass implemented
-- Cookbook: first responsive pass implemented for header actions, search/filter controls, category filter modal, result grids, detail rows, and modals
-- Planner week view: pending mobile day-list layout
-- Planner month view: pending compact month interaction review
+- Cookbook: first responsive pass implemented for header actions, search/filter controls, category filter modal, result grids, detail rows, and modals. On mobile, the Add action becomes a round floating action button above the fixed bottom navigation. The create modal keeps its recipe/ingredient mode switch full-width and lowers the scrollable form body height on phone widths so the footer actions remain reachable. Detail modals use the same phone pattern: stable close control, scrollable detail body, and bottom edit/remove actions outside the scroll area.
+- Planner week view: first responsive pass implemented; controls stack and days render as a vertical list on tablet/phone widths
+- Planner top controls use two rows on desktop: the week/month counter row is centered above an action row. Action buttons take the 8-column action area, and the week/month toggle keeps the shared thumbnail control width. On mobile, keep the counter first and replace the desktop action row with two compact buttons below it: one opens a small planner tools dialog for Clear/Generate/Prep/Export, and one cycles Week/Month as a single button.
+- Planner meal picker uses the shared browser pattern: search, Categories button, ingredient filter button, and active filter chips. Category filters open in a modal instead of occupying a permanent side rail.
+- Planner week day sections are collapsible on mobile widths only. Desktop day labels are static; mobile day titles act as toggles and show a chevron-style state symbol beside the title. Mobile day headers also show three compact right-aligned meal preview squares for the day's slots; filled slots use the main dish image and empty slots use the planner empty-slot treatment.
+- Planner month view: first responsive pass keeps the 7-column calendar horizontally scrollable on narrow screens; compact month interaction review remains a later design task
 - Settings: pending mobile panel stacking and form review
 
 Shared browser/filter UI should be reused across Cookbook and Planner when the interaction is the same:

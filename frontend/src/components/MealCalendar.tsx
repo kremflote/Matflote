@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { useLanguage } from "../contexts";
 import { mealCalendarStyles, type SiteTheme } from "../styles/appStyles";
 import type { IMealPlanEntry, MealSlot as MealSlotId, PlannerViewMode } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
+import { getApiAssetUrl } from "../services/apiClient";
 import MealSlot from "./MealSlot";
 
 type MealCalendarProps = {
@@ -30,7 +32,33 @@ function MealCalendar({
   viewMode,
 }: MealCalendarProps) {
   const { locale, t } = useLanguage();
+  const [collapsedDateKeys, setCollapsedDateKeys] = useState<Set<string>>(() => new Set());
+  const [canCollapseDays, setCanCollapseDays] = useState(false);
   const weekDayLabels = t.calendar.weekdaysShort;
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const updateCanCollapseDays = () => setCanCollapseDays(mediaQuery.matches);
+
+    updateCanCollapseDays();
+    mediaQuery.addEventListener("change", updateCanCollapseDays);
+
+    return () => mediaQuery.removeEventListener("change", updateCanCollapseDays);
+  }, []);
+
+  const toggleDay = (dateKey: string) => {
+    setCollapsedDateKeys((currentDateKeys) => {
+      const nextDateKeys = new Set(currentDateKeys);
+
+      if (nextDateKeys.has(dateKey)) {
+        nextDateKeys.delete(dateKey);
+      } else {
+        nextDateKeys.add(dateKey);
+      }
+
+      return nextDateKeys;
+    });
+  };
 
   if (viewMode === "month") {
     return (
@@ -94,14 +122,53 @@ function MealCalendar({
       <div className={mealCalendarStyles.rows}>
         {dates.map((date, index) => {
           const dateKey = toDateInputValue(date);
+          const isCollapsed = canCollapseDays && collapsedDateKeys.has(dateKey);
+          const dayLabel = weekDayLabels[index] ?? "";
+          const dayDate = formatDayMonth(date, locale);
 
           return (
             <div className={mealCalendarStyles.row} key={dateKey}>
-              <div className={mealCalendarStyles.dayCell(theme)}>
-                <span className={mealCalendarStyles.dayLabel}>{weekDayLabels[index] ?? ""}</span>
-                <span className={mealCalendarStyles.dayDate(theme)}>{formatDayMonth(date, locale)}</span>
-              </div>
-              <div className={mealCalendarStyles.grid}>
+              {canCollapseDays ? (
+                <button
+                  aria-expanded={!isCollapsed}
+                  aria-label={
+                    isCollapsed
+                      ? t.planner.expandDay(dayLabel, dayDate)
+                      : t.planner.collapseDay(dayLabel, dayDate)
+                  }
+                  className={mealCalendarStyles.dayCellButton(theme)}
+                  type="button"
+                  onClick={() => toggleDay(dateKey)}
+                >
+                  <span className={mealCalendarStyles.dayHeaderTextGroup}>
+                    <span className={mealCalendarStyles.dayTitleGroup}>
+                      <span className={mealCalendarStyles.dayToggleIcon(isCollapsed)} aria-hidden="true">
+                        <ChevronIcon />
+                      </span>
+                      <span className={mealCalendarStyles.dayLabel}>{dayLabel}</span>
+                    </span>
+                    <span className={mealCalendarStyles.dayDate(theme)}>{dayDate}</span>
+                  </span>
+                  <span className={mealCalendarStyles.dayPreviewStrip} aria-hidden="true">
+                    {mealSlots.map((meal) => (
+                      <DayMealPreview
+                        entry={getEntryForSlot(dateKey, meal)}
+                        key={`${dateKey}-${meal}-preview`}
+                        recipesById={recipesById}
+                        theme={theme}
+                      />
+                    ))}
+                  </span>
+                </button>
+              ) : (
+                <div className={mealCalendarStyles.dayCell(theme)}>
+                  <span className={mealCalendarStyles.dayTitleGroup}>
+                    <span className={mealCalendarStyles.dayLabel}>{dayLabel}</span>
+                  </span>
+                  <span className={mealCalendarStyles.dayDate(theme)}>{dayDate}</span>
+                </div>
+              )}
+              <div className={mealCalendarStyles.dayMealGrid(isCollapsed)}>
                 {mealSlots.map((meal) => (
                   <MealSlot
                     entry={getEntryForSlot(dateKey, meal)}
@@ -120,6 +187,46 @@ function MealCalendar({
         <p className={mealCalendarStyles.mealSlotStatus(theme)}>{loadError}</p>
       )}
     </section>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg aria-hidden="true" className={mealCalendarStyles.dayToggleSvg} viewBox="0 0 24 24">
+      <path d="m8.6 5.8 6.2 6.2-6.2 6.2 1.4 1.4 7.6-7.6L10 4.4 8.6 5.8Z" />
+    </svg>
+  );
+}
+
+type DayMealPreviewProps = {
+  entry?: IMealPlanEntry;
+  recipesById: Map<number, IRecipe>;
+  theme: SiteTheme;
+};
+
+function DayMealPreview({ entry, recipesById, theme }: DayMealPreviewProps) {
+  const plannedRecipes = entry?.recipes.slice().sort((first, second) => first.sortOrder - second.sortOrder) ?? [];
+  const mainRecipe =
+    plannedRecipes.find((plannedRecipe) => plannedRecipe.role === "Main") ?? plannedRecipes[0];
+  const recipe = mainRecipe ? recipesById.get(mainRecipe.recipeId) : undefined;
+  const imageUrl = getApiAssetUrl(recipe?.imageUrl ?? null);
+
+  if (recipe === undefined) {
+    return <span className={mealCalendarStyles.dayPreviewEmpty(theme)} />;
+  }
+
+  return (
+    <span className={mealCalendarStyles.dayPreviewFilled(theme)}>
+      {imageUrl ? (
+        <img
+          alt=""
+          className={mealCalendarStyles.dayPreviewImage}
+          src={imageUrl}
+        />
+      ) : (
+        <span className={mealCalendarStyles.dayPreviewImageFallback(theme)} />
+      )}
+    </span>
   );
 }
 

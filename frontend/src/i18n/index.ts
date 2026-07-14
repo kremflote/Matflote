@@ -58,7 +58,6 @@ export type TranslationDictionary = {
     allRecipes: string;
     cookbookSections: string;
     create: string;
-    createIntro: string;
     couldNotLoadIngredients: string;
     couldNotLoadRecipes: string;
     fetchingCookbook: string;
@@ -106,6 +105,10 @@ export type TranslationDictionary = {
     settings: string;
   };
   planner: {
+    actionClear: string;
+    actionExport: string;
+    actionGenerate: string;
+    actionPrep: string;
     addMeal: (slot: string) => string;
     addMealLower: (slot: string) => string;
     addSupplementsDescription: string;
@@ -117,12 +120,14 @@ export type TranslationDictionary = {
     clearRange: (range: string) => string;
     clearRangeBody: (range: string) => string;
     clearing: string;
+    collapseDay: (day: string, date: string) => string;
     couldNotClear: (range: string) => string;
     couldNotGenerate: (range: string) => string;
     couldNotLoadMealPlan: string;
     dish: string;
     editMeal: (slot: string, label: string) => string;
     exportGroceryList: string;
+    expandDay: (day: string, date: string) => string;
     groceryExportCouldNotLoad: string;
     groceryExportCouldNotSend: string;
     groceryExportDescription: string;
@@ -143,7 +148,9 @@ export type TranslationDictionary = {
     mealPickerSearchPlaceholder: string;
     noMatchingRecipesFound: string;
     noMainDishRecipesFound: string;
+    openPlannerActions: string;
     plannerControls: string;
+    plannerTools: string;
     plannerView: string;
     prepHelper: string;
     prepActionLabels: Record<string, string>;
@@ -165,6 +172,7 @@ export type TranslationDictionary = {
     saveMeal: string;
     selectMainDescription: string;
     selectedCount: (count: number, max: number) => string;
+    switchToView: (view: string) => string;
     weekLabel: (week: number) => string;
     yearLabel: (year: string) => string;
   };
@@ -324,8 +332,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       allRecipes: "All Recipes",
       cookbookSections: "Cookbook sections",
       create: "Create",
-      createIntro:
-        "Add recipes, desserts, sauces, ingredients, and the rest of the kitchen library.",
       couldNotLoadIngredients: "Could not load ingredients",
       couldNotLoadRecipes: "Could not load recipes",
       fetchingCookbook: "Fetching the cookbook.",
@@ -404,6 +410,10 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       settings: "Settings",
     },
     planner: {
+      actionClear: "Clear",
+      actionExport: "Export",
+      actionGenerate: "Generate",
+      actionPrep: "Prep",
       addMeal: (slot) => `Add ${slot}`,
       addMealLower: (slot) => `Add ${slot.toLowerCase()}`,
       addSupplementsDescription:
@@ -416,6 +426,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       clearRange: (range) => `Clear this ${range}?`,
       clearRangeBody: (range) => `This will clear the current ${range}.`,
       clearing: "Clearing...",
+      collapseDay: (day, date) => `Collapse ${day} ${date}`,
       couldNotClear: (range) => `Could not clear this ${range}.`,
       couldNotGenerate: (range) =>
         `Could not generate meals for this ${range}.`,
@@ -423,6 +434,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       dish: "Dish",
       editMeal: (slot, label) => `Edit ${slot}: ${label}`,
       exportGroceryList: "Export grocery list",
+      expandDay: (day, date) => `Expand ${day} ${date}`,
       groceryExportCouldNotLoad: "Could not load the grocery list.",
       groceryExportCouldNotSend:
         "Could not export the grocery list. Check the export settings and try again.",
@@ -455,8 +467,10 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       noMatchingRecipesFound: "No matching recipes found.",
       noMainDishRecipesFound: "No main dish recipes found.",
       nextRange: (range) => `Next ${range}`,
+      openPlannerActions: "Open planner tools",
       openMealSlot: "Open meal slot",
       plannerControls: "Planner controls",
+      plannerTools: "Tools",
       plannerView: "Planner view",
       prepHelper: "Prep helper",
       prepActionLabels: {
@@ -495,6 +509,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       saveMeal: "Save meal",
       selectMainDescription: "Select one dish for this meal slot.",
       selectedCount: (count, max) => `${count}/${max} selected`,
+      switchToView: (view) => `Switch to ${view}`,
       weekLabel: (week) => `Week ${week}`,
       yearLabel: (year) => `Year ${year}`,
     },
@@ -574,8 +589,6 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       allRecipes: "Alle oppskrifter",
       cookbookSections: "Kokebokseksjoner",
       create: "Opprett",
-      createIntro:
-        "Legg til oppskrifter, desserter, sauser, ingredienser og resten av kjøkkenbiblioteket.",
       couldNotLoadIngredients: "Kunne ikke laste ingredienser",
       couldNotLoadRecipes: "Kunne ikke laste oppskrifter",
       fetchingCookbook: "Henter kokeboken.",
@@ -730,6 +743,10 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       settings: "Innstillinger",
     },
     planner: {
+      actionClear: "Tøm",
+      actionExport: "Eksporter",
+      actionGenerate: "Generer",
+      actionPrep: "Prep",
       addMeal: (slot) => `Legg til ${slot}`,
       addMealLower: (slot) => `Legg til ${slot.toLowerCase()}`,
       addSupplementsDescription:
@@ -742,6 +759,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       clearRange: (range) => `Tøm denne ${range}?`,
       clearRangeBody: (range) => `Dette tømmer gjeldende ${range}.`,
       clearing: "Tømmer...",
+      collapseDay: (day, date) => `Skjul ${day} ${date}`,
       couldNotClear: (range) => `Kunne ikke tømme denne ${range}.`,
       couldNotGenerate: (range) =>
         `Kunne ikke generere måltider for denne ${range}.`,
@@ -749,6 +767,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       dish: "Rett",
       editMeal: (slot, label) => `Rediger ${slot}: ${label}`,
       exportGroceryList: "Eksporter handleliste",
+      expandDay: (day, date) => `Vis ${day} ${date}`,
       groceryExportCouldNotLoad: "Kunne ikke laste handlelisten.",
       groceryExportCouldNotSend:
         "Kunne ikke eksportere handlelisten. Sjekk eksportinnstillingene og prøv igjen.",
@@ -781,8 +800,10 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       noMatchingRecipesFound: "Ingen oppskrifter funnet.",
       noMainDishRecipesFound: "Ingen hovedretter funnet.",
       nextRange: (range) => `Neste ${range}`,
+      openPlannerActions: "Åpne planleggerverktøy",
       openMealSlot: "Åpne måltidsplass",
       plannerControls: "Planleggerkontroller",
+      plannerTools: "Verktøy",
       plannerView: "Planleggervisning",
       prepHelper: "Prep-hjelp",
       prepActionLabels: {
@@ -821,6 +842,7 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
       saveMeal: "Lagre måltid",
       selectMainDescription: "Velg én rett for denne måltidsplassen.",
       selectedCount: (count, max) => `${count}/${max} valgt`,
+      switchToView: (view) => `Bytt til ${view}`,
       weekLabel: (week) => `Uke ${week}`,
       yearLabel: (year) => `År ${year}`,
     },

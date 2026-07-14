@@ -13,19 +13,17 @@ type RecipeBrowserProps = {
 
 function RecipeBrowser({ mode, theme, onModeChange }: RecipeBrowserProps) {
   return (
-    <main className={pageStyles.shell}>
+    <main className={`${pageStyles.shell} ${recipeBrowserStyles.mobileFlushToHeader}`}>
       <Browser
         mode={mode}
         theme={theme}
         headerActions={
-          <>
-            <div className={recipeBrowserStyles.headerActionButtonSlot}>
-              <AddButton target={mode === "recipes" ? "recipe" : "ingredient"} theme={theme} />
-            </div>
-            <div className={recipeBrowserStyles.headerModeToggleSlot}>
-              <RecipeIngredientToggle value={mode} theme={theme} onChange={onModeChange} />
-            </div>
-          </>
+          <div className={recipeBrowserStyles.headerActionButtonSlot}>
+            <AddButton target={mode === "recipes" ? "recipe" : "ingredient"} theme={theme} />
+          </div>
+        }
+        modeToggle={
+          <RecipeIngredientToggle value={mode} theme={theme} onChange={onModeChange} />
         }
       />
     </main>

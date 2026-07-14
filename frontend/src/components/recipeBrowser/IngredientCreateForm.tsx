@@ -428,10 +428,10 @@ function IngredientCreateForm({
       </div>
 
       <div className={recipeBrowserStyles.formActions}>
-        <button className={recipeBrowserStyles.secondaryButton(theme)} disabled={isSaving} type="button" onClick={onCancel}>
+        <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="button" onClick={onCancel}>
           Cancel
         </button>
-        <button className={recipeBrowserStyles.primaryButton(theme)} disabled={isSaving} type="submit">
+        <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="submit">
           {isSaving ? "Saving..." : isEditing ? "Save ingredient" : "Create ingredient"}
         </button>
       </div>
