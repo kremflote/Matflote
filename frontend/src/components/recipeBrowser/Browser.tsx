@@ -3,6 +3,7 @@ import { useCuisines, useIngredients, useLanguage, useRecipes } from "../../cont
 import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
+import Modal from "../Modal";
 import ActiveFilterChips from "./ActiveFilterChips";
 import BrowserDetailModal from "./BrowserDetailModal";
 import BrowserFilterSection from "./BrowserFilterSection";
@@ -285,47 +286,33 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
       </header>
 
       {isCategoryFilterOpen && (
-        <div
-          className={recipeBrowserStyles.categoryFilterBackdrop}
-          role="presentation"
-          onMouseDown={() => setIsCategoryFilterOpen(false)}
+        <Modal
+          backdropClassName={recipeBrowserStyles.categoryFilterBackdrop}
+          bodyClassName={recipeBrowserStyles.categoryFilterBody}
+          closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+          closeLabel={t.common.close}
+          headerClassName={recipeBrowserStyles.categoryFilterHeader}
+          panelClassName={recipeBrowserStyles.categoryFilterPanel(theme)}
+          title={t.filters.categories}
+          titleClassName={recipeBrowserStyles.modalTitle}
+          titleId="cookbook-category-filter-title"
+          onClose={() => setIsCategoryFilterOpen(false)}
         >
-          <section
-            aria-labelledby="cookbook-category-filter-title"
-            aria-modal="true"
-            className={recipeBrowserStyles.categoryFilterPanel(theme)}
-            role="dialog"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className={recipeBrowserStyles.categoryFilterHeader}>
-              <h2 className={recipeBrowserStyles.modalTitle} id="cookbook-category-filter-title">
-                {t.filters.categories}
-              </h2>
-              <button
-                aria-label={t.common.close}
-                className={recipeBrowserStyles.modalCloseButton(theme)}
-                type="button"
-                onClick={() => setIsCategoryFilterOpen(false)}
-              >
-                x
-              </button>
-            </div>
-            <BrowserFilterSection
-              mode={mode}
-              cuisines={cuisines}
-              selectedCuisineIds={selectedCuisineIds}
-              selectedRecipeTags={selectedRecipeTags}
-              selectedIngredientTags={selectedIngredientTags}
-              selectedRecipeTypes={selectedRecipeTypes}
-              setSelectedCuisineIds={setSelectedCuisineIds}
-              setSelectedRecipeTags={setSelectedRecipeTags}
-              setSelectedIngredientTags={setSelectedIngredientTags}
-              setSelectedRecipeTypes={setSelectedRecipeTypes}
-              theme={theme}
-              variant="panel"
-            />
-          </section>
-        </div>
+          <BrowserFilterSection
+            mode={mode}
+            cuisines={cuisines}
+            selectedCuisineIds={selectedCuisineIds}
+            selectedRecipeTags={selectedRecipeTags}
+            selectedIngredientTags={selectedIngredientTags}
+            selectedRecipeTypes={selectedRecipeTypes}
+            setSelectedCuisineIds={setSelectedCuisineIds}
+            setSelectedRecipeTags={setSelectedRecipeTags}
+            setSelectedIngredientTags={setSelectedIngredientTags}
+            setSelectedRecipeTypes={setSelectedRecipeTypes}
+            theme={theme}
+            variant="panel"
+          />
+        </Modal>
       )}
 
       <section className={recipeBrowserStyles.browserBodyGrid}>

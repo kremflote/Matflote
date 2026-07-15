@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLanguage } from "../contexts";
 import type { PlannerViewMode } from "../interfaces/IMeal";
 import { plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
+import Modal from "./Modal";
 
 type PlannerControlsProps = {
   anchorLabel: string;
@@ -203,17 +204,17 @@ function PlannerControls({
         </button>
       </div>
       {isMobileActionsOpen ? (
-        <div
-          className={plannerControlsStyles.mobileActionsBackdrop}
-          role="presentation"
-          onClick={() => setIsMobileActionsOpen(false)}
+        <Modal
+          backdropClassName={plannerControlsStyles.mobileActionsBackdrop}
+          bodyClassName={plannerControlsStyles.mobileActionsBody}
+          closeButtonClassName={plannerControlsStyles.mobileActionsCloseButton(theme)}
+          closeLabel={t.common.close}
+          headerClassName={plannerControlsStyles.mobileActionsHeader}
+          panelClassName={plannerControlsStyles.mobileActionsPanel(theme)}
+          title={t.planner.plannerTools}
+          titleClassName={plannerControlsStyles.mobileActionsTitle}
+          onClose={() => setIsMobileActionsOpen(false)}
         >
-          <div
-            aria-label={t.planner.openPlannerActions}
-            className={plannerControlsStyles.mobileActionsPanel(theme)}
-            role="dialog"
-            onClick={(event) => event.stopPropagation()}
-          >
             <button
               aria-label={t.planner.clearCurrent(rangeLabel)}
               className={plannerControlsStyles.iconOnlyButton(theme)}
@@ -260,8 +261,7 @@ function PlannerControls({
                 {isExportRangeRunning ? t.planner.groceryExportLoading : t.planner.actionExport}
               </span>
             </button>
-          </div>
-        </div>
+        </Modal>
       ) : null}
     </section>
   );

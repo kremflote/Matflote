@@ -3,6 +3,7 @@ import ConfirmationDialog from "../ConfirmationDialog";
 import { useIngredients, useLanguage, useRecipes } from "../../contexts";
 import { ingredientService, recipeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
+import Modal from "../Modal";
 import IngredientCreateForm from "./IngredientCreateForm";
 import IngredientDetailContent from "./IngredientDetailContent";
 import RecipeCreateForm from "./RecipeCreateForm";
@@ -75,116 +76,91 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
 
   if (detail.kind === "recipe" && isEditingRecipe) {
     return (
-      <div className={recipeBrowserStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
-        <section
-          aria-labelledby={editTitleId}
-          aria-modal="true"
-          className={recipeBrowserStyles.modalPanel(theme)}
-          role="dialog"
-          onMouseDown={(event) => event.stopPropagation()}
-        >
-          <div className={recipeBrowserStyles.modalHeader}>
-            <h2 className={recipeBrowserStyles.modalTitle} id={editTitleId}>{t.common.edit} {detail.recipe.name}</h2>
-            <button aria-label={t.common.close} className={recipeBrowserStyles.modalCloseAligned(theme)} type="button" onClick={onClose}>
-              x
-            </button>
-          </div>
-
-          <RecipeCreateForm
-            imageInputId={editRecipeImageInputId}
-            initialRecipe={detail.recipe}
-            showRecipeDetails
-            theme={theme}
-            onCancel={() => setIsEditingRecipe(false)}
-            onCreated={onClose}
-          />
-        </section>
-      </div>
+      <Modal
+        backdropClassName={recipeBrowserStyles.modalBackdrop}
+        closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+        closeLabel={t.common.close}
+        headerClassName={recipeBrowserStyles.modalHeader}
+        panelClassName={recipeBrowserStyles.modalPanel(theme)}
+        title={`${t.common.edit} ${detail.recipe.name}`}
+        titleClassName={recipeBrowserStyles.modalTitle}
+        titleId={editTitleId}
+        onClose={onClose}
+      >
+        <RecipeCreateForm
+          imageInputId={editRecipeImageInputId}
+          initialRecipe={detail.recipe}
+          showRecipeDetails
+          theme={theme}
+          onCancel={() => setIsEditingRecipe(false)}
+          onCreated={onClose}
+        />
+      </Modal>
     );
   }
 
   if (detail.kind === "ingredient" && isEditingIngredient) {
     return (
-      <div className={recipeBrowserStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
-        <section
-          aria-labelledby={editTitleId}
-          aria-modal="true"
-          className={recipeBrowserStyles.modalPanel(theme)}
-          role="dialog"
-          onMouseDown={(event) => event.stopPropagation()}
-        >
-          <div className={recipeBrowserStyles.modalHeader}>
-            <h2 className={recipeBrowserStyles.modalTitle} id={editTitleId}>{t.common.edit} {detail.ingredient.ingredientName}</h2>
-            <button aria-label={t.common.close} className={recipeBrowserStyles.modalCloseAligned(theme)} type="button" onClick={onClose}>
-              x
-            </button>
-          </div>
-
-          <IngredientCreateForm
-            initialIngredient={detail.ingredient}
-            theme={theme}
-            onCancel={() => setIsEditingIngredient(false)}
-            onCreated={onClose}
-          />
-        </section>
-      </div>
+      <Modal
+        backdropClassName={recipeBrowserStyles.modalBackdrop}
+        closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+        closeLabel={t.common.close}
+        headerClassName={recipeBrowserStyles.modalHeader}
+        panelClassName={recipeBrowserStyles.modalPanel(theme)}
+        title={`${t.common.edit} ${detail.ingredient.ingredientName}`}
+        titleClassName={recipeBrowserStyles.modalTitle}
+        titleId={editTitleId}
+        onClose={onClose}
+      >
+        <IngredientCreateForm
+          initialIngredient={detail.ingredient}
+          theme={theme}
+          onCancel={() => setIsEditingIngredient(false)}
+          onCreated={onClose}
+        />
+      </Modal>
     );
   }
 
+  const detailTitle =
+    detail.kind === "recipe" ? (
+      <span className={recipeBrowserStyles.detailHeaderTitleRow}>
+        <span>{detail.recipe.name}</span>
+        <span className={recipeBrowserStyles.detailHeaderTagList}>
+          {detail.recipe.tags
+            .filter((tag) => recipeTags.includes(tag))
+            .map((tag) => (
+              <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
+                {t.enums.recipeTags[tag]}
+              </span>
+            ))}
+        </span>
+      </span>
+    ) : (
+      detail.ingredient.ingredientName
+    );
+
+  const detailTags =
+    detail.kind === "ingredient" ? (
+      <div className={recipeBrowserStyles.detailHeaderTagList}>
+        {detail.ingredient.tags.map((tag) => (
+          <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
+            {t.enums.ingredientTags[tag]}
+          </span>
+        ))}
+      </div>
+    ) : undefined;
+
   return (
-    <div className={recipeBrowserStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
-      <section
-        aria-labelledby={detailTitleId}
-        aria-modal="true"
-        className={recipeBrowserStyles.detailModalPanel(theme)}
-        role="dialog"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <button aria-label={t.common.close} className={recipeBrowserStyles.detailCloseButton(theme)} type="button" onClick={onClose}>
-          x
-        </button>
-        <div className={recipeBrowserStyles.detailBodyScrollArea}>
-          <div className={recipeBrowserStyles.detailHeaderShell}>
-            <div className={recipeBrowserStyles.detailHeaderTitleRow}>
-              <h2 className={recipeBrowserStyles.detailHeaderTitle} id={detailTitleId}>
-                {detail.kind === "recipe" ? detail.recipe.name : detail.ingredient.ingredientName}
-              </h2>
-              {detail.kind === "recipe" && (
-                <div className={recipeBrowserStyles.detailHeaderTagList}>
-                  {detail.recipe.tags
-                    .filter((tag) => recipeTags.includes(tag))
-                    .map((tag) => (
-                      <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
-                        {t.enums.recipeTags[tag]}
-                      </span>
-                    ))}
-                </div>
-              )}
-              {detail.kind === "ingredient" && (
-                <div className={recipeBrowserStyles.detailHeaderTagList}>
-                  {detail.ingredient.tags.map((tag) => (
-                    <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
-                      {t.enums.ingredientTags[tag]}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{deleteError}</p>}
-
-          {detail.kind === "recipe" ? (
-            <RecipeDetailContent
-              recipe={detail.recipe}
-              theme={theme}
-              onIngredientClick={(ingredient) => onSelectDetail({ kind: "ingredient", ingredient })}
-            />
-          ) : (
-            <IngredientDetailContent ingredient={detail.ingredient} theme={theme} />
-          )}
-        </div>
-        <div className={recipeBrowserStyles.detailHeaderActionRow}>
+    <Modal
+      backdropClassName={recipeBrowserStyles.modalBackdrop}
+      bodyClassName={recipeBrowserStyles.detailBodyScrollArea}
+      closeButtonClassName={recipeBrowserStyles.detailCloseButton(theme)}
+      closeLabel={t.common.close}
+      description={detailTags}
+      descriptionClassName={recipeBrowserStyles.detailHeaderDescription}
+      footer={
+        <>
           <button
             className={recipeBrowserStyles.detailHeaderEditButton(theme)}
             type="button"
@@ -206,7 +182,27 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
           >
             {isDeleting ? t.common.removing : t.common.remove}
           </button>
-        </div>
+        </>
+      }
+      footerClassName={recipeBrowserStyles.detailHeaderActionRow}
+      headerClassName={recipeBrowserStyles.detailFrameHeader}
+      panelClassName={recipeBrowserStyles.detailModalPanel(theme)}
+      title={detailTitle}
+      titleClassName={recipeBrowserStyles.detailHeaderTitle}
+      titleId={detailTitleId}
+      onClose={onClose}
+    >
+          {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{deleteError}</p>}
+
+          {detail.kind === "recipe" ? (
+            <RecipeDetailContent
+              recipe={detail.recipe}
+              theme={theme}
+              onIngredientClick={(ingredient) => onSelectDetail({ kind: "ingredient", ingredient })}
+            />
+          ) : (
+            <IngredientDetailContent ingredient={detail.ingredient} theme={theme} />
+          )}
         {isConfirmingDelete && (
           <ConfirmationDialog
             body={`This will delete ${detail.kind === "recipe" ? "the recipe" : "the ingredient"}.`}
@@ -218,8 +214,7 @@ function BrowserDetailModal({ detail, theme, onClose, onSelectDetail }: BrowserD
             onConfirm={() => void handleRemove()}
           />
         )}
-      </section>
-    </div>
+    </Modal>
   );
 }
 

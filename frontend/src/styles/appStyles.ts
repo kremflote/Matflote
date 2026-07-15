@@ -79,6 +79,7 @@ export const siteColorClasses = {
     page: "bg-[#111111] text-neutral-50 before:bg-white/[0.03]",
     header: "border-white/[0.08] bg-white/[0.06]",
     headerForeground: "text-neutral-50",
+    fixedHeader: "max-md:border-white/[0.14] max-md:bg-neutral-950/95",
     nav: "border-white/[0.08] bg-white/[0.04]",
     bottomNav: "max-md:border-white/[0.14] max-md:bg-neutral-950/95",
     control:
@@ -106,6 +107,7 @@ export const siteColorClasses = {
     page: "bg-white text-neutral-900 before:bg-black/[0.02]",
     header: "border-neutral-200 bg-neutral-50",
     headerForeground: "text-neutral-900",
+    fixedHeader: "max-md:border-neutral-300 max-md:bg-neutral-50",
     nav: "border-neutral-200 bg-neutral-100",
     bottomNav: "max-md:border-neutral-300 max-md:bg-neutral-50",
     control:
@@ -132,6 +134,7 @@ export const siteColorClasses = {
     page: "bg-[#FAF7F2] text-[#7A8864] before:bg-[#A9BDD1]/20",
     header: "border-[#7A8864]/35 bg-[#7A8864]",
     headerForeground: "text-[#FAF7F2]",
+    fixedHeader: "max-md:border-[#7A8864]/35 max-md:bg-[#7A8864]",
     nav: "border-[#C8C0B5] bg-[#FAF7F2]/55",
     bottomNav: "max-md:border-[#7A8864]/35 max-md:bg-[#7A8864]",
     control:
@@ -186,6 +189,8 @@ export const sizeClasses = {
   mealCalendarHeaderHeight: "h-14",
   mealCalendarCellHeight: "h-36",
   mealSlotContentInset: "h-[calc(100%_-_16px)] w-[calc(100%_-_16px)]",
+  mobileFixedHeaderOffset: "max-md:pt-16",
+  mobileBottomNavOffset: "max-md:pb-36",
   modalOuterMaxHeight: "max-h-[88vh]",
   modalFormBodyMaxHeight: "max-h-[56vh]",
   modalFormBodyMobileMaxHeight: "max-sm:max-h-[52vh]",
@@ -338,14 +343,14 @@ export const segmentedToggleStyles = {
 
 export const appStyles = {
   shell: (theme: SiteTheme) =>
-    `relative min-h-screen overflow-x-clip before:pointer-events-none before:absolute before:inset-0 before:content-[''] ${typographyClasses.app} ${siteColorClasses[theme].page}`,
+    `relative min-h-screen overflow-x-clip before:pointer-events-none before:absolute before:inset-0 before:content-[''] ${sizeClasses.mobileFixedHeaderOffset} ${typographyClasses.app} ${siteColorClasses[theme].page}`,
   overlay: "relative min-h-screen",
   contentBackground: "bg-transparent",
 };
 
 export const headerStyles = {
   shell: (theme: SiteTheme) =>
-    `relative z-10 border-b ${shadowClasses.raised} ${siteColorClasses[theme].header}`,
+    `relative z-10 border-b max-md:fixed max-md:inset-x-0 max-md:top-0 max-md:z-[60] ${shadowClasses.raised} ${siteColorClasses[theme].header} ${siteColorClasses[theme].fixedHeader}`,
   inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-md:min-h-0 max-md:grid-cols-[1fr_auto] max-md:gap-x-4 max-md:py-3 max-sm:py-3`,
   logo: (theme: SiteTheme) =>
     `justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses[theme].headerForeground}`,
@@ -372,7 +377,7 @@ export const headerStyles = {
 };
 
 export const pageStyles = {
-  shell: `${layoutClasses.contentWidth} ${responsiveClasses.mobilePagePadding} relative py-12 max-md:pb-28`,
+  shell: `${layoutClasses.contentWidth} ${responsiveClasses.mobilePagePadding} ${sizeClasses.mobileBottomNavOffset} relative py-12`,
   showColumnDebugOverlay: false,
   columnDebugOverlay:
     "pointer-events-none absolute inset-y-0 left-0 right-0 grid grid-cols-12 gap-6 opacity-100",
@@ -514,7 +519,11 @@ export const plannerControlsStyles = {
   mobileActionsBackdrop:
     "fixed inset-0 z-50 hidden items-center justify-center bg-black/35 p-4 max-md:flex",
   mobileActionsPanel: (theme: SiteTheme) =>
-    `grid w-full max-w-xs gap-2 ${radiusClasses.figma6} border p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+    `grid w-full max-w-xs grid-rows-[auto_minmax(0,1fr)] gap-3 ${radiusClasses.figma6} border p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  mobileActionsHeader: "flex items-center justify-between gap-3",
+  mobileActionsTitle: "text-lg font-bold leading-tight",
+  mobileActionsCloseButton: controlStyles.modalCloseButton,
+  mobileActionsBody: "grid min-h-0 gap-2",
   statusError: (theme: SiteTheme) =>
     `mb-4 ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
       theme === "dark"
@@ -528,7 +537,7 @@ export const plannerControlsStyles = {
 export const prepHelperStyles = {
   modalBackdrop: modalLayoutClasses.centeredBackdrop,
   modalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   header: "flex items-start justify-between gap-4",
   title: "text-2xl font-bold leading-tight",
   subtitle: (theme: SiteTheme) =>
@@ -540,6 +549,7 @@ export const prepHelperStyles = {
           : "text-neutral-500"
     }`,
   closeButton: controlStyles.modalCloseButton,
+  bodyFrame: "grid min-h-0 gap-3",
   list: "grid max-h-[48vh] gap-3 overflow-y-auto pr-1",
   item: (theme: SiteTheme) =>
     `grid gap-2 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
@@ -736,7 +746,7 @@ export const mealCalendarStyles = {
 export const plannerPickerStyles = {
   modalBackdrop: modalLayoutClasses.centeredBackdrop,
   modalPanel: (theme: SiteTheme) =>
-    `${sizeClasses.viewportModalMaxHeight} w-full max-w-5xl overflow-y-auto ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${
+    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${
       theme === "dark"
         ? "border-white/[0.12] bg-neutral-950 text-neutral-100"
         : theme === "paletteLight"
@@ -754,6 +764,7 @@ export const plannerPickerStyles = {
           : "text-neutral-500"
     }`,
   closeButton: controlStyles.modalCloseButton,
+  bodyFrame: "grid min-h-0 gap-4 overflow-y-auto pr-1",
   controls:
     "mt-4 grid grid-cols-[13rem_auto_auto_minmax(0,1fr)] items-start gap-3 max-md:grid-cols-[13rem_auto_auto_minmax(0,1fr)] max-sm:grid-cols-[minmax(0,1fr)_auto_auto]",
   searchInput: controlStyles.compactSearchInput,
@@ -832,7 +843,7 @@ export const plannerPickerStyles = {
 export const groceryExportStyles = {
   modalBackdrop: modalLayoutClasses.centeredBackdrop,
   modalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   header: "flex items-start justify-between gap-4",
   title: "text-2xl font-bold leading-tight",
   subtitle: (theme: SiteTheme) =>
@@ -844,6 +855,7 @@ export const groceryExportStyles = {
           : "text-neutral-500"
     }`,
   closeButton: controlStyles.modalCloseButton,
+  bodyFrame: "grid min-h-0 gap-3",
   list: "grid max-h-[44vh] gap-4 overflow-y-auto pr-1",
   section: (theme: SiteTheme) =>
     `grid gap-2 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,

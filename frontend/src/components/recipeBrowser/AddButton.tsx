@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { useLanguage } from "../../contexts";
 import type { SiteTheme } from "../../styles/appStyles";
+import Modal from "../Modal";
 import IngredientCreateForm from "./IngredientCreateForm";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 import RecipeCreateForm from "./RecipeCreateForm";
@@ -56,28 +57,17 @@ function AddButton({ target, theme }: AddButtonProps) {
         <span className={recipeBrowserStyles.addButtonLabel}>{t.common.add}</span>
       </button>
       {isOpen && (
-        <div className={recipeBrowserStyles.modalBackdrop} role="presentation" onMouseDown={closeModal}>
-          <section
-            aria-labelledby={modalTitleId}
-            aria-modal="true"
-            className={recipeBrowserStyles.modalPanel(theme)}
-            role="dialog"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className={recipeBrowserStyles.modalHeaderIntro}>
-              <div>
-                <h2 className={recipeBrowserStyles.modalTitle} id={modalTitleId}>{t.cookbook.create}</h2>
-              </div>
-              <button
-                aria-label={t.common.close}
-                className={recipeBrowserStyles.modalCloseButton(theme)}
-                type="button"
-                onClick={closeModal}
-              >
-                x
-              </button>
-            </div>
-
+        <Modal
+          backdropClassName={recipeBrowserStyles.modalBackdrop}
+          closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+          closeLabel={t.common.close}
+          headerClassName={recipeBrowserStyles.modalHeaderIntro}
+          panelClassName={recipeBrowserStyles.modalPanel(theme)}
+          title={t.cookbook.create}
+          titleClassName={recipeBrowserStyles.modalTitle}
+          titleId={modalTitleId}
+          onClose={closeModal}
+        >
             <div className={recipeBrowserStyles.modalControlsRow}>
               <div className={recipeBrowserStyles.modalModeSwitch(theme)} aria-label={t.cookbook.create}>
                 <button
@@ -110,8 +100,7 @@ function AddButton({ target, theme }: AddButtonProps) {
             ) : (
               <IngredientCreateForm theme={theme} onCancel={closeModal} onCreated={closeModal} />
             )}
-          </section>
-        </div>
+        </Modal>
       )}
     </>
   );

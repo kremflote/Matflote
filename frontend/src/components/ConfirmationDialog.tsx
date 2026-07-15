@@ -48,21 +48,19 @@ function ConfirmationDialog({
   return (
     <Modal
       backdropClassName={confirmationDialogStyles.backdrop}
+      bodyClassName={confirmationDialogStyles.bodyFrame}
+      closeButtonClassName={confirmationDialogStyles.closeButton(theme)}
+      closeButtonRef={cancelButtonRef}
+      closeLabel={t.common.close}
       describedBy={bodyId}
-      labelledBy={titleId}
-      panelClassName={confirmationDialogStyles.panel(theme)}
-      onClose={onCancel}
-    >
-        <h2 className={confirmationDialogStyles.title} id={titleId}>{title}</h2>
-        <div className={confirmationDialogStyles.body(theme)} id={bodyId}>{body}</div>
-        <div className={confirmationDialogStyles.actions}>
+      footer={
+        <>
           <button
             className={`${confirmationDialogStyles.cancelButton(theme)} ${confirmationDialogStyles.actionButton}`}
             disabled={isBusy}
-            ref={cancelButtonRef}
             type="button"
-          onClick={onCancel}
-        >
+            onClick={onCancel}
+          >
             {t.common.cancel}
           </button>
           <button
@@ -70,10 +68,20 @@ function ConfirmationDialog({
             disabled={isBusy}
             type="button"
             onClick={onConfirm}
-        >
+          >
             {isBusy ? t.common.working : confirmLabel ?? t.common.confirm}
           </button>
-        </div>
+        </>
+      }
+      footerClassName={confirmationDialogStyles.actions}
+      headerClassName={confirmationDialogStyles.header}
+      panelClassName={confirmationDialogStyles.panel(theme)}
+      title={title}
+      titleClassName={confirmationDialogStyles.title}
+      titleId={titleId}
+      onClose={onCancel}
+    >
+      <div className={confirmationDialogStyles.body(theme)} id={bodyId}>{body}</div>
     </Modal>
   );
 }

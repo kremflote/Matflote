@@ -318,11 +318,13 @@ export const recipeBrowserStyles = {
           : "border-red-900 bg-red-900 text-white hover:bg-red-800"
     }`,
   detailModalPanel: (theme: SiteTheme) =>
-    `relative grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[minmax(0,1fr)_auto] overflow-hidden rounded-md border p-6 ${responsiveClasses.mobileModalPanel} ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+    `relative grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden rounded-md border p-6 ${responsiveClasses.mobileModalPanel} ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   detailCloseButton: (theme: SiteTheme) =>
-    `${recipeBrowserStyles.modalCloseButton(theme)} ml-auto max-sm:absolute max-sm:right-4 max-sm:top-4 max-sm:z-10`,
+    `${recipeBrowserStyles.modalCloseButton(theme)} ml-auto`,
   detailBodyScrollArea:
     `${sizeClasses.modalFormBodyMaxHeight} ${sizeClasses.modalFormBodyMobileMaxHeight} grid min-h-0 gap-4 overflow-y-auto pr-1`,
+  detailFrameHeader: "flex items-start justify-between gap-4",
+  detailHeaderDescription: "mt-2",
   detailHeaderShell: "grid gap-2 max-sm:pr-12",
   detailHeaderTitleRow: "flex flex-wrap items-center gap-2",
   detailHeaderActionRow:
@@ -498,8 +500,9 @@ export const recipeBrowserStyles = {
   filterIcon: "h-6 w-6",
   categoryFilterBackdrop: `fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   categoryFilterPanel: (theme: SiteTheme) =>
-    `grid max-h-[64vh] w-full max-w-md overflow-hidden rounded-md border p-6 max-sm:max-h-[56vh] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
-  categoryFilterHeader: "mb-3 flex items-center justify-between gap-3",
+    `grid max-h-[64vh] w-full max-w-md grid-rows-[auto_minmax(0,1fr)] gap-3 overflow-hidden rounded-md border p-6 max-sm:max-h-[56vh] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  categoryFilterHeader: "flex items-center justify-between gap-3",
+  categoryFilterBody: "min-h-0 overflow-y-auto",
   recipeIngredientThumbnailCompact: "h-8 px-3",
   nutritionSecondRowStart: "md:col-start-1",
 };

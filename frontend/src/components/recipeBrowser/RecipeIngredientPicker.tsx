@@ -204,26 +204,27 @@ export function RecipeIngredientPickerDialog({
   return (
     <Modal
       backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
-      onClose={onCancel}
-    >
-        <div className={recipeBrowserStyles.modalHeader}>
-          <h3 className={recipeBrowserStyles.modalTitle}>Ingredients</h3>
-          <button aria-label={closeLabel} className={recipeBrowserStyles.modalCloseAligned(theme)} type="button" onClick={onCancel}>
-            x
-          </button>
-        </div>
-        <div className={recipeBrowserStyles.nestedIngredientModalBody}>
-          <RecipeIngredientPickerContent theme={theme} {...contentProps} />
-        </div>
-        <div className={recipeBrowserStyles.formActions}>
+      bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
+      closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+      closeLabel={closeLabel}
+      footer={
+        <>
           <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onCancel}>
             Cancel
           </button>
           <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onConfirm}>
             Confirm
           </button>
-        </div>
+        </>
+      }
+      footerClassName={recipeBrowserStyles.formActions}
+      headerClassName={recipeBrowserStyles.modalHeader}
+      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+      title="Ingredients"
+      titleClassName={recipeBrowserStyles.modalTitle}
+      onClose={onCancel}
+    >
+      <RecipeIngredientPickerContent theme={theme} {...contentProps} />
     </Modal>
   );
 }

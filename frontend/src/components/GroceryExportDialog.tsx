@@ -103,29 +103,46 @@ function GroceryExportDialog({
   return (
     <Modal
       backdropClassName={groceryExportStyles.modalBackdrop}
-      describedBy={descriptionId}
-      labelledBy={titleId}
+      bodyClassName={groceryExportStyles.bodyFrame}
+      closeButtonClassName={groceryExportStyles.closeButton(theme)}
+      closeButtonRef={closeButtonRef}
+      closeLabel={t.common.close}
+      description={t.planner.groceryExportDescription}
+      descriptionClassName={groceryExportStyles.subtitle(theme)}
+      descriptionId={descriptionId}
+      footer={
+        <>
+          <p className={groceryExportStyles.countText(theme)}>
+            {t.planner.groceryExportSelectedCount(selectedCount, itemCount)}
+          </p>
+          <div className={groceryExportStyles.actionGroup}>
+            <button
+              className={groceryExportStyles.secondaryButton(theme)}
+              disabled={exportStatus === "exporting"}
+              type="button"
+              onClick={onClose}
+            >
+              {t.common.cancel}
+            </button>
+            <button
+              className={groceryExportStyles.primaryButton(theme)}
+              disabled={isLoading || loadError !== null || selectedCount === 0 || exportStatus === "exporting"}
+              type="button"
+              onClick={() => void exportSelectedItems()}
+            >
+              {exportStatus === "exporting" ? t.planner.groceryExportSending : t.planner.groceryExportSend}
+            </button>
+          </div>
+        </>
+      }
+      footerClassName={groceryExportStyles.footer}
+      headerClassName={groceryExportStyles.header}
       panelClassName={groceryExportStyles.modalPanel(theme)}
+      title={t.planner.groceryExportTitle}
+      titleClassName={groceryExportStyles.title}
+      titleId={titleId}
       onClose={onClose}
     >
-        <div className={groceryExportStyles.header}>
-          <div>
-            <h2 className={groceryExportStyles.title} id={titleId}>{t.planner.groceryExportTitle}</h2>
-            <p className={groceryExportStyles.subtitle(theme)} id={descriptionId}>
-              {t.planner.groceryExportDescription}
-            </p>
-          </div>
-          <button
-            aria-label={t.common.close}
-            className={groceryExportStyles.closeButton(theme)}
-            ref={closeButtonRef}
-            type="button"
-            onClick={onClose}
-          >
-            x
-          </button>
-        </div>
-
         {isLoading && (
           <div className={groceryExportStyles.emptyState(theme)}>{t.planner.groceryExportLoading}</div>
         )}
@@ -180,30 +197,6 @@ function GroceryExportDialog({
         {exportMessage !== null && (
           <p className={groceryExportStyles.statusSuccess(theme)}>{exportMessage}</p>
         )}
-
-        <div className={groceryExportStyles.footer}>
-          <p className={groceryExportStyles.countText(theme)}>
-            {t.planner.groceryExportSelectedCount(selectedCount, itemCount)}
-          </p>
-          <div className={groceryExportStyles.actionGroup}>
-            <button
-              className={groceryExportStyles.secondaryButton(theme)}
-              disabled={exportStatus === "exporting"}
-              type="button"
-              onClick={onClose}
-            >
-              {t.common.cancel}
-            </button>
-            <button
-              className={groceryExportStyles.primaryButton(theme)}
-              disabled={isLoading || loadError !== null || selectedCount === 0 || exportStatus === "exporting"}
-              type="button"
-              onClick={() => void exportSelectedItems()}
-            >
-              {exportStatus === "exporting" ? t.planner.groceryExportSending : t.planner.groceryExportSend}
-            </button>
-          </div>
-        </div>
     </Modal>
   );
 }

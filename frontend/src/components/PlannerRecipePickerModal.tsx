@@ -39,6 +39,7 @@ import type {
   SupplementaryFilter,
 } from "./plannerRecipePicker/plannerRecipePickerTypes";
 import ConfirmationDialog from "./ConfirmationDialog";
+import Modal from "./Modal";
 
 type PlannerRecipePickerModalProps = {
   date: string;
@@ -427,31 +428,70 @@ function PlannerRecipePickerModal({
   );
 
   return (
-    <div className={plannerPickerStyles.modalBackdrop} role="presentation" onMouseDown={onClose}>
-      <section
-        aria-labelledby={titleId}
-        aria-modal="true"
-        className={plannerPickerStyles.modalPanel(theme)}
-        ref={modalPanelRef}
-        role="dialog"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <div className={plannerPickerStyles.header}>
-          <div>
-            <h2 className={plannerPickerStyles.title} id={titleId}>
-              {phase === "main" ? t.planner.chooseMainDish : t.planner.chooseSupplements}
-            </h2>
-            <p className={plannerPickerStyles.subtitle(theme)}>
-              {phase === "main"
-                ? t.planner.selectMainDescription
-                : t.planner.addSupplementsDescription}
-            </p>
-          </div>
-          <button aria-label={t.common.close} className={plannerPickerStyles.closeButton(theme)} type="button" onClick={onClose}>
-            x
+    <Modal
+      backdropClassName={plannerPickerStyles.modalBackdrop}
+      bodyClassName={plannerPickerStyles.bodyFrame}
+      closeButtonClassName={plannerPickerStyles.closeButton(theme)}
+      closeLabel={t.common.close}
+      description={
+        phase === "main"
+          ? t.planner.selectMainDescription
+          : t.planner.addSupplementsDescription
+      }
+      descriptionClassName={plannerPickerStyles.subtitle(theme)}
+      footer={
+        <>
+          {entry !== undefined && (
+            <button
+              className={plannerPickerStyles.removeButton(theme)}
+              disabled={isSaving || isRemoving}
+              type="button"
+              onClick={() => setIsConfirmingRemove(true)}
+            >
+              {isRemoving ? t.planner.removing : t.planner.removeMeal}
+            </button>
+          )}
+          {phase === "main" ? (
+            <button
+              className={plannerPickerStyles.primaryButton(theme)}
+              disabled={mainRecipeId === null || isSaving || isRemoving}
+              type="button"
+              onClick={confirmHighlightedMainRecipe}
+            >
+              {t.planner.chooseSides}
+            </button>
+          ) : (
+            <button
+              className={plannerPickerStyles.secondaryButton(theme)}
+              disabled={isSaving || isRemoving}
+              type="button"
+              onClick={() => {
+                setHighlightedMainRecipeId(mainRecipeId);
+                setPhase("main");
+              }}
+            >
+              {t.planner.backToMain}
+            </button>
+          )}
+          <button
+            className={plannerPickerStyles.primaryButton(theme)}
+            disabled={mainRecipe === null || isSaving || isRemoving}
+            type="button"
+            onClick={saveMealSlot}
+          >
+            {isSaving ? t.common.saving : t.planner.saveMeal}
           </button>
-        </div>
-
+        </>
+      }
+      footerClassName={plannerPickerStyles.footer}
+      headerClassName={plannerPickerStyles.header}
+      panelClassName={plannerPickerStyles.modalPanel(theme)}
+      ref={modalPanelRef}
+      title={phase === "main" ? t.planner.chooseMainDish : t.planner.chooseSupplements}
+      titleClassName={plannerPickerStyles.title}
+      titleId={titleId}
+      onClose={onClose}
+    >
         <div className={plannerPickerStyles.controls}>
           <input
             aria-label={t.browser.searchRecipes}
@@ -499,34 +539,20 @@ function PlannerRecipePickerModal({
           />
         </div>
         {isCategoryFilterOpen && (
-          <div
-            className={recipeBrowserStyles.categoryFilterBackdrop}
-            role="presentation"
-            onMouseDown={() => setIsCategoryFilterOpen(false)}
+          <Modal
+            backdropClassName={recipeBrowserStyles.categoryFilterBackdrop}
+            bodyClassName={recipeBrowserStyles.categoryFilterBody}
+            closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+            closeLabel={t.common.close}
+            headerClassName={recipeBrowserStyles.categoryFilterHeader}
+            panelClassName={recipeBrowserStyles.categoryFilterPanel(theme)}
+            title={t.filters.categories}
+            titleClassName={recipeBrowserStyles.modalTitle}
+            titleId="planner-category-filter-title"
+            onClose={() => setIsCategoryFilterOpen(false)}
           >
-            <section
-              aria-labelledby="planner-category-filter-title"
-              aria-modal="true"
-              className={recipeBrowserStyles.categoryFilterPanel(theme)}
-              role="dialog"
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              <div className={recipeBrowserStyles.categoryFilterHeader}>
-                <h2 className={recipeBrowserStyles.modalTitle} id="planner-category-filter-title">
-                  {t.filters.categories}
-                </h2>
-                <button
-                  aria-label={t.common.close}
-                  className={recipeBrowserStyles.modalCloseButton(theme)}
-                  type="button"
-                  onClick={() => setIsCategoryFilterOpen(false)}
-                >
-                  x
-                </button>
-              </div>
-              {filterSection}
-            </section>
-          </div>
+            {filterSection}
+          </Modal>
         )}
         {ingredientPickerPosition !== null && (
           <IngredientPickerPopover
@@ -571,48 +597,6 @@ function PlannerRecipePickerModal({
           <p className={plannerPickerStyles.statusErrorWithOffset(theme)}>{saveError}</p>
         )}
 
-        <div className={plannerPickerStyles.footer}>
-          {entry !== undefined && (
-            <button
-              className={plannerPickerStyles.removeButton(theme)}
-              disabled={isSaving || isRemoving}
-              type="button"
-              onClick={() => setIsConfirmingRemove(true)}
-            >
-              {isRemoving ? t.planner.removing : t.planner.removeMeal}
-            </button>
-          )}
-          {phase === "main" ? (
-            <button
-              className={plannerPickerStyles.primaryButton(theme)}
-              disabled={mainRecipeId === null || isSaving || isRemoving}
-              type="button"
-              onClick={confirmHighlightedMainRecipe}
-            >
-              {t.planner.chooseSides}
-            </button>
-          ) : (
-            <button
-              className={plannerPickerStyles.secondaryButton(theme)}
-              disabled={isSaving || isRemoving}
-              type="button"
-              onClick={() => {
-                setHighlightedMainRecipeId(mainRecipeId);
-                setPhase("main");
-              }}
-            >
-              {t.planner.backToMain}
-            </button>
-          )}
-          <button
-            className={plannerPickerStyles.primaryButton(theme)}
-            disabled={mainRecipe === null || isSaving || isRemoving}
-            type="button"
-            onClick={saveMealSlot}
-          >
-            {isSaving ? t.common.saving : t.planner.saveMeal}
-          </button>
-        </div>
         {isConfirmingRemove && (
           <ConfirmationDialog
             body={t.planner.removeMealBody}
@@ -624,8 +608,7 @@ function PlannerRecipePickerModal({
             onConfirm={() => void removeMealSlot()}
           />
         )}
-      </section>
-    </div>
+    </Modal>
   );
 }
 

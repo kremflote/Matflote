@@ -43,29 +43,30 @@ function PrepHelperDialog({
   return (
     <Modal
       backdropClassName={prepHelperStyles.modalBackdrop}
-      describedBy={descriptionId}
-      labelledBy={titleId}
+      bodyClassName={prepHelperStyles.bodyFrame}
+      closeButtonClassName={prepHelperStyles.closeButton(theme)}
+      closeButtonRef={closeButtonRef}
+      closeLabel={t.common.close}
+      description={t.planner.prepHelperDescription(from, to)}
+      descriptionClassName={prepHelperStyles.subtitle(theme)}
+      descriptionId={descriptionId}
+      footer={
+        <button
+          className={prepHelperStyles.secondaryButton(theme)}
+          type="button"
+          onClick={onClose}
+        >
+          {t.common.close}
+        </button>
+      }
+      footerClassName={prepHelperStyles.footer}
+      headerClassName={prepHelperStyles.header}
       panelClassName={prepHelperStyles.modalPanel(theme)}
+      title={t.planner.prepHelperTitle}
+      titleClassName={prepHelperStyles.title}
+      titleId={titleId}
       onClose={onClose}
     >
-        <div className={prepHelperStyles.header}>
-          <div>
-            <h2 className={prepHelperStyles.title} id={titleId}>{t.planner.prepHelperTitle}</h2>
-            <p className={prepHelperStyles.subtitle(theme)} id={descriptionId}>
-              {t.planner.prepHelperDescription(from, to)}
-            </p>
-          </div>
-          <button
-            aria-label={t.common.close}
-            className={prepHelperStyles.closeButton(theme)}
-            ref={closeButtonRef}
-            type="button"
-            onClick={onClose}
-          >
-            x
-          </button>
-        </div>
-
         {items.length === 0 ? (
           <div className={prepHelperStyles.emptyState(theme)}>
             {t.planner.prepHelperEmpty}
@@ -99,16 +100,6 @@ function PrepHelperDialog({
             ))}
           </div>
         )}
-
-        <div className={prepHelperStyles.footer}>
-          <button
-            className={prepHelperStyles.secondaryButton(theme)}
-            type="button"
-            onClick={onClose}
-          >
-            {t.common.close}
-          </button>
-        </div>
     </Modal>
   );
 }
