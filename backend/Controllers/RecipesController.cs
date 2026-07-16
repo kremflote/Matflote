@@ -287,6 +287,7 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         ingredient.Description,
         ingredient.BrandId,
         ingredient.Brand is null ? null : new BrandDto(ingredient.Brand.BrandId, ingredient.Brand.Name),
+        ingredient.ImageUrl,
         ingredient.Price,
         ingredient.Tags.Select(ingredientTag => ingredientTag.Tag).OrderBy(tag => tag).ToList(),
         ingredient.NutritionPer100,

@@ -1,4 +1,5 @@
 import type { IIngredient } from "../../interfaces/IIngredient";
+import IngredientThumbnail from "../IngredientThumbnail";
 import type { SiteTheme } from "../../styles/appStyles";
 import { DetailSection, DetailText, MetadataRow, NutritionGrid } from "./detailComponents";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
@@ -12,6 +13,7 @@ function IngredientDetailContent({ ingredient, theme }: IngredientDetailContentP
   return (
     <div className={recipeBrowserStyles.detailShell}>
       <DetailSection title="Overview" theme={theme}>
+        <IngredientThumbnail ingredient={ingredient} theme={theme} />
         <div className={recipeBrowserStyles.ingredientDetailMetaGrid}>
           <MetadataRow label="Brand" theme={theme} value={ingredient.brand?.name ?? ""} />
           <MetadataRow

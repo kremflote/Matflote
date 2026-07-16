@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "../../contexts";
+import IngredientThumbnail from "../IngredientThumbnail";
 import type { IIngredient, INutritionFacts } from "../../interfaces/IIngredient";
 import { getApiAssetUrl } from "../../services/apiClient";
 import type { SiteTheme } from "../../styles/appStyles";
@@ -82,12 +83,11 @@ function RecipeDetailContent({ recipe, theme, onIngredientClick }: RecipeDetailC
                   type="button"
                   onClick={() => onIngredientClick?.(recipeIngredient.ingredient)}
                 >
-                  <span
-                    aria-hidden="true"
-                    className={recipeBrowserStyles.detailIngredientDot}
-                    style={{ backgroundColor: recipeIngredient.ingredient.color ?? "currentColor" }}
+                  <IngredientThumbnail
+                    className={recipeBrowserStyles.detailIngredientThumbnail}
+                    ingredient={recipeIngredient.ingredient}
+                    theme={theme}
                   />
-                  <span className={recipeBrowserStyles.detailIngredientName}>{recipeIngredient.ingredient.ingredientName}</span>
                   <span className={recipeBrowserStyles.detailIngredientAmount}>
                     {formatRecipeIngredientAmount(recipeIngredient.amount, recipeIngredient.unit, amountMultiplier)}
                   </span>

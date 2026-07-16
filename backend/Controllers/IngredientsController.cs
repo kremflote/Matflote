@@ -48,6 +48,7 @@ public class IngredientsController(DinnerPlannerContext context) : ControllerBas
             IngredientName = request.IngredientName,
             Description = request.Description,
             BrandId = request.BrandId,
+            ImageUrl = request.ImageUrl,
             Price = request.Price,
             Tags = NormalizeTags(request.Tags)
                 .Select(tag => new IngredientTagAssignment { Tag = tag })
@@ -81,6 +82,7 @@ public class IngredientsController(DinnerPlannerContext context) : ControllerBas
         ingredient.IngredientName = request.IngredientName;
         ingredient.Description = request.Description;
         ingredient.BrandId = request.BrandId;
+        ingredient.ImageUrl = request.ImageUrl;
         ingredient.Price = request.Price;
         context.IngredientTagAssignments.RemoveRange(ingredient.Tags);
         ingredient.Tags = NormalizeTags(request.Tags)
@@ -133,6 +135,7 @@ public class IngredientsController(DinnerPlannerContext context) : ControllerBas
         ingredient.Description,
         ingredient.BrandId,
         ingredient.Brand is null ? null : new BrandDto(ingredient.Brand.BrandId, ingredient.Brand.Name),
+        ingredient.ImageUrl,
         ingredient.Price,
         ingredient.Tags.Select(ingredientTag => ingredientTag.Tag).OrderBy(tag => tag).ToList(),
         ingredient.NutritionPer100,

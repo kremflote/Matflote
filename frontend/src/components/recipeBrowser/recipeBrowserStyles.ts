@@ -252,6 +252,7 @@ export const recipeBrowserStyles = {
           ? "border-[#C8C0B5] bg-[#FAF7F2]"
           : "border-neutral-300 bg-white"
     }`,
+  selectedIngredientThumbnail: "max-w-56",
   recipeIngredientPickerRow:
     "grid grid-cols-[auto_minmax(0,1fr)_6rem_8rem_10rem] items-center gap-2 max-lg:grid-cols-[auto_minmax(0,1fr)_6rem] max-md:grid-cols-[auto_minmax(0,1fr)] max-sm:gap-y-2",
   recipeIngredientControlGrid:
@@ -462,19 +463,18 @@ export const recipeBrowserStyles = {
   detailRowLabel: "font-bold",
   detailRowValue: "shrink-0",
   detailIngredientRow: (theme: SiteTheme) =>
-    `grid h-8 w-full grid-cols-[auto_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 rounded-md px-2 text-left text-sm font-semibold transition-colors max-sm:h-auto max-sm:min-h-9 max-sm:grid-cols-[auto_minmax(0,1fr)_auto] max-sm:py-1 max-sm:text-xs ${
+    `grid min-h-12 w-full grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 rounded-md p-1.5 text-left text-sm font-semibold transition-colors max-sm:grid-cols-[minmax(0,1fr)] max-sm:text-xs ${
       theme === "dark"
         ? "bg-white/[0.05] text-neutral-200 hover:bg-white/[0.09]"
         : theme === "paletteLight"
           ? "bg-[#E5D5BC]/45 text-[#556145] hover:bg-[#E5D5BC]/70"
           : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
     }`,
-  detailIngredientDot: "h-2.5 w-2.5 rounded-md",
-  detailIngredientName: "min-w-0 truncate font-bold",
+  detailIngredientThumbnail: "min-w-0 shadow-none",
   detailIngredientAmount:
-    "min-w-0 truncate text-center text-xs font-semibold opacity-80",
+    "min-w-0 truncate text-center text-xs font-semibold opacity-80 max-sm:text-left",
   detailIngredientPreparation:
-    "min-w-0 truncate text-right text-xs font-bold max-sm:col-start-2 max-sm:text-left",
+    "min-w-0 truncate text-right text-xs font-bold max-sm:text-left",
   ingredientDetailMetaGrid: "grid grid-cols-2 gap-3 max-sm:grid-cols-1",
   detailChipSection: "grid gap-2",
   detailChipSectionCompact: "grid gap-1",
@@ -503,7 +503,7 @@ export const recipeBrowserStyles = {
     `grid max-h-[64vh] w-full max-w-md grid-rows-[auto_minmax(0,1fr)] gap-3 overflow-hidden rounded-md border p-6 max-sm:max-h-[56vh] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   categoryFilterHeader: "flex items-center justify-between gap-3",
   categoryFilterBody: "min-h-0 overflow-y-auto",
-  recipeIngredientThumbnailCompact: "h-8 px-3",
+  recipeIngredientThumbnailCompact: "",
   nutritionSecondRowStart: "md:col-start-1",
 };
 

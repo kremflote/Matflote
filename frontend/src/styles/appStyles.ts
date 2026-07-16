@@ -260,22 +260,31 @@ export const thumbnailStyles = {
   recipeSubtitleLayoutCompact:
     "mt-0.5 truncate text-[10px] font-semibold leading-tight",
   ingredientShell: (theme: SiteTheme) =>
-    `grid h-7 w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-md border px-2 text-left ${shadowClasses.subtle} transition ${
+    `grid h-12 w-full grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-2 rounded-md border p-1.5 text-left ${shadowClasses.subtle} transition ${
       theme === "dark"
         ? "border-white/[0.16] bg-white/[0.18]"
         : theme === "paletteLight"
           ? "border-[#C8C0B5] bg-[#E5D5BC]/45"
           : "border-neutral-200 bg-neutral-100"
     }`,
+  ingredientShellCompact: "h-10 grid-cols-[1.75rem_minmax(0,1fr)] p-1",
   ingredientSelectedOutline: "outline outline-2 outline-current",
   ingredientSelectedColorBorder: "border-2",
   ingredientSelectedMuted: "opacity-45",
-  ingredientDot: "h-2 w-2 rounded-md",
+  ingredientImageFrame:
+    "flex h-9 w-9 items-center justify-center overflow-hidden rounded-md",
+  ingredientImageFrameCompact: "h-7 w-7",
+  ingredientImage: "h-full w-full object-cover",
+  ingredientImageFallback:
+    "flex h-full w-full items-center justify-center text-xs font-black leading-none",
+  ingredientDot: "h-3 w-3 rounded-md",
   ingredientContent:
-    "grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,45%)] items-center gap-2",
-  ingredientName: "min-w-0 truncate text-xs font-semibold leading-tight",
+    "grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,38%)] items-center gap-2",
+  ingredientName: "min-w-0 truncate text-sm font-bold leading-tight",
+  ingredientNameCompact: "text-xs",
   ingredientBrand:
-    "min-w-0 justify-self-end truncate text-right text-[10px] font-semibold leading-tight",
+    "min-w-0 justify-self-end truncate text-right text-[11px] font-semibold leading-tight opacity-75",
+  ingredientBrandCompact: "text-[10px]",
 } as const;
 
 const focusBase =

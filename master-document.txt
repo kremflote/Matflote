@@ -444,6 +444,10 @@ Kassalapp integration must stay backend-only. The frontend calls MATFLOTE throug
 
 Scanner styling should use the same page, panel, form, button, radius, shadow, and theme helpers as Settings, Cookbook, and Planner. Product result cards and ingredient suggestion editors should remain compact and readable on phone widths, with the image kept as a supporting visual instead of taking over the page. Camera scanning is a progressive enhancement; the manual EAN field must remain available. The scanner library should stay lazy-loaded so Planner/Cookbook startup does not pay for camera scanning code. Desktop widths should present scanner as a phone/tablet workflow instead of rendering camera controls.
 
+Ingredient images use the same image storage model as recipe images: the backend stores an `ImageUrl` on the ingredient record, uploads go through `/api/imageuploads` with the `ingredients` folder, and public URLs stay under `/images/ingredients/*` when locally uploaded. Scanned product images may also seed the ingredient `ImageUrl` when the lookup provider returns an image.
+
+Ingredient display should use the shared `IngredientThumbnail` component instead of rebuilding ingredient capsules in each page. The component supports default and compact modes; default is for browser cards and detail views, compact is for dense pickers, filter popovers, and selected ingredient summaries. It must show image/fallback, ingredient name, and brand when present.
+
 ### Runtime verification
 
 Use `scripts/smoke-test.ps1` as the first verification pass after backend/frontend integration changes. The smoke script should remain external-service-free. It may check local endpoints, temporary SQLite migration/startup behavior, runtime settings persistence, grocery preview generation, and image upload storage, but it should not require a real Vikunja token.

@@ -50,6 +50,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         {
             entity.Property(ingredient => ingredient.IngredientName).HasMaxLength(30);
             entity.Property(ingredient => ingredient.Description).HasMaxLength(600);
+            entity.Property(ingredient => ingredient.ImageUrl).HasMaxLength(500);
             entity.Property(ingredient => ingredient.Price).HasPrecision(10, 2);
             entity.HasOne(ingredient => ingredient.Brand)
                 .WithMany()

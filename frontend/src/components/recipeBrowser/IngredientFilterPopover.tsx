@@ -61,6 +61,7 @@ function IngredientFilterPopover({
               className={recipeBrowserStyles.ingredientPickerItem}
               ingredient={ingredient}
               key={ingredient.ingredientId}
+              mode="compact"
               selected={selectedIngredientIds.includes(ingredient.ingredientId)}
               selectedPresentation="muted"
               theme={theme}

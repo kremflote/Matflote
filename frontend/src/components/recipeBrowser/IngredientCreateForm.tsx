@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
 import IngredientThumbnail from "../IngredientThumbnail";
 import { useBrands, useIngredients, useRecipes } from "../../contexts";
 import type { IIngredient, IngredientTag, Vitamin } from "../../interfaces/IIngredient";
-import { brandService, ingredientService } from "../../services";
+import { brandService, imageUploadService, ingredientService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
 import { ingredientTags, vitamins } from "./formOptions";
 import CreatableSelect from "./CreatableSelect";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
+import ImageCropPicker from "./ImageCropPicker";
 
 type IngredientCreateFormProps = {
   initialIngredient?: IIngredient | null;
@@ -64,8 +65,10 @@ function IngredientCreateForm({
   const { brands, refreshBrands } = useBrands();
   const { refreshIngredients } = useIngredients();
   const { refreshRecipes } = useRecipes();
+  const imageInputId = useId();
   const [ingredientName, setIngredientName] = useState(initialIngredient?.ingredientName ?? "");
   const [brandId, setBrandId] = useState<number | null>(initialIngredient?.brandId ?? null);
+  const [croppedImageFile, setCroppedImageFile] = useState<File | null>(null);
   const [price, setPrice] = useState(numberToInputValue(initialIngredient?.price));
   const [selectedTags, setSelectedTags] = useState<IngredientTag[]>(
     initialIngredient && initialIngredient.tags.length > 0 ? [...initialIngredient.tags] : ["Vegetable"],
@@ -102,6 +105,9 @@ function IngredientCreateForm({
   const [isSaving, setIsSaving] = useState(false);
   const colorControlRef = useRef<HTMLElement | null>(null);
   const selectedBrand = brands.find((brand) => brand.brandId === brandId) ?? null;
+  const handleCroppedFileChange = useCallback((file: File | null) => {
+    setCroppedImageFile(file);
+  }, []);
 
   useEffect(() => {
     if (!showColorPicker) {
@@ -149,10 +155,14 @@ function IngredientCreateForm({
     setError(null);
 
     try {
+      const upload = croppedImageFile === null
+        ? null
+        : await imageUploadService.upload(croppedImageFile, "ingredients");
       const request = {
         ingredientName: trimmedName,
         description: initialIngredient?.description ?? null,
         brandId,
+        imageUrl: upload?.url ?? initialIngredient?.imageUrl ?? null,
         price: nullableNumber(price),
         tags: selectedTags,
         nutritionPer100: {
@@ -254,6 +264,15 @@ function IngredientCreateForm({
                 {showNutrition ? "Hide nutrition" : "Add nutrition"}
               </button>
             </section>
+          </div>
+
+          <div className={recipeBrowserStyles.recipeImageField}>
+            <ImageCropPicker
+              inputId={imageInputId}
+              initialImageUrl={initialIngredient?.imageUrl}
+              theme={theme}
+              onCroppedFileChange={handleCroppedFileChange}
+            />
           </div>
 
           {showNutrition && (
@@ -418,6 +437,7 @@ function IngredientCreateForm({
               ingredient={{
                 ingredientName: ingredientName.trim() || "Ingredient",
                 brand: selectedBrand,
+                imageUrl: croppedImageFile === null ? initialIngredient?.imageUrl ?? null : null,
                 tags: selectedTags,
                 color: nullableText(color),
               }}

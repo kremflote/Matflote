@@ -163,6 +163,43 @@ git pull
 docker compose up -d --build
 ```
 
+## Deploy To Raspberry Pi Infra Stack
+
+Normal flow from the development PC:
+
+```powershell
+git add .
+git commit -m "Describe the change"
+git push
+.\scripts\deploy-pi.ps1
+```
+
+The deploy script SSHes to `kremflote@krem-pi`, pulls `~/infra/matflote`, then rebuilds and restarts the MATFLOTE services from `~/infra/docker-compose.yml`.
+
+Deploy only the frontend:
+
+```powershell
+.\scripts\deploy-pi.ps1 -Target frontend
+```
+
+Deploy only the backend:
+
+```powershell
+.\scripts\deploy-pi.ps1 -Target backend
+```
+
+Preview what would run without touching the Pi:
+
+```powershell
+.\scripts\deploy-pi.ps1 -DryRun
+```
+
+If the Pi already has the latest code and you only want to restart services without rebuilding:
+
+```powershell
+.\scripts\deploy-pi.ps1 -NoBuild -SkipPull
+```
+
 To build a fresh Docker version from local source without starting it:
 
 ```powershell
@@ -326,6 +363,7 @@ The catalog uses string enum values, for example:
       "ingredientName": "Carrot",
       "description": "Sweet root vegetable for soups, stews, salads, and sides.",
       "brandName": null,
+      "imageUrl": null,
       "price": null,
       "tags": ["Vegetable"],
       "nutritionPer100": null,

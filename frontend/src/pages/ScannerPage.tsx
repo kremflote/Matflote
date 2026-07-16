@@ -53,6 +53,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
   const scannerControlsRef = useRef<IScannerControls | null>(null);
   const lastScannedEanRef = useRef<string | null>(null);
   const candidates = useMemo(() => buildIngredientCandidates(products), [products]);
+  const selectedCandidate = candidates.find((candidate) => candidate.id === selectedCandidateId) ?? null;
 
   useEffect(() => {
     const firstCandidate = candidates[0];
@@ -141,6 +142,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
         ingredientName,
         description: null,
         brandId: brand?.brandId ?? null,
+        imageUrl: selectedCandidate?.product.imageUrl ?? null,
         price: nullableNumber(ingredientDraft.price),
         tags: ingredientDraft.tags.length > 0 ? ingredientDraft.tags : ["Other"],
         nutritionPer100: ingredientDraft.nutritionPer100,

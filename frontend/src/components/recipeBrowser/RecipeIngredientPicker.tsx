@@ -111,6 +111,7 @@ function RecipeIngredientPickerRow({
       <IngredientThumbnail
         className={recipeBrowserStyles.recipeIngredientThumbnailCompact}
         ingredient={ingredient}
+        mode="compact"
         selected={selected}
         selectedPresentation="colorBorder"
         theme={theme}
@@ -176,12 +177,22 @@ export function SelectedIngredientCapsules({ ingredients, selectedIngredients, t
         const ingredient = ingredients.find((currentIngredient) => currentIngredient.ingredientId === selectedIngredient.ingredientId);
 
         return (
-          <span
-            className={recipeBrowserStyles.selectedIngredientCapsule(theme)}
-            key={selectedIngredient.ingredientId}
-          >
-            {ingredient?.ingredientName ?? "Ingredient"}
-          </span>
+          ingredient === undefined ? (
+            <span
+              className={recipeBrowserStyles.selectedIngredientCapsule(theme)}
+              key={selectedIngredient.ingredientId}
+            >
+              Ingredient
+            </span>
+          ) : (
+            <IngredientThumbnail
+              className={recipeBrowserStyles.selectedIngredientThumbnail}
+              ingredient={ingredient}
+              mode="compact"
+              key={selectedIngredient.ingredientId}
+              theme={theme}
+            />
+          )
         );
       })}
     </div>

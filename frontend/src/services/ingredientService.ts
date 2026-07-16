@@ -5,6 +5,7 @@ export interface IngredientRequest {
   ingredientName: string;
   description: string | null;
   brandId: number | null;
+  imageUrl: string | null;
   price: number | null;
   tags: IngredientTag[];
   nutritionPer100: INutritionFacts | null;

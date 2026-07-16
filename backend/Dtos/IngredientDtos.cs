@@ -10,6 +10,8 @@ public record IngredientRequest(
     [StringLength(600)]
     string? Description,
     int? BrandId,
+    [StringLength(500)]
+    string? ImageUrl,
     [Range(typeof(decimal), "0", "79228162514264337593543950335")]
     decimal? Price,
     IReadOnlyCollection<IngredientTag> Tags,
@@ -24,6 +26,7 @@ public record IngredientDto(
     string? Description,
     int? BrandId,
     BrandDto? Brand,
+    string? ImageUrl,
     decimal? Price,
     IReadOnlyCollection<IngredientTag> Tags,
     NutritionFacts? NutritionPer100,
