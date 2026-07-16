@@ -303,9 +303,9 @@ export const recipeBrowserStyles = {
   desktopUploadLabel: "max-sm:hidden",
   mobileUploadLabel: "hidden max-sm:inline",
   compactIngredientImageControl:
-    "grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-3",
+    "grid grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-3",
   compactIngredientImagePreview: (theme: SiteTheme) =>
-    `flex h-12 w-12 items-center justify-center overflow-hidden rounded-md border ${shadowClasses.subtle} ${
+    `flex h-[4.5rem] w-[4.5rem] items-center justify-center overflow-hidden rounded-md border ${shadowClasses.subtle} ${
       theme === "dark"
         ? "border-white/[0.14] bg-white/[0.08]"
         : theme === "paletteLight"

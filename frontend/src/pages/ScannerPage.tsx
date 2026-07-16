@@ -399,7 +399,7 @@ function IngredientDraftEditor({
           type="file"
           onChange={(event) => onChange({ ...draft, imageFile: event.target.files?.[0] ?? null })}
         />
-        <span className={scannerStyles.label}>{t.scanner.productImageLabel}</span>
+        <span className={scannerStyles.editorImageLabel}>{t.scanner.productImageLabel}</span>
         <div className={scannerStyles.editorImageFrame(theme)}>
           {imageUrl === null ? (
             <div className={scannerStyles.productImageFallback(theme)}>{t.scanner.noImage}</div>

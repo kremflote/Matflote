@@ -635,9 +635,10 @@ export const scannerStyles = {
     }`,
   ingredientEditor: (theme: SiteTheme) =>
     `grid gap-3 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
-  editorImageRow: "grid gap-2",
+  editorImageRow: "grid grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-3",
+  editorImageLabel: "col-span-2 text-sm font-bold leading-tight",
   editorImageFrame: (theme: SiteTheme) =>
-    `aspect-square w-24 overflow-hidden rounded-md border ${
+    `aspect-square w-[4.5rem] overflow-hidden rounded-md border ${shadowClasses.subtle} ${
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-900"
         : theme === "paletteLight"
@@ -645,7 +646,7 @@ export const scannerStyles = {
           : "border-neutral-200 bg-white"
     }`,
   editorImageButton: (theme: SiteTheme) =>
-    `${controlStyles.secondaryButton(theme)} h-10 w-fit px-4 text-sm`,
+    `${controlStyles.secondaryButton(theme)} h-12 min-w-0 cursor-pointer px-4 text-sm`,
   hiddenFileInput: "sr-only",
   compactFormGrid: "grid grid-cols-2 gap-3 max-sm:grid-cols-1",
   tagGrid: "grid grid-cols-2 gap-2",
