@@ -19,9 +19,9 @@ type IngredientCandidate = {
   name: string;
   brandName: string;
   price: number | null;
+  imageUrl: string | null;
   nutritionPer100: INutritionFacts | null;
   tags: IngredientTag[];
-  color: string | null;
   product: IProductLookupResult;
 };
 
@@ -29,8 +29,8 @@ type IngredientDraft = {
   name: string;
   brandName: string;
   price: string;
+  imageUrl: string | null;
   tags: IngredientTag[];
-  color: string;
   nutritionPer100: INutritionFacts | null;
 };
 
@@ -45,6 +45,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingIngredient, setIsSavingIngredient] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<string | null>(null);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [ingredientDraft, setIngredientDraft] = useState<IngredientDraft | null>(null);
@@ -53,7 +54,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
   const scannerControlsRef = useRef<IScannerControls | null>(null);
   const lastScannedEanRef = useRef<string | null>(null);
   const candidates = useMemo(() => buildIngredientCandidates(products), [products]);
-  const selectedCandidate = candidates.find((candidate) => candidate.id === selectedCandidateId) ?? null;
 
   useEffect(() => {
     const firstCandidate = candidates[0];
@@ -142,11 +142,11 @@ function ScannerPage({ theme }: ScannerPageProps) {
         ingredientName,
         description: null,
         brandId: brand?.brandId ?? null,
-        imageUrl: selectedCandidate?.product.imageUrl ?? null,
+        imageUrl: ingredientDraft.imageUrl,
         price: nullableNumber(ingredientDraft.price),
         tags: ingredientDraft.tags.length > 0 ? ingredientDraft.tags : ["Other"],
         nutritionPer100: ingredientDraft.nutritionPer100,
-        color: nullableText(ingredientDraft.color),
+        color: null,
       });
 
       await refreshIngredients();
@@ -228,7 +228,31 @@ function ScannerPage({ theme }: ScannerPageProps) {
 
         <div className={scannerStyles.scannerSurface}>
           <section className={scannerStyles.panel(theme)}>
-            <form className={scannerStyles.lookupForm} onSubmit={lookupProduct}>
+            <div className={scannerStyles.desktopScannerHint(theme)}>{t.scanner.mobileOnly}</div>
+
+            <div className={scannerStyles.scannerActions}>
+              <button
+                className={scannerStyles.cameraButton(theme)}
+                disabled={isLoading}
+                onClick={isCameraOpen ? stopCamera : startCamera}
+                type="button"
+              >
+                {isCameraOpen ? t.scanner.cameraStop : t.scanner.cameraStart}
+              </button>
+              <button
+                aria-expanded={isManualEntryOpen}
+                className={scannerStyles.manualEntryButton(theme)}
+                type="button"
+                onClick={() => setIsManualEntryOpen((currentValue) => !currentValue)}
+              >
+                {isManualEntryOpen ? t.scanner.hideManualEntry : t.scanner.manualEntry}
+              </button>
+              <span className={scannerStyles.cameraStatus(theme)}>
+                {cameraStatus ?? t.scanner.scanningHint}
+              </span>
+            </div>
+
+            <form className={scannerStyles.lookupForm(isManualEntryOpen)} onSubmit={lookupProduct}>
               <label className={scannerStyles.field}>
                 <span className={scannerStyles.label}>{t.scanner.eanLabel}</span>
                 <input
@@ -248,22 +272,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
                 {isLoading ? t.scanner.searching : t.scanner.lookup}
               </button>
             </form>
-
-            <div className={scannerStyles.desktopScannerHint(theme)}>{t.scanner.mobileOnly}</div>
-
-            <div className={scannerStyles.scannerActions}>
-              <button
-                className={scannerStyles.cameraButton(theme)}
-                disabled={isLoading}
-                onClick={isCameraOpen ? stopCamera : startCamera}
-                type="button"
-              >
-                {isCameraOpen ? t.scanner.cameraStop : t.scanner.cameraStart}
-              </button>
-              <span className={scannerStyles.cameraStatus(theme)}>
-                {cameraStatus ?? t.scanner.scanningHint}
-              </span>
-            </div>
 
             {isCameraOpen && (
               <div className={scannerStyles.cameraFrame(theme)}>
@@ -301,6 +309,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
                     type="button"
                     onClick={() => selectCandidate(candidate)}
                   >
+                    <CandidateImage candidate={candidate} theme={theme} />
                     <span className="min-w-0">
                       <span className={scannerStyles.candidateName}>{candidate.name}</span>
                       <span className={scannerStyles.candidateMeta(theme)}>
@@ -328,18 +337,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
               >
                 {isSavingIngredient ? t.scanner.savingIngredient : t.scanner.saveIngredient}
               </button>
-            </section>
-          )}
-
-          {products.length > 0 && (
-            <section className={scannerStyles.resultList} aria-label={t.scanner.resultsLabel}>
-              {products.map((product, index) => (
-                <ProductLookupCard
-                  key={`${product.ean}-${product.store?.name ?? "store"}-${index}`}
-                  product={product}
-                  theme={theme}
-                />
-              ))}
             </section>
           )}
         </div>
@@ -371,9 +368,21 @@ function IngredientDraftEditor({
   onChange: (draft: IngredientDraft) => void;
 }) {
   const { t } = useLanguage();
+  const imageUrl = getApiAssetUrl(draft.imageUrl);
 
   return (
     <section className={scannerStyles.ingredientEditor(theme)}>
+      <div className={scannerStyles.editorImageRow}>
+        <span className={scannerStyles.label}>{t.scanner.productImageLabel}</span>
+        <div className={scannerStyles.editorImageFrame(theme)}>
+          {imageUrl === null ? (
+            <div className={scannerStyles.productImageFallback(theme)}>{t.scanner.noImage}</div>
+          ) : (
+            <img className={scannerStyles.productImage} src={imageUrl} alt="" />
+          )}
+        </div>
+      </div>
+
       <div className={scannerStyles.compactFormGrid}>
         <label className={scannerStyles.field}>
           <span className={scannerStyles.label}>{t.scanner.nameLabel}</span>
@@ -404,23 +413,6 @@ function IngredientDraftEditor({
             onChange={(event) => onChange({ ...draft, price: event.target.value })}
           />
         </label>
-        <label className={scannerStyles.field}>
-          <span className={scannerStyles.label}>{t.scanner.colorLabel}</span>
-          <span className={scannerStyles.colorRow}>
-            <input
-              className={scannerStyles.input(theme)}
-              value={draft.color}
-              onChange={(event) => onChange({ ...draft, color: event.target.value })}
-            />
-            <input
-              aria-label="Ingredient color"
-              className={scannerStyles.colorInput}
-              type="color"
-              value={isHexColor(draft.color) ? draft.color : "#9ca3af"}
-              onChange={(event) => onChange({ ...draft, color: event.target.value })}
-            />
-          </span>
-        </label>
       </div>
 
       <section className={scannerStyles.field}>
@@ -442,89 +434,18 @@ function IngredientDraftEditor({
   );
 }
 
-function ProductLookupCard({
-  product,
-  theme,
-}: {
-  product: IProductLookupResult;
-  theme: SiteTheme;
-}) {
+function CandidateImage({ candidate, theme }: { candidate: IngredientCandidate; theme: SiteTheme }) {
   const { t } = useLanguage();
-  const imageUrl = getApiAssetUrl(product.imageUrl);
+  const imageUrl = getApiAssetUrl(candidate.imageUrl);
 
   return (
-    <article className={scannerStyles.productCard(theme)}>
-      <div className={scannerStyles.productImageFrame(theme)}>
-        {imageUrl === null ? (
-          <div className={scannerStyles.productImageFallback(theme)}>{t.scanner.noImage}</div>
-        ) : (
-          <img className={scannerStyles.productImage} src={imageUrl} alt="" />
-        )}
-      </div>
-
-      <div className={scannerStyles.productMain}>
-        <div>
-          <h2 className={scannerStyles.productTitle}>{product.name}</h2>
-          <p className={scannerStyles.productMeta(theme)}>
-            {[product.brand, product.vendor].filter(Boolean).join(" / ") || t.scanner.unknownBrand}
-          </p>
-        </div>
-
-        <div className={scannerStyles.chipRow}>
-          <span className={scannerStyles.chip(theme)}>{product.source}</span>
-          {product.store?.name && <span className={scannerStyles.chip(theme)}>{product.store.name}</span>}
-          {product.weight !== null && product.weightUnit !== null && (
-            <span className={scannerStyles.chip(theme)}>
-              {product.weight} {product.weightUnit}
-            </span>
-          )}
-        </div>
-
-        {product.nutritionPer100 !== null && (
-          <NutritionSummary nutrition={product.nutritionPer100} theme={theme} />
-        )}
-      </div>
-
-      <div className={scannerStyles.priceBlock}>
-        <span className={scannerStyles.price(theme)}>
-          {product.currentPrice === null ? t.scanner.noPrice : t.scanner.price(product.currentPrice)}
-        </span>
-        {product.currentUnitPrice !== null && (
-          <span className={scannerStyles.unitPrice(theme)}>
-            {t.scanner.unitPrice(product.currentUnitPrice)}
-          </span>
-        )}
-      </div>
-    </article>
-  );
-}
-
-function NutritionSummary({
-  nutrition,
-  theme,
-}: {
-  nutrition: IProductLookupNutrition;
-  theme: SiteTheme;
-}) {
-  const { t } = useLanguage();
-  const items = [
-    [t.scanner.calories, nutrition.calories === null ? null : `${nutrition.calories} kcal`],
-    [t.scanner.carbs, nutrition.carbohydrateGrams],
-    [t.scanner.protein, nutrition.proteinGrams],
-    [t.scanner.salt, nutrition.saltGrams],
-  ] as const;
-
-  return (
-    <dl className={scannerStyles.nutritionGrid}>
-      {items.map(([label, value]) => (
-        value !== null && (
-          <div className={scannerStyles.nutritionItem(theme)} key={label}>
-            <dt>{label}</dt>
-            <dd>{typeof value === "number" ? `${value} g` : value}</dd>
-          </div>
-        )
-      ))}
-    </dl>
+    <span className={scannerStyles.candidateImageFrame(theme)}>
+      {imageUrl === null ? (
+        <span className={scannerStyles.productImageFallback(theme)}>{t.scanner.noImage}</span>
+      ) : (
+        <img className={scannerStyles.productImage} src={imageUrl} alt="" />
+      )}
+    </span>
   );
 }
 
@@ -540,9 +461,9 @@ function buildIngredientCandidates(products: IProductLookupResult[]): Ingredient
         name,
         brandName,
         price: product.currentUnitPrice ?? product.currentPrice,
+        imageUrl: product.imageUrl,
         nutritionPer100: toIngredientNutrition(product.nutritionPer100),
         tags,
-        color: colorForTag(tags[0] ?? "Other"),
         product,
       };
 
@@ -565,8 +486,8 @@ function candidateToDraft(candidate: IngredientCandidate): IngredientDraft {
     name: candidate.name,
     brandName: candidate.brandName,
     price: numberToInputValue(candidate.price),
+    imageUrl: candidate.imageUrl,
     tags: candidate.tags,
-    color: candidate.color ?? "",
     nutritionPer100: candidate.nutritionPer100,
   };
 }
@@ -620,42 +541,6 @@ function toIngredientNutrition(nutrition: IProductLookupNutrition | null): INutr
   };
 }
 
-function colorForTag(tag: IngredientTag) {
-  switch (tag) {
-    case "Vegetable":
-    case "LeafyGreen":
-      return "#5a9f58";
-    case "Fruit":
-      return "#f59e0b";
-    case "Chicken":
-    case "Beef":
-    case "Lamb":
-    case "Mince":
-      return "#dc6b5f";
-    case "Fish":
-      return "#4f9fcf";
-    case "Dairy":
-      return "#d8e7f3";
-    case "Grain":
-    case "Pantry":
-      return "#c8a96a";
-    case "Spice":
-    case "Herb":
-      return "#7a8864";
-    case "Sauce":
-      return "#b77946";
-    case "Frozen":
-      return "#9cc9d9";
-    default:
-      return "#9ca3af";
-  }
-}
-
-function nullableText(value: string) {
-  const trimmed = value.trim();
-  return trimmed.length === 0 ? null : trimmed;
-}
-
 function nullableNumber(value: string) {
   const trimmed = value.trim().replace(",", ".");
   if (trimmed.length === 0) {
@@ -668,10 +553,6 @@ function nullableNumber(value: string) {
 
 function numberToInputValue(value: number | null | undefined) {
   return value === null || value === undefined ? "" : value.toString();
-}
-
-function isHexColor(value: string) {
-  return /^#[0-9a-f]{6}$/i.test(value);
 }
 
 function toggleValue<TValue>(values: TValue[], value: TValue) {

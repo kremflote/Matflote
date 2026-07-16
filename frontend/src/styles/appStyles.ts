@@ -500,13 +500,19 @@ export const scannerStyles = {
   desktopScannerHint: (theme: SiteTheme) =>
     `hidden rounded-md border px-4 py-3 text-sm font-semibold leading-[1.45] lg:block ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
   scannerSurface: "grid gap-4",
-  lookupForm: "grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 max-sm:grid-cols-1",
+  lookupForm: (isOpenOnMobile: boolean) =>
+    `grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 max-sm:grid-cols-1 ${
+      isOpenOnMobile ? "" : "max-lg:hidden"
+    }`,
   field: "grid gap-2",
   label: "text-sm font-bold leading-tight",
   input: controlStyles.formField,
   submitButton: controlStyles.primaryButton,
-  scannerActions: "flex flex-wrap items-center gap-3 lg:hidden",
-  cameraButton: controlStyles.secondaryButton,
+  scannerActions: "grid gap-3 lg:hidden",
+  cameraButton: (theme: SiteTheme) =>
+    `${controlStyles.primaryButton(theme)} h-14 w-full text-base`,
+  manualEntryButton: (theme: SiteTheme) =>
+    `${controlStyles.secondaryButton(theme)} h-9 w-fit justify-self-center px-3 text-xs`,
   cameraFrame: (theme: SiteTheme) =>
     `relative aspect-video w-full overflow-hidden rounded-md border ${shadowClasses.subtle} ${
       theme === "dark"
@@ -593,7 +599,7 @@ export const scannerStyles = {
   candidateTitle: "text-lg font-bold leading-tight",
   candidateList: "grid gap-2",
   candidateButton: (theme: SiteTheme, selected: boolean) =>
-    `grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-md border p-3 text-left transition-colors ${shadowClasses.subtle} ${focusBase} ${siteColorClasses[theme].focus} ${
+    `grid w-full grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 rounded-md border p-3 text-left transition-colors max-[380px]:grid-cols-[3.25rem_minmax(0,1fr)] ${shadowClasses.subtle} ${focusBase} ${siteColorClasses[theme].focus} ${
       selected
         ? theme === "dark"
           ? "border-white/[0.28] bg-white/[0.14]"
@@ -601,6 +607,14 @@ export const scannerStyles = {
             ? "border-[#7A8864]/50 bg-[#E5D5BC]/55"
             : "border-neutral-900 bg-neutral-100"
         : surfaceClasses.panel(theme)
+    }`,
+  candidateImageFrame: (theme: SiteTheme) =>
+    `flex aspect-square w-16 overflow-hidden rounded-md border max-[380px]:w-14 ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-neutral-900"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-[#FAF7F2]"
+          : "border-neutral-200 bg-white"
     }`,
   candidateName: "min-w-0 text-base font-bold leading-tight",
   candidateMeta: (theme: SiteTheme) =>
@@ -612,7 +626,7 @@ export const scannerStyles = {
           : "text-neutral-500"
     }`,
   candidateSelectLabel: (theme: SiteTheme) =>
-    `rounded-md px-2 py-1 text-xs font-bold ${
+    `rounded-md px-2 py-1 text-xs font-bold max-[380px]:col-span-2 max-[380px]:justify-self-start ${
       theme === "dark"
         ? "bg-white/[0.10] text-white"
         : theme === "paletteLight"
@@ -621,6 +635,15 @@ export const scannerStyles = {
     }`,
   ingredientEditor: (theme: SiteTheme) =>
     `grid gap-3 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  editorImageRow: "grid gap-2",
+  editorImageFrame: (theme: SiteTheme) =>
+    `aspect-square w-24 overflow-hidden rounded-md border ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-neutral-900"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-[#FAF7F2]"
+          : "border-neutral-200 bg-white"
+    }`,
   compactFormGrid: "grid grid-cols-2 gap-3 max-sm:grid-cols-1",
   tagGrid: "grid grid-cols-2 gap-2",
   tagOption: (theme: SiteTheme) =>

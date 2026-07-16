@@ -120,6 +120,8 @@ export type TranslationDictionary = {
     ingredientSaved: (name: string) => string;
     lookup: string;
     lookupFailed: string;
+    hideManualEntry: string;
+    manualEntry: string;
     mobileOnly: string;
     nameLabel: string;
     noCandidateSelected: string;
@@ -130,6 +132,7 @@ export type TranslationDictionary = {
     pageTitle: string;
     priceLabel: string;
     price: (price: number) => string;
+    productImageLabel: string;
     protein: string;
     resultsLabel: string;
     salt: string;
