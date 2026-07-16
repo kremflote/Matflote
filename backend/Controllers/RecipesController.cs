@@ -49,15 +49,9 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
             return BadRequest($"No ingredients found for IDs: {string.Join(", ", missingIngredientIds)}.");
         }
 
-        var tags = NormalizeTags(request.Tags);
-        if (tags.Count == 0)
-        {
-            return BadRequest("Choose at least one recipe tag.");
-        }
-
         var recipe = CreateRecipeModel(request);
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients);
-        recipe.Tags = tags
+        recipe.Tags = NormalizeTags(request.Tags)
             .Select(tag => new RecipeTagAssignment { Tag = tag })
             .ToList();
 
@@ -97,12 +91,6 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
             return BadRequest($"No ingredients found for IDs: {string.Join(", ", missingIngredientIds)}.");
         }
 
-        var tags = NormalizeTags(request.Tags);
-        if (tags.Count == 0)
-        {
-            return BadRequest("Choose at least one recipe tag.");
-        }
-
         recipe.Name = request.Name;
         recipe.ImageUrl = request.ImageUrl;
         recipe.Description = request.Description;
@@ -111,7 +99,7 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients, recipe.RecipeId);
         ApplySpecialRecipeFields(recipe, request);
         context.RecipeTagAssignments.RemoveRange(recipe.Tags);
-        recipe.Tags = tags
+        recipe.Tags = NormalizeTags(request.Tags)
             .Select(tag => new RecipeTagAssignment
             {
                 RecipeId = recipe.RecipeId,

@@ -1,6 +1,10 @@
 import type { SiteTheme } from "../../styles/appStyles";
-import type { IngredientTagGroupKey } from "./formOptions";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
+
+export type CheckboxGroup<TValue extends string> = {
+  key: string;
+  values: readonly TValue[];
+};
 
 export type NumberFilterOption = {
   disabled?: boolean;
@@ -108,10 +112,7 @@ export function FilterGroup<TValue extends string>({
 
 type GroupedFilterGroupProps<TValue extends string> = {
   title: string;
-  groups: readonly {
-    key: IngredientTagGroupKey;
-    values: readonly TValue[];
-  }[];
+  groups: readonly CheckboxGroup<TValue>[];
   groupLabels: Record<string, string>;
   disabledValues?: readonly TValue[];
   formatValue?: (value: TValue) => string;
@@ -119,6 +120,69 @@ type GroupedFilterGroupProps<TValue extends string> = {
   theme: SiteTheme;
   onToggle: (value: TValue) => void;
 };
+
+type GroupedCheckboxPanelProps<TValue extends string> = {
+  groups: readonly CheckboxGroup<TValue>[];
+  groupLabels: Record<string, string>;
+  disabledValues?: readonly TValue[];
+  formatValue?: (value: TValue) => string;
+  selectedValues: readonly TValue[];
+  theme: SiteTheme;
+  panelClassName?: string;
+  sectionClassName?: (theme: SiteTheme) => string;
+  titleClassName?: (theme: SiteTheme) => string;
+  optionListClassName?: string;
+  optionLabelClassName?: (theme: SiteTheme, disabled: boolean) => string;
+  checkboxClassName?: string;
+  onToggle: (value: TValue) => void;
+};
+
+export function GroupedCheckboxPanel<TValue extends string>({
+  groups,
+  groupLabels,
+  disabledValues = [],
+  formatValue = formatLabel,
+  selectedValues,
+  theme,
+  panelClassName = recipeBrowserStyles.groupedTagPanel,
+  sectionClassName = recipeBrowserStyles.groupedTagSection,
+  titleClassName = recipeBrowserStyles.groupedTagTitle,
+  optionListClassName = recipeBrowserStyles.groupedTagGrid,
+  optionLabelClassName = (currentTheme, disabled) =>
+    `${recipeBrowserStyles.checkboxLabel(currentTheme)} ${
+      disabled ? recipeBrowserStyles.disabledFilterOption(currentTheme) : ""
+    }`,
+  checkboxClassName = recipeBrowserStyles.checkbox,
+  onToggle,
+}: GroupedCheckboxPanelProps<TValue>) {
+  return (
+    <div className={panelClassName}>
+      {groups.map((group) => (
+        <section className={sectionClassName(theme)} key={group.key}>
+          <h3 className={titleClassName(theme)}>{groupLabels[group.key]}</h3>
+          <div className={optionListClassName}>
+            {group.values.map((value) => {
+              const disabled = disabledValues.includes(value);
+
+              return (
+                <label className={optionLabelClassName(theme, disabled)} key={value}>
+                  <input
+                    checked={disabled ? false : selectedValues.includes(value)}
+                    className={checkboxClassName}
+                    disabled={disabled}
+                    type="checkbox"
+                    onChange={() => onToggle(value)}
+                  />
+                  {formatValue(value)}
+                </label>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
 
 export function GroupedFilterGroup<TValue extends string>({
   title,
@@ -135,38 +199,25 @@ export function GroupedFilterGroup<TValue extends string>({
       <div className={recipeBrowserStyles.filterGroupHeader}>
         <legend className={recipeBrowserStyles.filterLegend(theme)}>{title}</legend>
       </div>
-      <div className={recipeBrowserStyles.groupedFilterOptionList}>
-        {groups.map((group) => (
-          <section className={recipeBrowserStyles.groupedFilterSection(theme)} key={group.key}>
-            <h3 className={recipeBrowserStyles.groupedTagTitle(theme)}>
-              {groupLabels[group.key]}
-            </h3>
-            <div className={recipeBrowserStyles.filterOptionList}>
-              {group.values.map((value) => {
-                const disabled = disabledValues.includes(value);
-
-                return (
-                  <label
-                    className={`${recipeBrowserStyles.checkboxLabel(theme)} ${
-                      disabled ? recipeBrowserStyles.disabledFilterOption(theme) : ""
-                    }`}
-                    key={value}
-                  >
-                    <input
-                      checked={disabled ? false : selectedValues.includes(value)}
-                      className={recipeBrowserStyles.checkbox}
-                      disabled={disabled}
-                      type="checkbox"
-                      onChange={() => onToggle(value)}
-                    />
-                    {formatValue(value)}
-                  </label>
-                );
-              })}
-            </div>
-          </section>
-        ))}
-      </div>
+      <GroupedCheckboxPanel
+        checkboxClassName={recipeBrowserStyles.checkbox}
+        disabledValues={disabledValues}
+        formatValue={formatValue}
+        groupLabels={groupLabels}
+        groups={groups}
+        optionLabelClassName={(currentTheme, disabled) =>
+          `${recipeBrowserStyles.checkboxLabel(currentTheme)} ${
+            disabled ? recipeBrowserStyles.disabledFilterOption(currentTheme) : ""
+          }`
+        }
+        optionListClassName={recipeBrowserStyles.filterOptionList}
+        panelClassName={recipeBrowserStyles.groupedFilterOptionList}
+        sectionClassName={recipeBrowserStyles.groupedFilterSection}
+        selectedValues={selectedValues}
+        theme={theme}
+        titleClassName={recipeBrowserStyles.groupedTagTitle}
+        onToggle={onToggle}
+      />
     </fieldset>
   );
 }

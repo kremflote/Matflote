@@ -5,7 +5,7 @@ import type { IMealPlanEntry, MealSlot } from "../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
 import { plannerPickerStyles, type SiteTheme } from "../styles/appStyles";
-import { recipeTags } from "./recipeBrowser/formOptions";
+import { recipeTagGroups, recipeTags } from "./recipeBrowser/formOptions";
 import { recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
 import {
   excludedSupplementaryTags,
@@ -26,7 +26,7 @@ import {
   supplementaryRecipeTypeFilters,
   toggleSelection,
 } from "./plannerRecipePicker/plannerRecipePickerFilters";
-import { FilterGroup, NumberFilterGroup } from "./recipeBrowser/BrowserFilterGroups";
+import { FilterGroup, GroupedFilterGroup, NumberFilterGroup } from "./recipeBrowser/BrowserFilterGroups";
 import {
   FilterIcon,
   IngredientFilterChips,
@@ -386,15 +386,16 @@ function PlannerRecipePickerModal({
             formatValue={(value) => t.enums.ingredientTags[value]}
             onToggle={(value) => toggleSelection(value, setSelectedMainProteinTags)}
           />
-          <FilterGroup
+          <GroupedFilterGroup
             disabledValues={recipeTags.filter(
               (filter) => !availableMainRecipeTags.has(filter),
             )}
+            formatValue={(value) => t.enums.recipeTags[value]}
+            groupLabels={t.filters.recipeTagGroups}
+            groups={recipeTagGroups}
             selectedValues={selectedMainRecipeTags}
             theme={theme}
             title={t.filters.tags}
-            values={recipeTags}
-            formatValue={(value) => t.enums.recipeTags[value]}
             onToggle={(value) => toggleSelection(value, setSelectedMainRecipeTags)}
           />
         </>

@@ -25,7 +25,7 @@ export const supplementaryFilters: SupplementaryFilter[] = [
 ];
 
 export const excludedSupplementaryTags: RecipeTag[] = recipeTags.filter(
-  (recipeTag) => recipeTag === "Breakfast",
+  (recipeTag) => recipeTag === "Breakfast" || recipeTag === "Lunch" || recipeTag === "Dinner",
 );
 
 export const mainProteinFilters: IngredientTag[] = ingredientTags.filter(
@@ -154,7 +154,7 @@ export function normalizeIngredientTag(tag: IngredientTag | number | string): In
     return ingredientTagByIndex[tag];
   }
 
-  return "Other";
+  return "Pantry";
 }
 
 export function getSupplementaryRole(recipe: IRecipe): MealRecipeRole {
@@ -184,6 +184,5 @@ const ingredientTagByIndex: IngredientTag[] = [
   "Sauce",
   "Pantry",
   "Frozen",
-  "Other",
   "LeafyGreen",
 ];

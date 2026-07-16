@@ -345,6 +345,12 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
         </div>
       </section>
 
+      <div className={recipeBrowserStyles.mobileModeToggleDock}>
+        <div className={recipeBrowserStyles.mobileModeToggleInner}>
+          {modeToggle}
+        </div>
+      </div>
+
       {selectedDetail !== null && (
         <BrowserDetailModal
           detail={selectedDetail}

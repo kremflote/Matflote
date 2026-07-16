@@ -14,8 +14,8 @@ public enum RecipeTag
     Salad,
     Pizza,
     Sandwich,
-    Taco,
-    Curry,
     Casserole,
-    Other
+    Porridge,
+    Plate,
+    SousVide
 }

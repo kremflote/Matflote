@@ -368,7 +368,7 @@ public class SeedCatalogService(
 
     private static List<IngredientTag> NormalizeIngredientTags(IReadOnlyCollection<IngredientTag>? tags) =>
         tags is null || tags.Count == 0
-            ? [IngredientTag.Other]
+            ? []
             : tags
                 .Where(Enum.IsDefined)
                 .Distinct()
@@ -376,7 +376,7 @@ public class SeedCatalogService(
 
     private static List<RecipeTag> NormalizeRecipeTags(IReadOnlyCollection<RecipeTag>? tags) =>
         tags is null || tags.Count == 0
-            ? [RecipeTag.Other]
+            ? []
             : tags
                 .Where(Enum.IsDefined)
                 .Distinct()

@@ -15,19 +15,22 @@ export const recipeBrowserStyles = {
   headerTitle:
     "col-span-2 flex items-center max-lg:order-2 max-lg:col-span-12 max-sm:my-4 max-sm:justify-center",
   searchInput: controlStyles.compactSearchInput,
-  mobileFlushToHeader: "max-sm:pt-0",
-  headerControlsRow:
-    "grid grid-cols-12 items-center max-sm:mt-0 max-sm:gap-0",
+  mobileFlushToHeader: "max-md:!pt-0",
+  headerControlsRow: "grid grid-cols-12 items-center max-sm:mt-0 max-sm:gap-0",
   searchControls:
     "relative col-span-2 max-lg:col-span-12 max-lg:flex max-lg:items-center max-lg:gap-3 max-sm:grid max-sm:w-full max-sm:grid-cols-[minmax(0,1fr)_auto] max-sm:gap-3",
   headerActions:
     "col-span-10 flex items-center justify-end gap-3 pt-1 max-lg:order-3 max-lg:col-span-12 max-lg:justify-start max-sm:contents",
   headerActionButtonSlot: "flex shrink-0 max-sm:w-full",
   headerModeToggleSlot: `${sizeClasses.thumbnailControlWidth} max-lg:hidden`,
-  headerModeToggleStackedSlot: `hidden ${sizeClasses.thumbnailControlWidth} max-lg:order-1 max-lg:col-span-12 max-lg:flex max-sm:-mx-4 max-sm:w-screen`,
+  headerModeToggleStackedSlot: `hidden ${sizeClasses.thumbnailControlWidth} max-lg:order-1 max-lg:col-span-12 max-lg:flex max-md:hidden`,
+  mobileModeToggleDock:
+    "hidden max-md:fixed max-md:inset-x-0 max-md:bottom-[calc(4.5rem+env(safe-area-inset-bottom))] max-md:z-[55] max-md:flex",
+  mobileModeToggleInner: "w-full",
   filterButtonSlot:
     "absolute left-[calc(100%+0.75rem)] top-0 flex h-9 w-9 shrink-0 items-center gap-2 max-lg:static max-lg:w-auto max-sm:h-9 max-sm:w-auto",
-  searchFilterRow: "mt-3 grid grid-cols-12 items-start gap-3 max-sm:mt-0 max-sm:gap-y-0",
+  searchFilterRow:
+    "mt-3 grid grid-cols-12 items-start gap-3 max-sm:mt-0 max-sm:gap-y-0",
   activeFilterChips: (
     mode: "recipes" | "ingredients",
     hasVisibleFilters: boolean,
@@ -84,7 +87,7 @@ export const recipeBrowserStyles = {
     "mt-3 flex max-h-72 flex-col gap-2 overflow-y-auto pr-1",
   ingredientPickerItem: "h-9 px-3",
   addButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-32 items-center justify-center gap-1 rounded-md border px-3 text-xs font-extrabold ${shadowClasses.subtle} transition-colors max-md:fixed max-md:bottom-24 max-md:right-4 max-md:z-[55] max-md:h-14 max-md:w-14 max-md:rounded-full max-md:px-0 max-md:text-2xl ${siteColorClasses[theme].cookbookAddButton}`,
+    `inline-flex h-9 w-32 items-center justify-center gap-1 rounded-md border px-3 text-xs font-extrabold ${shadowClasses.subtle} transition-colors max-md:fixed max-md:bottom-36 max-md:right-4 max-md:z-[55] max-md:h-14 max-md:w-14 max-md:rounded-full max-md:px-0 max-md:text-2xl ${siteColorClasses[theme].cookbookAddButton}`,
   addButtonLabel: "max-md:sr-only",
   modalBackdrop: `fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   modalPanel: (theme: SiteTheme) =>
@@ -140,8 +143,7 @@ export const recipeBrowserStyles = {
   recipeCreateTopGrid:
     "grid grid-cols-[minmax(0,1fr)_minmax(220px,280px)] gap-4 max-md:grid-cols-1",
   recipePrimaryFields: "grid min-w-0 content-start gap-4 max-sm:gap-3",
-  recipeImageField:
-    "relative mt-6 grid min-w-0 content-start max-sm:mt-0",
+  recipeImageField: "relative mt-6 grid min-w-0 content-start max-sm:mt-0",
   field: "grid gap-2",
   label: (theme: SiteTheme) =>
     `text-xs font-bold ${
@@ -239,8 +241,7 @@ export const recipeBrowserStyles = {
     "grid max-h-44 grid-cols-2 gap-2 overflow-y-auto rounded-md p-2 max-md:grid-cols-1",
   tagCheckboxGrid:
     "grid grid-cols-3 gap-2 rounded-md p-2 max-md:grid-cols-2 max-sm:grid-cols-1",
-  groupedTagPanel:
-    "grid gap-3 rounded-md p-2",
+  groupedTagPanel: "grid gap-3 rounded-md p-2",
   groupedTagSection: (theme: SiteTheme) =>
     `grid gap-2 border-b pb-3 last:border-b-0 last:pb-0 ${
       theme === "dark"
@@ -332,8 +333,7 @@ export const recipeBrowserStyles = {
           ? "border-[#C8C0B5] bg-[#FAF7F2]"
           : "border-neutral-300 bg-neutral-100"
     }`,
-  compactIngredientImage:
-    "h-full w-full object-cover",
+  compactIngredientImage: "h-full w-full object-cover",
   compactIngredientImageFallback:
     "text-[10px] font-black leading-none opacity-55",
   compactIngredientImageButton: (theme: SiteTheme) =>
@@ -347,8 +347,7 @@ export const recipeBrowserStyles = {
   nestedModalBackdrop: `fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   nestedIngredientModalPanel: (theme: SiteTheme) =>
     `grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-md border p-6 max-sm:max-h-[calc(100vh_-_16px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
-  nestedIngredientModalBody:
-    `${sizeClasses.modalFormBodyMaxHeight} ${sizeClasses.modalFormBodyMobileMaxHeight} grid min-h-0 gap-3 overflow-y-auto pr-1`,
+  nestedIngredientModalBody: `${sizeClasses.modalFormBodyMaxHeight} ${sizeClasses.modalFormBodyMobileMaxHeight} grid min-h-0 gap-3 overflow-y-auto pr-1`,
   primaryButton: controlStyles.primaryButton,
   detailHeaderEditButton: (theme: SiteTheme) =>
     `inline-flex h-9 min-w-20 items-center justify-center rounded-md border px-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-55 max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:text-sm ${
@@ -370,8 +369,7 @@ export const recipeBrowserStyles = {
     `relative grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden rounded-md border p-6 ${responsiveClasses.mobileModalPanel} ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   detailCloseButton: (theme: SiteTheme) =>
     `${recipeBrowserStyles.modalCloseButton(theme)} ml-auto`,
-  detailBodyScrollArea:
-    `${sizeClasses.modalFormBodyMaxHeight} ${sizeClasses.modalFormBodyMobileMaxHeight} grid min-h-0 gap-4 overflow-y-auto pr-1`,
+  detailBodyScrollArea: `${sizeClasses.modalFormBodyMaxHeight} ${sizeClasses.modalFormBodyMobileMaxHeight} grid min-h-0 gap-4 overflow-y-auto pr-1`,
   detailFrameHeader: "flex items-start justify-between gap-4",
   detailHeaderDescription: "mt-2",
   detailHeaderShell: "grid gap-2 max-sm:pr-12",
@@ -496,8 +494,7 @@ export const recipeBrowserStyles = {
   detailImage: "h-full w-full object-cover",
   detailImageFallback:
     "flex h-full w-full items-center justify-center px-4 text-center text-sm font-bold text-neutral-400",
-  recipeDetailDescriptionWrap:
-    "grid content-start",
+  recipeDetailDescriptionWrap: "grid content-start",
   recipeDetailDescriptionPanel:
     "h-[260px] grid-rows-[auto_minmax(0,1fr)] max-md:h-auto max-sm:min-h-[calc((100vw_-_4.25rem)/3)]",
   recipeDetailSplitGrid: "grid grid-cols-2 gap-6 max-md:grid-cols-1",
@@ -540,16 +537,13 @@ export const recipeBrowserStyles = {
   scaleLabel: "flex items-center gap-2",
   scaleField: "w-20",
   scaleInput: "w-full pr-6",
-  imageCropper:
-    "relative grid gap-3 max-sm:items-start",
+  imageCropper: "relative grid gap-3 max-sm:items-start",
   hiddenFileInput: "sr-only",
   cropImage: "h-full w-full object-cover",
   cropFallback:
     "flex h-full w-full items-center justify-center px-4 text-center text-sm font-semibold opacity-60",
-  cropControls:
-    "grid gap-3 max-sm:gap-2",
-  cropConfirmButton:
-    "max-sm:h-8 max-sm:min-w-0 max-sm:px-3 max-sm:text-xs",
+  cropControls: "grid gap-3 max-sm:gap-2",
+  cropConfirmButton: "max-sm:h-8 max-sm:min-w-0 max-sm:px-3 max-sm:text-xs",
   sliderField: "grid gap-1 text-xs font-bold",
   createOptionActions: "flex items-center justify-end gap-3",
   customSelectOptionLabel: "min-w-0 truncate",

@@ -61,10 +61,10 @@ export type RecipeTag =
   | "Salad"
   | "Pizza"
   | "Sandwich"
-  | "Taco"
-  | "Curry"
   | "Casserole"
-  | "Other";
+  | "Porridge"
+  | "Plate"
+  | "SousVide";
 
 export type DessertType =
   | "Cake"

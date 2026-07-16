@@ -96,7 +96,7 @@ function normalizeIngredientTag(tag: IngredientTag | number | string): Ingredien
     return ingredientTagByIndex[tag];
   }
 
-  return "Other";
+  return "Pantry";
 }
 
 const ingredientTagByIndex: IngredientTag[] = [
@@ -114,6 +114,5 @@ const ingredientTagByIndex: IngredientTag[] = [
   "Sauce",
   "Pantry",
   "Frozen",
-  "Other",
   "LeafyGreen",
 ];

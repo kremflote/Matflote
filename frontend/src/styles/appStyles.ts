@@ -394,8 +394,9 @@ export const pageStyles = {
 };
 
 export const settingsStyles = {
-  shell: "mx-auto grid w-full max-w-2xl gap-6",
-  quickSettingsRow: "flex flex-wrap items-start justify-between gap-4 max-sm:grid max-sm:w-full max-sm:grid-cols-1",
+  shell: "mx-auto grid w-full max-w-2xl gap-6 max-md:pb-20",
+  quickSettingsRow:
+    "flex flex-wrap items-start justify-between gap-4 max-sm:grid max-sm:w-full max-sm:grid-cols-1",
   title: (theme: SiteTheme) =>
     `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
   panel: (theme: SiteTheme) =>
@@ -444,7 +445,8 @@ export const settingsStyles = {
           ? "text-[#7A8864]"
           : "text-neutral-500"
     }`,
-  statusRow: "flex flex-wrap items-center justify-between gap-4",
+  statusRow:
+    "flex flex-wrap items-center justify-between gap-4 max-sm:grid max-sm:grid-cols-1 max-sm:justify-items-center max-sm:gap-2",
   statusText: (theme: SiteTheme, tone: "error" | "success") =>
     `text-sm font-bold ${
       tone === "error"
@@ -457,8 +459,10 @@ export const settingsStyles = {
             ? "text-[#556145]"
             : "text-emerald-700"
     }`,
-  saveButton: controlStyles.primaryButton,
-  secondaryButton: controlStyles.secondaryButton,
+  saveButton: (theme: SiteTheme) =>
+    `${controlStyles.primaryButton(theme)} max-sm:w-full max-sm:max-w-xs`,
+  secondaryButton: (theme: SiteTheme) =>
+    `${controlStyles.secondaryButton(theme)} max-sm:w-full max-sm:max-w-xs`,
   currentProviderCard: (theme: SiteTheme) =>
     `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
   currentProviderTitle: "text-sm font-bold leading-tight",
@@ -581,7 +585,8 @@ export const scannerStyles = {
           ? "bg-[#E5D5BC] text-[#556145]"
           : "bg-neutral-200 text-neutral-700"
     }`,
-  priceBlock: "grid content-start justify-items-end gap-1 max-sm:col-span-2 max-sm:justify-items-start",
+  priceBlock:
+    "grid content-start justify-items-end gap-1 max-sm:col-span-2 max-sm:justify-items-start",
   price: (theme: SiteTheme) =>
     `text-xl font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
   unitPrice: (theme: SiteTheme) =>
@@ -782,7 +787,8 @@ export const prepHelperStyles = {
 } as const;
 
 export const mealCalendarStyles = {
-  shell: "flex w-full flex-col overflow-visible max-md:overflow-x-auto max-md:pb-24",
+  shell:
+    "flex w-full flex-col overflow-visible max-md:overflow-x-auto max-md:pb-24",
   grid: `grid w-full min-w-[720px] grid-cols-12 ${layoutClasses.calendarGap} max-md:min-w-0 max-md:grid-cols-1`,
   rows: `flex flex-col ${layoutClasses.calendarGap}`,
   row: `relative min-h-36 min-w-[720px] max-md:grid max-md:min-h-0 max-md:min-w-0 max-md:gap-2`,

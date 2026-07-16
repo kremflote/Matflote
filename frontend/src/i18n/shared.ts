@@ -26,7 +26,6 @@ export const commonEnumLabels = {
     Sauce: "Sauce",
     Pantry: "Pantry",
     Frozen: "Frozen",
-    Other: "Other",
     LeafyGreen: "Leafy green",
   },
   ingredientPreparations: {

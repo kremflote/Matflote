@@ -5,9 +5,11 @@ import { cuisineService, imageUploadService, recipeService } from "../../service
 import type { SiteTheme } from "../../styles/appStyles";
 import {
   dessertTypes,
+  recipeTagGroups,
   recipeTags,
   recipeTypes,
 } from "./formOptions";
+import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import CreatableSelect from "./CreatableSelect";
 import ImageCropPicker from "./ImageCropPicker";
 import {
@@ -146,11 +148,6 @@ function RecipeCreateForm({
       return;
     }
 
-    if (selectedTags.length === 0) {
-      setError("Choose at least one recipe tag.");
-      return;
-    }
-
     if (selectedIngredients.length === 0) {
       setError("Choose at least one ingredient.");
       return;
@@ -285,20 +282,18 @@ function RecipeCreateForm({
 
           <section className={recipeBrowserStyles.field}>
             <span className={recipeBrowserStyles.label(theme)}>
-              Tags<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-              <span className={recipeBrowserStyles.inlineHint(theme)}>Pick 1 or more</span>
+              Tags
+              <span className={recipeBrowserStyles.inlineHint(theme)}>Optional</span>
             </span>
-            <div className={`${recipeBrowserStyles.tagCheckboxGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
-              {recipeTags.map((tag) => (
-                <CheckboxRow
-                  checked={selectedTags.includes(tag)}
-                  key={tag}
-                  label={formatLabel(tag)}
-                  theme={theme}
-                  onChange={() => setSelectedTags((currentTags) => toggleValue(currentTags, tag))}
-                />
-              ))}
-            </div>
+            <GroupedCheckboxPanel
+              formatValue={(value) => t.enums.recipeTags[value]}
+              groupLabels={t.filters.recipeTagGroups}
+              groups={recipeTagGroups}
+              panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
+              selectedValues={selectedTags}
+              theme={theme}
+              onToggle={(value) => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
+            />
           </section>
 
           <section className={recipeBrowserStyles.field}>
@@ -429,27 +424,6 @@ function RecipeCreateForm({
         />
       )}
     </form>
-  );
-}
-
-type CheckboxRowProps = {
-  checked: boolean;
-  label: string;
-  theme: SiteTheme;
-  onChange: () => void;
-};
-
-function CheckboxRow({ checked, label, theme, onChange }: CheckboxRowProps) {
-  return (
-    <label className={recipeBrowserStyles.checkboxLabel(theme)}>
-      <input
-        checked={checked}
-        className={recipeBrowserStyles.checkbox}
-        type="checkbox"
-        onChange={onChange}
-      />
-      {label}
-    </label>
   );
 }
 

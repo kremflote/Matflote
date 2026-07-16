@@ -28,7 +28,6 @@ export type IngredientTag =
   | "Sauce"
   | "Pantry"
   | "Frozen"
-  | "Other"
   | "LeafyGreen";
 
 export interface INutritionFacts {

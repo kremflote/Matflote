@@ -5,6 +5,7 @@ import { brandService, imageUploadService, ingredientService } from "../../servi
 import { getApiAssetUrl } from "../../services/apiClient";
 import type { SiteTheme } from "../../styles/appStyles";
 import { ingredientTagGroups, vitamins } from "./formOptions";
+import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import CreatableSelect from "./CreatableSelect";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 
@@ -220,6 +221,88 @@ function IngredientCreateForm({
     }
   };
 
+  const nutritionPanel = (
+    <div className={recipeBrowserStyles.detailsPanel(theme)}>
+      <div className={recipeBrowserStyles.formGrid}>
+        <NutritionNumberField
+          label="Calories per 100g"
+          step="1"
+          theme={theme}
+          unit="kcal"
+          value={calories}
+          onChange={setCalories}
+        />
+        <NutritionNumberField
+          label="Carbs per 100g"
+          theme={theme}
+          value={carbohydrateGrams}
+          onChange={setCarbohydrateGrams}
+        />
+        <NutritionNumberField
+          label="Protein per 100g"
+          theme={theme}
+          value={proteinGrams}
+          onChange={setProteinGrams}
+        />
+        <NutritionNumberField
+          label="Salt per 100g"
+          step="0.01"
+          theme={theme}
+          value={saltGrams}
+          onChange={setSaltGrams}
+        />
+        <NutritionNumberField
+          label="Fiber per 100g"
+          theme={theme}
+          value={dietaryFiberGrams}
+          onChange={setDietaryFiberGrams}
+        />
+        <NutritionNumberField
+          className={recipeBrowserStyles.nutritionSecondRowStart}
+          label="Saturated fats per 100g"
+          theme={theme}
+          value={saturatedFatGrams}
+          onChange={setSaturatedFatGrams}
+        />
+        <NutritionNumberField
+          label="Unsaturated fats per 100g"
+          theme={theme}
+          value={unsaturatedFatGrams}
+          onChange={setUnsaturatedFatGrams}
+        />
+        <NutritionNumberField
+          label="Monounsaturated fats per 100g"
+          theme={theme}
+          value={monounsaturatedFatGrams}
+          onChange={setMonounsaturatedFatGrams}
+        />
+        <NutritionNumberField
+          label="Polyunsaturated fats per 100g"
+          theme={theme}
+          value={polyunsaturatedFatGrams}
+          onChange={setPolyunsaturatedFatGrams}
+        />
+      </div>
+
+      <section className={recipeBrowserStyles.field}>
+        <span className={recipeBrowserStyles.label(theme)}>Vitamins</span>
+        <div className={`${recipeBrowserStyles.tagCheckboxGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
+          {vitamins.map((vitamin) => (
+            <label className={recipeBrowserStyles.checkboxLabel(theme)} key={vitamin}>
+              <input
+                checked={selectedVitamins.includes(vitamin)}
+                className={recipeBrowserStyles.checkbox}
+                type="checkbox"
+                onChange={() => setSelectedVitamins((currentVitamins) => toggleValue(currentVitamins, vitamin))}
+              />
+              {formatLabel(vitamin)}
+            </label>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+
   return (
     <form className={recipeBrowserStyles.form} onSubmit={submitIngredient}>
       <div className={recipeBrowserStyles.formBodyScrollArea}>
@@ -275,6 +358,7 @@ function IngredientCreateForm({
               >
                 {showNutrition ? "Hide nutrition" : "Add nutrition"}
               </button>
+              {showNutrition && <div className="md:hidden">{nutritionPanel}</div>}
             </section>
 
             <section className={recipeBrowserStyles.field}>
@@ -289,115 +373,22 @@ function IngredientCreateForm({
             </section>
           </div>
 
-          {showNutrition && (
-            <div className={recipeBrowserStyles.detailsPanel(theme)}>
-              <div className={recipeBrowserStyles.formGrid}>
-                <NutritionNumberField
-                  label="Calories per 100g"
-                  step="1"
-                  theme={theme}
-                  unit="kcal"
-                  value={calories}
-                  onChange={setCalories}
-                />
-                <NutritionNumberField
-                  label="Carbs per 100g"
-                  theme={theme}
-                  value={carbohydrateGrams}
-                  onChange={setCarbohydrateGrams}
-                />
-                <NutritionNumberField
-                  label="Protein per 100g"
-                  theme={theme}
-                  value={proteinGrams}
-                  onChange={setProteinGrams}
-                />
-                <NutritionNumberField
-                  label="Salt per 100g"
-                  step="0.01"
-                  theme={theme}
-                  value={saltGrams}
-                  onChange={setSaltGrams}
-                />
-                <NutritionNumberField
-                  label="Fiber per 100g"
-                  theme={theme}
-                  value={dietaryFiberGrams}
-                  onChange={setDietaryFiberGrams}
-                />
-                <NutritionNumberField
-                  className={recipeBrowserStyles.nutritionSecondRowStart}
-                  label="Saturated fats per 100g"
-                  theme={theme}
-                  value={saturatedFatGrams}
-                  onChange={setSaturatedFatGrams}
-                />
-                <NutritionNumberField
-                  label="Unsaturated fats per 100g"
-                  theme={theme}
-                  value={unsaturatedFatGrams}
-                  onChange={setUnsaturatedFatGrams}
-                />
-                <NutritionNumberField
-                  label="Monounsaturated fats per 100g"
-                  theme={theme}
-                  value={monounsaturatedFatGrams}
-                  onChange={setMonounsaturatedFatGrams}
-                />
-                <NutritionNumberField
-                  label="Polyunsaturated fats per 100g"
-                  theme={theme}
-                  value={polyunsaturatedFatGrams}
-                  onChange={setPolyunsaturatedFatGrams}
-                />
-              </div>
-
-              <section className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>Vitamins</span>
-                <div className={`${recipeBrowserStyles.tagCheckboxGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
-                  {vitamins.map((vitamin) => (
-                    <label className={recipeBrowserStyles.checkboxLabel(theme)} key={vitamin}>
-                      <input
-                        checked={selectedVitamins.includes(vitamin)}
-                        className={recipeBrowserStyles.checkbox}
-                        type="checkbox"
-                        onChange={() => setSelectedVitamins((currentVitamins) => toggleValue(currentVitamins, vitamin))}
-                      />
-                      {formatLabel(vitamin)}
-                    </label>
-                  ))}
-                </div>
-              </section>
-            </div>
-          )}
+          {showNutrition && <div className="max-md:hidden">{nutritionPanel}</div>}
 
           <section className={recipeBrowserStyles.field}>
             <span className={recipeBrowserStyles.label(theme)}>
               Tags<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
               <span className={recipeBrowserStyles.inlineHint(theme)}>Pick 1 or more</span>
             </span>
-            <div className={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
-              {ingredientTagGroups.map((group) => (
-                <section className={recipeBrowserStyles.groupedTagSection(theme)} key={group.key}>
-                  <h3 className={recipeBrowserStyles.groupedTagTitle(theme)}>
-                    {t.filters.ingredientTagGroups[group.key]}
-                  </h3>
-                  <div className={recipeBrowserStyles.groupedTagGrid}>
-                    {group.values.map((value) => (
-                      <label className={recipeBrowserStyles.checkboxLabel(theme)} key={value}>
-                        <input
-                          checked={selectedTags.includes(value)}
-                          className={recipeBrowserStyles.checkbox}
-                          type="checkbox"
-                          onChange={() => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
-                        />
-                        {formatLabel(value)}
-                      </label>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
+            <GroupedCheckboxPanel
+              formatValue={(value) => t.enums.ingredientTags[value]}
+              groupLabels={t.filters.ingredientTagGroups}
+              groups={ingredientTagGroups}
+              panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
+              selectedValues={selectedTags}
+              theme={theme}
+              onToggle={(value) => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
+            />
           </section>
         </div>
 

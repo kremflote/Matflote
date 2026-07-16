@@ -12,7 +12,11 @@ export const recipeTypes: RecipeType[] = [
 
 export const recipeTags: RecipeTag[] = [
   "Breakfast",
+  "Lunch",
+  "Dinner",
   "Bowl",
+  "Plate",
+  "Porridge",
   "Grill",
   "Pasta",
   "Vegetarian",
@@ -21,10 +25,28 @@ export const recipeTags: RecipeTag[] = [
   "Salad",
   "Pizza",
   "Sandwich",
-  "Taco",
-  "Curry",
   "Casserole",
-  "Other",
+  "SousVide",
+];
+
+export type RecipeTagGroupKey = "meal" | "format" | "style";
+
+export const recipeTagGroups: Array<{
+  key: RecipeTagGroupKey;
+  values: RecipeTag[];
+}> = [
+  {
+    key: "meal",
+    values: ["Breakfast", "Lunch", "Dinner"],
+  },
+  {
+    key: "format",
+    values: ["Bowl", "Plate", "Porridge", "Soup", "Stew", "Salad", "Pizza", "Sandwich", "Casserole"],
+  },
+  {
+    key: "style",
+    values: ["Grill", "Pasta", "Vegetarian", "SousVide"],
+  },
 ];
 
 export const dessertTypes: DessertType[] = [
@@ -55,11 +77,10 @@ export const ingredientTags: IngredientTag[] = [
   "Sauce",
   "Pantry",
   "Frozen",
-  "Other",
   "LeafyGreen",
 ];
 
-export type IngredientTagGroupKey = "produce" | "protein" | "pantry" | "other";
+export type IngredientTagGroupKey = "produce" | "protein" | "pantry";
 
 export const ingredientTagGroups: Array<{
   key: IngredientTagGroupKey;
@@ -76,10 +97,6 @@ export const ingredientTagGroups: Array<{
   {
     key: "pantry",
     values: ["Grain", "Spice", "Sauce", "Pantry", "Frozen"],
-  },
-  {
-    key: "other",
-    values: ["Other"],
   },
 ];
 

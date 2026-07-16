@@ -8,7 +8,7 @@ import { brandService, imageUploadService, ingredientService, productLookupServi
 import { getApiAssetUrl } from "../services/apiClient";
 import { pageStyles, scannerStyles, type SiteTheme } from "../styles/appStyles";
 import { ingredientTagGroups } from "../components/recipeBrowser/formOptions";
-import { formatLabel } from "../components/recipeBrowser/recipeBrowserStyles";
+import { GroupedCheckboxPanel } from "../components/recipeBrowser/BrowserFilterGroups";
 
 type ScannerPageProps = {
   theme: SiteTheme;
@@ -149,7 +149,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
         brandId: brand?.brandId ?? null,
         imageUrl: uploadedImage?.url ?? ingredientDraft.imageUrl,
         price: nullableNumber(ingredientDraft.price),
-        tags: ingredientDraft.tags.length > 0 ? ingredientDraft.tags : ["Other"],
+        tags: ingredientDraft.tags,
         nutritionPer100: ingredientDraft.nutritionPer100,
         color: null,
       });
@@ -446,27 +446,19 @@ function IngredientDraftEditor({
 
       <section className={scannerStyles.field}>
         <span className={scannerStyles.label}>{t.scanner.selectTags}</span>
-        <div className={scannerStyles.groupedTagPanel}>
-          {ingredientTagGroups.map((group) => (
-            <section className={scannerStyles.groupedTagSection(theme)} key={group.key}>
-              <h3 className={scannerStyles.groupedTagTitle(theme)}>
-                {t.filters.ingredientTagGroups[group.key]}
-              </h3>
-              <div className={scannerStyles.tagGrid}>
-                {group.values.map((tag) => (
-                  <label className={scannerStyles.tagOption(theme)} key={tag}>
-                    <input
-                      checked={draft.tags.includes(tag)}
-                      type="checkbox"
-                      onChange={() => onChange({ ...draft, tags: toggleValue(draft.tags, tag) })}
-                    />
-                    {formatLabel(tag)}
-                  </label>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+        <GroupedCheckboxPanel
+          formatValue={(value) => t.enums.ingredientTags[value]}
+          groupLabels={t.filters.ingredientTagGroups}
+          groups={ingredientTagGroups}
+          optionLabelClassName={(currentTheme) => scannerStyles.tagOption(currentTheme)}
+          optionListClassName={scannerStyles.tagGrid}
+          panelClassName={scannerStyles.groupedTagPanel}
+          sectionClassName={scannerStyles.groupedTagSection}
+          selectedValues={draft.tags}
+          theme={theme}
+          titleClassName={scannerStyles.groupedTagTitle}
+          onToggle={(tag) => onChange({ ...draft, tags: toggleValue(draft.tags, tag) })}
+        />
       </section>
     </section>
   );
@@ -558,7 +550,7 @@ function inferIngredientTags(searchText: string): IngredientTag[] {
   if (/\b(gulrot|carrot|løk|onion|tomat|tomato|agurk|cucumber|potet|potato|paprika)\b/.test(normalized)) return ["Vegetable"];
   if (/\b(frossen|frozen)\b/.test(normalized)) return ["Frozen"];
 
-  return ["Other"];
+  return [];
 }
 
 function toIngredientNutrition(nutrition: IProductLookupNutrition | null): INutritionFacts | null {

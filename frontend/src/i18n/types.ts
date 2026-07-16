@@ -86,6 +86,7 @@ export type TranslationDictionary = {
     ingredientTagGroups: Record<string, string>;
     includes: string;
     protein: string;
+    recipeTagGroups: Record<string, string>;
     recipeFilters: string;
     recipeType: string;
     tags: string;
