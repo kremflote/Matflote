@@ -249,9 +249,9 @@ export const thumbnailStyles = {
       ? "pointer-events-none absolute inset-0 bg-black/20"
       : "hidden",
   recipeTitleBand: (theme: SiteTheme) =>
-    theme === "paletteLight" ? "bg-[#7A8864]/95" : "bg-neutral-700/95",
+    theme === "paletteLight" ? "bg-[#556145]/95" : "bg-neutral-700/95",
   recipeTitleBandLayout:
-    "absolute inset-x-0 bottom-0 flex h-1/4 min-h-14 flex-col justify-center px-3",
+    "absolute inset-x-0 bottom-0 flex h-[22%] min-h-12 flex-col justify-center px-3",
   recipeTitleBandLayoutMicro:
     "absolute inset-x-0 bottom-0 flex h-[38%] min-h-0 flex-col justify-center px-1.5",
   recipeTitle: "truncate text-base font-bold leading-tight text-[#FAF7F2]",
@@ -259,7 +259,7 @@ export const thumbnailStyles = {
   recipeTitleMicro: "truncate text-[10px] font-bold leading-tight text-[#FAF7F2]",
   recipeSubtitle: (theme: SiteTheme) =>
     theme === "paletteLight" ? "text-[#FAF7F2]/75" : "text-neutral-300",
-  recipeSubtitleLayout: "mt-1 truncate text-xs font-semibold leading-tight",
+  recipeSubtitleLayout: "mt-0.5 truncate text-xs font-semibold leading-tight",
   recipeSubtitleLayoutCompact:
     "mt-0.5 truncate text-[10px] font-semibold leading-tight",
   recipeSubtitleLayoutMicro:

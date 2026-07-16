@@ -341,7 +341,7 @@ export const recipeBrowserStyles = {
           : "border-neutral-300 bg-white/90 text-neutral-800 hover:bg-white"
     }`,
   imageCaptureButton: (theme: SiteTheme) =>
-    `hidden h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-md border px-2 text-center text-xs font-bold leading-none ${shadowClasses.subtle} transition-colors max-sm:inline-flex ${
+    `hidden h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-md border px-2 text-center text-xs font-bold leading-none ${shadowClasses.subtle} transition-colors ${
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-950/85 text-neutral-200 hover:bg-neutral-950"
         : theme === "paletteLight"
@@ -433,9 +433,12 @@ export const recipeBrowserStyles = {
           ? "border-[#C8C0B5] bg-[#FAF7F2]"
           : "border-neutral-300 bg-neutral-100"
     }`,
-  tabs: (theme: SiteTheme) => `${segmentedToggleStyles.shell(theme)} max-md:rounded-none`,
+  tabs: (theme: SiteTheme) =>
+    `${segmentedToggleStyles.shell(theme)} max-md:rounded-none ${
+      theme === "paletteLight" ? "!border-[#556145] !bg-[#556145]" : ""
+    }`,
   tab: (theme: SiteTheme, selected: boolean) =>
-    `${segmentedToggleStyles.option(theme, selected)} max-md:rounded-none`,
+    segmentedToggleStyles.option(theme, selected),
   filterRail: (theme: SiteTheme) =>
     `col-span-2 rounded-md p-3 ${shadowClasses.subtle} max-lg:hidden ${
       theme === "dark"
@@ -524,7 +527,7 @@ export const recipeBrowserStyles = {
   emptyStateBody: "mt-2 max-w-xl text-base leading-[1.5] max-sm:text-sm",
   detailShell: "mt-6 grid gap-6 max-sm:mt-4 max-sm:gap-4",
   recipeDetailHeroGrid:
-    "grid grid-cols-[minmax(180px,260px)_minmax(0,1fr)] gap-6 max-md:grid-cols-1 max-sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] max-sm:items-start max-sm:gap-3",
+    "grid grid-cols-[minmax(180px,260px)_minmax(0,1fr)] gap-6 max-md:grid-cols-1 max-sm:grid-cols-2 max-sm:items-start max-sm:gap-3",
   recipeDetailImageFrame:
     "aspect-square overflow-hidden rounded-md bg-neutral-800",
   detailImage: "h-full w-full object-cover",
@@ -532,7 +535,7 @@ export const recipeBrowserStyles = {
     "flex h-full w-full items-center justify-center px-4 text-center text-sm font-bold text-neutral-400",
   recipeDetailDescriptionWrap: "grid content-start",
   recipeDetailDescriptionPanel:
-    "h-[260px] grid-rows-[auto_minmax(0,1fr)] max-md:h-auto max-sm:min-h-[calc((100vw_-_4.25rem)/3)]",
+    "h-[260px] grid-rows-[auto_minmax(0,1fr)] max-md:h-auto max-sm:min-h-[42vw]",
   recipeDetailSplitGrid: "grid grid-cols-2 gap-6 max-md:grid-cols-1",
   detailSectionHeader: "flex flex-wrap items-center justify-between gap-3",
   detailSectionTitle: "text-sm font-bold uppercase tracking-wide",
