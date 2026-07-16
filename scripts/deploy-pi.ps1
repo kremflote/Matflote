@@ -35,6 +35,11 @@ if ($NoBuild) {
 
 $commands.Add("docker compose ps matflote-backend matflote-frontend")
 
+if ($Target -ne "frontend") {
+    $commands.Add("docker compose exec -T matflote-backend sh -c 'test -f /app/SeedImages/placeholders/recipe-photo-placeholder.png && echo OK packaged placeholder image || (echo MISSING packaged placeholder image; exit 1)'")
+    $commands.Add("docker compose exec -T matflote-backend sh -c 'test -f /data/images/placeholders/recipe-photo-placeholder.png && echo OK seeded placeholder image || (echo MISSING seeded placeholder image; ls -la /app/SeedImages/placeholders /data/images/placeholders 2>/dev/null || true; exit 1)'")
+}
+
 $remoteCommand = $commands -join " && "
 $sshArguments = @($HostName, $remoteCommand)
 
