@@ -81,7 +81,20 @@ const Modal = forwardRef<HTMLElement, ModalProps>(function Modal(
                 type="button"
                 onClick={onClose}
               >
-                x
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M6 6l12 12M18 6L6 18"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2.25"
+                  />
+                </svg>
               </button>
             )}
           </div>

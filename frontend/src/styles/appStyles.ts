@@ -87,6 +87,8 @@ export const siteColorClasses = {
     controlSelected:
       "border-white/[0.18] bg-white/[0.18] text-neutral-50 max-md:border-white/[0.24] max-md:bg-neutral-700",
     plannerControl: `border-white/[0.12] bg-white/[0.06] text-white ${plannerControlHoverClasses.dark}`,
+    cookbookFilterButton:
+      "border-white/[0.12] bg-neutral-400 text-neutral-950 hover:bg-neutral-300",
     cookbookAddButton:
       "border-neutral-700 bg-neutral-950 text-white hover:bg-neutral-900",
     ingredientThumbnailInteractive: plannerControlHoverClasses.dark,
@@ -114,8 +116,10 @@ export const siteColorClasses = {
       "text-neutral-600 hover:border-neutral-300 hover:bg-neutral-200 hover:text-neutral-900",
     controlSelected: "border-neutral-300 bg-neutral-200 text-neutral-900",
     plannerControl: `border-neutral-300 bg-white text-neutral-900 ${plannerControlHoverClasses.light}`,
+    cookbookFilterButton:
+      "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-100",
     cookbookAddButton:
-      "border-neutral-300 bg-neutral-200 text-neutral-950 hover:bg-neutral-300",
+      "border-[#EEC642] bg-[#FFD64F] text-neutral-950 hover:bg-[#EEC642]",
     ingredientThumbnailInteractive: plannerControlHoverClasses.light,
     plannerDateItem: "bg-neutral-200",
     plannerCounter: "border-neutral-200 bg-neutral-100 text-neutral-900",
@@ -141,6 +145,8 @@ export const siteColorClasses = {
       "text-[#FAF7F2] hover:border-[#FAF7F2]/45 hover:bg-[#FAF7F2]/15 hover:text-[#FAF7F2]",
     controlSelected: "border-[#FAF7F2]/70 bg-[#FAF7F2] text-[#7A8864]",
     plannerControl: `border-[#7A8864]/35 bg-[#FAF7F2]/35 text-[#556145] ${plannerControlHoverClasses.paletteLight}`,
+    cookbookFilterButton:
+      "border-[#7A8864]/35 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]",
     cookbookAddButton:
       "border-[#7A8864] bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]",
     ingredientThumbnailInteractive: plannerControlHoverClasses.paletteLight,
@@ -298,7 +304,7 @@ const focusBase =
 
 export const controlStyles = {
   modalCloseButton: (theme: SiteTheme) =>
-    `inline-flex h-9 items-center justify-center ${radiusClasses.figma6} px-3 text-xs font-bold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-9 w-9 shrink-0 -translate-y-1 items-center justify-center ${radiusClasses.figma6} p-0 transition-colors max-sm:-translate-y-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5 max-sm:[&_svg]:h-3 max-sm:[&_svg]:w-3 ${focusBase} ${siteColorClasses[theme].focus} ${
       theme === "dark"
         ? "bg-white/[0.08] text-neutral-200 hover:bg-white/[0.14]"
         : theme === "paletteLight"
@@ -330,7 +336,7 @@ export const controlStyles = {
           : "border-red-900 bg-red-900 text-white hover:bg-red-800"
     }`,
   compactSearchInput: (theme: SiteTheme) =>
-    `h-9 w-full ${radiusClasses.figma6} border px-3 text-sm font-semibold ${shadowClasses.subtle} outline-none placeholder:text-neutral-500 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `h-9 w-full ${radiusClasses.figma6} border px-3 text-sm font-semibold ${shadowClasses.subtle} outline-none placeholder:text-neutral-500 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none ${focusBase} ${siteColorClasses[theme].focus} ${
       theme === "dark"
         ? "border-white/[0.10] bg-neutral-200 text-neutral-900"
         : theme === "paletteLight"

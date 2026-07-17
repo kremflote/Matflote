@@ -56,18 +56,22 @@ function IngredientFilterPopover({
         {ingredients.length === 0 ? (
           <p className={recipeBrowserStyles.ingredientPickerEmpty(theme)}>{t.browser.noIngredientsFound}</p>
         ) : (
-          ingredients.map((ingredient) => (
-            <IngredientThumbnail
-              className={recipeBrowserStyles.ingredientPickerItem}
-              ingredient={ingredient}
-              key={ingredient.ingredientId}
-              mode="compact"
-              selected={selectedIngredientIds.includes(ingredient.ingredientId)}
-              selectedPresentation="muted"
-              theme={theme}
-              onClick={() => onToggleIngredient(ingredient.ingredientId)}
-            />
-          ))
+          ingredients.map((ingredient) => {
+            const isSelected = selectedIngredientIds.includes(ingredient.ingredientId);
+
+            return (
+              <IngredientThumbnail
+                className={recipeBrowserStyles.ingredientPickerItem}
+                ingredient={ingredient}
+                key={ingredient.ingredientId}
+                mode="compact"
+                selected={!isSelected}
+                selectedPresentation="muted"
+                theme={theme}
+                onClick={() => onToggleIngredient(ingredient.ingredientId)}
+              />
+            );
+          })
         )}
       </div>
     </div>

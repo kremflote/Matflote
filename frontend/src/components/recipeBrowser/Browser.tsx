@@ -194,14 +194,39 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
         </div>
         <div className={recipeBrowserStyles.searchFilterRow}>
           <div className={recipeBrowserStyles.searchControls}>
-            <input
-              aria-label={mode === "recipes" ? t.browser.searchRecipes : t.browser.searchIngredients}
-              className={recipeBrowserStyles.searchInput(theme)}
-              placeholder={t.common.search}
-              type="search"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-            />
+            <div className={recipeBrowserStyles.searchFieldShell}>
+              <input
+                aria-label={mode === "recipes" ? t.browser.searchRecipes : t.browser.searchIngredients}
+                className={`${recipeBrowserStyles.searchInput(theme)} ${recipeBrowserStyles.searchInputWithClear}`}
+                placeholder={t.common.search}
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+              {searchTerm.length > 0 && (
+                <button
+                  aria-label={t.common.clear}
+                  className={recipeBrowserStyles.searchClearButton(theme)}
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6 6l12 12M18 6L6 18"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2.25"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
             <div className={recipeBrowserStyles.filterButtonSlot}>
               <button
                 aria-label={t.filters.categories}
