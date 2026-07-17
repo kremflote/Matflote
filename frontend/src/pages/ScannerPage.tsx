@@ -398,7 +398,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
               </button>
             </>
           )}
-          footerClassName={scannerStyles.editorModalFooter}
+          footerClassName={scannerStyles.editorModalFooter(theme)}
           headerClassName={scannerStyles.editorModalHeader}
           panelClassName={scannerStyles.editorModalPanel(theme)}
           title={ingredientDraft.name || t.scanner.suggestedIngredient}

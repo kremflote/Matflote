@@ -713,13 +713,21 @@ export const scannerStyles = {
   saveButton: controlStyles.primaryButton,
   editorModalBackdrop: modalLayoutClasses.centeredBackdrop,
   editorModalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${responsiveClasses.mobileModalPanel} ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   editorModalHeader: "flex items-start justify-between gap-4",
   editorModalTitle: "text-2xl font-bold leading-tight max-sm:text-xl",
   editorModalCloseButton: controlStyles.modalCloseButton,
   editorModalBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
-  editorModalFooter: "flex flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap",
-  editorModalActionButton: "max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3 max-sm:text-sm",
+  editorModalFooter: (theme: SiteTheme) =>
+    `flex flex-wrap items-center justify-end gap-3 border-t pt-3 max-sm:flex-nowrap max-sm:[padding-bottom:env(safe-area-inset-bottom)] ${
+      theme === "dark"
+        ? "border-white/[0.10]"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5]"
+          : "border-neutral-200"
+    }`,
+  editorModalActionButton:
+    "max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3 max-sm:text-sm",
 } as const;
 
 export const priceStyles = {
@@ -779,8 +787,10 @@ export const priceStyles = {
           ? "text-[#7A8864]"
           : "text-neutral-500"
     }`,
-  rowPrice: "justify-self-end text-base font-extrabold max-sm:justify-self-start",
-  rowDate: "justify-self-end text-xs font-bold opacity-70 max-sm:justify-self-start",
+  rowPrice:
+    "justify-self-end text-base font-extrabold max-sm:justify-self-start",
+  rowDate:
+    "justify-self-end text-xs font-bold opacity-70 max-sm:justify-self-start",
 } as const;
 
 export const plannerControlsStyles = {
@@ -1094,7 +1104,7 @@ export const plannerPickerStyles = {
         ? "border-white/[0.10] bg-neutral-500 text-neutral-950 hover:bg-neutral-400"
         : theme === "paletteLight"
           ? "border-[#7A8864]/35 bg-[#C8C0B5] text-[#556145] hover:bg-[#A9BDD1]/40"
-        : "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
+          : "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
     }`,
   categoryButtonLabel: "max-[1100px]:sr-only",
   ingredientFilterChips:
