@@ -1,17 +1,18 @@
 import { useLanguage } from "../contexts";
 import { headerStyles, type SiteTheme } from "../styles/appStyles";
 
-export type PageId = "settings" | "weekPlanner" | "cookbook" | "scanner";
+export type PageId = "settings" | "weekPlanner" | "cookbook" | "scanner" | "prices";
 
 const navItems: Array<{
   id: PageId;
-  labelKey: "settings" | "planner" | "cookbook" | "scanner";
-  icon: "settings" | "calendar" | "book" | "barcode";
+  labelKey: "settings" | "planner" | "cookbook" | "scanner" | "prices";
+  icon: "settings" | "calendar" | "book" | "barcode" | "price";
 }> = [
   { id: "settings", labelKey: "settings", icon: "settings" },
   { id: "weekPlanner", labelKey: "planner", icon: "calendar" },
   { id: "cookbook", labelKey: "cookbook", icon: "book" },
   { id: "scanner", labelKey: "scanner", icon: "barcode" },
+  { id: "prices", labelKey: "prices", icon: "price" },
 ];
 
 type HeaderProps = {
@@ -91,7 +92,7 @@ function Header({
 function HeaderIcon({
   icon,
 }: {
-  icon: "settings" | "calendar" | "book" | "barcode" | "moon" | "sun";
+  icon: "settings" | "calendar" | "book" | "barcode" | "price" | "moon" | "sun";
 }) {
   if (icon === "settings") {
     return (
@@ -122,6 +123,14 @@ function HeaderIcon({
     return (
       <svg aria-hidden="true" className={headerStyles.icon} viewBox="0 0 24 24">
         <path d="M4 5h2v14H4V5Zm3 0h1v14H7V5Zm3 0h2v14h-2V5Zm3 0h1v14h-1V5Zm3 0h1v14h-1V5Zm2 0h2v14h-2V5Z" />
+      </svg>
+    );
+  }
+
+  if (icon === "price") {
+    return (
+      <svg aria-hidden="true" className={headerStyles.icon} viewBox="0 0 24 24">
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12l8 8-8.5 8.5a2 2 0 0 1-2.8 0L4.5 15.3a2 2 0 0 1 0-2.8L13 4H6.5a1.5 1.5 0 0 0 0 3H8v2H6.5A3.5 3.5 0 0 1 3 5.5h1Zm11.2 1.3-9.3 9.3 4.2 4.2 9.3-9.3-4.2-4.2Z" />
       </svg>
     );
   }

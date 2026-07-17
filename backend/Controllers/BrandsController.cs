@@ -1,6 +1,7 @@
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;
+using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,15 @@ public class BrandsController(DinnerPlannerContext context) : ControllerBase
         if (existingBrand is not null)
         {
             return Ok(ToDto(existingBrand));
+        }
+
+        var possibleDuplicate = LookupDuplicateDetector.FindNearDuplicate(
+            name,
+            await context.Brands.AsNoTracking().Select(brand => brand.Name).ToListAsync()
+        );
+        if (possibleDuplicate is not null)
+        {
+            return Conflict($"Possible duplicate: {possibleDuplicate}.");
         }
 
         var brand = new Brand { Name = name };

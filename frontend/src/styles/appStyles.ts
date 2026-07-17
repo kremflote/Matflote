@@ -624,8 +624,17 @@ export const scannerStyles = {
   nutritionGrid: "grid grid-cols-4 gap-2 max-md:grid-cols-2 max-sm:grid-cols-1",
   nutritionItem: (theme: SiteTheme) =>
     `rounded-md border px-2 py-1 text-xs font-semibold ${surfaceClasses.panel(theme)}`,
-  candidateSection: "grid gap-3 min-[1101px]:hidden",
+  candidateSection: "grid gap-3",
+  candidateHeader: "flex flex-wrap items-baseline gap-3",
   candidateTitle: "text-lg font-bold leading-tight",
+  candidateSubtitle: (theme: SiteTheme) =>
+    `text-sm font-semibold leading-tight ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
   candidateList: "grid gap-2",
   candidateButton: (theme: SiteTheme, selected: boolean) =>
     `grid w-full grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 rounded-md border p-3 text-left transition-colors max-[380px]:grid-cols-[3.25rem_minmax(0,1fr)] ${shadowClasses.subtle} ${focusBase} ${siteColorClasses[theme].focus} ${
@@ -702,6 +711,76 @@ export const scannerStyles = {
   colorInput:
     "h-12 w-full cursor-pointer rounded-md border border-transparent bg-transparent p-0",
   saveButton: controlStyles.primaryButton,
+  editorModalBackdrop: modalLayoutClasses.centeredBackdrop,
+  editorModalPanel: (theme: SiteTheme) =>
+    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${responsiveClasses.mobileModalPanel} ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  editorModalHeader: "flex items-start justify-between gap-4",
+  editorModalTitle: "text-2xl font-bold leading-tight max-sm:text-xl",
+  editorModalCloseButton: controlStyles.modalCloseButton,
+  editorModalBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
+  editorModalFooter: "flex flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap",
+  editorModalActionButton: "max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3 max-sm:text-sm",
+} as const;
+
+export const priceStyles = {
+  shell: "mx-auto grid w-full max-w-5xl gap-6 max-[1100px]:pb-20",
+  header: "grid gap-2",
+  title: (theme: SiteTheme) =>
+    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
+  intro: (theme: SiteTheme) =>
+    `max-w-2xl text-sm font-semibold leading-[1.5] ${
+      theme === "dark"
+        ? "text-neutral-300"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-600"
+    }`,
+  panel: (theme: SiteTheme) =>
+    `grid gap-4 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  form: "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_auto] items-end gap-3 max-md:grid-cols-2 max-sm:grid-cols-1",
+  field: "grid gap-2",
+  label: "text-sm font-bold leading-tight",
+  input: controlStyles.formField,
+  primaryButton: controlStyles.primaryButton,
+  secondaryButton: controlStyles.secondaryButton,
+  statusError: (theme: SiteTheme) =>
+    `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
+      theme === "dark"
+        ? "border-red-400/30 bg-red-500/10 text-red-200"
+        : theme === "paletteLight"
+          ? "border-red-700/25 bg-red-700/10 text-red-800"
+          : "border-red-200 bg-red-50 text-red-700"
+    }`,
+  emptyState: (theme: SiteTheme) =>
+    `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel(theme)}`,
+  grid: "grid gap-3",
+  ingredientGroup: (theme: SiteTheme) =>
+    `grid gap-3 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  ingredientHeader: "flex flex-wrap items-baseline justify-between gap-3",
+  ingredientName: "text-lg font-bold leading-tight",
+  latestPrice: (theme: SiteTheme) =>
+    `text-sm font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
+  priceRows: "grid gap-2",
+  priceRow: (theme: SiteTheme) =>
+    `grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold max-sm:grid-cols-1 max-sm:gap-1 ${
+      theme === "dark"
+        ? "bg-white/[0.05] text-neutral-200"
+        : theme === "paletteLight"
+          ? "bg-[#E5D5BC]/45 text-[#556145]"
+          : "bg-neutral-100 text-neutral-700"
+    }`,
+  rowMain: "grid min-w-0 gap-1",
+  rowStore: "min-w-0 truncate font-bold",
+  rowNote: (theme: SiteTheme) =>
+    `min-w-0 truncate text-xs font-semibold ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
+  rowPrice: "justify-self-end text-base font-extrabold max-sm:justify-self-start",
+  rowDate: "justify-self-end text-xs font-bold opacity-70 max-sm:justify-self-start",
 } as const;
 
 export const plannerControlsStyles = {

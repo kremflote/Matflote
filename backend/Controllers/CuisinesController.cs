@@ -1,6 +1,7 @@
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;
+using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,15 @@ public class CuisinesController(DinnerPlannerContext context) : ControllerBase
         if (existingCuisine is not null)
         {
             return Ok(ToDto(existingCuisine));
+        }
+
+        var possibleDuplicate = LookupDuplicateDetector.FindNearDuplicate(
+            name,
+            await context.Cuisines.AsNoTracking().Select(cuisine => cuisine.Name).ToListAsync()
+        );
+        if (possibleDuplicate is not null)
+        {
+            return Conflict($"Possible duplicate: {possibleDuplicate}.");
         }
 
         var cuisine = new Cuisine { Name = name };

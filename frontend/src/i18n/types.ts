@@ -187,9 +187,31 @@ export type TranslationDictionary = {
     cookbook: string;
     home: string;
     planner: string;
+    prices: string;
     primary: string;
     scanner: string;
     settings: string;
+  };
+  prices: {
+    addPrice: string;
+    couldNotLoad: string;
+    couldNotSave: string;
+    date: string;
+    empty: string;
+    history: string;
+    ingredient: string;
+    latest: string;
+    note: string;
+    notePlaceholder: string;
+    pageIntro: string;
+    pageTitle: string;
+    price: string;
+    priceInformation: string;
+    pricePlaceholder: string;
+    savePrice: string;
+    selectStore: string;
+    store: string;
+    storePlaceholder: string;
   };
   scanner: {
     cameraPermissionDenied: string;
@@ -219,6 +241,7 @@ export type TranslationDictionary = {
     pageIntroBeforeKassalapp: string;
     pageTitle: string;
     priceLabel: string;
+    storeLabel: string;
     price: (price: number) => string;
     productImageLabel: string;
     protein: string;
@@ -228,6 +251,7 @@ export type TranslationDictionary = {
     saveIngredientBody: (name: string) => string;
     saveIngredientTitle: string;
     savingIngredient: string;
+    scanCandidatesHelp: string;
     scanCandidatesTitle: string;
     scannerFound: (ean: string) => string;
     scannerReady: string;

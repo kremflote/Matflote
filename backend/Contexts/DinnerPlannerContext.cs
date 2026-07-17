@@ -10,6 +10,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     public DbSet<Brand> Brands => Set<Brand>();
     public DbSet<Cuisine> Cuisines => Set<Cuisine>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
+    public DbSet<IngredientPricePoint> IngredientPricePoints => Set<IngredientPricePoint>();
     public DbSet<IngredientTagAssignment> IngredientTagAssignments => Set<IngredientTagAssignment>();
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<RecipeComponent> RecipeComponents => Set<RecipeComponent>();
@@ -21,6 +22,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     public DbSet<Dip> Dips => Set<Dip>();
     public DbSet<Side> Sides => Set<Side>();
     public DbSet<SpiceMix> SpiceMixes => Set<SpiceMix>();
+    public DbSet<Store> Stores => Set<Store>();
     public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
     public DbSet<MealPlanRecipe> MealPlanRecipes => Set<MealPlanRecipe>();
 
@@ -93,6 +95,34 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 .WithMany(ingredient => ingredient.Tags)
                 .HasForeignKey(ingredientTag => ingredientTag.IngredientId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Store>(entity =>
+        {
+            entity.Property(store => store.Name).HasMaxLength(120);
+            entity.HasIndex(store => store.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<IngredientPricePoint>(entity =>
+        {
+            entity.Property(pricePoint => pricePoint.Price).HasPrecision(10, 2);
+            entity.Property(pricePoint => pricePoint.Note).HasMaxLength(500);
+
+            entity.HasOne(pricePoint => pricePoint.Ingredient)
+                .WithMany()
+                .HasForeignKey(pricePoint => pricePoint.IngredientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(pricePoint => pricePoint.Store)
+                .WithMany(store => store.PricePoints)
+                .HasForeignKey(pricePoint => pricePoint.StoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(pricePoint => new
+            {
+                pricePoint.IngredientId,
+                pricePoint.Date
+            });
         });
 
         modelBuilder.Entity<Recipe>(entity =>
@@ -238,6 +268,18 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             new { CuisineId = 8, Name = "Japanese" },
             new { CuisineId = 9, Name = "Vietnamese" },
             new { CuisineId = 10, Name = "Other" }
+        );
+
+        modelBuilder.Entity<Store>().HasData(
+            new { StoreId = 1, Name = "Rema 1000" },
+            new { StoreId = 2, Name = "Coop Mega" },
+            new { StoreId = 3, Name = "Coop Prix" },
+            new { StoreId = 4, Name = "Coop Obs" },
+            new { StoreId = 5, Name = "Coop Extra" },
+            new { StoreId = 6, Name = "Meny" },
+            new { StoreId = 7, Name = "Kiwi" },
+            new { StoreId = 8, Name = "Bunnpris" },
+            new { StoreId = 9, Name = "Europris" }
         );
 
         modelBuilder.Entity<Ingredient>().HasData(

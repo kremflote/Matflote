@@ -3,6 +3,7 @@ using System;
 using DinnerPlanner.Api.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace backend.Migrations
 {
     [DbContext(typeof(DinnerPlannerContext))]
-    partial class DinnerPlannerContextModelSnapshot : ModelSnapshot
+    [Migration("20260717182908_AddIngredientPriceTracking")]
+    partial class AddIngredientPriceTracking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -512,53 +515,6 @@ namespace backend.Migrations
                         .IsUnique();
 
                     b.ToTable("Stores");
-
-                    b.HasData(
-                        new
-                        {
-                            StoreId = 1,
-                            Name = "Rema 1000"
-                        },
-                        new
-                        {
-                            StoreId = 2,
-                            Name = "Coop Mega"
-                        },
-                        new
-                        {
-                            StoreId = 3,
-                            Name = "Coop Prix"
-                        },
-                        new
-                        {
-                            StoreId = 4,
-                            Name = "Coop Obs"
-                        },
-                        new
-                        {
-                            StoreId = 5,
-                            Name = "Coop Extra"
-                        },
-                        new
-                        {
-                            StoreId = 6,
-                            Name = "Meny"
-                        },
-                        new
-                        {
-                            StoreId = 7,
-                            Name = "Kiwi"
-                        },
-                        new
-                        {
-                            StoreId = 8,
-                            Name = "Bunnpris"
-                        },
-                        new
-                        {
-                            StoreId = 9,
-                            Name = "Europris"
-                        });
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.Dessert", b =>

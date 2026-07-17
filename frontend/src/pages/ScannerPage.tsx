@@ -1,12 +1,16 @@
 import type { IScannerControls } from "@zxing/browser";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import ConfirmationDialog from "../components/ConfirmationDialog";
-import { useBrands, useIngredients, useLanguage } from "../contexts";
+import Modal from "../components/Modal";
+import CreatableSelect from "../components/recipeBrowser/CreatableSelect";
+import { useBrands, useIngredients, useLanguage, useStores } from "../contexts";
 import type { IngredientTag, INutritionFacts } from "../interfaces/IIngredient";
+import type { IStore } from "../interfaces/ILookup";
 import type { IProductLookupNutrition, IProductLookupResult } from "../interfaces/IProductLookup";
-import { brandService, imageUploadService, ingredientService, productLookupService } from "../services";
+import { brandService, imageUploadService, ingredientPriceService, ingredientService, productLookupService, storeService } from "../services";
 import { getApiAssetUrl } from "../services/apiClient";
 import { pageStyles, scannerStyles, type SiteTheme } from "../styles/appStyles";
+import { todayInputValue } from "../utils/priceFormatting";
 import { ingredientTagGroups } from "../components/recipeBrowser/formOptions";
 import { GroupedCheckboxPanel } from "../components/recipeBrowser/BrowserFilterGroups";
 
@@ -18,6 +22,7 @@ type IngredientCandidate = {
   id: string;
   name: string;
   brandName: string;
+  storeName: string;
   price: number | null;
   imageUrl: string | null;
   nutritionPer100: INutritionFacts | null;
@@ -28,6 +33,8 @@ type IngredientCandidate = {
 type IngredientDraft = {
   name: string;
   brandName: string;
+  storeName: string;
+  storeId: number | null;
   price: string;
   imageUrl: string | null;
   imageFile: File | null;
@@ -38,6 +45,7 @@ type IngredientDraft = {
 function ScannerPage({ theme }: ScannerPageProps) {
   const { t } = useLanguage();
   const { brands, refreshBrands } = useBrands();
+  const { stores } = useStores();
   const { refreshIngredients } = useIngredients();
   const [ean, setEan] = useState("");
   const [products, setProducts] = useState<IProductLookupResult[]>([]);
@@ -50,7 +58,9 @@ function ScannerPage({ theme }: ScannerPageProps) {
   const [cameraStatus, setCameraStatus] = useState<string | null>(null);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [ingredientDraft, setIngredientDraft] = useState<IngredientDraft | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
+  const editorTitleId = useId();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const scannerControlsRef = useRef<IScannerControls | null>(null);
   const lastScannedEanRef = useRef<string | null>(null);
@@ -61,12 +71,13 @@ function ScannerPage({ theme }: ScannerPageProps) {
     if (firstCandidate === undefined) {
       setSelectedCandidateId(null);
       setIngredientDraft(null);
+      setIsEditorOpen(false);
       return;
     }
 
     setSelectedCandidateId(firstCandidate.id);
-    setIngredientDraft(candidateToDraft(firstCandidate));
-  }, [candidates]);
+    setIngredientDraft(candidateToDraft(firstCandidate, stores));
+  }, [candidates, stores]);
 
   const lookupEan = useCallback(async (rawEan: string) => {
     const normalizedEan = rawEan.replace(/\D/g, "");
@@ -101,7 +112,8 @@ function ScannerPage({ theme }: ScannerPageProps) {
 
   const selectCandidate = (candidate: IngredientCandidate) => {
     setSelectedCandidateId(candidate.id);
-    setIngredientDraft(candidateToDraft(candidate));
+    setIngredientDraft(candidateToDraft(candidate, stores));
+    setIsEditorOpen(true);
   };
 
   const promptSaveIngredient = () => {
@@ -143,7 +155,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
         ? null
         : await imageUploadService.upload(ingredientDraft.imageFile, "ingredients");
 
-      await ingredientService.create({
+      const createdIngredient = await ingredientService.create({
         ingredientName,
         description: null,
         brandId: brand?.brandId ?? null,
@@ -154,8 +166,20 @@ function ScannerPage({ theme }: ScannerPageProps) {
         color: null,
       });
 
+      const scannedPrice = nullableNumber(ingredientDraft.price);
+      if (scannedPrice !== null && ingredientDraft.storeId !== null) {
+        await ingredientPriceService.create({
+          ingredientId: createdIngredient.ingredientId,
+          storeId: ingredientDraft.storeId,
+          price: scannedPrice,
+          date: todayInputValue(),
+          note: null,
+        });
+      }
+
       await refreshIngredients();
       setConfirmSaveOpen(false);
+      setIsEditorOpen(false);
       setCameraStatus(t.scanner.ingredientSaved(ingredientName));
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : t.scanner.lookupFailed);
@@ -318,7 +342,10 @@ function ScannerPage({ theme }: ScannerPageProps) {
 
           {candidates.length > 0 && ingredientDraft !== null && (
             <section className={scannerStyles.candidateSection}>
-              <h2 className={scannerStyles.candidateTitle}>{t.scanner.scanCandidatesTitle}</h2>
+              <div className={scannerStyles.candidateHeader}>
+                <h2 className={scannerStyles.candidateTitle}>{t.scanner.scanCandidatesTitle}</h2>
+                <span className={scannerStyles.candidateSubtitle(theme)}>{t.scanner.scanCandidatesHelp}</span>
+              </div>
               <div className={scannerStyles.candidateList}>
                 {candidates.map((candidate) => (
                   <button
@@ -340,25 +367,52 @@ function ScannerPage({ theme }: ScannerPageProps) {
                   </button>
                 ))}
               </div>
+            </section>
+          )}
+        </div>
+      </section>
 
-              <IngredientDraftEditor
-                draft={ingredientDraft}
-                theme={theme}
-                onChange={setIngredientDraft}
-              />
-
+      {isEditorOpen && ingredientDraft !== null && (
+        <Modal
+          backdropClassName={scannerStyles.editorModalBackdrop}
+          bodyClassName={scannerStyles.editorModalBody}
+          closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
+          closeLabel={t.common.close}
+          footer={(
+            <>
               <button
-                className={scannerStyles.saveButton(theme)}
+                className={`${scannerStyles.manualEntryButton(theme)} ${scannerStyles.editorModalActionButton}`}
+                disabled={isSavingIngredient}
+                type="button"
+                onClick={() => setIsEditorOpen(false)}
+              >
+                {t.common.cancel}
+              </button>
+              <button
+                className={`${scannerStyles.saveButton(theme)} ${scannerStyles.editorModalActionButton}`}
                 disabled={isSavingIngredient}
                 type="button"
                 onClick={promptSaveIngredient}
               >
                 {isSavingIngredient ? t.scanner.savingIngredient : t.scanner.saveIngredient}
               </button>
-            </section>
+            </>
           )}
-        </div>
-      </section>
+          footerClassName={scannerStyles.editorModalFooter}
+          headerClassName={scannerStyles.editorModalHeader}
+          panelClassName={scannerStyles.editorModalPanel(theme)}
+          title={ingredientDraft.name || t.scanner.suggestedIngredient}
+          titleClassName={scannerStyles.editorModalTitle}
+          titleId={editorTitleId}
+          onClose={() => setIsEditorOpen(false)}
+        >
+          <IngredientDraftEditor
+            draft={ingredientDraft}
+            theme={theme}
+            onChange={setIngredientDraft}
+          />
+        </Modal>
+      )}
 
       {confirmSaveOpen && ingredientDraft !== null && (
         <ConfirmationDialog
@@ -386,6 +440,7 @@ function IngredientDraftEditor({
   onChange: (draft: IngredientDraft) => void;
 }) {
   const { t } = useLanguage();
+  const { stores, refreshStores } = useStores();
   const imageInputId = useId();
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const imageUrl = getApiAssetUrl(imagePreviewUrl ?? draft.imageUrl);
@@ -443,6 +498,20 @@ function IngredientDraftEditor({
             onChange={(event) => onChange({ ...draft, brandName: event.target.value })}
           />
         </label>
+        <CreatableSelect
+          createLabel={t.common.createNew}
+          label={t.scanner.storeLabel}
+          options={stores.map((store) => ({ id: store.storeId, name: store.name }))}
+          placeholder={t.prices.selectStore}
+          theme={theme}
+          value={draft.storeId}
+          onChange={(storeId) => onChange({ ...draft, storeId })}
+          onCreate={async (name) => {
+            const store = await storeService.create({ name });
+            await refreshStores();
+            return { id: store.storeId, name: store.name };
+          }}
+        />
         <label className={scannerStyles.field}>
           <span className={scannerStyles.label}>{t.scanner.priceLabel}</span>
           <input
@@ -503,6 +572,7 @@ function buildIngredientCandidates(products: IProductLookupResult[]): Ingredient
         id: `${product.ean}-${product.store?.name ?? "store"}-${index}`,
         name,
         brandName,
+        storeName: product.store?.name ?? "",
         price: product.currentUnitPrice ?? product.currentPrice,
         imageUrl: product.imageUrl,
         nutritionPer100: toIngredientNutrition(product.nutritionPer100),
@@ -524,16 +594,27 @@ function buildIngredientCandidates(products: IProductLookupResult[]): Ingredient
     .slice(0, 6);
 }
 
-function candidateToDraft(candidate: IngredientCandidate): IngredientDraft {
+function candidateToDraft(candidate: IngredientCandidate, stores: IStore[]): IngredientDraft {
   return {
     name: candidate.name,
     brandName: candidate.brandName,
+    storeName: candidate.storeName,
+    storeId: findStoreId(candidate.storeName, stores),
     price: numberToInputValue(candidate.price),
     imageUrl: candidate.imageUrl,
     imageFile: null,
     tags: candidate.tags,
     nutritionPer100: candidate.nutritionPer100,
   };
+}
+
+function findStoreId(storeName: string, stores: IStore[]) {
+  const normalizedStoreName = storeName.trim().toLowerCase();
+  if (normalizedStoreName.length === 0) {
+    return null;
+  }
+
+  return stores.find((store) => store.name.toLowerCase() === normalizedStoreName)?.storeId ?? null;
 }
 
 function cleanIngredientName(name: string) {

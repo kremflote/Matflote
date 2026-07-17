@@ -148,6 +148,25 @@ export const recipeBrowserStyles = {
     "relative mt-6 grid min-w-0 content-start max-sm:mt-0 max-sm:gap-2",
   recipeImageLabel: "absolute -top-6 left-0 max-sm:static",
   recipeImageControl: "max-sm:mt-0",
+  ingredientEditorHeroGrid:
+    "grid grid-cols-[minmax(0,1fr)_minmax(220px,280px)] items-stretch gap-4 max-md:grid-cols-1",
+  ingredientEditorPrimaryStack: "grid min-w-0 content-stretch gap-4",
+  ingredientBrandPriceRow: "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-4 max-sm:grid-cols-1",
+  ingredientEditorImageField: "relative mt-6 grid min-w-0 content-stretch max-md:mt-0 max-md:gap-2",
+  ingredientEditorImageLabel: "absolute -top-6 left-0 max-md:static",
+  ingredientPriceToggleField: "grid min-w-0 gap-2",
+  ingredientPriceToggleButton: (theme: SiteTheme) =>
+    `${controlStyles.formField(theme)} flex w-full cursor-pointer items-center justify-center text-center font-semibold transition-colors ${
+      theme === "dark"
+        ? "hover:bg-white/[0.08]"
+        : theme === "paletteLight"
+          ? "hover:bg-[#E5D5BC]/55"
+          : "hover:bg-neutral-100"
+    }`,
+  ingredientPricePanel:
+    "grid gap-3 rounded-md border p-3",
+  ingredientPriceGrid:
+    "grid grid-cols-[minmax(0,1fr)_8rem_9rem] items-end gap-3 max-md:grid-cols-1",
   field: "grid gap-2",
   label: (theme: SiteTheme) =>
     `text-xs font-bold ${
@@ -353,9 +372,9 @@ export const recipeBrowserStyles = {
   desktopUploadLabel: "max-sm:hidden",
   mobileUploadLabel: "hidden max-sm:inline",
   compactIngredientImageControl:
-    "grid grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-3",
+    "relative grid h-full min-h-[15rem] items-stretch max-md:min-h-0 max-md:grid-cols-[5.5rem_minmax(0,1fr)] max-md:items-center max-md:gap-3",
   compactIngredientImagePreview: (theme: SiteTheme) =>
-    `flex h-[4.5rem] w-[4.5rem] items-center justify-center overflow-hidden rounded-md border ${shadowClasses.subtle} ${
+    `flex aspect-square h-full min-h-[15rem] w-full items-center justify-center overflow-hidden rounded-md border ${shadowClasses.subtle} max-md:h-[5.5rem] max-md:min-h-0 max-md:w-[5.5rem] ${
       theme === "dark"
         ? "border-white/[0.14] bg-white/[0.08]"
         : theme === "paletteLight"
@@ -364,9 +383,9 @@ export const recipeBrowserStyles = {
     }`,
   compactIngredientImage: "h-full w-full object-cover",
   compactIngredientImageFallback:
-    "text-[10px] font-black leading-none opacity-55",
+    "text-xl font-black leading-none opacity-55 max-md:text-xs",
   compactIngredientImageButton: (theme: SiteTheme) =>
-    `${controlStyles.secondaryButton(theme)} h-12 min-w-0 cursor-pointer px-4 text-sm`,
+    `${recipeBrowserStyles.imageUploadFloatingButton(theme)} absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-md:static max-md:translate-x-0 max-md:translate-y-0`,
   detailsPanel: (theme: SiteTheme) =>
     `grid gap-4 rounded-md border p-3 ${surfaceClasses.panel(theme)}`,
   formActions:
@@ -621,6 +640,33 @@ export const recipeBrowserStyles = {
           : "text-neutral-500"
     }`,
   ingredientDetailMetaValue: "min-w-0 truncate",
+  ingredientPriceForm:
+    "grid grid-cols-[minmax(0,1fr)_8rem_auto] items-end gap-3 max-sm:grid-cols-1",
+  ingredientPriceField: "grid gap-2",
+  ingredientPriceInput: (theme: SiteTheme) => controlStyles.formField(theme),
+  ingredientPriceButton: (theme: SiteTheme) =>
+    `${controlStyles.primaryButton(theme)} max-sm:w-full`,
+  ingredientPriceRows: "grid gap-2",
+  ingredientPriceRow: (theme: SiteTheme) =>
+    `grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold max-sm:grid-cols-1 max-sm:gap-1 ${
+      theme === "dark"
+        ? "bg-white/[0.05] text-neutral-200"
+        : theme === "paletteLight"
+          ? "bg-[#E5D5BC]/45 text-[#556145]"
+          : "bg-neutral-100 text-neutral-700"
+    }`,
+  ingredientPriceRowMain: "grid min-w-0 gap-1",
+  ingredientPriceStore: "min-w-0 truncate font-bold",
+  ingredientPriceNote: (theme: SiteTheme) =>
+    `min-w-0 truncate text-xs font-semibold ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
+  ingredientPriceValue: "justify-self-end text-base font-extrabold max-sm:justify-self-start",
+  ingredientPriceDate: "justify-self-end text-xs font-bold opacity-70 max-sm:justify-self-start",
   detailChipSection: "grid gap-2",
   detailChipSectionCompact: "grid gap-1",
   detailChipList: "flex flex-wrap gap-2",

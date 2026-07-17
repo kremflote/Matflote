@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useId, useState, type FormEvent } from "react";
-import { useBrands, useIngredients, useLanguage, useRecipes } from "../../contexts";
+import { useBrands, useIngredients, useLanguage, useRecipes, useStores } from "../../contexts";
 import type { IIngredient, IngredientTag, Vitamin } from "../../interfaces/IIngredient";
-import { brandService, imageUploadService, ingredientService } from "../../services";
+import { brandService, imageUploadService, ingredientPriceService, ingredientService, storeService } from "../../services";
 import { getApiAssetUrl } from "../../services/apiClient";
 import type { SiteTheme } from "../../styles/appStyles";
+import { todayInputValue } from "../../utils/priceFormatting";
 import { ingredientTagGroups, vitamins } from "./formOptions";
 import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import CreatableSelect from "./CreatableSelect";
@@ -105,6 +106,7 @@ function IngredientCreateForm({
   const isEditing = initialIngredient !== null;
   const { t } = useLanguage();
   const { brands, refreshBrands } = useBrands();
+  const { stores, refreshStores } = useStores();
   const { refreshIngredients } = useIngredients();
   const { refreshRecipes } = useRecipes();
   const imageInputId = useId();
@@ -140,6 +142,11 @@ function IngredientCreateForm({
     initialIngredient?.nutritionPer100?.vitamins ?? [],
   );
   const [showNutrition, setShowNutrition] = useState(false);
+  const [showPriceInformation, setShowPriceInformation] = useState(false);
+  const [priceStoreId, setPriceStoreId] = useState<number | null>(null);
+  const [priceValue, setPriceValue] = useState("");
+  const [priceDate, setPriceDate] = useState(todayInputValue());
+  const [priceNote, setPriceNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const handleCroppedFileChange = useCallback((file: File | null) => {
@@ -177,6 +184,15 @@ function IngredientCreateForm({
       return;
     }
 
+    const parsedPricePointValue = nullableNumber(priceValue);
+    if (
+      showPriceInformation &&
+      (priceStoreId === null || parsedPricePointValue === null || parsedPricePointValue <= 0 || priceDate.trim().length === 0)
+    ) {
+      setError(t.prices.couldNotSave);
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
 
@@ -206,10 +222,23 @@ function IngredientCreateForm({
         color: initialIngredient?.color ?? null,
       };
 
+      let ingredientId = initialIngredient?.ingredientId ?? null;
       if (isEditing) {
         await ingredientService.update(initialIngredient.ingredientId, request);
+        ingredientId = initialIngredient.ingredientId;
       } else {
-        await ingredientService.create(request);
+        const createdIngredient = await ingredientService.create(request);
+        ingredientId = createdIngredient.ingredientId;
+      }
+
+      if (showPriceInformation) {
+        await ingredientPriceService.create({
+          ingredientId: ingredientId!,
+          storeId: priceStoreId!,
+          price: parsedPricePointValue!,
+          date: priceDate,
+          note: priceNote.trim().length === 0 ? null : priceNote.trim(),
+        });
       }
 
       await refreshIngredients();
@@ -304,66 +333,137 @@ function IngredientCreateForm({
     </div>
   );
 
+  const priceInformationPanel = showPriceInformation && (
+    <section className={`${recipeBrowserStyles.ingredientPricePanel} ${recipeBrowserStyles.detailsPanel(theme)}`}>
+      <div className={recipeBrowserStyles.ingredientPriceGrid}>
+        <CreatableSelect
+          createLabel={t.common.createNew}
+          label={t.prices.store}
+          options={stores.map((store) => ({ id: store.storeId, name: store.name }))}
+          placeholder={t.prices.selectStore}
+          theme={theme}
+          value={priceStoreId}
+          onChange={setPriceStoreId}
+          onCreate={async (name) => {
+            const store = await storeService.create({ name });
+            await refreshStores();
+            return { id: store.storeId, name: store.name };
+          }}
+        />
+        <label className={recipeBrowserStyles.field}>
+          <span className={recipeBrowserStyles.label(theme)}>{t.prices.price}</span>
+          <input
+            className={recipeBrowserStyles.textField(theme)}
+            inputMode="decimal"
+            min="0"
+            placeholder={t.prices.pricePlaceholder}
+            step="0.01"
+            type="number"
+            value={priceValue}
+            onChange={(event) => setPriceValue(event.target.value)}
+          />
+        </label>
+        <label className={recipeBrowserStyles.field}>
+          <span className={recipeBrowserStyles.label(theme)}>{t.prices.date}</span>
+          <input
+            className={recipeBrowserStyles.textField(theme)}
+            type="date"
+            value={priceDate}
+            onChange={(event) => setPriceDate(event.target.value)}
+          />
+        </label>
+      </div>
+      <label className={recipeBrowserStyles.field}>
+        <span className={recipeBrowserStyles.label(theme)}>{t.prices.note}</span>
+        <input
+          className={recipeBrowserStyles.textField(theme)}
+          maxLength={500}
+          placeholder={t.prices.notePlaceholder}
+          value={priceNote}
+          onChange={(event) => setPriceNote(event.target.value)}
+        />
+      </label>
+    </section>
+  );
+
   return (
     <form className={recipeBrowserStyles.form} onSubmit={submitIngredient}>
       <div className={recipeBrowserStyles.formBodyScrollArea}>
         {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
 
         <div className={recipeBrowserStyles.ingredientCreateScrollArea(theme)}>
-          <div className={recipeBrowserStyles.formGrid}>
-            <label className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>
-                  {t.cookbook.name}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-                <span className={recipeBrowserStyles.inlineHint(theme)}>
-                  {ingredientName.length}/{INGREDIENT_NAME_MAX_LENGTH}
+          <div className={recipeBrowserStyles.ingredientEditorHeroGrid}>
+            <div className={recipeBrowserStyles.ingredientEditorPrimaryStack}>
+              <label className={recipeBrowserStyles.field}>
+                <span className={recipeBrowserStyles.label(theme)}>
+                    {t.cookbook.name}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+                  <span className={recipeBrowserStyles.inlineHint(theme)}>
+                    {ingredientName.length}/{INGREDIENT_NAME_MAX_LENGTH}
+                  </span>
                 </span>
-              </span>
-              <input
-                className={recipeBrowserStyles.textField(theme)}
-                maxLength={INGREDIENT_NAME_MAX_LENGTH}
-                required
-                type="text"
-                value={ingredientName}
-                onChange={(event) => setIngredientName(event.target.value)}
-              />
-            </label>
+                <input
+                  className={recipeBrowserStyles.textField(theme)}
+                  maxLength={INGREDIENT_NAME_MAX_LENGTH}
+                  required
+                  type="text"
+                  value={ingredientName}
+                  onChange={(event) => setIngredientName(event.target.value)}
+                />
+              </label>
 
-            <CreatableSelect
-              createLabel={t.common.createNew}
-              label={t.cookbook.brand}
-              options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
-              placeholder={t.cookbook.selectBrand}
-              theme={theme}
-              value={brandId}
-              onChange={setBrandId}
-              onCreate={async (name) => {
-                const brand = await brandService.create({ name });
-                await refreshBrands();
-                return { id: brand.brandId, name: brand.name };
-              }}
-              onDeleteOption={async (option) => {
-                await brandService.delete(option.id);
-                await refreshBrands();
-                await refreshIngredients();
-                await refreshRecipes();
-              }}
-            />
+              <div className={recipeBrowserStyles.ingredientBrandPriceRow}>
+                <CreatableSelect
+                  createLabel={t.common.createNew}
+                  label={t.cookbook.brand}
+                  options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
+                  placeholder={t.cookbook.selectBrand}
+                  theme={theme}
+                  value={brandId}
+                  onChange={setBrandId}
+                  onCreate={async (name) => {
+                    const brand = await brandService.create({ name });
+                    await refreshBrands();
+                    return { id: brand.brandId, name: brand.name };
+                  }}
+                  onDeleteOption={async (option) => {
+                    await brandService.delete(option.id);
+                    await refreshBrands();
+                    await refreshIngredients();
+                    await refreshRecipes();
+                  }}
+                />
 
-            <section className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.nutrition}</span>
-              <button
-                aria-expanded={showNutrition}
-                className={recipeBrowserStyles.detailsToggleFull(theme)}
-                type="button"
-                onClick={() => setShowNutrition((currentValue) => !currentValue)}
-              >
-                {showNutrition ? t.cookbook.hideNutrition : t.cookbook.addNutrition}
-              </button>
-              {showNutrition && <div className="md:hidden">{nutritionPanel}</div>}
-            </section>
+                <section className={recipeBrowserStyles.ingredientPriceToggleField}>
+                  <span className={recipeBrowserStyles.label(theme)}>{t.prices.priceInformation}</span>
+                  <button
+                    aria-expanded={showPriceInformation}
+                    className={recipeBrowserStyles.ingredientPriceToggleButton(theme)}
+                    type="button"
+                    onClick={() => setShowPriceInformation((currentValue) => !currentValue)}
+                  >
+                    {showPriceInformation ? t.common.close : t.prices.addPrice}
+                  </button>
+                </section>
+              </div>
 
-            <section className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.image}</span>
+              {priceInformationPanel}
+
+              <section className={recipeBrowserStyles.field}>
+                <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.nutrition}</span>
+                <button
+                  aria-expanded={showNutrition}
+                  className={recipeBrowserStyles.detailsToggleFull(theme)}
+                  type="button"
+                  onClick={() => setShowNutrition((currentValue) => !currentValue)}
+                >
+                  {showNutrition ? t.cookbook.hideNutrition : t.cookbook.addNutrition}
+                </button>
+                {showNutrition && <div className="md:hidden">{nutritionPanel}</div>}
+              </section>
+            </div>
+
+            <section className={recipeBrowserStyles.ingredientEditorImageField}>
+              <span className={recipeBrowserStyles.ingredientEditorImageLabel}>{t.cookbook.image}</span>
               <CompactIngredientImagePicker
                 inputId={imageInputId}
                 initialImageUrl={initialIngredient?.imageUrl}
