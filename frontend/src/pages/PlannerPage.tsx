@@ -246,38 +246,40 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           ))}
         </div>
       )}
-      <PlannerControls
-        anchorLabel={getAnchorLabel(anchorDate, viewMode, locale, t.planner.weekLabel)}
-        anchorYear={getAnchorYear(anchorDate, locale)}
-        isClearRangeRunning={plannerAction === "clear"}
-        isExportRangeRunning={isGroceryListLoading}
-        isGenerateRangeRunning={plannerAction === "generate"}
-        isRangeBusy={mealPlanIsLoading}
-        theme={theme}
-        viewMode={viewMode}
-        onClearRange={requestClearCurrentRange}
-        onExportRange={openGroceryExportDialog}
-        onGenerateRange={requestGenerateCurrentRange}
-        onNextRange={moveToNextRange}
-        onOpenPrepHelper={() => setIsPrepHelperOpen(true)}
-        onPreviousRange={moveToPreviousRange}
-        onViewModeChange={changeViewMode}
-      />
-      {plannerActionError !== null && (
-        <p className={plannerControlsStyles.statusError(theme)}>{plannerActionError}</p>
-      )}
-      <MealCalendar
-        anchorDate={anchorDate}
-        dates={visibleDates}
-        getEntryForSlot={getEntryForSlot}
-        isLoading={mealPlanIsLoading}
-        loadError={initError === null ? null : t.planner.couldNotLoadMealPlan}
-        mealSlots={visibleMealSlots}
-        onSlotClick={(date, slot) => setSelectedSlot({ date, slot })}
-        recipesById={recipesById}
-        theme={theme}
-        viewMode={viewMode}
-      />
+      <div className={plannerControlsStyles.viewport}>
+        <PlannerControls
+          anchorLabel={getAnchorLabel(anchorDate, viewMode, locale, t.planner.weekLabel)}
+          anchorYear={getAnchorYear(anchorDate, locale)}
+          isClearRangeRunning={plannerAction === "clear"}
+          isExportRangeRunning={isGroceryListLoading}
+          isGenerateRangeRunning={plannerAction === "generate"}
+          isRangeBusy={mealPlanIsLoading}
+          theme={theme}
+          viewMode={viewMode}
+          onClearRange={requestClearCurrentRange}
+          onExportRange={openGroceryExportDialog}
+          onGenerateRange={requestGenerateCurrentRange}
+          onNextRange={moveToNextRange}
+          onOpenPrepHelper={() => setIsPrepHelperOpen(true)}
+          onPreviousRange={moveToPreviousRange}
+          onViewModeChange={changeViewMode}
+        />
+        {plannerActionError !== null && (
+          <p className={plannerControlsStyles.statusError(theme)}>{plannerActionError}</p>
+        )}
+        <MealCalendar
+          anchorDate={anchorDate}
+          dates={visibleDates}
+          getEntryForSlot={getEntryForSlot}
+          isLoading={mealPlanIsLoading}
+          loadError={initError === null ? null : t.planner.couldNotLoadMealPlan}
+          mealSlots={visibleMealSlots}
+          onSlotClick={(date, slot) => setSelectedSlot({ date, slot })}
+          recipesById={recipesById}
+          theme={theme}
+          viewMode={viewMode}
+        />
+      </div>
       {selectedSlot !== null && (
         <PlannerRecipePickerModal
           date={selectedSlot.date}

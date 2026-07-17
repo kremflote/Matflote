@@ -442,46 +442,54 @@ function PlannerRecipePickerModal({
       descriptionClassName={plannerPickerStyles.subtitle(theme)}
       footer={
         <>
-          {entry !== undefined && (
-            <button
-              className={plannerPickerStyles.removeButton(theme)}
-              disabled={isSaving || isRemoving}
-              type="button"
-              onClick={() => setIsConfirmingRemove(true)}
-            >
-              {isRemoving ? t.planner.removing : t.planner.removeMeal}
-            </button>
-          )}
-          {phase === "main" ? (
+          <PlannerRecipePickerSelection
+            mainRecipe={mainRecipe}
+            supplementaryRecipes={supplementaryRecipes}
+            theme={theme}
+            onToggleSupplementaryRecipe={toggleSupplementaryRecipe}
+          />
+          <div className={plannerPickerStyles.footerActions}>
+            {entry !== undefined && (
+              <button
+                className={plannerPickerStyles.removeButton(theme)}
+                disabled={isSaving || isRemoving}
+                type="button"
+                onClick={() => setIsConfirmingRemove(true)}
+              >
+                {isRemoving ? t.planner.removing : t.planner.removeMeal}
+              </button>
+            )}
+            {phase === "main" ? (
+              <button
+                className={plannerPickerStyles.primaryButton(theme)}
+                disabled={mainRecipeId === null || isSaving || isRemoving}
+                type="button"
+                onClick={confirmHighlightedMainRecipe}
+              >
+                {t.planner.chooseSides}
+              </button>
+            ) : (
+              <button
+                className={plannerPickerStyles.secondaryButton(theme)}
+                disabled={isSaving || isRemoving}
+                type="button"
+                onClick={() => {
+                  setHighlightedMainRecipeId(mainRecipeId);
+                  setPhase("main");
+                }}
+              >
+                {t.planner.backToMain}
+              </button>
+            )}
             <button
               className={plannerPickerStyles.primaryButton(theme)}
-              disabled={mainRecipeId === null || isSaving || isRemoving}
+              disabled={mainRecipe === null || isSaving || isRemoving}
               type="button"
-              onClick={confirmHighlightedMainRecipe}
+              onClick={saveMealSlot}
             >
-              {t.planner.chooseSides}
+              {isSaving ? t.common.saving : t.planner.saveMeal}
             </button>
-          ) : (
-            <button
-              className={plannerPickerStyles.secondaryButton(theme)}
-              disabled={isSaving || isRemoving}
-              type="button"
-              onClick={() => {
-                setHighlightedMainRecipeId(mainRecipeId);
-                setPhase("main");
-              }}
-            >
-              {t.planner.backToMain}
-            </button>
-          )}
-          <button
-            className={plannerPickerStyles.primaryButton(theme)}
-            disabled={mainRecipe === null || isSaving || isRemoving}
-            type="button"
-            onClick={saveMealSlot}
-          >
-            {isSaving ? t.common.saving : t.planner.saveMeal}
-          </button>
+          </div>
         </>
       }
       footerClassName={plannerPickerStyles.footer}
@@ -504,11 +512,15 @@ function PlannerRecipePickerModal({
             onChange={(event) => setSearchTerm(event.target.value)}
           />
           <button
+            aria-label={t.filters.categories}
             className={plannerPickerStyles.categoryButton(theme)}
             type="button"
             onClick={() => setIsCategoryFilterOpen(true)}
           >
-            {t.filters.categories}
+            <CategoryIcon />
+            <span className={plannerPickerStyles.categoryButtonLabel}>
+              {t.filters.categories}
+            </span>
           </button>
           <button
             aria-label={t.browser.openIngredientFilter}
@@ -575,24 +587,19 @@ function PlannerRecipePickerModal({
           />
         )}
 
-        <div className={plannerPickerStyles.bodyGrid}>
-          <PlannerRecipePickerGrid
-            highlightedMainRecipeId={highlightedMainRecipeId}
-            phase={phase}
-            recipes={visibleRecipes}
-            supplementaryRecipeIds={supplementaryRecipeIds}
-            theme={theme}
-            onSelectMainRecipe={highlightMainRecipe}
-            onToggleSupplementaryRecipe={toggleSupplementaryRecipe}
-          />
+        <div className={plannerPickerStyles.bodyScrollFrame}>
+          <div className={plannerPickerStyles.bodyGrid}>
+            <PlannerRecipePickerGrid
+              highlightedMainRecipeId={highlightedMainRecipeId}
+              phase={phase}
+              recipes={visibleRecipes}
+              supplementaryRecipeIds={supplementaryRecipeIds}
+              theme={theme}
+              onSelectMainRecipe={highlightMainRecipe}
+              onToggleSupplementaryRecipe={toggleSupplementaryRecipe}
+            />
+          </div>
         </div>
-
-        <PlannerRecipePickerSelection
-          mainRecipe={mainRecipe}
-          supplementaryRecipes={supplementaryRecipes}
-          theme={theme}
-          onToggleSupplementaryRecipe={toggleSupplementaryRecipe}
-        />
 
         {saveError !== null && (
           <p className={plannerPickerStyles.statusErrorWithOffset(theme)}>{saveError}</p>
@@ -650,5 +657,18 @@ function trapFocus(event: KeyboardEvent, container: HTMLElement | null) {
     firstElement.focus();
   }
 }
+
+function CategoryIcon() {
+  return (
+    <svg aria-hidden="true" className={plannerControlsIconClassName} viewBox="0 0 24 24">
+      <path
+        d="M4 5.5h7v7H4v-7Zm9 0h7v7h-7v-7Zm-9 9h7v4H4v-4Zm9 0h7v4h-7v-4Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+const plannerControlsIconClassName = "h-4 w-4 fill-current";
 
 export default PlannerRecipePickerModal;

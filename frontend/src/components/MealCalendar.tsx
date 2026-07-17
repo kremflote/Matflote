@@ -37,7 +37,7 @@ function MealCalendar({
   const weekDayLabels = t.calendar.weekdaysShort;
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const mediaQuery = window.matchMedia("(max-width: 1100px)");
     const updateCanCollapseDays = () => setCanCollapseDays(mediaQuery.matches);
 
     updateCanCollapseDays();
