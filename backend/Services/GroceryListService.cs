@@ -96,31 +96,31 @@ public class GroceryListService(DinnerPlannerContext context)
         return new GroceryListDto(from, to, DateTimeOffset.UtcNow, sections);
     }
 
-    private static string GetSectionName(IEnumerable<IngredientTag> tags)
+    private static string GetSectionName(IEnumerable<string> tags)
     {
-        var tagSet = tags.ToHashSet();
+        var tagSet = tags.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        if (tagSet.Overlaps([IngredientTag.Vegetable, IngredientTag.Fruit, IngredientTag.LeafyGreen, IngredientTag.Herb]))
+        if (tagSet.Overlaps(["Vegetable", "Fruit", "Berry", "RootVegetable", "LeafyGreen", "Herb"]))
         {
             return "Produce";
         }
 
-        if (tagSet.Overlaps([IngredientTag.Chicken, IngredientTag.Fish, IngredientTag.Beef, IngredientTag.Lamb, IngredientTag.Mince]))
+        if (tagSet.Overlaps(["Chicken", "Fish", "Beef", "Lamb", "Mince"]))
         {
             return "Protein";
         }
 
-        if (tagSet.Contains(IngredientTag.Dairy))
+        if (tagSet.Contains("Dairy"))
         {
             return "Dairy";
         }
 
-        if (tagSet.Contains(IngredientTag.Frozen))
+        if (tagSet.Contains("Frozen"))
         {
             return "Frozen";
         }
 
-        if (tagSet.Overlaps([IngredientTag.Grain, IngredientTag.Spice, IngredientTag.Sauce, IngredientTag.Pantry]))
+        if (tagSet.Overlaps(["Grain", "Bread", "Spice", "Sauce", "Dip", "Pantry"]))
         {
             return "Pantry";
         }
@@ -221,7 +221,7 @@ public class GroceryListService(DinnerPlannerContext context)
         decimal? Amount,
         MeasurementUnit Unit,
         string SourceRecipe,
-        IReadOnlyCollection<IngredientTag> Tags
+        IReadOnlyCollection<string> Tags
     );
 
     private record GroceryListItemWithSection(

@@ -115,4 +115,8 @@ const ingredientTagByIndex: IngredientTag[] = [
   "Pantry",
   "Frozen",
   "LeafyGreen",
+  "Berry",
+  "RootVegetable",
+  "Bread",
+  "Dip",
 ];

@@ -31,7 +31,7 @@ export const recipeBrowserStyles = {
     }`,
   headerActions:
     "col-span-10 flex items-center justify-end gap-3 pt-1 max-[1100px]:contents",
-  headerActionButtonSlot: "flex shrink-0 max-[1100px]:w-full",
+  headerActionButtonSlot: "flex shrink-0 max-[1100px]:contents",
   headerModeToggleSlot: `${sizeClasses.thumbnailControlWidth} max-[1100px]:hidden`,
   headerModeToggleStackedSlot: `hidden ${sizeClasses.thumbnailControlWidth} max-[1100px]:hidden`,
   mobileModeToggleDock:
@@ -516,6 +516,14 @@ export const recipeBrowserStyles = {
           : "text-neutral-400"
     }`,
   checkbox: "h-4 w-4 rounded border-neutral-400 accent-neutral-500",
+  addTagButton: (theme: SiteTheme) =>
+    `flex items-center justify-start gap-2 rounded-md border-0 bg-transparent p-0 text-left text-xs font-semibold transition-colors before:flex before:h-4 before:w-4 before:items-center before:justify-center before:rounded before:text-[10px] before:font-bold before:content-['+'] disabled:cursor-not-allowed disabled:opacity-45 ${
+      theme === "dark"
+        ? "text-neutral-300 hover:text-neutral-100 before:bg-white/[0.10] before:text-neutral-200"
+        : theme === "paletteLight"
+          ? "text-[#556145] hover:text-[#7A8864] before:bg-[#7A8864] before:text-[#FAF7F2]"
+          : "text-emerald-800 hover:text-emerald-950 before:bg-emerald-100 before:text-emerald-900"
+    }`,
   resultsWithFilters: "col-span-10 max-[1100px]:col-span-12",
   recipeGrid:
     `grid grid-cols-3 gap-3 min-[641px]:max-[1100px]:grid-cols-4 ${sizeClasses.portableBottomNavOffset} max-md:grid-cols-2 max-[380px]:grid-cols-1`,
@@ -643,6 +651,9 @@ export const recipeBrowserStyles = {
           : "text-neutral-500"
     }`,
   ingredientDetailMetaValue: "min-w-0 truncate",
+  ingredientDetailActionButton: (theme: SiteTheme) =>
+    `${controlStyles.primaryButton(theme)} h-10 min-w-0 px-3 text-xs max-sm:h-10 max-sm:w-full`,
+  ingredientPriceDialogForm: "grid gap-3",
   ingredientPriceForm:
     "grid grid-cols-[minmax(0,1fr)_8rem_auto] items-end gap-3 max-sm:grid-cols-1",
   ingredientPriceField: "grid gap-2",

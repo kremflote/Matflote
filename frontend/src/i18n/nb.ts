@@ -6,6 +6,7 @@ export const nb: TranslationDictionary = {
     },
     common: {
       add: "Legg til",
+      addTag: "Legg til tag",
       back: "Tilbake",
       cancel: "Avbryt",
       clear: "Tøm",
@@ -17,6 +18,7 @@ export const nb: TranslationDictionary = {
       couldNotDeleteOption: "Kunne ikke slette valget.",
       deleteNamed: (name) => `Dette sletter ${name}.`,
       edit: "Rediger",
+      nameAlreadyExists: "Navnet finnes allerede.",
       nameRequired: "Navn er påkrevd.",
       remove: "Fjern",
       removeNamed: (name) => `Fjern ${name}?`,
@@ -166,6 +168,10 @@ export const nb: TranslationDictionary = {
         Pantry: "Tørrvare",
         Frozen: "Frossen",
         LeafyGreen: "Bladgrønt",
+        Berry: "Bær",
+        RootVegetable: "Rotgrønnsak",
+        Bread: "Brød",
+        Dip: "Dipp",
       },
       ingredientPreparations: {
         None: "Ingen prep",
@@ -284,6 +290,7 @@ export const nb: TranslationDictionary = {
     },
     prices: {
       addPrice: "Legg til pris",
+      addPricePoint: "Legg til prispunkt",
       couldNotLoad: "Kunne ikke laste priser.",
       couldNotSave: "Kunne ikke lagre pris.",
       date: "Dato",
@@ -297,7 +304,7 @@ export const nb: TranslationDictionary = {
       pageTitle: "Priser",
       price: "Pris",
       priceInformation: "Prisinformasjon",
-      pricePlaceholder: "39,90",
+      pricePlaceholder: "39.90",
       savePrice: "Lagre pris",
       selectStore: "Velg butikk",
       store: "Butikk",

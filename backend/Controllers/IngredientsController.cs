@@ -121,11 +121,12 @@ public class IngredientsController(DinnerPlannerContext context) : ControllerBas
     private async Task<bool> BrandExists(int? brandId) =>
         brandId is null || await context.Brands.AnyAsync(brand => brand.BrandId == brandId);
 
-    private static List<IngredientTag> NormalizeTags(IReadOnlyCollection<IngredientTag>? tags) =>
+    private static List<string> NormalizeTags(IReadOnlyCollection<string>? tags) =>
         tags is null
             ? []
             : tags
-                .Where(tag => Enum.IsDefined(tag))
+                .Select(tag => tag.Trim())
+                .Where(tag => tag.Length > 0 && tag.Length <= 64)
                 .Distinct()
                 .ToList();
 

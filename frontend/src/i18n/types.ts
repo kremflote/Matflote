@@ -1,5 +1,5 @@
 import type {
-  IngredientTag,
+  KnownIngredientTag,
   MeasurementUnit,
   Vitamin,
 } from "../interfaces/IIngredient";
@@ -15,7 +15,7 @@ export type SupportedLanguage = "en" | "nb";
 
 type EnumLabels = {
   dessertTypes: Record<DessertType, string>;
-  ingredientTags: Record<IngredientTag, string>;
+  ingredientTags: Record<KnownIngredientTag, string> & Record<string, string | undefined>;
   ingredientPreparations: Record<IngredientPreparation, string>;
   mealSlots: Record<MealSlot, string>;
   measurementUnits: Record<MeasurementUnit, string>;
@@ -31,6 +31,7 @@ export type TranslationDictionary = {
   };
   common: {
     add: string;
+    addTag: string;
     back: string;
     cancel: string;
     clear: string;
@@ -42,6 +43,7 @@ export type TranslationDictionary = {
     couldNotDeleteOption: string;
     deleteNamed: (name: string) => string;
     edit: string;
+    nameAlreadyExists: string;
     nameRequired: string;
     remove: string;
     removeNamed: (name: string) => string;
@@ -194,6 +196,7 @@ export type TranslationDictionary = {
   };
   prices: {
     addPrice: string;
+    addPricePoint: string;
     couldNotLoad: string;
     couldNotSave: string;
     date: string;

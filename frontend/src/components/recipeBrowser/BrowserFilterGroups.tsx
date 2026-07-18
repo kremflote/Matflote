@@ -124,6 +124,7 @@ type GroupedFilterGroupProps<TValue extends string> = {
 type GroupedCheckboxPanelProps<TValue extends string> = {
   groups: readonly CheckboxGroup<TValue>[];
   groupLabels: Record<string, string>;
+  addActionLabel?: string;
   disabledValues?: readonly TValue[];
   formatValue?: (value: TValue) => string;
   selectedValues: readonly TValue[];
@@ -134,12 +135,14 @@ type GroupedCheckboxPanelProps<TValue extends string> = {
   optionListClassName?: string;
   optionLabelClassName?: (theme: SiteTheme, disabled: boolean) => string;
   checkboxClassName?: string;
+  onAddTag?: () => void;
   onToggle: (value: TValue) => void;
 };
 
 export function GroupedCheckboxPanel<TValue extends string>({
   groups,
   groupLabels,
+  addActionLabel,
   disabledValues = [],
   formatValue = formatLabel,
   selectedValues,
@@ -153,6 +156,7 @@ export function GroupedCheckboxPanel<TValue extends string>({
       disabled ? recipeBrowserStyles.disabledFilterOption(currentTheme) : ""
     }`,
   checkboxClassName = recipeBrowserStyles.checkbox,
+  onAddTag,
   onToggle,
 }: GroupedCheckboxPanelProps<TValue>) {
   return (
@@ -180,6 +184,15 @@ export function GroupedCheckboxPanel<TValue extends string>({
           </div>
         </section>
       ))}
+      {addActionLabel !== undefined && onAddTag !== undefined && (
+        <button
+          className={recipeBrowserStyles.addTagButton(theme)}
+          type="button"
+          onClick={onAddTag}
+        >
+          {addActionLabel}
+        </button>
+      )}
     </div>
   );
 }

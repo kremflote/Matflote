@@ -4,7 +4,7 @@ import { useIngredients, useLanguage, useStores } from "../contexts";
 import type { IIngredientPricePoint } from "../interfaces/IIngredientPrice";
 import { ingredientPriceService, storeService } from "../services";
 import { pageStyles, priceStyles, type SiteTheme } from "../styles/appStyles";
-import { formatCurrency, formatPriceDate, todayInputValue } from "../utils/priceFormatting";
+import { formatCurrency, formatPriceDate, normalizePriceInput, todayInputValue } from "../utils/priceFormatting";
 
 type PricesPageProps = {
   theme: SiteTheme;
@@ -147,12 +147,10 @@ function PricesPage({ theme }: PricesPageProps) {
               <input
                 className={priceStyles.input(theme)}
                 inputMode="decimal"
-                min="0"
                 placeholder={t.prices.pricePlaceholder}
-                step="0.01"
-                type="number"
+                type="text"
                 value={form.price}
-                onChange={(event) => setForm({ ...form, price: event.target.value })}
+                onChange={(event) => setForm({ ...form, price: normalizePriceInput(event.target.value) })}
               />
             </label>
             <label className={priceStyles.field}>

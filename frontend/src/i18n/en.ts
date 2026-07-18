@@ -7,6 +7,7 @@ export const en: TranslationDictionary = {
     },
     common: {
       add: "Add",
+      addTag: "Add tag",
       back: "Back",
       cancel: "Cancel",
       clear: "Clear",
@@ -18,6 +19,7 @@ export const en: TranslationDictionary = {
       couldNotDeleteOption: "Could not delete option.",
       deleteNamed: (name) => `This will delete ${name}.`,
       edit: "Edit",
+      nameAlreadyExists: "That name already exists.",
       nameRequired: "Name is required.",
       remove: "Remove",
       removeNamed: (name) => `Remove ${name}?`,
@@ -210,6 +212,7 @@ export const en: TranslationDictionary = {
     },
     prices: {
       addPrice: "Add price",
+      addPricePoint: "Add price point",
       couldNotLoad: "Could not load prices.",
       couldNotSave: "Could not save price.",
       date: "Date",

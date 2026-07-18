@@ -9,3 +9,11 @@ export function formatPriceDate(value: string, locale: string) {
 export function todayInputValue() {
   return new Date().toISOString().slice(0, 10);
 }
+
+export function normalizePriceInput(value: string) {
+  const normalizedDecimal = value.replace(",", ".");
+  const digitsAndDecimal = normalizedDecimal.replace(/[^\d.]/g, "");
+  const [wholePart, ...decimalParts] = digitsAndDecimal.split(".");
+
+  return decimalParts.length === 0 ? wholePart : `${wholePart}.${decimalParts.join("")}`;
+}

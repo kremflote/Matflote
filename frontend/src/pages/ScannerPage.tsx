@@ -10,9 +10,15 @@ import type { IProductLookupNutrition, IProductLookupResult } from "../interface
 import { brandService, imageUploadService, ingredientPriceService, ingredientService, productLookupService, storeService } from "../services";
 import { getApiAssetUrl } from "../services/apiClient";
 import { pageStyles, scannerStyles, type SiteTheme } from "../styles/appStyles";
-import { todayInputValue } from "../utils/priceFormatting";
-import { ingredientTagGroups } from "../components/recipeBrowser/formOptions";
+import { normalizePriceInput, todayInputValue } from "../utils/priceFormatting";
+import {
+  getIngredientTagGroupsWithCustomTags,
+  ingredientTagGroups,
+  type IngredientTagGroupKey,
+} from "../components/recipeBrowser/formOptions";
 import { GroupedCheckboxPanel } from "../components/recipeBrowser/BrowserFilterGroups";
+import { recipeBrowserStyles } from "../components/recipeBrowser/recipeBrowserStyles";
+import IngredientTagCreateDialog from "../components/recipeBrowser/IngredientTagCreateDialog";
 
 type ScannerPageProps = {
   theme: SiteTheme;
@@ -440,10 +446,31 @@ function IngredientDraftEditor({
   onChange: (draft: IngredientDraft) => void;
 }) {
   const { t } = useLanguage();
+  const { ingredients } = useIngredients();
   const { stores, refreshStores } = useStores();
   const imageInputId = useId();
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [customTagGroups, setCustomTagGroups] = useState<Record<string, IngredientTagGroupKey>>({});
+  const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
   const imageUrl = getApiAssetUrl(imagePreviewUrl ?? draft.imageUrl);
+  const knownIngredientTags = ingredientTagGroups.flatMap((group) => group.values);
+  const existingCustomTags = ingredients
+    .flatMap((ingredient) => ingredient.tags)
+    .filter((tag) => !knownIngredientTags.includes(tag));
+  const customTags = Array.from(new Set([
+    ...existingCustomTags,
+    ...draft.tags.filter((tag) => !knownIngredientTags.includes(tag)),
+  ]));
+  const groupedTags = getIngredientTagGroupsWithCustomTags(customTags, "pantry").map((group) => {
+    const groupCustomTags = customTags.filter((tag) => customTagGroups[tag] === group.key);
+
+    return groupCustomTags.length === 0
+      ? group
+      : {
+          ...group,
+          values: Array.from(new Set([...group.values, ...groupCustomTags])),
+        };
+  });
 
   useEffect(() => {
     if (draft.imageFile === null) {
@@ -517,11 +544,9 @@ function IngredientDraftEditor({
           <input
             className={scannerStyles.input(theme)}
             inputMode="decimal"
-            min="0"
-            step="0.01"
-            type="number"
+            type="text"
             value={draft.price}
-            onChange={(event) => onChange({ ...draft, price: event.target.value })}
+            onChange={(event) => onChange({ ...draft, price: normalizePriceInput(event.target.value) })}
           />
         </label>
       </div>
@@ -529,19 +554,29 @@ function IngredientDraftEditor({
       <section className={scannerStyles.field}>
         <span className={scannerStyles.label}>{t.scanner.selectTags}</span>
         <GroupedCheckboxPanel
-          formatValue={(value) => t.enums.ingredientTags[value]}
+          addActionLabel={t.common.addTag}
+          formatValue={(value) => t.enums.ingredientTags[value] ?? value}
           groupLabels={t.filters.ingredientTagGroups}
-          groups={ingredientTagGroups}
-          optionLabelClassName={(currentTheme) => scannerStyles.tagOption(currentTheme)}
-          optionListClassName={scannerStyles.tagGrid}
-          panelClassName={scannerStyles.groupedTagPanel}
-          sectionClassName={scannerStyles.groupedTagSection}
+          groups={groupedTags}
+          panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
           selectedValues={draft.tags}
           theme={theme}
-          titleClassName={scannerStyles.groupedTagTitle}
+          onAddTag={() => setIsTagCreateOpen(true)}
           onToggle={(tag) => onChange({ ...draft, tags: toggleValue(draft.tags, tag) })}
         />
       </section>
+      {isTagCreateOpen && (
+        <IngredientTagCreateDialog
+          existingTags={[...knownIngredientTags, ...customTags]}
+          theme={theme}
+          onCancel={() => setIsTagCreateOpen(false)}
+          onCreate={(tag, group) => {
+            setCustomTagGroups((currentGroups) => ({ ...currentGroups, [tag]: group }));
+            onChange({ ...draft, tags: draft.tags.includes(tag) ? draft.tags : [...draft.tags, tag] });
+            setIsTagCreateOpen(false);
+          }}
+        />
+      )}
     </section>
   );
 }
@@ -635,13 +670,17 @@ function inferIngredientTags(searchText: string): IngredientTag[] {
   if (/\b(lam|lamb)\b/.test(normalized)) return ["Lamb"];
   if (/\b(fisk|fish|laks|salmon|torsk|cod)\b/.test(normalized)) return ["Fish"];
   if (/\b(melk|milk|yoghurt|yogurt|ost|cheese|fløte|cream)\b/.test(normalized)) return ["Dairy"];
+  if (/\b(brød|bread|loff|baguette|rundstykke)\b/.test(normalized)) return ["Bread", "Pantry"];
   if (/\b(ris|rice|pasta|nudler|noodle|mel|flour|havre|oat)\b/.test(normalized)) return ["Grain", "Pantry"];
-  if (/\b(saus|sauce|dressing|dip)\b/.test(normalized)) return ["Sauce"];
+  if (/\b(dip|dipp)\b/.test(normalized)) return ["Dip", "Pantry"];
+  if (/\b(saus|sauce|dressing)\b/.test(normalized)) return ["Sauce"];
   if (/\b(krydder|spice|pepper|salt)\b/.test(normalized)) return ["Spice"];
   if (/\b(basilikum|basil|persille|parsley|koriander|cilantro|dill)\b/.test(normalized)) return ["Herb"];
-  if (/\b(eple|apple|banan|banana|appelsin|orange|bær|berry|druer|grape)\b/.test(normalized)) return ["Fruit"];
+  if (/\b(bær|berry|berries|jordbær|strawberry|bringebær|raspberry|blåbær|blueberry)\b/.test(normalized)) return ["Fruit", "Berry"];
+  if (/\b(eple|apple|banan|banana|appelsin|orange|druer|grape)\b/.test(normalized)) return ["Fruit"];
   if (/\b(salat|spinach|spinat|ruccola|kale|grønnkål)\b/.test(normalized)) return ["Vegetable", "LeafyGreen"];
-  if (/\b(gulrot|carrot|løk|onion|tomat|tomato|agurk|cucumber|potet|potato|paprika)\b/.test(normalized)) return ["Vegetable"];
+  if (/\b(gulrot|carrot|potet|potato|pastinakk|parsnip|sellerirot|celeriac|kålrot|swede|rødbete|beetroot)\b/.test(normalized)) return ["Vegetable", "RootVegetable"];
+  if (/\b(løk|onion|tomat|tomato|agurk|cucumber|paprika)\b/.test(normalized)) return ["Vegetable"];
   if (/\b(frossen|frozen)\b/.test(normalized)) return ["Frozen"];
 
   return [];

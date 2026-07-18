@@ -6,7 +6,7 @@ import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
 import { plannerPickerStyles, type SiteTheme } from "../styles/appStyles";
 import { recipeTagGroups, recipeTags } from "./recipeBrowser/formOptions";
-import { recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
+import { formatLabel, recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
 import {
   excludedSupplementaryTags,
   getSupplementaryRole,
@@ -360,7 +360,7 @@ function PlannerRecipePickerModal({
             theme={theme}
             title={t.filters.protein}
             values={mainProteinFilters}
-            formatValue={(value) => t.enums.ingredientTags[value]}
+            formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
             onToggle={(value) => toggleSelection(value, setSelectedMainProteinTags)}
           />
           <GroupedFilterGroup

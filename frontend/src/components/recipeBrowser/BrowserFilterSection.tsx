@@ -5,7 +5,7 @@ import type { ICuisine } from "../../interfaces/ILookup";
 import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
 import { ingredientTagGroups, recipeTagGroups, recipeTypes } from "./formOptions";
-import { recipeBrowserStyles } from "./recipeBrowserStyles";
+import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import { FilterGroup, GroupedFilterGroup, NumberFilterGroup } from "./BrowserFilterGroups";
 import type { BrowserMode } from "./types";
 
@@ -47,7 +47,7 @@ function BrowserFilterSection({
     <aside className={className} aria-label={t.filters.recipeFilters}>
       {mode === "ingredients" ? (
         <GroupedFilterGroup
-          formatValue={(value) => t.enums.ingredientTags[value]}
+          formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
           groupLabels={t.filters.ingredientTagGroups}
           groups={ingredientTagGroups}
           selectedValues={selectedIngredientTags}

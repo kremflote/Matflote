@@ -90,7 +90,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 ingredientTag.Tag
             });
 
-            entity.Property(ingredientTag => ingredientTag.Tag).HasConversion<string>().HasMaxLength(64);
+            entity.Property(ingredientTag => ingredientTag.Tag).HasMaxLength(64);
             entity.HasOne(ingredientTag => ingredientTag.Ingredient)
                 .WithMany(ingredient => ingredient.Tags)
                 .HasForeignKey(ingredientTag => ingredientTag.IngredientId)
@@ -384,27 +384,27 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             new
             {
                 IngredientId = 1,
-                Tag = IngredientTag.Chicken
+                Tag = "Chicken"
             },
             new
             {
                 IngredientId = 2,
-                Tag = IngredientTag.Vegetable
+                Tag = "Vegetable"
             },
             new
             {
                 IngredientId = 3,
-                Tag = IngredientTag.Dairy
+                Tag = "Dairy"
             },
             new
             {
                 IngredientId = 4,
-                Tag = IngredientTag.Grain
+                Tag = "Grain"
             },
             new
             {
                 IngredientId = 5,
-                Tag = IngredientTag.Fruit
+                Tag = "Fruit"
             }
         );
 

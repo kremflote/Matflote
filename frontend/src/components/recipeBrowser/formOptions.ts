@@ -1,4 +1,4 @@
-import type { IngredientTag, MeasurementUnit, Vitamin } from "../../interfaces/IIngredient";
+import type { IngredientTag, KnownIngredientTag, MeasurementUnit, Vitamin } from "../../interfaces/IIngredient";
 import type { DessertType, IngredientPreparation, RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 
 export const recipeTypes: RecipeType[] = [
@@ -62,7 +62,7 @@ export const dessertTypes: DessertType[] = [
   "Other",
 ];
 
-export const ingredientTags: IngredientTag[] = [
+export const ingredientTags: KnownIngredientTag[] = [
   "Vegetable",
   "Fruit",
   "Chicken",
@@ -78,6 +78,10 @@ export const ingredientTags: IngredientTag[] = [
   "Pantry",
   "Frozen",
   "LeafyGreen",
+  "Berry",
+  "RootVegetable",
+  "Bread",
+  "Dip",
 ];
 
 export type IngredientTagGroupKey = "produce" | "protein" | "pantry";
@@ -88,7 +92,7 @@ export const ingredientTagGroups: Array<{
 }> = [
   {
     key: "produce",
-    values: ["Vegetable", "Fruit", "LeafyGreen", "Herb"],
+    values: ["Vegetable", "Fruit", "Berry", "RootVegetable", "LeafyGreen", "Herb"],
   },
   {
     key: "protein",
@@ -96,9 +100,39 @@ export const ingredientTagGroups: Array<{
   },
   {
     key: "pantry",
-    values: ["Grain", "Spice", "Sauce", "Pantry", "Frozen"],
+    values: ["Grain", "Bread", "Spice", "Sauce", "Dip", "Pantry", "Frozen"],
   },
 ];
+
+export function getIngredientTagGroupsWithCustomTags(
+  customTags: readonly IngredientTag[],
+  fallbackGroup: IngredientTagGroupKey = "pantry",
+) {
+  const knownTags = new Set(ingredientTagGroups.flatMap((group) => group.values));
+  const normalizedCustomTags = customTags
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0 && !knownTags.has(tag));
+
+  if (normalizedCustomTags.length === 0) {
+    return ingredientTagGroups;
+  }
+
+  return ingredientTagGroups.map((group) =>
+    group.key === fallbackGroup
+      ? {
+          ...group,
+          values: [...group.values, ...Array.from(new Set(normalizedCustomTags))],
+        }
+      : group,
+  );
+}
+
+export function normalizeCustomTagName(value: string) {
+  return value
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, 64);
+}
 
 export const measurementUnits: MeasurementUnit[] = [
   "Gram",

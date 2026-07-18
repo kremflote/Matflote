@@ -3,7 +3,7 @@ import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
 import type { ICuisine } from "../../interfaces/ILookup";
 import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
-import { recipeBrowserStyles } from "./recipeBrowserStyles";
+import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import type { BrowserMode } from "./types";
 import FilterChip from "./FilterChip";
 
@@ -57,7 +57,7 @@ function ActiveFilterChips({
         selectedIngredientTags.map((tag) => (
           <FilterChip
             key={tag}
-            label={t.enums.ingredientTags[tag]}
+            label={t.enums.ingredientTags[tag] ?? formatLabel(tag)}
             theme={theme}
             onClick={() => onRemoveIngredientTag(tag)}
           />

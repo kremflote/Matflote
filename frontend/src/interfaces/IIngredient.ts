@@ -13,7 +13,7 @@ export interface IIngredient {
   color: string | null;
 }
 
-export type IngredientTag =
+export type KnownIngredientTag =
   | "Vegetable"
   | "Fruit"
   | "Chicken"
@@ -28,7 +28,13 @@ export type IngredientTag =
   | "Sauce"
   | "Pantry"
   | "Frozen"
-  | "LeafyGreen";
+  | "LeafyGreen"
+  | "Berry"
+  | "RootVegetable"
+  | "Bread"
+  | "Dip";
+
+export type IngredientTag = KnownIngredientTag | (string & {});
 
 export interface INutritionFacts {
   calories: number | null;

@@ -4,10 +4,16 @@ import type { IIngredient, IngredientTag, Vitamin } from "../../interfaces/IIngr
 import { brandService, imageUploadService, ingredientPriceService, ingredientService, storeService } from "../../services";
 import { getApiAssetUrl } from "../../services/apiClient";
 import type { SiteTheme } from "../../styles/appStyles";
-import { todayInputValue } from "../../utils/priceFormatting";
-import { ingredientTagGroups, vitamins } from "./formOptions";
+import { normalizePriceInput, todayInputValue } from "../../utils/priceFormatting";
+import {
+  getIngredientTagGroupsWithCustomTags,
+  ingredientTagGroups,
+  vitamins,
+  type IngredientTagGroupKey,
+} from "./formOptions";
 import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import CreatableSelect from "./CreatableSelect";
+import IngredientTagCreateDialog from "./IngredientTagCreateDialog";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type IngredientCreateFormProps = {
@@ -107,7 +113,7 @@ function IngredientCreateForm({
   const { t } = useLanguage();
   const { brands, refreshBrands } = useBrands();
   const { stores, refreshStores } = useStores();
-  const { refreshIngredients } = useIngredients();
+  const { ingredients, refreshIngredients } = useIngredients();
   const { refreshRecipes } = useRecipes();
   const imageInputId = useId();
   const [ingredientName, setIngredientName] = useState(initialIngredient?.ingredientName ?? "");
@@ -117,6 +123,8 @@ function IngredientCreateForm({
   const [selectedTags, setSelectedTags] = useState<IngredientTag[]>(
     initialIngredient && initialIngredient.tags.length > 0 ? [...initialIngredient.tags] : ["Vegetable"],
   );
+  const [customTagGroups, setCustomTagGroups] = useState<Record<string, IngredientTagGroupKey>>({});
+  const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
   const [calories, setCalories] = useState(numberToInputValue(initialIngredient?.nutritionPer100?.calories));
   const [carbohydrateGrams, setCarbohydrateGrams] = useState(
     numberToInputValue(initialIngredient?.nutritionPer100?.carbohydrateGrams),
@@ -149,6 +157,24 @@ function IngredientCreateForm({
   const [priceNote, setPriceNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const knownIngredientTags = ingredientTagGroups.flatMap((group) => group.values);
+  const existingCustomTags = ingredients
+    .flatMap((ingredient) => ingredient.tags)
+    .filter((tag) => !knownIngredientTags.includes(tag));
+  const customTags = Array.from(new Set([
+    ...existingCustomTags,
+    ...selectedTags.filter((tag) => !knownIngredientTags.includes(tag)),
+  ]));
+  const groupedTags = getIngredientTagGroupsWithCustomTags(customTags, "pantry").map((group) => {
+    const groupCustomTags = customTags.filter((tag) => customTagGroups[tag] === group.key);
+
+    return groupCustomTags.length === 0
+      ? group
+      : {
+          ...group,
+          values: Array.from(new Set([...group.values, ...groupCustomTags])),
+        };
+  });
   const handleCroppedFileChange = useCallback((file: File | null) => {
     setCroppedImageFile(file);
   }, []);
@@ -355,12 +381,10 @@ function IngredientCreateForm({
           <input
             className={recipeBrowserStyles.textField(theme)}
             inputMode="decimal"
-            min="0"
             placeholder={t.prices.pricePlaceholder}
-            step="0.01"
-            type="number"
+            type="text"
             value={priceValue}
-            onChange={(event) => setPriceValue(event.target.value)}
+            onChange={(event) => setPriceValue(normalizePriceInput(event.target.value))}
           />
         </label>
         <label className={recipeBrowserStyles.field}>
@@ -482,18 +506,33 @@ function IngredientCreateForm({
               <span className={recipeBrowserStyles.inlineHint(theme)}>{t.cookbook.pickOneOrMore}</span>
             </span>
             <GroupedCheckboxPanel
-              formatValue={(value) => t.enums.ingredientTags[value]}
+              addActionLabel={t.common.addTag}
+              formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
               groupLabels={t.filters.ingredientTagGroups}
-              groups={ingredientTagGroups}
+              groups={groupedTags}
               panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
               selectedValues={selectedTags}
               theme={theme}
+              onAddTag={() => setIsTagCreateOpen(true)}
               onToggle={(value) => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
             />
           </section>
         </div>
 
       </div>
+
+      {isTagCreateOpen && (
+        <IngredientTagCreateDialog
+          existingTags={[...knownIngredientTags, ...customTags]}
+          theme={theme}
+          onCancel={() => setIsTagCreateOpen(false)}
+          onCreate={(tag, group) => {
+            setCustomTagGroups((currentGroups) => ({ ...currentGroups, [tag]: group }));
+            setSelectedTags((currentTags) => currentTags.includes(tag) ? currentTags : [...currentTags, tag]);
+            setIsTagCreateOpen(false);
+          }}
+        />
+      )}
 
       <div className={recipeBrowserStyles.formActions}>
         <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="button" onClick={onCancel}>

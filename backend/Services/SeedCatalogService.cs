@@ -448,11 +448,12 @@ public class SeedCatalogService(
         _ => RecipeType.Dish
     };
 
-    private static List<IngredientTag> NormalizeIngredientTags(IReadOnlyCollection<IngredientTag>? tags) =>
+    private static List<string> NormalizeIngredientTags(IReadOnlyCollection<string>? tags) =>
         tags is null || tags.Count == 0
             ? []
             : tags
-                .Where(Enum.IsDefined)
+                .Select(tag => tag.Trim())
+                .Where(tag => tag.Length > 0 && tag.Length <= 64)
                 .Distinct()
                 .ToList();
 
