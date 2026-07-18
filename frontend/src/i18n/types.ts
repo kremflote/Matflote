@@ -31,6 +31,7 @@ export type TranslationDictionary = {
   };
   common: {
     add: string;
+    addCategory: string;
     addTag: string;
     back: string;
     cancel: string;
@@ -43,11 +44,13 @@ export type TranslationDictionary = {
     couldNotDeleteOption: string;
     deleteNamed: (name: string) => string;
     edit: string;
+    manageTags: string;
     nameAlreadyExists: string;
     nameRequired: string;
     remove: string;
     removeNamed: (name: string) => string;
     removing: string;
+    save: string;
     saving: string;
     search: string;
     working: string;
@@ -175,6 +178,7 @@ export type TranslationDictionary = {
     recipeTagGroups: Record<string, string>;
     recipeFilters: string;
     recipeType: string;
+    selectCategory: string;
     tags: string;
     type: string;
   };

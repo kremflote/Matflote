@@ -1,31 +1,169 @@
 import { useId, useState } from "react";
 import { useLanguage } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
+import type { IIngredientTagCategory } from "../../interfaces/ILookup";
 import type { SiteTheme } from "../../styles/appStyles";
+import ConfirmationDialog from "../ConfirmationDialog";
 import Modal from "../Modal";
-import { ingredientTagGroups, normalizeCustomTagName, type IngredientTagGroupKey } from "./formOptions";
+import type { CreatableOption } from "./CreatableSelect";
+import { formatIngredientTagCategoryName, normalizeCustomTagName } from "./formOptions";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type IngredientTagCreateDialogProps = {
+  categories: readonly IIngredientTagCategory[];
   existingTags: readonly IngredientTag[];
   theme: SiteTheme;
   onCancel: () => void;
-  onCreate: (tag: IngredientTag, group: IngredientTagGroupKey) => void;
+  onCreate: (tag: IngredientTag, categoryId: number) => Promise<void>;
+  onCreateCategory: (name: string) => Promise<CreatableOption>;
+  onUpdateCategory: (category: CreatableOption) => Promise<void>;
+  onDeleteCategory: (category: CreatableOption) => Promise<void>;
+  onUpdateTag: (tagName: string, nextName: string) => Promise<void>;
+  onDeleteTag: (tagName: string) => Promise<void>;
 };
 
+type NameDialogMode = "tag" | "category";
+
 function IngredientTagCreateDialog({
+  categories,
   existingTags,
   theme,
   onCancel,
   onCreate,
+  onCreateCategory,
+  onUpdateCategory,
+  onDeleteCategory,
+  onUpdateTag,
+  onDeleteTag,
 }: IngredientTagCreateDialogProps) {
   const { t } = useLanguage();
   const titleId = useId();
-  const [name, setName] = useState("");
-  const [group, setGroup] = useState<IngredientTagGroupKey>("produce");
-  const normalizedName = normalizeCustomTagName(name);
-  const tagExists = existingTags.some((tag) => tag.toLowerCase() === normalizedName.toLowerCase());
-  const canCreate = normalizedName.length > 0 && !tagExists;
+  const nameDialogTitleId = useId();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    categories[0]?.ingredientTagCategoryId ?? null,
+  );
+  const [nameDialogMode, setNameDialogMode] = useState<NameDialogMode | null>(null);
+  const [newName, setNewName] = useState("");
+  const [nameDialogError, setNameDialogError] = useState<string | null>(null);
+  const [isSavingName, setIsSavingName] = useState(false);
+  const [isDeletingCategory, setIsDeletingCategory] = useState(false);
+  const [isManagingTags, setIsManagingTags] = useState(false);
+  const [categoryPendingDelete, setCategoryPendingDelete] = useState<IIngredientTagCategory | null>(null);
+  const [managedCategoryNames, setManagedCategoryNames] = useState<Record<number, string>>({});
+  const [managedTagNames, setManagedTagNames] = useState<Record<string, string>>({});
+  const selectedCategory = categories.find((category) => category.ingredientTagCategoryId === selectedCategoryId) ?? null;
+
+  async function saveNewName() {
+    const normalizedName = normalizeCustomTagName(newName);
+    if (normalizedName.length === 0) {
+      setNameDialogError(t.common.nameRequired);
+      return;
+    }
+
+    if (
+      nameDialogMode === "tag" &&
+      existingTags.some((tag) => tag.toLowerCase() === normalizedName.toLowerCase())
+    ) {
+      setNameDialogError(t.common.nameAlreadyExists);
+      return;
+    }
+
+    if (nameDialogMode === "tag" && selectedCategoryId === null) {
+      setNameDialogError(t.filters.selectCategory);
+      return;
+    }
+
+    setIsSavingName(true);
+    setNameDialogError(null);
+
+    try {
+      if (nameDialogMode === "category") {
+        const category = await onCreateCategory(normalizedName);
+        setSelectedCategoryId(category.id);
+      } else if (nameDialogMode === "tag" && selectedCategoryId !== null) {
+        await onCreate(normalizedName, selectedCategoryId);
+      }
+
+      setNewName("");
+      setNameDialogMode(null);
+    } catch (caughtError) {
+      setNameDialogError(caughtError instanceof Error ? caughtError.message : t.common.couldNotCreateOption);
+    } finally {
+      setIsSavingName(false);
+    }
+  }
+
+  async function deleteCategory() {
+    if (categoryPendingDelete === null) {
+      return;
+    }
+
+    setIsDeletingCategory(true);
+
+    try {
+      await onDeleteCategory({
+        id: categoryPendingDelete.ingredientTagCategoryId,
+        name: categoryPendingDelete.name,
+      });
+      if (selectedCategoryId === categoryPendingDelete.ingredientTagCategoryId) {
+        setSelectedCategoryId(null);
+      }
+      setCategoryPendingDelete(null);
+    } finally {
+      setIsDeletingCategory(false);
+    }
+  }
+
+  async function updateManagedCategory(category: IIngredientTagCategory) {
+    const nextName = (managedCategoryNames[category.ingredientTagCategoryId] ?? category.name).trim();
+    if (nextName.length === 0 || nextName === category.name) {
+      return;
+    }
+
+    setIsManagingTags(true);
+    try {
+      await onUpdateCategory({ id: category.ingredientTagCategoryId, name: nextName });
+      setManagedCategoryNames((currentNames) => {
+        const { [category.ingredientTagCategoryId]: _removed, ...remainingNames } = currentNames;
+        return remainingNames;
+      });
+    } finally {
+      setIsManagingTags(false);
+    }
+  }
+
+  async function updateManagedTag(tagName: string) {
+    const nextName = normalizeCustomTagName(managedTagNames[tagName] ?? tagName);
+    if (nextName.length === 0 || nextName === tagName) {
+      return;
+    }
+
+    setIsManagingTags(true);
+    try {
+      await onUpdateTag(tagName, nextName);
+      setManagedTagNames((currentNames) => {
+        const { [tagName]: _removed, ...remainingNames } = currentNames;
+        return remainingNames;
+      });
+    } finally {
+      setIsManagingTags(false);
+    }
+  }
+
+  async function deleteManagedTag(tagName: string) {
+    setIsManagingTags(true);
+    try {
+      await onDeleteTag(tagName);
+    } finally {
+      setIsManagingTags(false);
+    }
+  }
+
+  const openNameDialog = (mode: NameDialogMode) => {
+    setNewName("");
+    setNameDialogError(null);
+    setNameDialogMode(mode);
+  };
 
   return (
     <Modal
@@ -35,14 +173,18 @@ function IngredientTagCreateDialog({
       closeLabel={t.common.close}
       footer={
         <>
-          <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onCancel}>
-            {t.common.cancel}
+          <button
+            className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+            type="button"
+            onClick={() => openNameDialog("category")}
+          >
+            {t.common.addCategory}
           </button>
           <button
             className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
-            disabled={!canCreate}
+            disabled={selectedCategory === null}
             type="button"
-            onClick={() => onCreate(normalizedName, group)}
+            onClick={() => openNameDialog("tag")}
           >
             {t.common.addTag}
           </button>
@@ -51,38 +193,168 @@ function IngredientTagCreateDialog({
       footerClassName={recipeBrowserStyles.formActions}
       headerClassName={recipeBrowserStyles.modalHeader}
       panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
-      title={t.common.addTag}
+      title={t.common.manageTags}
       titleClassName={recipeBrowserStyles.modalTitle}
       titleId={titleId}
       onClose={onCancel}
     >
-      <label className={recipeBrowserStyles.field}>
-        <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.name}</span>
-        <input
-          className={recipeBrowserStyles.textField(theme)}
-          maxLength={64}
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-        />
-      </label>
-      <label className={recipeBrowserStyles.field}>
-        <span className={recipeBrowserStyles.label(theme)}>{t.filters.categories}</span>
-        <select
-          className={recipeBrowserStyles.textField(theme)}
-          value={group}
-          onChange={(event) => setGroup(event.target.value as IngredientTagGroupKey)}
+      <div className={recipeBrowserStyles.manageTagsList}>
+        {categories.map((category) => {
+          const isSelected = selectedCategoryId === category.ingredientTagCategoryId;
+
+          return (
+            <section
+              className={recipeBrowserStyles.manageTagCategory(theme, isSelected)}
+              key={category.ingredientTagCategoryId}
+              onClick={() => setSelectedCategoryId(category.ingredientTagCategoryId)}
+            >
+              <div className={recipeBrowserStyles.manageTagCategoryRow}>
+                <input
+                  className={recipeBrowserStyles.textField(theme)}
+                  value={managedCategoryNames[category.ingredientTagCategoryId] ?? category.name}
+                  onChange={(event) =>
+                    setManagedCategoryNames((currentNames) => ({
+                      ...currentNames,
+                      [category.ingredientTagCategoryId]: event.target.value,
+                    }))
+                  }
+                />
+                <button
+                    className={recipeBrowserStyles.manageTagActionButton(theme)}
+                  disabled={isManagingTags}
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void updateManagedCategory(category);
+                  }}
+                >
+                  {t.common.save}
+                </button>
+                <button
+                  className={recipeBrowserStyles.manageTagRemoveButton(theme)}
+                  disabled={isManagingTags}
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setCategoryPendingDelete(category);
+                  }}
+                >
+                  {t.common.remove}
+                </button>
+              </div>
+              <div className={recipeBrowserStyles.manageTagList}>
+                {category.tags.map((tag) => (
+                  <div className={recipeBrowserStyles.manageTagRow} key={tag}>
+                    <input
+                      className={recipeBrowserStyles.textField(theme)}
+                      value={managedTagNames[tag] ?? tag}
+                      onChange={(event) =>
+                        setManagedTagNames((currentNames) => ({
+                          ...currentNames,
+                          [tag]: event.target.value,
+                        }))
+                      }
+                    />
+                    <button
+                      className={recipeBrowserStyles.manageTagActionButton(theme)}
+                      disabled={isManagingTags}
+                      type="button"
+                      onClick={() => void updateManagedTag(tag)}
+                    >
+                      {t.common.save}
+                    </button>
+                    <button
+                      className={recipeBrowserStyles.manageTagRemoveButton(theme)}
+                      disabled={isManagingTags}
+                      type="button"
+                      onClick={() => void deleteManagedTag(tag)}
+                    >
+                      {t.common.remove}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+
+      {nameDialogMode !== null && (
+        <Modal
+          backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
+          bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
+          closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+          closeLabel={t.common.close}
+          footer={
+            <>
+              <button
+                className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+                disabled={isSavingName}
+                type="button"
+                onClick={() => setNameDialogMode(null)}
+              >
+                {t.common.cancel}
+              </button>
+              <button
+                className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+                disabled={isSavingName}
+                type="button"
+                onClick={() => void saveNewName()}
+              >
+                {isSavingName ? t.common.saving : t.cookbook.create}
+              </button>
+            </>
+          }
+          footerClassName={recipeBrowserStyles.formActions}
+          headerClassName={recipeBrowserStyles.modalHeader}
+          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+          title={nameDialogMode === "category" ? t.common.addCategory : t.common.addTag}
+          titleClassName={recipeBrowserStyles.modalTitle}
+          titleId={nameDialogTitleId}
+          onClose={() => setNameDialogMode(null)}
         >
-          {ingredientTagGroups.map((tagGroup) => (
-            <option key={tagGroup.key} value={tagGroup.key}>
-              {t.filters.ingredientTagGroups[tagGroup.key]}
-            </option>
-          ))}
-        </select>
-      </label>
-      {tagExists && (
-        <p className={recipeBrowserStyles.statusError(theme)}>
-          {t.common.nameAlreadyExists}
-        </p>
+          <div className={recipeBrowserStyles.ingredientPriceDialogForm}>
+            {nameDialogError !== null && <p className={recipeBrowserStyles.statusError(theme)}>{nameDialogError}</p>}
+            <label className={recipeBrowserStyles.field}>
+              <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.name}</span>
+              <input
+                className={recipeBrowserStyles.textField(theme)}
+                maxLength={nameDialogMode === "category" ? 120 : 64}
+                value={newName}
+                onChange={(event) => setNewName(event.target.value)}
+              />
+            </label>
+            {nameDialogMode === "tag" && (
+              <label className={recipeBrowserStyles.field}>
+                <span className={recipeBrowserStyles.label(theme)}>{t.filters.categories}</span>
+                <select
+                  className={recipeBrowserStyles.textField(theme)}
+                  value={selectedCategoryId ?? ""}
+                  onChange={(event) => setSelectedCategoryId(event.target.value.length === 0 ? null : Number(event.target.value))}
+                >
+                  <option value="">{t.filters.selectCategory}</option>
+                  {categories.map((category) => (
+                    <option key={category.ingredientTagCategoryId} value={category.ingredientTagCategoryId}>
+                      {formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
+        </Modal>
+      )}
+
+      {categoryPendingDelete !== null && (
+        <ConfirmationDialog
+          body={t.common.deleteNamed(formatIngredientTagCategoryName(categoryPendingDelete.name, t.filters.ingredientTagGroups))}
+          confirmLabel={t.common.remove}
+          isBusy={isDeletingCategory}
+          theme={theme}
+          title={t.common.removeNamed(formatIngredientTagCategoryName(categoryPendingDelete.name, t.filters.ingredientTagGroups))}
+          onCancel={() => setCategoryPendingDelete(null)}
+          onConfirm={() => void deleteCategory()}
+        />
       )}
     </Modal>
   );

@@ -17,3 +17,9 @@ public record CuisineDto(
     int CuisineId,
     string Name
 );
+
+public record IngredientTagCategoryDto(
+    int IngredientTagCategoryId,
+    string Name,
+    IReadOnlyCollection<string> Tags
+);

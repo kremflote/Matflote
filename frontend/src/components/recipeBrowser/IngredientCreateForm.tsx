@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useId, useState, type FormEvent } from "react";
-import { useBrands, useIngredients, useLanguage, useRecipes, useStores } from "../../contexts";
+import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useRecipes, useStores } from "../../contexts";
 import type { IIngredient, IngredientTag, Vitamin } from "../../interfaces/IIngredient";
-import { brandService, imageUploadService, ingredientPriceService, ingredientService, storeService } from "../../services";
+import { brandService, imageUploadService, ingredientPriceService, ingredientService, ingredientTagCategoryService, storeService } from "../../services";
 import { getApiAssetUrl } from "../../services/apiClient";
 import type { SiteTheme } from "../../styles/appStyles";
 import { normalizePriceInput, todayInputValue } from "../../utils/priceFormatting";
 import {
+  formatIngredientTagCategoryName,
   getIngredientTagGroupsWithCustomTags,
   ingredientTagGroups,
   vitamins,
-  type IngredientTagGroupKey,
 } from "./formOptions";
 import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import CreatableSelect from "./CreatableSelect";
@@ -147,6 +147,7 @@ function IngredientCreateForm({
   const { brands, refreshBrands } = useBrands();
   const { stores, refreshStores } = useStores();
   const { ingredients, refreshIngredients } = useIngredients();
+  const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
   const { refreshRecipes } = useRecipes();
   const imageInputId = useId();
   const [ingredientName, setIngredientName] = useState(initialIngredient?.ingredientName ?? "");
@@ -156,7 +157,6 @@ function IngredientCreateForm({
   const [selectedTags, setSelectedTags] = useState<IngredientTag[]>(
     initialIngredient && initialIngredient.tags.length > 0 ? [...initialIngredient.tags] : ["Vegetable"],
   );
-  const [customTagGroups, setCustomTagGroups] = useState<Record<string, IngredientTagGroupKey>>({});
   const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
   const [calories, setCalories] = useState(numberToInputValue(initialIngredient?.nutritionPer100?.calories));
   const [carbohydrateGrams, setCarbohydrateGrams] = useState(
@@ -190,7 +190,9 @@ function IngredientCreateForm({
   const [priceNote, setPriceNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const knownIngredientTags = ingredientTagGroups.flatMap((group) => group.values);
+  const knownIngredientTags = (ingredientTagCategories.length === 0
+    ? ingredientTagGroups.flatMap((group) => group.values)
+    : ingredientTagCategories.flatMap((category) => category.tags)) as IngredientTag[];
   const existingCustomTags = ingredients
     .flatMap((ingredient) => ingredient.tags)
     .filter((tag) => !knownIngredientTags.includes(tag));
@@ -198,16 +200,15 @@ function IngredientCreateForm({
     ...existingCustomTags,
     ...selectedTags.filter((tag) => !knownIngredientTags.includes(tag)),
   ]));
-  const groupedTags = getIngredientTagGroupsWithCustomTags(customTags, "pantry").map((group) => {
-    const groupCustomTags = customTags.filter((tag) => customTagGroups[tag] === group.key);
-
-    return groupCustomTags.length === 0
-      ? group
-      : {
-          ...group,
-          values: Array.from(new Set([...group.values, ...groupCustomTags])),
-        };
-  });
+  const groupedTags = getIngredientTagGroupsWithCustomTags(customTags, "pantry", ingredientTagCategories);
+  const groupLabels = ingredientTagCategories.length === 0
+    ? t.filters.ingredientTagGroups
+    : Object.fromEntries(
+        ingredientTagCategories.map((category) => [
+          category.ingredientTagCategoryId.toString(),
+          formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
+        ]),
+      );
   const handleCroppedFileChange = useCallback((file: File | null) => {
     setCroppedImageFile(file);
   }, []);
@@ -541,9 +542,9 @@ function IngredientCreateForm({
               <span className={recipeBrowserStyles.inlineHint(theme)}>{t.cookbook.pickOneOrMore}</span>
             </span>
             <GroupedCheckboxPanel
-              addActionLabel={t.common.addTag}
+              addActionLabel={t.common.manageTags}
               formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
-              groupLabels={t.filters.ingredientTagGroups}
+              groupLabels={groupLabels}
               groups={groupedTags}
               panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
               selectedValues={selectedTags}
@@ -558,13 +559,42 @@ function IngredientCreateForm({
 
       {isTagCreateOpen && (
         <IngredientTagCreateDialog
+          categories={ingredientTagCategories}
           existingTags={[...knownIngredientTags, ...customTags]}
           theme={theme}
           onCancel={() => setIsTagCreateOpen(false)}
-          onCreate={(tag, group) => {
-            setCustomTagGroups((currentGroups) => ({ ...currentGroups, [tag]: group }));
+          onCreate={async (tag, categoryId) => {
+            await ingredientTagCategoryService.createTag(categoryId, { name: tag });
+            await refreshIngredientTagCategories();
             setSelectedTags((currentTags) => currentTags.includes(tag) ? currentTags : [...currentTags, tag]);
             setIsTagCreateOpen(false);
+          }}
+          onCreateCategory={async (name) => {
+            const category = await ingredientTagCategoryService.create({ name });
+            await refreshIngredientTagCategories();
+            return { id: category.ingredientTagCategoryId, name: category.name };
+          }}
+          onUpdateCategory={async (category) => {
+            await ingredientTagCategoryService.update(category.id, { name: category.name });
+            await refreshIngredientTagCategories();
+          }}
+          onDeleteCategory={async (category) => {
+            await ingredientTagCategoryService.delete(category.id);
+            await refreshIngredientTagCategories();
+            await refreshIngredients();
+            await refreshRecipes();
+          }}
+          onUpdateTag={async (tagName, nextName) => {
+            await ingredientTagCategoryService.updateTag(tagName, { name: nextName });
+            await refreshIngredientTagCategories();
+            await refreshIngredients();
+            await refreshRecipes();
+          }}
+          onDeleteTag={async (tagName) => {
+            await ingredientTagCategoryService.deleteTag(tagName);
+            await refreshIngredientTagCategories();
+            await refreshIngredients();
+            await refreshRecipes();
           }}
         />
       )}

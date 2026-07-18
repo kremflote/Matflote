@@ -1,10 +1,10 @@
 import type { Dispatch, SetStateAction } from "react";
-import { useLanguage } from "../../contexts";
+import { useIngredientTagCategories, useLanguage } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { ICuisine } from "../../interfaces/ILookup";
 import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
-import { ingredientTagGroups, recipeTagGroups, recipeTypes } from "./formOptions";
+import { formatIngredientTagCategoryName, getIngredientTagGroupsWithCustomTags, ingredientTagGroups, recipeTagGroups, recipeTypes } from "./formOptions";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import { FilterGroup, GroupedFilterGroup, NumberFilterGroup } from "./BrowserFilterGroups";
 import type { BrowserMode } from "./types";
@@ -39,17 +39,27 @@ function BrowserFilterSection({
   setSelectedCuisineIds,
 }: BrowserFilterSectionProps) {
   const { t } = useLanguage();
+  const { ingredientTagCategories } = useIngredientTagCategories();
   const className = variant === "rail"
     ? recipeBrowserStyles.filterRail(theme)
     : recipeBrowserStyles.filterPanel(theme);
+  const liveIngredientTagGroups = getIngredientTagGroupsWithCustomTags([], "pantry", ingredientTagCategories);
+  const ingredientTagGroupLabels = ingredientTagCategories.length === 0
+    ? t.filters.ingredientTagGroups
+    : Object.fromEntries(
+        ingredientTagCategories.map((category) => [
+          category.ingredientTagCategoryId.toString(),
+          formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
+        ]),
+      );
 
   return (
     <aside className={className} aria-label={t.filters.recipeFilters}>
       {mode === "ingredients" ? (
         <GroupedFilterGroup
           formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
-          groupLabels={t.filters.ingredientTagGroups}
-          groups={ingredientTagGroups}
+          groupLabels={ingredientTagGroupLabels}
+          groups={ingredientTagCategories.length === 0 ? ingredientTagGroups : liveIngredientTagGroups}
           selectedValues={selectedIngredientTags}
           theme={theme}
           title={t.filters.ingredientTags}

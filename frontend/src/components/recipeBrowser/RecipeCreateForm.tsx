@@ -227,7 +227,7 @@ function RecipeCreateForm({
     }
   };
 
-  const renderRecipeTypeField = (className: string) => (
+  const renderRecipeTypeField = (className = "") => (
     <label className={`${recipeBrowserStyles.field} ${className}`}>
       <span className={recipeBrowserStyles.label(theme)}>
         {t.cookbook.recipeType}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
@@ -253,12 +253,8 @@ function RecipeCreateForm({
         {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
 
         <div className={recipeBrowserStyles.recipeCreateScrollArea(theme)}>
-          {renderRecipeTypeField(recipeBrowserStyles.recipeTypeFieldMobile)}
-
           <div className={recipeBrowserStyles.createFormTopGrid}>
             <div className={recipeBrowserStyles.createFormPrimaryFields}>
-              {renderRecipeTypeField(recipeBrowserStyles.recipeTypeFieldDesktop)}
-
               <label className={recipeBrowserStyles.field}>
                 <span className={recipeBrowserStyles.label(theme)}>
                   Name<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
@@ -275,6 +271,8 @@ function RecipeCreateForm({
                   onChange={(event) => setName(event.target.value)}
                 />
               </label>
+
+              {renderRecipeTypeField()}
 
               {recipeType === "Dish" && (
                 <CreatableSelect
@@ -360,23 +358,24 @@ function RecipeCreateForm({
             ) : (
               <div className={recipeBrowserStyles.selectedComponentThumbnails}>
                 {selectedComponentRecipes.map((componentRecipe) => (
-                  <RecipeThumbnail
-                    className={recipeBrowserStyles.selectedComponentThumbnail}
-                    interactiveEffect={false}
-                    key={componentRecipe.recipeId}
-                    recipe={{
-                      name: componentRecipe.name,
-                      imageUrl: componentRecipe.imageUrl,
-                      subtitle: t.enums.recipeTypes[componentRecipe.recipeType],
-                    }}
-                    textScale="micro"
-                    theme={theme}
-                    onClick={() =>
-                      setSelectedComponentIds((currentIds) =>
-                        currentIds.filter((recipeId) => recipeId !== componentRecipe.recipeId),
-                      )
-                    }
-                  />
+                  <div className={recipeBrowserStyles.selectedComponentThumbnail} key={componentRecipe.recipeId}>
+                    <RecipeThumbnail
+                      className={recipeBrowserStyles.selectedComponentThumbnailCard}
+                      interactiveEffect={false}
+                      recipe={{
+                        name: componentRecipe.name,
+                        imageUrl: componentRecipe.imageUrl,
+                        subtitle: t.enums.recipeTypes[componentRecipe.recipeType],
+                      }}
+                      textScale="micro"
+                      theme={theme}
+                      onClick={() =>
+                        setSelectedComponentIds((currentIds) =>
+                          currentIds.filter((recipeId) => recipeId !== componentRecipe.recipeId),
+                        )
+                      }
+                    />
+                  </div>
                 ))}
               </div>
             )}

@@ -1,4 +1,5 @@
 import type { IngredientTag, KnownIngredientTag, MeasurementUnit, Vitamin } from "../../interfaces/IIngredient";
+import type { IIngredientTagCategory } from "../../interfaces/ILookup";
 import type { DessertType, IngredientPreparation, RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 
 export const recipeTypes: RecipeType[] = [
@@ -84,7 +85,7 @@ export const ingredientTags: KnownIngredientTag[] = [
   "Dip",
 ];
 
-export type IngredientTagGroupKey = "produce" | "protein" | "pantry";
+export type IngredientTagGroupKey = string;
 
 export const ingredientTagGroups: Array<{
   key: IngredientTagGroupKey;
@@ -107,18 +108,29 @@ export const ingredientTagGroups: Array<{
 export function getIngredientTagGroupsWithCustomTags(
   customTags: readonly IngredientTag[],
   fallbackGroup: IngredientTagGroupKey = "pantry",
+  categories: readonly IIngredientTagCategory[] = [],
 ) {
-  const knownTags = new Set(ingredientTagGroups.flatMap((group) => group.values));
+  const baseGroups = categories.length === 0
+    ? ingredientTagGroups
+    : categories.map((category) => ({
+        key: category.ingredientTagCategoryId.toString(),
+        values: category.tags as IngredientTag[],
+      }));
+  const pantryCategory = categories.find((category) => category.name.trim().toLowerCase() === "pantry");
+  const fallbackKey = categories.length === 0
+    ? fallbackGroup
+    : pantryCategory?.ingredientTagCategoryId.toString() ?? categories[0]?.ingredientTagCategoryId.toString() ?? fallbackGroup;
+  const knownTags = new Set(baseGroups.flatMap((group) => group.values));
   const normalizedCustomTags = customTags
     .map((tag) => tag.trim())
     .filter((tag) => tag.length > 0 && !knownTags.has(tag));
 
   if (normalizedCustomTags.length === 0) {
-    return ingredientTagGroups;
+    return baseGroups;
   }
 
-  return ingredientTagGroups.map((group) =>
-    group.key === fallbackGroup
+  return baseGroups.map((group) =>
+    group.key === fallbackKey
       ? {
           ...group,
           values: [...group.values, ...Array.from(new Set(normalizedCustomTags))],
@@ -132,6 +144,26 @@ export function normalizeCustomTagName(value: string) {
     .trim()
     .replace(/\s+/g, " ")
     .slice(0, 64);
+}
+
+export function formatIngredientTagCategoryName(
+  name: string,
+  localizedNames: Record<string, string>,
+) {
+  const normalizedName = name.trim().toLowerCase();
+  if (normalizedName === "produce") {
+    return localizedNames.produce ?? name;
+  }
+
+  if (normalizedName === "protein") {
+    return localizedNames.protein ?? name;
+  }
+
+  if (normalizedName === "pantry") {
+    return localizedNames.pantry ?? name;
+  }
+
+  return name;
 }
 
 export const measurementUnits: MeasurementUnit[] = [

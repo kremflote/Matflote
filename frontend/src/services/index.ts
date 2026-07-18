@@ -5,6 +5,7 @@ export { cuisineService } from "./cuisineService";
 export { imageUploadService } from "./imageUploadService";
 export { groceryListService } from "./groceryListService";
 export { ingredientPriceService } from "./ingredientPriceService";
+export { ingredientTagCategoryService } from "./ingredientTagCategoryService";
 export { ingredientService } from "./ingredientService";
 export { mealPlanService } from "./mealPlanService";
 export { productLookupService } from "./productLookupService";

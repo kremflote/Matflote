@@ -11,6 +11,8 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     public DbSet<Cuisine> Cuisines => Set<Cuisine>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<IngredientPricePoint> IngredientPricePoints => Set<IngredientPricePoint>();
+    public DbSet<IngredientTagCategory> IngredientTagCategories => Set<IngredientTagCategory>();
+    public DbSet<IngredientTagDefinition> IngredientTagDefinitions => Set<IngredientTagDefinition>();
     public DbSet<IngredientTagAssignment> IngredientTagAssignments => Set<IngredientTagAssignment>();
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<RecipeComponent> RecipeComponents => Set<RecipeComponent>();
@@ -95,6 +97,22 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 .WithMany(ingredient => ingredient.Tags)
                 .HasForeignKey(ingredientTag => ingredientTag.IngredientId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<IngredientTagCategory>(entity =>
+        {
+            entity.Property(category => category.Name).HasMaxLength(120);
+            entity.HasIndex(category => category.Name).IsUnique();
+            entity.HasMany(category => category.Tags)
+                .WithOne(tag => tag.Category)
+                .HasForeignKey(tag => tag.IngredientTagCategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<IngredientTagDefinition>(entity =>
+        {
+            entity.Property(tag => tag.Name).HasMaxLength(64);
+            entity.HasIndex(tag => tag.Name).IsUnique();
         });
 
         modelBuilder.Entity<Store>(entity =>
@@ -280,6 +298,34 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             new { StoreId = 7, Name = "Kiwi" },
             new { StoreId = 8, Name = "Bunnpris" },
             new { StoreId = 9, Name = "Europris" }
+        );
+
+        modelBuilder.Entity<IngredientTagCategory>().HasData(
+            new { IngredientTagCategoryId = 1, Name = "Produce", SortOrder = 100 },
+            new { IngredientTagCategoryId = 2, Name = "Protein", SortOrder = 200 },
+            new { IngredientTagCategoryId = 3, Name = "Pantry", SortOrder = 300 }
+        );
+
+        modelBuilder.Entity<IngredientTagDefinition>().HasData(
+            new { IngredientTagDefinitionId = 1, Name = "Vegetable", IngredientTagCategoryId = 1 },
+            new { IngredientTagDefinitionId = 2, Name = "Fruit", IngredientTagCategoryId = 1 },
+            new { IngredientTagDefinitionId = 3, Name = "Berry", IngredientTagCategoryId = 1 },
+            new { IngredientTagDefinitionId = 4, Name = "RootVegetable", IngredientTagCategoryId = 1 },
+            new { IngredientTagDefinitionId = 5, Name = "LeafyGreen", IngredientTagCategoryId = 1 },
+            new { IngredientTagDefinitionId = 6, Name = "Herb", IngredientTagCategoryId = 1 },
+            new { IngredientTagDefinitionId = 7, Name = "Chicken", IngredientTagCategoryId = 2 },
+            new { IngredientTagDefinitionId = 8, Name = "Fish", IngredientTagCategoryId = 2 },
+            new { IngredientTagDefinitionId = 9, Name = "Beef", IngredientTagCategoryId = 2 },
+            new { IngredientTagDefinitionId = 10, Name = "Lamb", IngredientTagCategoryId = 2 },
+            new { IngredientTagDefinitionId = 11, Name = "Mince", IngredientTagCategoryId = 2 },
+            new { IngredientTagDefinitionId = 12, Name = "Dairy", IngredientTagCategoryId = 2 },
+            new { IngredientTagDefinitionId = 13, Name = "Grain", IngredientTagCategoryId = 3 },
+            new { IngredientTagDefinitionId = 14, Name = "Bread", IngredientTagCategoryId = 3 },
+            new { IngredientTagDefinitionId = 15, Name = "Spice", IngredientTagCategoryId = 3 },
+            new { IngredientTagDefinitionId = 16, Name = "Sauce", IngredientTagCategoryId = 3 },
+            new { IngredientTagDefinitionId = 17, Name = "Dip", IngredientTagCategoryId = 3 },
+            new { IngredientTagDefinitionId = 18, Name = "Pantry", IngredientTagCategoryId = 3 },
+            new { IngredientTagDefinitionId = 19, Name = "Frozen", IngredientTagCategoryId = 3 }
         );
 
         modelBuilder.Entity<Ingredient>().HasData(
