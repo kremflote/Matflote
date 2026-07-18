@@ -97,9 +97,42 @@ function CompactIngredientImagePicker({
         )}
       </div>
       <label className={recipeBrowserStyles.compactIngredientImageButton(theme)} htmlFor={inputId}>
+        <IngredientImageUploadIcon />
         {t.cookbook.chooseFile}
       </label>
     </div>
+  );
+}
+
+function IngredientImageUploadIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className={recipeBrowserStyles.imageUploadIcon}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11Z"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <path
+        d="m7 16 3.2-3.2a1.1 1.1 0 0 1 1.6 0L14 15l1.2-1.2a1.1 1.1 0 0 1 1.6 0L20 17"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+      <path
+        d="M15 4v6m0-6 2 2m-2-2-2 2"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+    </svg>
   );
 }
 
@@ -416,8 +449,8 @@ function IngredientCreateForm({
         {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
 
         <div className={recipeBrowserStyles.ingredientCreateScrollArea(theme)}>
-          <div className={recipeBrowserStyles.ingredientEditorHeroGrid}>
-            <div className={recipeBrowserStyles.ingredientEditorPrimaryStack}>
+          <div className={recipeBrowserStyles.createFormTopGrid}>
+            <div className={recipeBrowserStyles.createFormPrimaryFields}>
               <label className={recipeBrowserStyles.field}>
                 <span className={recipeBrowserStyles.label(theme)}>
                     {t.cookbook.name}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
@@ -486,8 +519,10 @@ function IngredientCreateForm({
               </section>
             </div>
 
-            <section className={recipeBrowserStyles.ingredientEditorImageField}>
-              <span className={recipeBrowserStyles.ingredientEditorImageLabel}>{t.cookbook.image}</span>
+            <section className={recipeBrowserStyles.createImageField}>
+              <span className={`${recipeBrowserStyles.label(theme)} ${recipeBrowserStyles.createImageLabel}`}>
+                {t.cookbook.image}
+              </span>
               <CompactIngredientImagePicker
                 inputId={imageInputId}
                 initialImageUrl={initialIngredient?.imageUrl}

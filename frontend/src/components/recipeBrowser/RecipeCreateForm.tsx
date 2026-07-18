@@ -255,8 +255,8 @@ function RecipeCreateForm({
         <div className={recipeBrowserStyles.recipeCreateScrollArea(theme)}>
           {renderRecipeTypeField(recipeBrowserStyles.recipeTypeFieldMobile)}
 
-          <div className={recipeBrowserStyles.recipeCreateTopGrid}>
-            <div className={recipeBrowserStyles.recipePrimaryFields}>
+          <div className={recipeBrowserStyles.createFormTopGrid}>
+            <div className={recipeBrowserStyles.createFormPrimaryFields}>
               {renderRecipeTypeField(recipeBrowserStyles.recipeTypeFieldDesktop)}
 
               <label className={recipeBrowserStyles.field}>
@@ -310,9 +310,11 @@ function RecipeCreateForm({
                 </label>
               )}
             </div>
-            <div className={recipeBrowserStyles.recipeImageField}>
-              <span className={`${recipeBrowserStyles.label(theme)} ${recipeBrowserStyles.recipeImageLabel}`}>{t.cookbook.image}</span>
-              <div className={recipeBrowserStyles.recipeImageControl}>
+            <div className={recipeBrowserStyles.createImageField}>
+              <span className={`${recipeBrowserStyles.label(theme)} ${recipeBrowserStyles.createImageLabel}`}>
+                {t.cookbook.image}
+              </span>
+              <div className={recipeBrowserStyles.createImageControl}>
                 <ImageCropPicker
                   inputId={imageInputId}
                   initialImageUrl={initialRecipe?.imageUrl}
