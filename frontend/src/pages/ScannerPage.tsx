@@ -540,7 +540,7 @@ function IngredientDraftEditor({
             return { id: store.storeId, name: store.name };
           }}
         />
-        <label className={scannerStyles.field}>
+        <label className={scannerStyles.priceField}>
           <span className={scannerStyles.label}>{t.scanner.priceLabel}</span>
           <input
             className={scannerStyles.input(theme)}
@@ -549,7 +549,7 @@ function IngredientDraftEditor({
             value={draft.price}
             onChange={(event) => onChange({ ...draft, price: normalizePriceInput(event.target.value) })}
           />
-          <span className={scannerStyles.labelSubtitle(theme)}>{t.prices.priceUnitSubtitle}</span>
+          <span className={scannerStyles.floatingLabelSubtitle(theme)}>{t.prices.priceUnitSubtitle}</span>
         </label>
       </div>
 
