@@ -24,6 +24,8 @@ type ScannerPageProps = {
   theme: SiteTheme;
 };
 
+const INGREDIENT_NAME_MAX_LENGTH = 30;
+
 type IngredientCandidate = {
   id: string;
   name: string;
@@ -127,9 +129,14 @@ function ScannerPage({ theme }: ScannerPageProps) {
       return;
     }
 
-    const ingredientName = ingredientDraft.name.trim().slice(0, 30);
+    const ingredientName = ingredientDraft.name.trim();
     if (ingredientName.length === 0) {
       setError(t.scanner.noCandidateSelected);
+      return;
+    }
+
+    if (ingredientName.length > INGREDIENT_NAME_MAX_LENGTH) {
+      setError(t.cookbook.ingredientNameTooLong(INGREDIENT_NAME_MAX_LENGTH));
       return;
     }
 
@@ -487,10 +494,14 @@ function IngredientDraftEditor({
 
       <div className={scannerStyles.compactFormGrid}>
         <label className={scannerStyles.field}>
-          <span className={scannerStyles.label}>{t.scanner.nameLabel}</span>
+          <span className={scannerStyles.label}>
+            {t.scanner.nameLabel}
+            <span className={recipeBrowserStyles.inlineHint(theme)}>
+              {draft.name.length}/{INGREDIENT_NAME_MAX_LENGTH}
+            </span>
+          </span>
           <input
             className={scannerStyles.input(theme)}
-            maxLength={30}
             value={draft.name}
             onChange={(event) => onChange({ ...draft, name: event.target.value })}
           />
@@ -725,13 +736,7 @@ function findStoreId(storeName: string, stores: IStore[]) {
 }
 
 function cleanIngredientName(name: string) {
-  const cleaned = name
-    .replace(/\b\d+([,.]\d+)?\s?(g|gram|kg|ml|l|liter|stk|pk|pack|x)\b/gi, "")
-    .replace(/\b\d+\s?x\s?\d+([,.]\d+)?\s?(g|kg|ml|l)\b/gi, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-
-  return (cleaned.length === 0 ? name : cleaned).slice(0, 30);
+  return name.replace(/\s{2,}/g, " ").trim();
 }
 
 function inferIngredientTags(searchText: string): IngredientTag[] {
