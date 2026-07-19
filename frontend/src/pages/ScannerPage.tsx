@@ -4,7 +4,7 @@ import Modal from "../components/Modal";
 import CreatableSelect from "../components/recipeBrowser/CreatableSelect";
 import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useStores } from "../contexts";
 import type { IngredientTag, INutritionFacts, Vitamin } from "../interfaces/IIngredient";
-import type { IStore } from "../interfaces/ILookup";
+import type { IBrand, IStore } from "../interfaces/ILookup";
 import type { IProductLookupNutrition, IProductLookupResult } from "../interfaces/IProductLookup";
 import { brandService, imageUploadService, ingredientPriceService, ingredientService, ingredientTagCategoryService, productLookupService, storeService } from "../services";
 import { getApiAssetUrl } from "../services/apiClient";
@@ -38,6 +38,7 @@ type IngredientCandidate = {
 
 type IngredientDraft = {
   name: string;
+  brandId: number | null;
   brandName: string;
   storeName: string;
   storeId: number | null;
@@ -81,7 +82,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
     }
 
     setSelectedCandidateId(firstCandidate.id);
-    setIngredientDraft(candidateToDraft(firstCandidate, stores));
+    setIngredientDraft(candidateToDraft(firstCandidate, stores, brands));
   }, [candidates, stores]);
 
   const lookupEan = useCallback(async (rawEan: string) => {
@@ -117,7 +118,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
 
   const selectCandidate = (candidate: IngredientCandidate) => {
     setSelectedCandidateId(candidate.id);
-    setIngredientDraft(candidateToDraft(candidate, stores));
+    setIngredientDraft(candidateToDraft(candidate, stores, brands));
     setIsEditorOpen(true);
   };
 
@@ -137,10 +138,13 @@ function ScannerPage({ theme }: ScannerPageProps) {
 
     try {
       const brandName = ingredientDraft.brandName.trim();
+      const selectedBrand = brands.find((brand) => brand.brandId === ingredientDraft.brandId) ?? null;
       const existingBrand = brands.find((brand) => brand.name.toLowerCase() === brandName.toLowerCase());
-      const brand = brandName.length === 0
-        ? null
-        : existingBrand ?? await brandService.create({ name: brandName });
+      const brand = selectedBrand ?? (
+        brandName.length === 0
+          ? null
+          : existingBrand ?? await brandService.create({ name: brandName })
+      );
 
       if (brand !== null && existingBrand === undefined) {
         await refreshBrands();
@@ -415,6 +419,7 @@ function IngredientDraftEditor({
   onChange: (draft: IngredientDraft) => void;
 }) {
   const { t } = useLanguage();
+  const { brands, refreshBrands } = useBrands();
   const { ingredients, refreshIngredients } = useIngredients();
   const { stores, refreshStores } = useStores();
   const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
@@ -490,14 +495,26 @@ function IngredientDraftEditor({
             onChange={(event) => onChange({ ...draft, name: event.target.value })}
           />
         </label>
-        <label className={scannerStyles.field}>
-          <span className={scannerStyles.label}>{t.scanner.brandLabel}</span>
-          <input
-            className={scannerStyles.input(theme)}
-            value={draft.brandName}
-            onChange={(event) => onChange({ ...draft, brandName: event.target.value })}
-          />
-        </label>
+        <CreatableSelect
+          createLabel={t.common.createNew}
+          fieldClassName={scannerStyles.field}
+          label={t.scanner.brandLabel}
+          labelClassName={scannerStyles.label}
+          options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
+          placeholder={t.cookbook.selectBrand}
+          theme={theme}
+          value={draft.brandId}
+          onChange={(brandId) => {
+            const brandName = brands.find((brand) => brand.brandId === brandId)?.name ?? "";
+            onChange({ ...draft, brandId, brandName });
+          }}
+          onCreate={async (name) => {
+            const brand = await brandService.create({ name });
+            await refreshBrands();
+            return { id: brand.brandId, name: brand.name };
+          }}
+          onCreatedOptionSelected={(brand) => onChange({ ...draft, brandId: brand.id, brandName: brand.name })}
+        />
         <CreatableSelect
           createLabel={t.common.createNew}
           fieldClassName={scannerStyles.field}
@@ -674,9 +691,10 @@ function buildIngredientCandidates(products: IProductLookupResult[]): Ingredient
     .slice(0, 6);
 }
 
-function candidateToDraft(candidate: IngredientCandidate, stores: IStore[]): IngredientDraft {
+function candidateToDraft(candidate: IngredientCandidate, stores: IStore[], brands: IBrand[]): IngredientDraft {
   return {
     name: candidate.name,
+    brandId: findBrandId(candidate.brandName, brands),
     brandName: candidate.brandName,
     storeName: candidate.storeName,
     storeId: findStoreId(candidate.storeName, stores),
@@ -686,6 +704,15 @@ function candidateToDraft(candidate: IngredientCandidate, stores: IStore[]): Ing
     tags: candidate.tags,
     nutritionPer100: candidate.nutritionPer100,
   };
+}
+
+function findBrandId(brandName: string, brands: IBrand[]) {
+  const normalizedBrandName = brandName.trim().toLowerCase();
+  if (normalizedBrandName.length === 0) {
+    return null;
+  }
+
+  return brands.find((brand) => brand.name.toLowerCase() === normalizedBrandName)?.brandId ?? null;
 }
 
 function findStoreId(storeName: string, stores: IStore[]) {

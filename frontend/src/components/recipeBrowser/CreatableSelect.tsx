@@ -21,6 +21,7 @@ type CreatableSelectProps = {
   createLabel?: string;
   onChange: (value: number | null) => void;
   onCreate: (name: string) => Promise<CreatableOption>;
+  onCreatedOptionSelected?: (option: CreatableOption) => void;
   onDeleteOption?: (option: CreatableOption) => Promise<void>;
 };
 
@@ -38,6 +39,7 @@ function CreatableSelect({
   createLabel = "Create New",
   onChange,
   onCreate,
+  onCreatedOptionSelected,
   onDeleteOption,
 }: CreatableSelectProps) {
   const { t } = useLanguage();
@@ -86,7 +88,11 @@ function CreatableSelect({
 
     try {
       const created = await onCreate(trimmedName);
-      onChange(created.id);
+      if (onCreatedOptionSelected === undefined) {
+        onChange(created.id);
+      } else {
+        onCreatedOptionSelected(created);
+      }
       setName("");
       setIsCreating(false);
       setIsOpen(false);
