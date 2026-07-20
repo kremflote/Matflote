@@ -549,6 +549,8 @@ export const scannerStyles = {
           ? "text-[#7A8864]"
           : "text-neutral-500"
     }`,
+  nutritionSourceRow: "flex flex-wrap items-center gap-2",
+  nutritionSourceActions: "inline-flex items-center gap-2",
   nutritionSourceLink: (theme: SiteTheme) =>
     `text-xs font-bold leading-tight underline underline-offset-2 ${
       theme === "dark"
@@ -556,6 +558,30 @@ export const scannerStyles = {
         : theme === "paletteLight"
           ? "text-[#556145] hover:text-[#3C4A2E]"
           : "text-neutral-700 hover:text-neutral-950"
+    }`,
+  sourceActionButton: (theme: SiteTheme) =>
+    `h-7 rounded-md border px-2 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-white/[0.12] bg-white/[0.08] text-neutral-100 hover:bg-white/[0.14]"
+        : theme === "paletteLight"
+          ? "border-[#7A8864]/30 bg-[#E5D5BC]/50 text-[#556145] hover:bg-[#E5D5BC]/80"
+          : "border-neutral-200 bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+    }`,
+  nutritionSupplementWarning: (theme: SiteTheme) =>
+    `rounded-md border px-3 py-2 text-xs font-bold ${
+      theme === "dark"
+        ? "border-amber-300/25 bg-amber-200/10 text-amber-100"
+        : theme === "paletteLight"
+          ? "border-[#9B7A3D]/30 bg-[#E5D5BC]/65 text-[#5F4A24]"
+          : "border-amber-200 bg-amber-50 text-amber-800"
+    }`,
+  nutritionSupplementWarningRow: (theme: SiteTheme) =>
+    `flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs font-bold ${
+      theme === "dark"
+        ? "border-amber-300/25 bg-amber-200/10 text-amber-100"
+        : theme === "paletteLight"
+          ? "border-[#9B7A3D]/30 bg-[#E5D5BC]/65 text-[#5F4A24]"
+          : "border-amber-200 bg-amber-50 text-amber-800"
     }`,
   input: controlStyles.formField,
   submitButton: controlStyles.primaryButton,
@@ -777,6 +803,34 @@ export const scannerStyles = {
         : theme === "paletteLight"
           ? "bg-[#B44E3A]/10 text-[#8E321F]"
           : "bg-red-50 text-red-700"
+    }`,
+  matvareCandidateModalPanel: (theme: SiteTheme) =>
+    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  matvareCandidateModalBody: "grid min-h-0 gap-2 overflow-y-auto pr-1",
+  matvareCandidateButton: (theme: SiteTheme) =>
+    `grid gap-1 rounded-md border p-3 text-left transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-white/[0.05] text-neutral-100 hover:bg-white/[0.10]"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-[#FAF7F2]/70 text-[#556145] hover:bg-[#E5D5BC]/55"
+          : "border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
+    }`,
+  matvareCandidateName: "text-sm font-extrabold leading-tight",
+  matvareCandidateMeta: (theme: SiteTheme) =>
+    `text-xs font-bold ${
+      theme === "dark"
+        ? "text-neutral-300"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
+  matvareCandidateMacros: (theme: SiteTheme) =>
+    `text-xs font-semibold leading-[1.4] ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
     }`,
 } as const;
 

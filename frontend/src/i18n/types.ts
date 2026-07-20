@@ -264,6 +264,7 @@ export type TranslationDictionary = {
     cameraUnsupported: string;
     brandLabel: string;
     calories: string;
+    changeMatvaretabellen: string;
     carbs: string;
     chooseImage: string;
     colorLabel: string;
@@ -275,12 +276,19 @@ export type TranslationDictionary = {
     lookupFailed: string;
     hideManualEntry: string;
     manualEntry: string;
+    chooseMatvaretabellenMatch: string;
+    chooseMatvaretabellenEntry: string;
+    matvaretabellenScore: (score: number) => string;
+    matvaretabellenNoMatchFound: string;
+    matvaretabellenSupplementFailed: string;
     mobileOnly: string;
     nameLabel: string;
     noCandidateSelected: string;
     noImage: string;
     noPrice: string;
     noProductsFound: (ean: string) => string;
+    nutritionSupplementedBy: (primary: string, supplement: string) => string;
+    nutritionSupplementSeparator: string;
     nutritionSources: Record<NutritionDataSource, string>;
     pageIntroAfterKassalapp: string;
     pageIntroBeforeKassalapp: string;

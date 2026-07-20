@@ -124,19 +124,32 @@ public class KassalappProductLookupService(
     )
     {
         var kassalappNutrition = ToNutrition(product.NutritionalContents ?? nutrition);
-        var matvaretabellenMatch = await matvaretabellenNutritionLookup.FindBestMatchAsync(
+        var matvaretabellenLookup = await matvaretabellenNutritionLookup.FindMatchesAsync(
             product.Name ?? string.Empty,
             product.Brand,
             product.Ingredients,
             kassalappNutrition,
             cancellationToken
         );
-        var nutritionPer100 = matvaretabellenMatch?.Nutrition ?? kassalappNutrition;
-        var nutritionSource = matvaretabellenMatch is not null
+        var matvaretabellenMatch = matvaretabellenLookup.AcceptedMatch;
+        var mergedNutrition = MergeNutrition(kassalappNutrition, matvaretabellenMatch?.Nutrition);
+        var nutritionPer100 = mergedNutrition.Nutrition;
+        var nutritionSource = kassalappNutrition is not null
+            ? NutritionDataSource.Kassalapp
+            : matvaretabellenMatch is not null
+                ? NutritionDataSource.Matvaretabellen
+                : NutritionDataSource.None;
+        var nutritionSupplementSource = mergedNutrition.UsedSupplement
             ? NutritionDataSource.Matvaretabellen
-            : kassalappNutrition is null
-                ? NutritionDataSource.None
-                : NutritionDataSource.Kassalapp;
+            : (NutritionDataSource?)null;
+        var supplementAttempted = kassalappNutrition is null || HasMissingValues(kassalappNutrition);
+        var supplementStatus = nutritionSupplementSource is not null
+            ? "Matched"
+            : supplementAttempted
+                ? "NoMatch"
+                : "NotAttempted";
+        var usesMatvaretabellen = nutritionSource == NutritionDataSource.Matvaretabellen
+            || nutritionSupplementSource == NutritionDataSource.Matvaretabellen;
 
         return new ProductLookupResultDto(
             product.Ean ?? ean,
@@ -151,15 +164,123 @@ public class KassalappProductLookupService(
             product.Weight,
             product.WeightUnit,
             product.Store is null ? null : new ProductLookupStoreDto(product.Store.Name ?? string.Empty, product.Store.Url, product.Store.Logo),
+            ToKassalappUrl(product, ean),
+            kassalappNutrition,
+            usesMatvaretabellen ? matvaretabellenMatch?.Nutrition : null,
             nutritionPer100,
             nutritionSource,
+            nutritionSupplementSource,
+            supplementAttempted,
+            supplementStatus,
+            matvaretabellenLookup.Candidates.Select(ToCandidateDto).ToList(),
             nutritionSource == NutritionDataSource.None ? null : nutritionSource.ToString(),
-            matvaretabellenMatch?.FoodId,
-            matvaretabellenMatch?.Url,
-            matvaretabellenMatch?.FoodName,
-            matvaretabellenMatch?.Confidence,
+            usesMatvaretabellen ? matvaretabellenMatch?.FoodId : null,
+            usesMatvaretabellen ? matvaretabellenMatch?.Url : null,
+            usesMatvaretabellen ? matvaretabellenMatch?.FoodName : null,
+            usesMatvaretabellen ? matvaretabellenMatch?.Confidence : null,
             "Kassalapp"
         );
+    }
+
+    private static MatvaretabellenCandidateDto ToCandidateDto(MatvaretabellenNutritionMatch match) =>
+        new(match.FoodId, match.FoodName, match.Url, match.Confidence, match.Nutrition);
+
+    private static NutritionMergeResult MergeNutrition(
+        ProductLookupNutritionDto? primary,
+        ProductLookupNutritionDto? supplement
+    )
+    {
+        if (primary is null)
+        {
+            return new NutritionMergeResult(supplement, false);
+        }
+
+        if (supplement is null)
+        {
+            return new NutritionMergeResult(primary, false);
+        }
+
+        var merged = new ProductLookupNutritionDto(
+            primary.Calories ?? supplement.Calories,
+            primary.CarbohydrateGrams ?? supplement.CarbohydrateGrams,
+            primary.ProteinGrams ?? supplement.ProteinGrams,
+            primary.SaltGrams ?? supplement.SaltGrams,
+            primary.DietaryFiberGrams ?? supplement.DietaryFiberGrams,
+            primary.SaturatedFatGrams ?? supplement.SaturatedFatGrams,
+            primary.TransFatGrams ?? supplement.TransFatGrams,
+            primary.MonounsaturatedFatGrams ?? supplement.MonounsaturatedFatGrams,
+            primary.PolyunsaturatedFatGrams ?? supplement.PolyunsaturatedFatGrams,
+            primary.Omega3Grams ?? supplement.Omega3Grams,
+            primary.Omega6Grams ?? supplement.Omega6Grams,
+            primary.CholesterolMilligrams ?? supplement.CholesterolMilligrams,
+            primary.VitaminAMicrograms ?? supplement.VitaminAMicrograms,
+            primary.VitaminB9Micrograms ?? supplement.VitaminB9Micrograms,
+            primary.VitaminB12Micrograms ?? supplement.VitaminB12Micrograms,
+            primary.VitaminCMilligrams ?? supplement.VitaminCMilligrams,
+            primary.VitaminDMicrograms ?? supplement.VitaminDMicrograms,
+            primary.VitaminEMilligrams ?? supplement.VitaminEMilligrams,
+            primary.VitaminKMicrograms ?? supplement.VitaminKMicrograms,
+            primary.CholineMilligrams ?? supplement.CholineMilligrams
+        );
+        var usedSupplement = HasMissingValueFilled(primary, supplement);
+        return new NutritionMergeResult(merged, usedSupplement);
+    }
+
+    private static bool HasMissingValueFilled(ProductLookupNutritionDto primary, ProductLookupNutritionDto supplement) =>
+        (primary.Calories is null && supplement.Calories is not null)
+        || (primary.CarbohydrateGrams is null && supplement.CarbohydrateGrams is not null)
+        || (primary.ProteinGrams is null && supplement.ProteinGrams is not null)
+        || (primary.SaltGrams is null && supplement.SaltGrams is not null)
+        || (primary.DietaryFiberGrams is null && supplement.DietaryFiberGrams is not null)
+        || (primary.SaturatedFatGrams is null && supplement.SaturatedFatGrams is not null)
+        || (primary.TransFatGrams is null && supplement.TransFatGrams is not null)
+        || (primary.MonounsaturatedFatGrams is null && supplement.MonounsaturatedFatGrams is not null)
+        || (primary.PolyunsaturatedFatGrams is null && supplement.PolyunsaturatedFatGrams is not null)
+        || (primary.Omega3Grams is null && supplement.Omega3Grams is not null)
+        || (primary.Omega6Grams is null && supplement.Omega6Grams is not null)
+        || (primary.CholesterolMilligrams is null && supplement.CholesterolMilligrams is not null)
+        || (primary.VitaminAMicrograms is null && supplement.VitaminAMicrograms is not null)
+        || (primary.VitaminB9Micrograms is null && supplement.VitaminB9Micrograms is not null)
+        || (primary.VitaminB12Micrograms is null && supplement.VitaminB12Micrograms is not null)
+        || (primary.VitaminCMilligrams is null && supplement.VitaminCMilligrams is not null)
+        || (primary.VitaminDMicrograms is null && supplement.VitaminDMicrograms is not null)
+        || (primary.VitaminEMilligrams is null && supplement.VitaminEMilligrams is not null)
+        || (primary.VitaminKMicrograms is null && supplement.VitaminKMicrograms is not null)
+        || (primary.CholineMilligrams is null && supplement.CholineMilligrams is not null);
+
+    private static bool HasMissingValues(ProductLookupNutritionDto nutrition) =>
+        nutrition.Calories is null
+        || nutrition.CarbohydrateGrams is null
+        || nutrition.ProteinGrams is null
+        || nutrition.SaltGrams is null
+        || nutrition.DietaryFiberGrams is null
+        || nutrition.SaturatedFatGrams is null
+        || nutrition.TransFatGrams is null
+        || nutrition.MonounsaturatedFatGrams is null
+        || nutrition.PolyunsaturatedFatGrams is null
+        || nutrition.Omega3Grams is null
+        || nutrition.Omega6Grams is null
+        || nutrition.CholesterolMilligrams is null
+        || nutrition.VitaminAMicrograms is null
+        || nutrition.VitaminB9Micrograms is null
+        || nutrition.VitaminB12Micrograms is null
+        || nutrition.VitaminCMilligrams is null
+        || nutrition.VitaminDMicrograms is null
+        || nutrition.VitaminEMilligrams is null
+        || nutrition.VitaminKMicrograms is null
+        || nutrition.CholineMilligrams is null;
+
+    private static string ToKassalappUrl(KassalappProduct product, string fallbackEan)
+    {
+        if (!string.IsNullOrWhiteSpace(product.Url))
+        {
+            return Uri.TryCreate(product.Url, UriKind.Absolute, out var absoluteUri)
+                ? absoluteUri.ToString()
+                : $"https://kassal.app/{product.Url.TrimStart('/')}";
+        }
+
+        var ean = string.IsNullOrWhiteSpace(product.Ean) ? fallbackEan : product.Ean;
+        return $"https://kassal.app/sok?search={Uri.EscapeDataString(ean)}";
     }
 
     private static ProductLookupNutritionDto? ToNutrition(IReadOnlyCollection<KassalappNutritionalContent>? contents)
@@ -241,6 +362,11 @@ public class ProductLookupConfigurationException(string message) : Exception(mes
 
 public class ProductLookupRateLimitException(string message) : Exception(message);
 
+public record NutritionMergeResult(
+    ProductLookupNutritionDto? Nutrition,
+    bool UsedSupplement
+);
+
 public record KassalappLookupPayload(
     string Ean,
     IReadOnlyCollection<KassalappProduct> Products,
@@ -248,6 +374,8 @@ public record KassalappLookupPayload(
 );
 
 public record KassalappProduct(
+    [property: JsonPropertyName("url")]
+    string? Url,
     [property: JsonPropertyName("name")]
     string? Name,
     [property: JsonPropertyName("brand")]

@@ -24,11 +24,22 @@ public partial class MatvaretabellenNutritionLookupService(
         CancellationToken cancellationToken
     )
     {
+        return (await FindMatchesAsync(productName, brand, ingredients, productNutrition, cancellationToken)).AcceptedMatch;
+    }
+
+    public async Task<MatvaretabellenNutritionLookupResult> FindMatchesAsync(
+        string productName,
+        string? brand,
+        string? ingredients,
+        ProductLookupNutritionDto? productNutrition,
+        CancellationToken cancellationToken
+    )
+    {
         var searchableProductText = RemoveBrandAndPackageText(productName, brand);
         var queryTokens = Tokenize(searchableProductText).ToHashSet();
         if (queryTokens.Count == 0)
         {
-            return null;
+            return new MatvaretabellenNutritionLookupResult(null, []);
         }
 
         var foods = await GetFoodsAsync(cancellationToken);
@@ -37,38 +48,41 @@ public partial class MatvaretabellenNutritionLookupService(
             return FindBestBreadMatch(foods, queryTokens, productNutrition);
         }
 
-        var bestMatch = foods
+        var candidates = foods
             .Select(food => new
             {
                 Food = food,
                 Score = ScoreFood(queryTokens, food)
             })
-            .Where(match => match.Score >= 0.52m)
+            .Where(match => match.Score > 0m)
             .OrderByDescending(match => match.Score)
             .ThenBy(match => match.Food.FoodName)
-            .FirstOrDefault();
+            .Take(8)
+            .Select(match => ToMatch(match.Food, match.Score))
+            .ToList();
 
-        if (bestMatch is null)
-        {
-            return null;
-        }
+        var bestMatch = candidates.FirstOrDefault(match => match.Confidence >= 0.52m);
+        return new MatvaretabellenNutritionLookupResult(bestMatch, candidates);
+    }
 
+    private static MatvaretabellenNutritionMatch ToMatch(MatvaretabellenFood food, decimal confidence)
+    {
         return new MatvaretabellenNutritionMatch(
-            bestMatch.Food.FoodId,
-            bestMatch.Food.FoodName,
-            bestMatch.Score,
-            ToNutrition(bestMatch.Food),
-            ToAbsoluteMatvaretabellenUrl(bestMatch.Food.Uri)
+            food.FoodId,
+            food.FoodName,
+            confidence,
+            ToNutrition(food),
+            ToAbsoluteMatvaretabellenUrl(food.Uri)
         );
     }
 
-    private static MatvaretabellenNutritionMatch? FindBestBreadMatch(
+    private static MatvaretabellenNutritionLookupResult FindBestBreadMatch(
         IReadOnlyCollection<MatvaretabellenFood> foods,
         HashSet<string> queryTokens,
         ProductLookupNutritionDto? productNutrition
     )
     {
-        var bestMatch = foods
+        var candidates = foods
             .Where(IsBreadFood)
             .Select(food =>
             {
@@ -88,24 +102,22 @@ public partial class MatvaretabellenNutritionLookupService(
                     Score = score
                 };
             })
-            .Where(match => match.Score >= 0.50m && match.TextScore >= 0.10m)
+            .Where(match => match.Score > 0m && match.TextScore >= 0.10m)
             .OrderByDescending(match => match.Score)
             .ThenByDescending(match => match.MacroScore ?? 0m)
             .ThenBy(match => match.Food.FoodName)
-            .FirstOrDefault();
+            .Take(8)
+            .Select(match => new MatvaretabellenNutritionMatch(
+                match.Food.FoodId,
+                match.Food.FoodName,
+                match.Score,
+                match.Nutrition,
+                ToAbsoluteMatvaretabellenUrl(match.Food.Uri)
+            ))
+            .ToList();
 
-        if (bestMatch is null)
-        {
-            return null;
-        }
-
-        return new MatvaretabellenNutritionMatch(
-            bestMatch.Food.FoodId,
-            bestMatch.Food.FoodName,
-            bestMatch.Score,
-            bestMatch.Nutrition,
-            ToAbsoluteMatvaretabellenUrl(bestMatch.Food.Uri)
-        );
+        var bestMatch = candidates.FirstOrDefault(match => match.Confidence >= 0.50m);
+        return new MatvaretabellenNutritionLookupResult(bestMatch, candidates);
     }
 
     private async Task<IReadOnlyCollection<MatvaretabellenFood>> GetFoodsAsync(CancellationToken cancellationToken)
@@ -338,6 +350,11 @@ public record MatvaretabellenNutritionMatch(
     decimal Confidence,
     ProductLookupNutritionDto Nutrition,
     string? Url
+);
+
+public record MatvaretabellenNutritionLookupResult(
+    MatvaretabellenNutritionMatch? AcceptedMatch,
+    IReadOnlyCollection<MatvaretabellenNutritionMatch> Candidates
 );
 
 public record MatvaretabellenFoodsResponse(

@@ -20,14 +20,29 @@ public record ProductLookupResultDto(
     decimal? Weight,
     string? WeightUnit,
     ProductLookupStoreDto? Store,
+    string? KassalappUrl,
+    ProductLookupNutritionDto? KassalappNutritionPer100,
+    ProductLookupNutritionDto? MatvaretabellenNutritionPer100,
     ProductLookupNutritionDto? NutritionPer100,
     NutritionDataSource NutritionSource,
+    NutritionDataSource? NutritionSupplementSource,
+    bool MatvaretabellenSupplementAttempted,
+    string MatvaretabellenSupplementStatus,
+    IReadOnlyCollection<MatvaretabellenCandidateDto> MatvaretabellenCandidates,
     string? NutritionSourceLabel,
     string? MatvaretabellenFoodId,
     string? MatvaretabellenUrl,
     string? NutritionMatchedName,
     decimal? NutritionMatchConfidence,
     string Source
+);
+
+public record MatvaretabellenCandidateDto(
+    string FoodId,
+    string FoodName,
+    string? Url,
+    decimal Confidence,
+    ProductLookupNutritionDto Nutrition
 );
 
 public record ProductLookupStoreDto(

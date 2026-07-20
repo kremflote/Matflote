@@ -16,14 +16,29 @@ export interface IProductLookupResult {
   weight: number | null;
   weightUnit: string | null;
   store: IProductLookupStore | null;
+  kassalappUrl: string | null;
+  kassalappNutritionPer100: IProductLookupNutrition | null;
+  matvaretabellenNutritionPer100: IProductLookupNutrition | null;
   nutritionPer100: IProductLookupNutrition | null;
   nutritionSource: ProductLookupNutritionSource;
+  nutritionSupplementSource: ProductLookupNutritionSource | null;
+  matvaretabellenSupplementAttempted: boolean;
+  matvaretabellenSupplementStatus: "NotAttempted" | "Matched" | "NoMatch";
+  matvaretabellenCandidates: IMatvaretabellenCandidate[];
   nutritionSourceLabel: string | null;
   matvaretabellenFoodId: string | null;
   matvaretabellenUrl: string | null;
   nutritionMatchedName: string | null;
   nutritionMatchConfidence: number | null;
   source: string;
+}
+
+export interface IMatvaretabellenCandidate {
+  foodId: string;
+  foodName: string;
+  url: string | null;
+  confidence: number;
+  nutrition: IProductLookupNutrition;
 }
 
 export type ProductLookupNutritionSource =

@@ -5,7 +5,7 @@ import CreatableSelect from "../components/recipeBrowser/CreatableSelect";
 import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useStores } from "../contexts";
 import type { IngredientTag, INutritionFacts, NutritionDataSource } from "../interfaces/IIngredient";
 import type { IBrand, IStore } from "../interfaces/ILookup";
-import type { IProductLookupNutrition, IProductLookupResult } from "../interfaces/IProductLookup";
+import type { IMatvaretabellenCandidate, IProductLookupNutrition, IProductLookupResult } from "../interfaces/IProductLookup";
 import { brandService, imageUploadService, ingredientPriceService, ingredientService, ingredientTagCategoryService, productLookupService, storeService } from "../services";
 import { getApiAssetUrl } from "../services/apiClient";
 import { pageStyles, scannerStyles, type SiteTheme } from "../styles/appStyles";
@@ -32,9 +32,16 @@ type IngredientCandidate = {
   storeName: string;
   price: number | null;
   imageUrl: string | null;
+  kassalappNutritionPer100: INutritionFacts | null;
+  matvaretabellenNutritionPer100: INutritionFacts | null;
   nutritionPer100: INutritionFacts | null;
   nutritionSource: NutritionDataSource;
+  nutritionSupplementSource: NutritionDataSource | null;
+  matvaretabellenSupplementAttempted: boolean;
+  matvaretabellenSupplementStatus: "NotAttempted" | "Matched" | "NoMatch";
+  matvaretabellenCandidates: MatvaretabellenCandidate[];
   nutritionSourceLabel: string | null;
+  kassalappUrl: string | null;
   matvaretabellenFoodId: string | null;
   matvaretabellenUrl: string | null;
   nutritionMatchedName: string | null;
@@ -53,13 +60,28 @@ type IngredientDraft = {
   imageUrl: string | null;
   imageFile: File | null;
   tags: IngredientTag[];
+  kassalappNutritionPer100: INutritionFacts | null;
+  matvaretabellenNutritionPer100: INutritionFacts | null;
   nutritionPer100: INutritionFacts | null;
   nutritionSource: NutritionDataSource;
+  nutritionSupplementSource: NutritionDataSource | null;
+  matvaretabellenSupplementAttempted: boolean;
+  matvaretabellenSupplementStatus: "NotAttempted" | "Matched" | "NoMatch";
+  matvaretabellenCandidates: MatvaretabellenCandidate[];
   nutritionSourceLabel: string | null;
+  kassalappUrl: string | null;
   matvaretabellenFoodId: string | null;
   matvaretabellenUrl: string | null;
   nutritionMatchedName: string | null;
   nutritionMatchConfidence: number | null;
+};
+
+type MatvaretabellenCandidate = {
+  foodId: string;
+  foodName: string;
+  url: string | null;
+  confidence: number;
+  nutrition: INutritionFacts;
 };
 
 function ScannerPage({ theme }: ScannerPageProps) {
@@ -461,6 +483,7 @@ function IngredientDraftEditor({
   const imageInputId = useId();
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
+  const [isMatvarePickerOpen, setIsMatvarePickerOpen] = useState(false);
   const [showNutrition, setShowNutrition] = useState(false);
   const imageUrl = getApiAssetUrl(imagePreviewUrl ?? draft.imageUrl);
   const knownIngredientTags = (ingredientTagCategories.length === 0
@@ -483,7 +506,16 @@ function IngredientDraftEditor({
         ]),
       );
   const nutritionValues = nutritionToEditorValues(draft.nutritionPer100);
-  const nutritionSource = getNutritionSource(draft, t.scanner.nutritionSources);
+  const nutritionSource = getNutritionSource(
+    draft,
+    t.scanner.nutritionSources,
+    t.scanner.nutritionSupplementedBy,
+    t.scanner.nutritionSupplementSeparator,
+  );
+  const hasMatvaretabellenSupplement = draft.matvaretabellenNutritionPer100 !== null;
+  const showMatvaretabellenFailedMessage = draft.matvaretabellenSupplementAttempted
+    && draft.matvaretabellenSupplementStatus === "NoMatch"
+    && !hasMatvaretabellenSupplement;
 
   useEffect(() => {
     if (draft.imageFile === null) {
@@ -585,17 +617,72 @@ function IngredientDraftEditor({
 
       <section className={scannerStyles.field}>
         <span className={scannerStyles.label}>{t.cookbook.nutrition}</span>
-        {nutritionSource.url === null ? (
-          <span className={scannerStyles.nutritionSourceText(theme)}>{nutritionSource.text}</span>
-        ) : (
-          <a
-            className={scannerStyles.nutritionSourceLink(theme)}
-            href={nutritionSource.url}
-            rel="noreferrer"
-            target="_blank"
-          >
-            {nutritionSource.text}
-          </a>
+        <div className={scannerStyles.nutritionSourceRow}>
+          {nutritionSource.links.length === 0 ? (
+            <span className={scannerStyles.nutritionSourceText(theme)}>{nutritionSource.text}</span>
+          ) : (
+            <span className={scannerStyles.nutritionSourceText(theme)}>
+              {nutritionSource.parts.map((part, index) => {
+                if (typeof part === "string") {
+                  return <span key={`${part}-${index}`}>{part}</span>;
+                }
+
+                if (part.url === null) {
+                  return <span key={part.label}>{part.label}</span>;
+                }
+
+                return (
+                  <a
+                    className={scannerStyles.nutritionSourceLink(theme)}
+                    href={part.url}
+                    key={part.label}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {part.label}
+                  </a>
+                );
+              })}
+            </span>
+          )}
+          {hasMatvaretabellenSupplement && (
+            <span className={scannerStyles.nutritionSourceActions}>
+              {draft.matvaretabellenCandidates.length > 0 && (
+                <button
+                  className={scannerStyles.sourceActionButton(theme)}
+                  type="button"
+                  onClick={() => setIsMatvarePickerOpen(true)}
+                >
+                  {t.scanner.changeMatvaretabellen}
+                </button>
+              )}
+              <button
+                className={scannerStyles.sourceActionButton(theme)}
+                type="button"
+                onClick={() => onChange(removeMatvaretabellenSupplement(draft))}
+              >
+                {t.common.remove}
+              </button>
+            </span>
+          )}
+        </div>
+        {showMatvaretabellenFailedMessage && (
+          <div className={scannerStyles.nutritionSupplementWarningRow(theme)}>
+            <span>
+              {draft.matvaretabellenCandidates.length > 0
+                ? t.scanner.matvaretabellenNoMatchFound
+                : t.scanner.matvaretabellenSupplementFailed}
+            </span>
+            {draft.matvaretabellenCandidates.length > 0 && (
+              <button
+                className={scannerStyles.sourceActionButton(theme)}
+                type="button"
+                onClick={() => setIsMatvarePickerOpen(true)}
+              >
+                {t.scanner.chooseMatvaretabellenMatch}
+              </button>
+            )}
+          </div>
         )}
         <button
           aria-expanded={showNutrition}
@@ -666,7 +753,76 @@ function IngredientDraftEditor({
           }}
         />
       )}
+      {isMatvarePickerOpen && (
+        <MatvaretabellenCandidateModal
+          candidates={draft.matvaretabellenCandidates}
+          theme={theme}
+          onCancel={() => setIsMatvarePickerOpen(false)}
+          onSelect={(candidate) => {
+            onChange(applyMatvaretabellenCandidate(draft, candidate));
+            setIsMatvarePickerOpen(false);
+          }}
+        />
+      )}
     </section>
+  );
+}
+
+function MatvaretabellenCandidateModal({
+  candidates,
+  theme,
+  onCancel,
+  onSelect,
+}: {
+  candidates: MatvaretabellenCandidate[];
+  theme: SiteTheme;
+  onCancel: () => void;
+  onSelect: (candidate: MatvaretabellenCandidate) => void;
+}) {
+  const { t } = useLanguage();
+  const titleId = useId();
+
+  return (
+    <Modal
+      backdropClassName={scannerStyles.editorModalBackdrop}
+      bodyClassName={scannerStyles.matvareCandidateModalBody}
+      closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
+      closeLabel={t.common.close}
+      footer={(
+        <button className={scannerStyles.manualEntryButton(theme)} type="button" onClick={onCancel}>
+          {t.common.cancel}
+        </button>
+      )}
+      footerClassName={scannerStyles.editorModalFooter(theme)}
+      headerClassName={scannerStyles.editorModalHeader}
+      panelClassName={scannerStyles.matvareCandidateModalPanel(theme)}
+      title={t.scanner.chooseMatvaretabellenEntry}
+      titleClassName={scannerStyles.editorModalTitle}
+      titleId={titleId}
+      onClose={onCancel}
+    >
+      {candidates.map((candidate) => (
+        <button
+          className={scannerStyles.matvareCandidateButton(theme)}
+          key={candidate.foodId}
+          type="button"
+          onClick={() => onSelect(candidate)}
+        >
+          <span className={scannerStyles.matvareCandidateName}>{candidate.foodName}</span>
+          <span className={scannerStyles.matvareCandidateMeta(theme)}>
+            {t.scanner.matvaretabellenScore(candidate.confidence)}
+          </span>
+          <span className={scannerStyles.matvareCandidateMacros(theme)}>
+            {formatCandidateMacros(candidate.nutrition, {
+              calories: t.cookbook.calories,
+              carbs: t.cookbook.carbs,
+              fiber: t.cookbook.fiber,
+              protein: t.cookbook.protein,
+            })}
+          </span>
+        </button>
+      ))}
+    </Modal>
   );
 }
 
@@ -674,7 +830,12 @@ function updateNutritionDraft(draft: IngredientDraft, key: keyof NutritionEditor
   return {
     ...draft,
     nutritionSource: "Manual",
+    nutritionSupplementSource: null,
     nutritionSourceLabel: null,
+    kassalappUrl: null,
+    kassalappNutritionPer100: null,
+    matvaretabellenNutritionPer100: null,
+    matvaretabellenSupplementStatus: "NotAttempted",
     matvaretabellenFoodId: null,
     matvaretabellenUrl: null,
     nutritionMatchedName: null,
@@ -685,6 +846,102 @@ function updateNutritionDraft(draft: IngredientDraft, key: keyof NutritionEditor
       [key]: nullableNumber(value),
     },
   };
+}
+
+function applyMatvaretabellenCandidate(
+  draft: IngredientDraft,
+  candidate: MatvaretabellenCandidate,
+): IngredientDraft {
+  const mergedNutrition = mergeNutrition(draft.kassalappNutritionPer100, candidate.nutrition);
+  return {
+    ...draft,
+    matvaretabellenNutritionPer100: candidate.nutrition,
+    nutritionPer100: mergedNutrition.nutrition,
+    nutritionSource: draft.kassalappNutritionPer100 === null ? "Matvaretabellen" : "Kassalapp",
+    nutritionSupplementSource: draft.kassalappNutritionPer100 !== null && mergedNutrition.usedSupplement ? "Matvaretabellen" : null,
+    matvaretabellenSupplementAttempted: true,
+    matvaretabellenSupplementStatus: "Matched",
+    nutritionSourceLabel: draft.kassalappNutritionPer100 === null ? "Matvaretabellen" : "Kassalapp",
+    matvaretabellenFoodId: candidate.foodId,
+    matvaretabellenUrl: candidate.url,
+    nutritionMatchedName: candidate.foodName,
+    nutritionMatchConfidence: candidate.confidence,
+  };
+}
+
+function removeMatvaretabellenSupplement(draft: IngredientDraft): IngredientDraft {
+  return {
+    ...draft,
+    matvaretabellenNutritionPer100: null,
+    nutritionPer100: draft.kassalappNutritionPer100,
+    nutritionSource: draft.kassalappNutritionPer100 === null ? "None" : "Kassalapp",
+    nutritionSupplementSource: null,
+    matvaretabellenSupplementStatus: draft.matvaretabellenSupplementAttempted ? "NoMatch" : "NotAttempted",
+    nutritionSourceLabel: draft.kassalappNutritionPer100 === null ? null : "Kassalapp",
+    matvaretabellenFoodId: null,
+    matvaretabellenUrl: null,
+    nutritionMatchedName: null,
+    nutritionMatchConfidence: null,
+  };
+}
+
+function mergeNutrition(primary: INutritionFacts | null, supplement: INutritionFacts | null) {
+  if (primary === null) {
+    return { nutrition: supplement, usedSupplement: supplement !== null };
+  }
+
+  if (supplement === null) {
+    return { nutrition: primary, usedSupplement: false };
+  }
+
+  const nutrition: INutritionFacts = {
+    calories: primary.calories ?? supplement.calories,
+    carbohydrateGrams: primary.carbohydrateGrams ?? supplement.carbohydrateGrams,
+    proteinGrams: primary.proteinGrams ?? supplement.proteinGrams,
+    saltGrams: primary.saltGrams ?? supplement.saltGrams,
+    dietaryFiberGrams: primary.dietaryFiberGrams ?? supplement.dietaryFiberGrams,
+    saturatedFatGrams: primary.saturatedFatGrams ?? supplement.saturatedFatGrams,
+    transFatGrams: primary.transFatGrams ?? supplement.transFatGrams,
+    monounsaturatedFatGrams: primary.monounsaturatedFatGrams ?? supplement.monounsaturatedFatGrams,
+    polyunsaturatedFatGrams: primary.polyunsaturatedFatGrams ?? supplement.polyunsaturatedFatGrams,
+    omega3Grams: primary.omega3Grams ?? supplement.omega3Grams,
+    omega6Grams: primary.omega6Grams ?? supplement.omega6Grams,
+    cholesterolMilligrams: primary.cholesterolMilligrams ?? supplement.cholesterolMilligrams,
+    vitaminAMicrograms: primary.vitaminAMicrograms ?? supplement.vitaminAMicrograms,
+    vitaminB9Micrograms: primary.vitaminB9Micrograms ?? supplement.vitaminB9Micrograms,
+    vitaminB12Micrograms: primary.vitaminB12Micrograms ?? supplement.vitaminB12Micrograms,
+    vitaminCMilligrams: primary.vitaminCMilligrams ?? supplement.vitaminCMilligrams,
+    vitaminDMicrograms: primary.vitaminDMicrograms ?? supplement.vitaminDMicrograms,
+    vitaminEMilligrams: primary.vitaminEMilligrams ?? supplement.vitaminEMilligrams,
+    vitaminKMicrograms: primary.vitaminKMicrograms ?? supplement.vitaminKMicrograms,
+    cholineMilligrams: primary.cholineMilligrams ?? supplement.cholineMilligrams,
+    vitamins: primary.vitamins,
+  };
+
+  return { nutrition, usedSupplement: hasSupplementFilledMissingValue(primary, supplement) };
+}
+
+function hasSupplementFilledMissingValue(primary: INutritionFacts, supplement: INutritionFacts) {
+  return (primary.calories === null && supplement.calories !== null)
+    || (primary.carbohydrateGrams === null && supplement.carbohydrateGrams !== null)
+    || (primary.proteinGrams === null && supplement.proteinGrams !== null)
+    || (primary.saltGrams === null && supplement.saltGrams !== null)
+    || (primary.dietaryFiberGrams === null && supplement.dietaryFiberGrams !== null)
+    || (primary.saturatedFatGrams === null && supplement.saturatedFatGrams !== null)
+    || (primary.transFatGrams === null && supplement.transFatGrams !== null)
+    || (primary.monounsaturatedFatGrams === null && supplement.monounsaturatedFatGrams !== null)
+    || (primary.polyunsaturatedFatGrams === null && supplement.polyunsaturatedFatGrams !== null)
+    || (primary.omega3Grams === null && supplement.omega3Grams !== null)
+    || (primary.omega6Grams === null && supplement.omega6Grams !== null)
+    || (primary.cholesterolMilligrams === null && supplement.cholesterolMilligrams !== null)
+    || (primary.vitaminAMicrograms === null && supplement.vitaminAMicrograms !== null)
+    || (primary.vitaminB9Micrograms === null && supplement.vitaminB9Micrograms !== null)
+    || (primary.vitaminB12Micrograms === null && supplement.vitaminB12Micrograms !== null)
+    || (primary.vitaminCMilligrams === null && supplement.vitaminCMilligrams !== null)
+    || (primary.vitaminDMicrograms === null && supplement.vitaminDMicrograms !== null)
+    || (primary.vitaminEMilligrams === null && supplement.vitaminEMilligrams !== null)
+    || (primary.vitaminKMicrograms === null && supplement.vitaminKMicrograms !== null)
+    || (primary.cholineMilligrams === null && supplement.cholineMilligrams !== null);
 }
 
 function withDerivedVitamins(nutrition: INutritionFacts | null): INutritionFacts | null {
@@ -728,9 +985,16 @@ function buildIngredientCandidates(products: IProductLookupResult[]): Ingredient
         storeName: product.store?.name ?? "",
         price: product.currentUnitPrice ?? product.currentPrice,
         imageUrl: product.imageUrl,
+        kassalappNutritionPer100: toIngredientNutrition(product.kassalappNutritionPer100),
+        matvaretabellenNutritionPer100: toIngredientNutrition(product.matvaretabellenNutritionPer100),
         nutritionPer100: toIngredientNutrition(product.nutritionPer100),
         nutritionSource: product.nutritionSource,
+        nutritionSupplementSource: product.nutritionSupplementSource,
+        matvaretabellenSupplementAttempted: product.matvaretabellenSupplementAttempted,
+        matvaretabellenSupplementStatus: product.matvaretabellenSupplementStatus,
+        matvaretabellenCandidates: product.matvaretabellenCandidates.map(toMatvaretabellenCandidate),
         nutritionSourceLabel: product.nutritionSourceLabel,
+        kassalappUrl: product.kassalappUrl,
         matvaretabellenFoodId: product.matvaretabellenFoodId,
         matvaretabellenUrl: product.matvaretabellenUrl,
         nutritionMatchedName: product.nutritionMatchedName,
@@ -753,6 +1017,16 @@ function buildIngredientCandidates(products: IProductLookupResult[]): Ingredient
     .slice(0, 6);
 }
 
+function toMatvaretabellenCandidate(candidate: IMatvaretabellenCandidate): MatvaretabellenCandidate {
+  return {
+    foodId: candidate.foodId,
+    foodName: candidate.foodName,
+    url: candidate.url,
+    confidence: candidate.confidence,
+    nutrition: toIngredientNutrition(candidate.nutrition) ?? emptyNutritionFacts(),
+  };
+}
+
 function candidateToDraft(candidate: IngredientCandidate, stores: IStore[], brands: IBrand[]): IngredientDraft {
   return {
     name: candidate.name,
@@ -764,9 +1038,16 @@ function candidateToDraft(candidate: IngredientCandidate, stores: IStore[], bran
     imageUrl: candidate.imageUrl,
     imageFile: null,
     tags: candidate.tags,
+    kassalappNutritionPer100: candidate.kassalappNutritionPer100,
+    matvaretabellenNutritionPer100: candidate.matvaretabellenNutritionPer100,
     nutritionPer100: candidate.nutritionPer100,
     nutritionSource: candidate.nutritionSource,
+    nutritionSupplementSource: candidate.nutritionSupplementSource,
+    matvaretabellenSupplementAttempted: candidate.matvaretabellenSupplementAttempted,
+    matvaretabellenSupplementStatus: candidate.matvaretabellenSupplementStatus,
+    matvaretabellenCandidates: candidate.matvaretabellenCandidates,
     nutritionSourceLabel: candidate.nutritionSourceLabel,
+    kassalappUrl: candidate.kassalappUrl,
     matvaretabellenFoodId: candidate.matvaretabellenFoodId,
     matvaretabellenUrl: candidate.matvaretabellenUrl,
     nutritionMatchedName: candidate.nutritionMatchedName,
@@ -777,17 +1058,75 @@ function candidateToDraft(candidate: IngredientCandidate, stores: IStore[], bran
 function getNutritionSource(
   draft: IngredientDraft,
   labels: Record<NutritionDataSource, string>,
+  supplementedByLabel: (primary: string, supplement: string) => string,
+  supplementSeparator: string,
 ) {
   if (draft.nutritionPer100 === null || draft.nutritionSource === "None") {
-    return { text: labels.None, url: null };
+    return { text: labels.None, links: [], parts: [labels.None] };
   }
 
-  const matchedName = draft.nutritionMatchedName?.trim();
-  if (draft.nutritionSource === "Matvaretabellen" && matchedName) {
-    return { text: `${labels.Matvaretabellen}: ${matchedName}`, url: draft.matvaretabellenUrl };
+  const matchedName = draft.nutritionMatchedName?.trim() ?? null;
+  const primary = sourceLink(
+    labels,
+    draft.nutritionSource,
+    draft.nutritionSource === "Kassalapp" ? draft.kassalappUrl : draft.matvaretabellenUrl,
+    draft.nutritionSource === "Matvaretabellen" ? matchedName : null,
+  );
+  const supplement = draft.nutritionSupplementSource === null
+    ? null
+    : sourceLink(
+        labels,
+        draft.nutritionSupplementSource,
+        draft.nutritionSupplementSource === "Kassalapp" ? draft.kassalappUrl : draft.matvaretabellenUrl,
+        draft.nutritionSupplementSource === "Matvaretabellen" ? matchedName : null,
+      );
+
+  if (supplement !== null) {
+    const text = supplementedByLabel(primary.label, supplement.label);
+    return {
+      text,
+      links: [primary, supplement].filter((link) => link.url !== null),
+      parts: [primary, supplementSeparator, supplement],
+    };
   }
 
-  return { text: labels[draft.nutritionSource], url: null };
+  return {
+    text: primary.label,
+    links: primary.url === null ? [] : [primary],
+    parts: [primary],
+  };
+}
+
+type NutritionSourceLink = {
+  label: string;
+  url: string | null;
+};
+
+function sourceLink(
+  labels: Record<NutritionDataSource, string>,
+  source: NutritionDataSource,
+  url: string | null,
+  matchedName: string | null,
+): NutritionSourceLink {
+  const label = source === "Matvaretabellen" && matchedName
+    ? `${labels.Matvaretabellen}: ${matchedName}`
+    : labels[source];
+
+  return { label, url };
+}
+
+function formatCandidateMacros(
+  nutrition: INutritionFacts,
+  labels: { calories: string; carbs: string; fiber: string; protein: string },
+) {
+  const parts = [
+    nutrition.calories === null ? null : `${labels.calories}: ${nutrition.calories} kcal`,
+    nutrition.carbohydrateGrams === null ? null : `${labels.carbs}: ${nutrition.carbohydrateGrams} g`,
+    nutrition.proteinGrams === null ? null : `${labels.protein}: ${nutrition.proteinGrams} g`,
+    nutrition.dietaryFiberGrams === null ? null : `${labels.fiber}: ${nutrition.dietaryFiberGrams} g`,
+  ].filter(Boolean);
+
+  return parts.join(" / ");
 }
 
 function findBrandId(brandName: string, brands: IBrand[]) {

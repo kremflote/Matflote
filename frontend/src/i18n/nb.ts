@@ -377,7 +377,9 @@ export const nb: TranslationDictionary = {
       "Kunne ikke starte kameraskanning i denne nettleseren. Du kan fortsatt skrive inn strekkoden manuelt.",
     brandLabel: "Merke",
     calories: "Kalorier",
+    changeMatvaretabellen: "Endre",
     carbs: "Karbo",
+    chooseMatvaretabellenEntry: "Velg Matvaretabellen-treff",
     chooseImage: "Velg bilde",
     colorLabel: "Farge",
     eanLabel: "Strekkode / EAN",
@@ -388,6 +390,11 @@ export const nb: TranslationDictionary = {
     lookupFailed: "Kunne ikke slå opp produktet.",
     hideManualEntry: "Skjul manuelt felt",
     manualEntry: "Skriv inn strekkode",
+    chooseMatvaretabellenMatch: "Velg treff...",
+    matvaretabellenScore: (score) => `Treff ${(score * 100).toFixed(0)}%`,
+    matvaretabellenNoMatchFound: "Ingen treff funnet i Matvaretabellen.",
+    matvaretabellenSupplementFailed:
+      "Kunne ikke supplere manglende data fra Matvaretabellen.",
     mobileOnly:
       "Kameraskanning er tilgjengelig på telefon- og nettbrettstørrelser.",
     nameLabel: "Navn",
@@ -395,6 +402,9 @@ export const nb: TranslationDictionary = {
     noImage: "Ingen bilde",
     noPrice: "Ingen pris",
     noProductsFound: (ean) => `Ingen produkter funnet for ${ean}.`,
+    nutritionSupplementedBy: (primary, supplement) =>
+      `${primary}, supplert av ${supplement}`,
+    nutritionSupplementSeparator: ", supplert av ",
     nutritionSources: {
       None: "Ingen næringsdata funnet.",
       Matvaretabellen: "Næring fra Matvaretabellen",
