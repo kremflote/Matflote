@@ -52,7 +52,7 @@ public class GroceryListService(DinnerPlannerContext context)
                 row.IngredientId,
                 row.IngredientName,
                 row.Unit,
-                HasKnownAmount = row.Amount.HasValue && row.Unit != MeasurementUnit.ToTaste
+                HasKnownAmount = row.Amount.HasValue
             })
             .Select(group =>
             {
@@ -136,7 +136,7 @@ public class GroceryListService(DinnerPlannerContext context)
 
     private static string FormatAmount(decimal? amount, MeasurementUnit unit)
     {
-        if (amount is null || unit == MeasurementUnit.ToTaste)
+        if (amount is null)
         {
             return "as needed";
         }
@@ -150,13 +150,6 @@ public class GroceryListService(DinnerPlannerContext context)
         MeasurementUnit.Kilogram => "kg",
         MeasurementUnit.Milliliter => "ml",
         MeasurementUnit.Liter => "l",
-        MeasurementUnit.Teaspoon => amount == 1m ? "teaspoon" : "teaspoons",
-        MeasurementUnit.Tablespoon => amount == 1m ? "tablespoon" : "tablespoons",
-        MeasurementUnit.Cup => amount == 1m ? "cup" : "cups",
-        MeasurementUnit.Piece => amount == 1m ? "piece" : "pieces",
-        MeasurementUnit.Clove => amount == 1m ? "clove" : "cloves",
-        MeasurementUnit.Pinch => amount == 1m ? "pinch" : "pinches",
-        MeasurementUnit.ToTaste => "to taste",
         _ => unit.ToString()
     };
 

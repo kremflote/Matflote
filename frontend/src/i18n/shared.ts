@@ -54,13 +54,6 @@ export const commonEnumLabels = {
     Kilogram: "kg",
     Milliliter: "ml",
     Liter: "l",
-    Teaspoon: "tsp",
-    Tablespoon: "tbsp",
-    Cup: "cup",
-    Piece: "piece",
-    Clove: "clove",
-    Pinch: "pinch",
-    ToTaste: "to taste",
   },
   recipeTypes: {
     Dish: "Dish",

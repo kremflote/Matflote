@@ -552,16 +552,16 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 RecipeIngredientId = 2,
                 RecipeId = 1,
                 IngredientId = 2,
-                Amount = (decimal?)1m,
-                Unit = MeasurementUnit.Clove
+                Amount = (decimal?)3m,
+                Unit = MeasurementUnit.Gram
             },
             new
             {
                 RecipeIngredientId = 3,
                 RecipeId = 1,
                 IngredientId = 5,
-                Amount = (decimal?)0.5m,
-                Unit = MeasurementUnit.Piece
+                Amount = (decimal?)30m,
+                Unit = MeasurementUnit.Gram
             },
             new
             {

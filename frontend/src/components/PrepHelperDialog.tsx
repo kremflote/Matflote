@@ -109,8 +109,8 @@ function formatAmount(
   unit: MeasurementUnit,
   unitLabels: Record<MeasurementUnit, string>,
 ) {
-  if (amount === null || unit === "ToTaste") {
-    return unitLabels.ToTaste;
+  if (amount === null) {
+    return "";
   }
 
   return `${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${unitLabels[unit].toLowerCase()}`;

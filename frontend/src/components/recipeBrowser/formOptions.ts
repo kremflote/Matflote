@@ -171,13 +171,6 @@ export const measurementUnits: MeasurementUnit[] = [
   "Kilogram",
   "Milliliter",
   "Liter",
-  "Teaspoon",
-  "Tablespoon",
-  "Cup",
-  "Piece",
-  "Clove",
-  "Pinch",
-  "ToTaste",
 ];
 
 export const ingredientPreparations: IngredientPreparation[] = [

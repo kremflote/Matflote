@@ -226,13 +226,6 @@ export const nb: TranslationDictionary = {
       Kilogram: "kg",
       Milliliter: "ml",
       Liter: "l",
-      Teaspoon: "ts",
-      Tablespoon: "ss",
-      Cup: "kopp",
-      Piece: "stk",
-      Clove: "fedd",
-      Pinch: "klype",
-      ToTaste: "etter smak",
     },
     recipeTags: {
       Breakfast: "Frokost",
