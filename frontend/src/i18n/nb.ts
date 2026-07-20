@@ -375,6 +375,16 @@ export const nb: TranslationDictionary = {
     cameraStop: "Stopp kamera",
     cameraUnsupported:
       "Kunne ikke starte kameraskanning i denne nettleseren. Du kan fortsatt skrive inn strekkoden manuelt.",
+    autofilledBy: (source) => `Autofylt av: ${source}`,
+    autofillInfoButton: "Info",
+    autofillInfoIntro:
+      "Skanneren lager et ingrediensforslag fra produktdata, og lar deg se over før du lagrer.",
+    autofillInfoSteps: [
+      "Kassalapp brukes først til produktnavn, merke, bilde, pris og næringsdata den allerede har.",
+      "Matvaretabellen brukes til å fylle inn manglende næringsfelt når appen finner et godt treff.",
+      "Hvis Matvaretabellen-treffet er feil eller mangler, kan du velge et annet treff før du lagrer.",
+    ],
+    autofillInfoTitle: "Slik fungerer autofyll",
     brandLabel: "Merke",
     calories: "Kalorier",
     changeMatvaretabellen: "Endre",
@@ -404,6 +414,8 @@ export const nb: TranslationDictionary = {
     noProductsFound: (ean) => `Ingen produkter funnet for ${ean}.`,
     nutritionSupplementedBy: (primary, supplement) =>
       `${primary}, supplert av ${supplement}`,
+    nutritionFromPrefix: "Næring fra",
+    nutritionSupplementedByPrefix: "supplert av",
     nutritionSupplementSeparator: ", supplert av ",
     nutritionSources: {
       None: "Ingen næringsdata funnet.",

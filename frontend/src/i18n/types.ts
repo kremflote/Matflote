@@ -262,6 +262,11 @@ export type TranslationDictionary = {
     cameraStart: string;
     cameraStop: string;
     cameraUnsupported: string;
+    autofilledBy: (source: string) => string;
+    autofillInfoButton: string;
+    autofillInfoIntro: string;
+    autofillInfoSteps: string[];
+    autofillInfoTitle: string;
     brandLabel: string;
     calories: string;
     changeMatvaretabellen: string;
@@ -288,6 +293,8 @@ export type TranslationDictionary = {
     noPrice: string;
     noProductsFound: (ean: string) => string;
     nutritionSupplementedBy: (primary: string, supplement: string) => string;
+    nutritionFromPrefix: string;
+    nutritionSupplementedByPrefix: string;
     nutritionSupplementSeparator: string;
     nutritionSources: Record<NutritionDataSource, string>;
     pageIntroAfterKassalapp: string;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import ConfirmationDialog from "../ConfirmationDialog";
 import { useLanguage } from "../../contexts";
 import type { SiteTheme } from "../../styles/appStyles";
@@ -10,11 +10,13 @@ export type CreatableOption = {
 };
 
 type CreatableSelectProps = {
-  label: string;
+  label: ReactNode;
   value: number | null;
   options: CreatableOption[];
   theme: SiteTheme;
   fieldClassName?: string;
+  helperClassName?: string;
+  helperText?: string | null;
   labelClassName?: string;
   required?: boolean;
   placeholder?: string;
@@ -33,6 +35,8 @@ function CreatableSelect({
   options,
   theme,
   fieldClassName,
+  helperClassName,
+  helperText,
   labelClassName,
   required = false,
   placeholder = "Select option",
@@ -52,6 +56,7 @@ function CreatableSelect({
   const [deletingOptionId, setDeletingOptionId] = useState<number | null>(null);
   const [optionPendingDelete, setOptionPendingDelete] = useState<CreatableOption | null>(null);
   const selectedOption = options.find((option) => option.id === value) ?? null;
+  const createPanelLabel = typeof label === "string" ? label : placeholder;
 
   useEffect(() => {
     if (!isOpen) {
@@ -208,7 +213,7 @@ function CreatableSelect({
           <CreateOptionPanel
             error={error}
             isSaving={isSaving}
-            label={label}
+            label={createPanelLabel}
             name={name}
             theme={theme}
             setName={setName}
@@ -262,12 +267,15 @@ function CreatableSelect({
         ))}
         <option value={createNewValue}>{createLabel}</option>
       </select>
+      {helperClassName !== undefined && (
+        <span className={helperClassName}>{helperText ?? "\u00A0"}</span>
+      )}
 
       {isCreating && (
         <CreateOptionPanel
           error={error}
           isSaving={isSaving}
-          label={label}
+          label={createPanelLabel}
           name={name}
           theme={theme}
           setName={setName}

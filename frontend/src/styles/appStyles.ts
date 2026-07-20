@@ -305,6 +305,15 @@ export const thumbnailStyles = {
 const focusBase =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
+const autofillHintTextClasses = (theme: SiteTheme) =>
+  `text-[10px] font-extrabold uppercase leading-tight ${
+    theme === "dark"
+      ? "text-neutral-400"
+      : theme === "paletteLight"
+        ? "text-[#7A8864]"
+        : "text-neutral-500"
+  }`;
+
 export const controlStyles = {
   modalCloseButton: (theme: SiteTheme) =>
     `inline-flex h-9 w-9 shrink-0 -translate-y-1 items-center justify-center ${radiusClasses.figma6} p-0 transition-colors max-sm:-translate-y-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5 max-sm:[&_svg]:h-3 max-sm:[&_svg]:w-3 ${focusBase} ${siteColorClasses[theme].focus} ${
@@ -541,16 +550,23 @@ export const scannerStyles = {
     }`,
   field: "grid gap-2",
   label: "text-sm font-bold leading-tight",
+  labelRow: "flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1",
+  sectionTitleRow: "flex flex-wrap items-center justify-between gap-2",
+  autofillHint: autofillHintTextClasses,
+  autofillReservedHint: (theme: SiteTheme) => `min-h-3 ${autofillHintTextClasses(theme)}`,
   nutritionSourceText: (theme: SiteTheme) =>
-    `text-xs font-semibold leading-tight ${
+    `grid gap-1 text-xs font-semibold leading-tight ${
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
           ? "text-[#7A8864]"
           : "text-neutral-500"
     }`,
-  nutritionSourceRow: "flex flex-wrap items-center gap-2",
-  nutritionSourceActions: "inline-flex items-center gap-2",
+  nutritionSourceRow: "grid gap-1",
+  nutritionSourceLine: "flex flex-wrap items-center gap-x-1.5 gap-y-1",
+  nutritionSourcePrimaryLine: "flex flex-wrap items-center justify-between gap-x-3 gap-y-1",
+  nutritionSourceSupplementLine: "flex flex-wrap items-center justify-between gap-x-3 gap-y-1",
+  nutritionSourceActions: "inline-flex items-center gap-3",
   nutritionSourceLink: (theme: SiteTheme) =>
     `text-xs font-bold leading-tight underline underline-offset-2 ${
       theme === "dark"
@@ -560,12 +576,12 @@ export const scannerStyles = {
           : "text-neutral-700 hover:text-neutral-950"
     }`,
   sourceActionButton: (theme: SiteTheme) =>
-    `h-7 rounded-md border px-2 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+    `h-auto rounded-none border-0 bg-transparent p-0 text-xs font-extrabold underline underline-offset-2 transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
       theme === "dark"
-        ? "border-white/[0.12] bg-white/[0.08] text-neutral-100 hover:bg-white/[0.14]"
+        ? "text-neutral-200 hover:text-white"
         : theme === "paletteLight"
-          ? "border-[#7A8864]/30 bg-[#E5D5BC]/50 text-[#556145] hover:bg-[#E5D5BC]/80"
-          : "border-neutral-200 bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+          ? "text-[#556145] hover:text-[#3C4A2E]"
+          : "text-neutral-700 hover:text-neutral-950"
     }`,
   nutritionSupplementWarning: (theme: SiteTheme) =>
     `rounded-md border px-3 py-2 text-xs font-bold ${
@@ -807,6 +823,25 @@ export const scannerStyles = {
   matvareCandidateModalPanel: (theme: SiteTheme) =>
     `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   matvareCandidateModalBody: "grid min-h-0 gap-2 overflow-y-auto pr-1",
+  infoModalPanel: (theme: SiteTheme) =>
+    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  infoModalBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
+  infoText: (theme: SiteTheme) =>
+    `text-sm font-semibold leading-[1.5] ${
+      theme === "dark"
+        ? "text-neutral-300"
+        : theme === "paletteLight"
+          ? "text-[#556145]"
+          : "text-neutral-600"
+    }`,
+  infoList: (theme: SiteTheme) =>
+    `grid list-disc gap-2 pl-5 text-sm font-semibold leading-[1.45] ${
+      theme === "dark"
+        ? "text-neutral-300"
+        : theme === "paletteLight"
+          ? "text-[#556145]"
+          : "text-neutral-600"
+    }`,
   matvareCandidateButton: (theme: SiteTheme) =>
     `grid gap-1 rounded-md border p-3 text-left transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
       theme === "dark"

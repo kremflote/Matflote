@@ -74,6 +74,8 @@ type IngredientDraft = {
   matvaretabellenUrl: string | null;
   nutritionMatchedName: string | null;
   nutritionMatchConfidence: number | null;
+  autofillSources: Partial<Record<ScannerAutofillField, AutofillSource[]>>;
+  nutritionAutofillSources: Partial<Record<keyof NutritionEditorValues, AutofillSource>>;
 };
 
 type MatvaretabellenCandidate = {
@@ -83,6 +85,32 @@ type MatvaretabellenCandidate = {
   confidence: number;
   nutrition: INutritionFacts;
 };
+
+type AutofillSource = Exclude<NutritionDataSource, "None">;
+type ScannerAutofillField = "name" | "brand" | "store" | "price" | "image" | "tags";
+
+const nutritionEditorKeys: (keyof NutritionEditorValues)[] = [
+  "calories",
+  "carbohydrateGrams",
+  "proteinGrams",
+  "saltGrams",
+  "dietaryFiberGrams",
+  "saturatedFatGrams",
+  "transFatGrams",
+  "monounsaturatedFatGrams",
+  "polyunsaturatedFatGrams",
+  "omega3Grams",
+  "omega6Grams",
+  "cholesterolMilligrams",
+  "vitaminAMicrograms",
+  "vitaminB9Micrograms",
+  "vitaminB12Micrograms",
+  "vitaminCMilligrams",
+  "vitaminDMicrograms",
+  "vitaminEMilligrams",
+  "vitaminKMicrograms",
+  "cholineMilligrams",
+];
 
 function ScannerPage({ theme }: ScannerPageProps) {
   const { t } = useLanguage();
@@ -484,6 +512,7 @@ function IngredientDraftEditor({
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
   const [isMatvarePickerOpen, setIsMatvarePickerOpen] = useState(false);
+  const [isAutofillInfoOpen, setIsAutofillInfoOpen] = useState(false);
   const [showNutrition, setShowNutrition] = useState(false);
   const imageUrl = getApiAssetUrl(imagePreviewUrl ?? draft.imageUrl);
   const knownIngredientTags = (ingredientTagCategories.length === 0
@@ -509,9 +538,8 @@ function IngredientDraftEditor({
   const nutritionSource = getNutritionSource(
     draft,
     t.scanner.nutritionSources,
-    t.scanner.nutritionSupplementedBy,
-    t.scanner.nutritionSupplementSeparator,
   );
+  const nutritionFieldSubtitles = getNutritionFieldSubtitles(draft, t.scanner.autofilledBy);
   const hasMatvaretabellenSupplement = draft.matvaretabellenNutritionPer100 !== null;
   const showMatvaretabellenFailedMessage = draft.matvaretabellenSupplementAttempted
     && draft.matvaretabellenSupplementStatus === "NoMatch"
@@ -537,9 +565,13 @@ function IngredientDraftEditor({
           className={scannerStyles.hiddenFileInput}
           id={imageInputId}
           type="file"
-          onChange={(event) => onChange({ ...draft, imageFile: event.target.files?.[0] ?? null })}
+          onChange={(event) => onChange(clearAutofillSource({ ...draft, imageFile: event.target.files?.[0] ?? null }, "image"))}
         />
-        <span className={scannerStyles.editorImageLabel}>{t.scanner.productImageLabel}</span>
+        <FieldLabel
+          className={scannerStyles.editorImageLabel}
+          label={t.scanner.productImageLabel}
+          theme={theme}
+        />
         <div className={scannerStyles.editorImageFrame(theme)}>
           {imageUrl === null ? (
             <div className={scannerStyles.productImageFallback(theme)}>{t.scanner.noImage}</div>
@@ -550,26 +582,38 @@ function IngredientDraftEditor({
         <label className={scannerStyles.editorImageButton(theme)} htmlFor={imageInputId}>
           {t.scanner.chooseImage}
         </label>
+        <span className={`${scannerStyles.autofillReservedHint(theme)} col-span-2`}>
+          {getAutofillSourceLabel(draft, "image", t.scanner.autofilledBy) ?? "\u00A0"}
+        </span>
       </div>
 
       <div className={scannerStyles.compactFormGrid}>
         <label className={scannerStyles.field}>
-          <span className={scannerStyles.label}>
-            {t.scanner.nameLabel}
-            <span className={recipeBrowserStyles.inlineHint(theme)}>
-              {draft.name.length}/{INGREDIENT_NAME_MAX_LENGTH}
-            </span>
-          </span>
+          <FieldLabel
+            hint={`${draft.name.length}/${INGREDIENT_NAME_MAX_LENGTH}`}
+            label={t.scanner.nameLabel}
+            theme={theme}
+          />
           <input
             className={scannerStyles.input(theme)}
             value={draft.name}
-            onChange={(event) => onChange({ ...draft, name: event.target.value })}
+            onChange={(event) => onChange(clearAutofillSource({ ...draft, name: event.target.value }, "name"))}
           />
+          <span className={scannerStyles.autofillReservedHint(theme)}>
+            {getAutofillSourceLabel(draft, "name", t.scanner.autofilledBy) ?? "\u00A0"}
+          </span>
         </label>
         <CreatableSelect
           createLabel={t.common.createNew}
           fieldClassName={scannerStyles.field}
-          label={t.scanner.brandLabel}
+          label={(
+            <FieldLabel
+              label={t.scanner.brandLabel}
+              theme={theme}
+            />
+          )}
+          helperClassName={scannerStyles.autofillReservedHint(theme)}
+          helperText={getAutofillSourceLabel(draft, "brand", t.scanner.autofilledBy)}
           labelClassName={scannerStyles.label}
           options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
           placeholder={t.cookbook.selectBrand}
@@ -577,25 +621,32 @@ function IngredientDraftEditor({
           value={draft.brandId}
           onChange={(brandId) => {
             const brandName = brands.find((brand) => brand.brandId === brandId)?.name ?? "";
-            onChange({ ...draft, brandId, brandName });
+            onChange(clearAutofillSource({ ...draft, brandId, brandName }, "brand"));
           }}
           onCreate={async (name) => {
             const brand = await brandService.create({ name });
             await refreshBrands();
             return { id: brand.brandId, name: brand.name };
           }}
-          onCreatedOptionSelected={(brand) => onChange({ ...draft, brandId: brand.id, brandName: brand.name })}
+          onCreatedOptionSelected={(brand) => onChange(clearAutofillSource({ ...draft, brandId: brand.id, brandName: brand.name }, "brand"))}
         />
         <CreatableSelect
           createLabel={t.common.createNew}
           fieldClassName={scannerStyles.field}
-          label={t.scanner.storeLabel}
+          label={(
+            <FieldLabel
+              label={t.scanner.storeLabel}
+              theme={theme}
+            />
+          )}
+          helperClassName={scannerStyles.autofillReservedHint(theme)}
+          helperText={getAutofillSourceLabel(draft, "store", t.scanner.autofilledBy)}
           labelClassName={scannerStyles.label}
           options={stores.map((store) => ({ id: store.storeId, name: store.name }))}
           placeholder={t.prices.selectStore}
           theme={theme}
           value={draft.storeId}
-          onChange={(storeId) => onChange({ ...draft, storeId })}
+          onChange={(storeId) => onChange(clearAutofillSource({ ...draft, storeId }, "store"))}
           onCreate={async (name) => {
             const store = await storeService.create({ name });
             await refreshStores();
@@ -603,67 +654,64 @@ function IngredientDraftEditor({
           }}
         />
         <label className={scannerStyles.priceField}>
-          <span className={scannerStyles.label}>{t.scanner.priceLabel}</span>
+          <FieldLabel
+            label={t.scanner.priceLabel}
+            theme={theme}
+          />
           <input
             className={scannerStyles.input(theme)}
             inputMode="decimal"
             type="text"
             value={draft.price}
-            onChange={(event) => onChange({ ...draft, price: normalizePriceInput(event.target.value) })}
+            onChange={(event) => onChange(clearAutofillSource({ ...draft, price: normalizePriceInput(event.target.value) }, "price"))}
           />
           <span className={scannerStyles.floatingLabelSubtitle(theme)}>{t.prices.priceUnitSubtitle}</span>
+          <span className={scannerStyles.autofillReservedHint(theme)}>
+            {getAutofillSourceLabel(draft, "price", t.scanner.autofilledBy) ?? "\u00A0"}
+          </span>
         </label>
       </div>
 
       <section className={scannerStyles.field}>
         <span className={scannerStyles.label}>{t.cookbook.nutrition}</span>
         <div className={scannerStyles.nutritionSourceRow}>
-          {nutritionSource.links.length === 0 ? (
+          {nutritionSource.primary === null ? (
             <span className={scannerStyles.nutritionSourceText(theme)}>{nutritionSource.text}</span>
           ) : (
-            <span className={scannerStyles.nutritionSourceText(theme)}>
-              {nutritionSource.parts.map((part, index) => {
-                if (typeof part === "string") {
-                  return <span key={`${part}-${index}`}>{part}</span>;
-                }
-
-                if (part.url === null) {
-                  return <span key={part.label}>{part.label}</span>;
-                }
-
-                return (
-                  <a
-                    className={scannerStyles.nutritionSourceLink(theme)}
-                    href={part.url}
-                    key={part.label}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    {part.label}
-                  </a>
-                );
-              })}
-            </span>
-          )}
-          {hasMatvaretabellenSupplement && (
-            <span className={scannerStyles.nutritionSourceActions}>
-              {draft.matvaretabellenCandidates.length > 0 && (
-                <button
-                  className={scannerStyles.sourceActionButton(theme)}
-                  type="button"
-                  onClick={() => setIsMatvarePickerOpen(true)}
-                >
-                  {t.scanner.changeMatvaretabellen}
-                </button>
-              )}
-              <button
-                className={scannerStyles.sourceActionButton(theme)}
-                type="button"
-                onClick={() => onChange(removeMatvaretabellenSupplement(draft))}
-              >
-                {t.common.remove}
-              </button>
-            </span>
+            <div className={scannerStyles.nutritionSourceText(theme)}>
+              <span className={scannerStyles.nutritionSourcePrimaryLine}>
+                <span className={scannerStyles.nutritionSourceLine}>
+                  <span>{t.scanner.nutritionFromPrefix}</span>
+                  <NutritionSourceAnchor source={nutritionSource.primary} theme={theme} />
+                </span>
+                {nutritionSource.supplement === null ? (
+                  <NutritionSourceActions
+                    hasMatvaretabellenSupplement={hasMatvaretabellenSupplement}
+                    hasMatvaretabellenCandidates={draft.matvaretabellenCandidates.length > 0}
+                    theme={theme}
+                    onChangeMatvaretabellen={() => setIsMatvarePickerOpen(true)}
+                    onInfo={() => setIsAutofillInfoOpen(true)}
+                    onRemoveMatvaretabellen={() => onChange(removeMatvaretabellenSupplement(draft))}
+                  />
+                ) : null}
+              </span>
+              {nutritionSource.supplement !== null ? (
+                <span className={scannerStyles.nutritionSourceSupplementLine}>
+                  <span className={scannerStyles.nutritionSourceLine}>
+                    <span>{t.scanner.nutritionSupplementedByPrefix}</span>
+                    <NutritionSourceAnchor source={nutritionSource.supplement} theme={theme} />
+                  </span>
+                  <NutritionSourceActions
+                    hasMatvaretabellenSupplement={hasMatvaretabellenSupplement}
+                    hasMatvaretabellenCandidates={draft.matvaretabellenCandidates.length > 0}
+                    theme={theme}
+                    onChangeMatvaretabellen={() => setIsMatvarePickerOpen(true)}
+                    onInfo={() => setIsAutofillInfoOpen(true)}
+                    onRemoveMatvaretabellen={() => onChange(removeMatvaretabellenSupplement(draft))}
+                  />
+                </span>
+              ) : null}
+            </div>
           )}
         </div>
         {showMatvaretabellenFailedMessage && (
@@ -694,15 +742,20 @@ function IngredientDraftEditor({
         </button>
         {showNutrition && (
           <NutritionEditor
+            fieldSubtitleClassName={scannerStyles.autofillReservedHint(theme)}
+            fieldSubtitles={nutritionFieldSubtitles}
             theme={theme}
             values={nutritionValues}
-            onChange={(key, value) => onChange(updateNutritionDraft(draft, key, value))}
+            onChange={(key, value) => onChange(clearNutritionAutofillSource(updateNutritionDraft(draft, key, value), key))}
           />
         )}
       </section>
 
       <section className={scannerStyles.field}>
-        <span className={scannerStyles.label}>{t.scanner.selectTags}</span>
+          <FieldLabel
+            label={t.scanner.selectTags}
+            theme={theme}
+          />
         <GroupedCheckboxPanel
           addActionLabel={t.common.manageTags}
           formatValue={(value) => t.enums.ingredientTags[value] ?? value}
@@ -712,8 +765,11 @@ function IngredientDraftEditor({
           selectedValues={draft.tags}
           theme={theme}
           onAddTag={() => setIsTagCreateOpen(true)}
-          onToggle={(tag) => onChange({ ...draft, tags: toggleValue(draft.tags, tag) })}
+          onToggle={(tag) => onChange(clearAutofillSource({ ...draft, tags: toggleValue(draft.tags, tag) }, "tags"))}
         />
+        <span className={scannerStyles.autofillReservedHint(theme)}>
+          {getAutofillSourceLabel(draft, "tags", t.scanner.autofilledBy) ?? "\u00A0"}
+        </span>
       </section>
       {isTagCreateOpen && (
         <IngredientTagCreateDialog
@@ -724,7 +780,7 @@ function IngredientDraftEditor({
           onCreate={async (tag, categoryId) => {
             await ingredientTagCategoryService.createTag(categoryId, { name: tag });
             await refreshIngredientTagCategories();
-            onChange({ ...draft, tags: draft.tags.includes(tag) ? draft.tags : [...draft.tags, tag] });
+            onChange(clearAutofillSource({ ...draft, tags: draft.tags.includes(tag) ? draft.tags : [...draft.tags, tag] }, "tags"));
             setIsTagCreateOpen(false);
           }}
           onCreateCategory={async (name) => {
@@ -764,7 +820,146 @@ function IngredientDraftEditor({
           }}
         />
       )}
+      {isAutofillInfoOpen && (
+        <ScannerAutofillInfoModal
+          theme={theme}
+          onClose={() => setIsAutofillInfoOpen(false)}
+        />
+      )}
     </section>
+  );
+}
+
+function FieldLabel({
+  className,
+  hint,
+  label,
+  theme,
+}: {
+  className?: string;
+  hint?: string;
+  label: string;
+  theme: SiteTheme;
+}) {
+  return (
+    <span className={`${scannerStyles.labelRow} ${className ?? ""}`.trim()}>
+      <span className={scannerStyles.label}>{label}</span>
+      {hint !== undefined && (
+        <span className={recipeBrowserStyles.inlineHint(theme)}>{hint}</span>
+      )}
+    </span>
+  );
+}
+
+function NutritionSourceAnchor({
+  source,
+  theme,
+}: {
+  source: NutritionSourceLink;
+  theme: SiteTheme;
+}) {
+  if (source.url === null) {
+    return <span>{source.label}</span>;
+  }
+
+  return (
+    <a
+      className={scannerStyles.nutritionSourceLink(theme)}
+      href={source.url}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {source.label}
+    </a>
+  );
+}
+
+function NutritionSourceActions({
+  hasMatvaretabellenCandidates,
+  hasMatvaretabellenSupplement,
+  theme,
+  onChangeMatvaretabellen,
+  onInfo,
+  onRemoveMatvaretabellen,
+}: {
+  hasMatvaretabellenCandidates: boolean;
+  hasMatvaretabellenSupplement: boolean;
+  theme: SiteTheme;
+  onChangeMatvaretabellen: () => void;
+  onInfo: () => void;
+  onRemoveMatvaretabellen: () => void;
+}) {
+  const { t } = useLanguage();
+
+  return (
+    <span className={scannerStyles.nutritionSourceActions}>
+      {hasMatvaretabellenSupplement && hasMatvaretabellenCandidates && (
+        <button
+          className={scannerStyles.sourceActionButton(theme)}
+          type="button"
+          onClick={onChangeMatvaretabellen}
+        >
+          {t.scanner.changeMatvaretabellen}
+        </button>
+      )}
+      {hasMatvaretabellenSupplement && (
+        <button
+          className={scannerStyles.sourceActionButton(theme)}
+          type="button"
+          onClick={onRemoveMatvaretabellen}
+        >
+          {t.common.remove}
+        </button>
+      )}
+      <button
+        className={scannerStyles.sourceActionButton(theme)}
+        type="button"
+        onClick={onInfo}
+      >
+        {t.scanner.autofillInfoButton}
+      </button>
+    </span>
+  );
+}
+
+function ScannerAutofillInfoModal({
+  theme,
+  onClose,
+}: {
+  theme: SiteTheme;
+  onClose: () => void;
+}) {
+  const { t } = useLanguage();
+
+  return (
+    <Modal
+      backdropClassName={scannerStyles.editorModalBackdrop}
+      bodyClassName={scannerStyles.infoModalBody}
+      closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
+      closeLabel={t.common.close}
+      footer={(
+        <button
+          className={scannerStyles.saveButton(theme)}
+          type="button"
+          onClick={onClose}
+        >
+          {t.common.close}
+        </button>
+      )}
+      footerClassName={scannerStyles.editorModalFooter(theme)}
+      headerClassName={scannerStyles.editorModalHeader}
+      panelClassName={scannerStyles.infoModalPanel(theme)}
+      title={t.scanner.autofillInfoTitle}
+      titleClassName={scannerStyles.editorModalTitle}
+      onClose={onClose}
+    >
+      <p className={scannerStyles.infoText(theme)}>{t.scanner.autofillInfoIntro}</p>
+      <ul className={scannerStyles.infoList(theme)}>
+        {t.scanner.autofillInfoSteps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ul>
+    </Modal>
   );
 }
 
@@ -829,23 +1024,21 @@ function MatvaretabellenCandidateModal({
 function updateNutritionDraft(draft: IngredientDraft, key: keyof NutritionEditorValues, value: string): IngredientDraft {
   return {
     ...draft,
-    nutritionSource: "Manual",
-    nutritionSupplementSource: null,
-    nutritionSourceLabel: null,
-    kassalappUrl: null,
-    kassalappNutritionPer100: null,
-    matvaretabellenNutritionPer100: null,
-    matvaretabellenSupplementStatus: "NotAttempted",
-    matvaretabellenFoodId: null,
-    matvaretabellenUrl: null,
-    nutritionMatchedName: null,
-    nutritionMatchConfidence: null,
     nutritionPer100: {
       ...emptyNutritionFacts(),
       ...draft.nutritionPer100,
       [key]: nullableNumber(value),
     },
   };
+}
+
+function clearNutritionAutofillSource(draft: IngredientDraft, key: keyof NutritionEditorValues): IngredientDraft {
+  if (draft.nutritionAutofillSources[key] === undefined) {
+    return draft;
+  }
+
+  const { [key]: _removedField, ...nutritionAutofillSources } = draft.nutritionAutofillSources;
+  return { ...draft, nutritionAutofillSources };
 }
 
 function applyMatvaretabellenCandidate(
@@ -866,6 +1059,10 @@ function applyMatvaretabellenCandidate(
     matvaretabellenUrl: candidate.url,
     nutritionMatchedName: candidate.foodName,
     nutritionMatchConfidence: candidate.confidence,
+    autofillSources: {
+      ...draft.autofillSources,
+    },
+    nutritionAutofillSources: getNutritionAutofillSources(draft.kassalappNutritionPer100, candidate.nutrition),
   };
 }
 
@@ -882,6 +1079,10 @@ function removeMatvaretabellenSupplement(draft: IngredientDraft): IngredientDraf
     matvaretabellenUrl: null,
     nutritionMatchedName: null,
     nutritionMatchConfidence: null,
+    autofillSources: {
+      ...draft.autofillSources,
+    },
+    nutritionAutofillSources: getNutritionAutofillSources(draft.kassalappNutritionPer100, null),
   };
 }
 
@@ -1052,17 +1253,90 @@ function candidateToDraft(candidate: IngredientCandidate, stores: IStore[], bran
     matvaretabellenUrl: candidate.matvaretabellenUrl,
     nutritionMatchedName: candidate.nutritionMatchedName,
     nutritionMatchConfidence: candidate.nutritionMatchConfidence,
+    autofillSources: {
+      name: candidate.name.trim().length > 0 ? ["Kassalapp"] : undefined,
+      brand: candidate.brandName.trim().length > 0 ? ["Kassalapp"] : undefined,
+      store: candidate.storeName.trim().length > 0 ? ["Kassalapp"] : undefined,
+      price: candidate.price !== null ? ["Kassalapp"] : undefined,
+      image: candidate.imageUrl !== null ? ["Kassalapp"] : undefined,
+      tags: candidate.tags.length > 0 ? ["Kassalapp"] : undefined,
+    },
+    nutritionAutofillSources: getNutritionAutofillSources(
+      candidate.kassalappNutritionPer100,
+      candidate.matvaretabellenNutritionPer100,
+    ),
   };
+}
+
+function clearAutofillSource(draft: IngredientDraft, field: ScannerAutofillField): IngredientDraft {
+  if (draft.autofillSources[field] === undefined) {
+    return draft;
+  }
+
+  const { [field]: _removedField, ...autofillSources } = draft.autofillSources;
+  return { ...draft, autofillSources };
+}
+
+function getAutofillSourceLabel(
+  draft: IngredientDraft,
+  field: ScannerAutofillField,
+  label: (source: string) => string,
+) {
+  const sources = draft.autofillSources[field];
+  if (sources === undefined || sources.length === 0) {
+    return null;
+  }
+
+  return label(sources.map(formatAutofillSourceName).join(" / "));
+}
+
+function formatAutofillSourceName(source: AutofillSource) {
+  if (source === "Kassalapp") {
+    return "kassal.app";
+  }
+
+  if (source === "Matvaretabellen") {
+    return "Matvaretabellen";
+  }
+
+  return "manual";
+}
+
+function getNutritionAutofillSources(
+  kassalappNutrition: INutritionFacts | null,
+  matvaretabellenNutrition: INutritionFacts | null,
+): Partial<Record<keyof NutritionEditorValues, AutofillSource>> {
+  const sources: Partial<Record<keyof NutritionEditorValues, AutofillSource>> = {};
+
+  for (const key of nutritionEditorKeys) {
+    if (kassalappNutrition?.[key] !== null && kassalappNutrition?.[key] !== undefined) {
+      sources[key] = "Kassalapp";
+    } else if (matvaretabellenNutrition?.[key] !== null && matvaretabellenNutrition?.[key] !== undefined) {
+      sources[key] = "Matvaretabellen";
+    }
+  }
+
+  return sources;
+}
+
+function getNutritionFieldSubtitles(
+  draft: IngredientDraft,
+  label: (source: string) => string,
+): Partial<Record<keyof NutritionEditorValues, string>> {
+  return Object.fromEntries(
+    Object.entries(draft.nutritionAutofillSources).map(([key, source]) => [
+      key,
+      label(formatAutofillSourceName(source)),
+    ]),
+  ) as Partial<Record<keyof NutritionEditorValues, string>>;
 }
 
 function getNutritionSource(
   draft: IngredientDraft,
   labels: Record<NutritionDataSource, string>,
-  supplementedByLabel: (primary: string, supplement: string) => string,
-  supplementSeparator: string,
 ) {
   if (draft.nutritionPer100 === null || draft.nutritionSource === "None") {
-    return { text: labels.None, links: [], parts: [labels.None] };
+    return { text: labels.None, primary: null, supplement: null };
   }
 
   const matchedName = draft.nutritionMatchedName?.trim() ?? null;
@@ -1082,18 +1356,17 @@ function getNutritionSource(
       );
 
   if (supplement !== null) {
-    const text = supplementedByLabel(primary.label, supplement.label);
     return {
-      text,
-      links: [primary, supplement].filter((link) => link.url !== null),
-      parts: [primary, supplementSeparator, supplement],
+      text: `${primary.label}, ${supplement.label}`,
+      primary,
+      supplement,
     };
   }
 
   return {
     text: primary.label,
-    links: primary.url === null ? [] : [primary],
-    parts: [primary],
+    primary,
+    supplement: null,
   };
 }
 
@@ -1109,8 +1382,10 @@ function sourceLink(
   matchedName: string | null,
 ): NutritionSourceLink {
   const label = source === "Matvaretabellen" && matchedName
-    ? `${labels.Matvaretabellen}: ${matchedName}`
-    : labels[source];
+    ? `Matvaretabellen: ${matchedName}`
+    : source === "Kassalapp"
+      ? "Kassalapp"
+      : labels[source];
 
   return { label, url };
 }

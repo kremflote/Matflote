@@ -296,6 +296,16 @@ export const en: TranslationDictionary = {
     cameraStop: "Stop camera",
     cameraUnsupported:
       "Could not start camera scanning in this browser. You can still enter the barcode manually.",
+    autofilledBy: (source) => `Autofilled by: ${source}`,
+    autofillInfoButton: "Info",
+    autofillInfoIntro:
+      "The scanner builds an ingredient suggestion from product data, then lets you review it before saving.",
+    autofillInfoSteps: [
+      "Kassalapp is used first for the product name, brand, image, price and any nutrition data it already has.",
+      "Matvaretabellen is used to fill missing nutrition fields when a good match can be found.",
+      "If the automatic Matvaretabellen match is wrong or missing, you can choose another match before saving.",
+    ],
+    autofillInfoTitle: "How autofill works",
     brandLabel: "Brand",
     calories: "Calories",
     changeMatvaretabellen: "Change",
@@ -324,6 +334,8 @@ export const en: TranslationDictionary = {
     noProductsFound: (ean) => `No products found for ${ean}.`,
     nutritionSupplementedBy: (primary, supplement) =>
       `${primary}, supplemented by ${supplement}`,
+    nutritionFromPrefix: "Nutrition from",
+    nutritionSupplementedByPrefix: "supplemented by",
     nutritionSupplementSeparator: ", supplemented by ",
     nutritionSources: {
       None: "No nutrition data found.",

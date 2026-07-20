@@ -30,10 +30,14 @@ export type NutritionEditorValues = {
 type NutritionEditorProps = {
   theme: SiteTheme;
   values: NutritionEditorValues;
+  fieldSubtitles?: Partial<Record<keyof NutritionEditorValues, string | null>>;
+  fieldSubtitleClassName?: string;
   onChange: (key: keyof NutritionEditorValues, value: string) => void;
 };
 
 function NutritionEditor({
+  fieldSubtitles = {},
+  fieldSubtitleClassName,
   theme,
   values,
   onChange,
@@ -61,9 +65,9 @@ function NutritionEditor({
         title={t.cookbook.nutritionMacros}
         onToggle={() => toggleSection("macros")}
       >
-        <NutritionNumberField label={t.cookbook.caloriesPer100g} step="1" theme={theme} unit="kcal" value={values.calories} onChange={(value) => onChange("calories", value)} />
-        <NutritionNumberField label={t.cookbook.carbsPer100g} theme={theme} value={values.carbohydrateGrams} onChange={(value) => onChange("carbohydrateGrams", value)} />
-        <NutritionNumberField label={t.cookbook.proteinPer100g} theme={theme} value={values.proteinGrams} onChange={(value) => onChange("proteinGrams", value)} />
+        <NutritionNumberField label={t.cookbook.caloriesPer100g} step="1" subtitle={fieldSubtitles.calories} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="kcal" value={values.calories} onChange={(value) => onChange("calories", value)} />
+        <NutritionNumberField label={t.cookbook.carbsPer100g} subtitle={fieldSubtitles.carbohydrateGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.carbohydrateGrams} onChange={(value) => onChange("carbohydrateGrams", value)} />
+        <NutritionNumberField label={t.cookbook.proteinPer100g} subtitle={fieldSubtitles.proteinGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.proteinGrams} onChange={(value) => onChange("proteinGrams", value)} />
       </NutritionEditorSection>
 
       <NutritionEditorSection
@@ -72,13 +76,13 @@ function NutritionEditor({
         title={t.cookbook.nutritionFats}
         onToggle={() => toggleSection("fats")}
       >
-        <NutritionNumberField label={t.cookbook.saturatedFatsPer100g} theme={theme} value={values.saturatedFatGrams} onChange={(value) => onChange("saturatedFatGrams", value)} />
-        <NutritionNumberField label={t.cookbook.transFatsPer100g} theme={theme} value={values.transFatGrams} onChange={(value) => onChange("transFatGrams", value)} />
-        <NutritionNumberField label={t.cookbook.monounsaturatedFatsPer100g} theme={theme} value={values.monounsaturatedFatGrams} onChange={(value) => onChange("monounsaturatedFatGrams", value)} />
-        <NutritionNumberField label={t.cookbook.polyunsaturatedFatsPer100g} theme={theme} value={values.polyunsaturatedFatGrams} onChange={(value) => onChange("polyunsaturatedFatGrams", value)} />
-        <NutritionNumberField label={t.cookbook.omega3Per100g} theme={theme} value={values.omega3Grams} onChange={(value) => onChange("omega3Grams", value)} />
-        <NutritionNumberField label={t.cookbook.omega6Per100g} theme={theme} value={values.omega6Grams} onChange={(value) => onChange("omega6Grams", value)} />
-        <NutritionNumberField label={t.cookbook.cholesterolPer100g} theme={theme} unit="mg" value={values.cholesterolMilligrams} onChange={(value) => onChange("cholesterolMilligrams", value)} />
+        <NutritionNumberField label={t.cookbook.saturatedFatsPer100g} subtitle={fieldSubtitles.saturatedFatGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.saturatedFatGrams} onChange={(value) => onChange("saturatedFatGrams", value)} />
+        <NutritionNumberField label={t.cookbook.transFatsPer100g} subtitle={fieldSubtitles.transFatGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.transFatGrams} onChange={(value) => onChange("transFatGrams", value)} />
+        <NutritionNumberField label={t.cookbook.monounsaturatedFatsPer100g} subtitle={fieldSubtitles.monounsaturatedFatGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.monounsaturatedFatGrams} onChange={(value) => onChange("monounsaturatedFatGrams", value)} />
+        <NutritionNumberField label={t.cookbook.polyunsaturatedFatsPer100g} subtitle={fieldSubtitles.polyunsaturatedFatGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.polyunsaturatedFatGrams} onChange={(value) => onChange("polyunsaturatedFatGrams", value)} />
+        <NutritionNumberField label={t.cookbook.omega3Per100g} subtitle={fieldSubtitles.omega3Grams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.omega3Grams} onChange={(value) => onChange("omega3Grams", value)} />
+        <NutritionNumberField label={t.cookbook.omega6Per100g} subtitle={fieldSubtitles.omega6Grams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.omega6Grams} onChange={(value) => onChange("omega6Grams", value)} />
+        <NutritionNumberField label={t.cookbook.cholesterolPer100g} subtitle={fieldSubtitles.cholesterolMilligrams} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="mg" value={values.cholesterolMilligrams} onChange={(value) => onChange("cholesterolMilligrams", value)} />
       </NutritionEditorSection>
 
       <NutritionEditorSection
@@ -87,13 +91,13 @@ function NutritionEditor({
         title={t.cookbook.nutritionVitamins}
         onToggle={() => toggleSection("vitamins")}
       >
-        <NutritionNumberField label={t.cookbook.vitaminAPer100g} theme={theme} unit="ug" value={values.vitaminAMicrograms} onChange={(value) => onChange("vitaminAMicrograms", value)} />
-        <NutritionNumberField label={t.cookbook.vitaminB9Per100g} theme={theme} unit="ug" value={values.vitaminB9Micrograms} onChange={(value) => onChange("vitaminB9Micrograms", value)} />
-        <NutritionNumberField label={t.cookbook.vitaminB12Per100g} theme={theme} unit="ug" value={values.vitaminB12Micrograms} onChange={(value) => onChange("vitaminB12Micrograms", value)} />
-        <NutritionNumberField label={t.cookbook.vitaminCPer100g} theme={theme} unit="mg" value={values.vitaminCMilligrams} onChange={(value) => onChange("vitaminCMilligrams", value)} />
-        <NutritionNumberField label={t.cookbook.vitaminDPer100g} theme={theme} unit="ug" value={values.vitaminDMicrograms} onChange={(value) => onChange("vitaminDMicrograms", value)} />
-        <NutritionNumberField label={t.cookbook.vitaminEPer100g} theme={theme} unit="mg" value={values.vitaminEMilligrams} onChange={(value) => onChange("vitaminEMilligrams", value)} />
-        <NutritionNumberField label={t.cookbook.vitaminKPer100g} theme={theme} unit="ug" value={values.vitaminKMicrograms} onChange={(value) => onChange("vitaminKMicrograms", value)} />
+        <NutritionNumberField label={t.cookbook.vitaminAPer100g} subtitle={fieldSubtitles.vitaminAMicrograms} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="ug" value={values.vitaminAMicrograms} onChange={(value) => onChange("vitaminAMicrograms", value)} />
+        <NutritionNumberField label={t.cookbook.vitaminB9Per100g} subtitle={fieldSubtitles.vitaminB9Micrograms} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="ug" value={values.vitaminB9Micrograms} onChange={(value) => onChange("vitaminB9Micrograms", value)} />
+        <NutritionNumberField label={t.cookbook.vitaminB12Per100g} subtitle={fieldSubtitles.vitaminB12Micrograms} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="ug" value={values.vitaminB12Micrograms} onChange={(value) => onChange("vitaminB12Micrograms", value)} />
+        <NutritionNumberField label={t.cookbook.vitaminCPer100g} subtitle={fieldSubtitles.vitaminCMilligrams} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="mg" value={values.vitaminCMilligrams} onChange={(value) => onChange("vitaminCMilligrams", value)} />
+        <NutritionNumberField label={t.cookbook.vitaminDPer100g} subtitle={fieldSubtitles.vitaminDMicrograms} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="ug" value={values.vitaminDMicrograms} onChange={(value) => onChange("vitaminDMicrograms", value)} />
+        <NutritionNumberField label={t.cookbook.vitaminEPer100g} subtitle={fieldSubtitles.vitaminEMilligrams} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="mg" value={values.vitaminEMilligrams} onChange={(value) => onChange("vitaminEMilligrams", value)} />
+        <NutritionNumberField label={t.cookbook.vitaminKPer100g} subtitle={fieldSubtitles.vitaminKMicrograms} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="ug" value={values.vitaminKMicrograms} onChange={(value) => onChange("vitaminKMicrograms", value)} />
       </NutritionEditorSection>
 
       <NutritionEditorSection
@@ -102,9 +106,9 @@ function NutritionEditor({
         title={t.cookbook.nutritionOther}
         onToggle={() => toggleSection("other")}
       >
-        <NutritionNumberField label={t.cookbook.fiberPer100g} theme={theme} value={values.dietaryFiberGrams} onChange={(value) => onChange("dietaryFiberGrams", value)} />
-        <NutritionNumberField label={t.cookbook.cholinePer100g} theme={theme} unit="mg" value={values.cholineMilligrams} onChange={(value) => onChange("cholineMilligrams", value)} />
-        <NutritionNumberField label={t.cookbook.saltPer100g} step="0.01" theme={theme} value={values.saltGrams} onChange={(value) => onChange("saltGrams", value)} />
+        <NutritionNumberField label={t.cookbook.fiberPer100g} subtitle={fieldSubtitles.dietaryFiberGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.dietaryFiberGrams} onChange={(value) => onChange("dietaryFiberGrams", value)} />
+        <NutritionNumberField label={t.cookbook.cholinePer100g} subtitle={fieldSubtitles.cholineMilligrams} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="mg" value={values.cholineMilligrams} onChange={(value) => onChange("cholineMilligrams", value)} />
+        <NutritionNumberField label={t.cookbook.saltPer100g} step="0.01" subtitle={fieldSubtitles.saltGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.saltGrams} onChange={(value) => onChange("saltGrams", value)} />
       </NutritionEditorSection>
     </div>
   );
@@ -145,6 +149,8 @@ type NutritionNumberFieldProps = {
   value: string;
   className?: string;
   step?: string;
+  subtitle?: string | null;
+  subtitleClassName?: string;
   unit?: string;
   onChange: (value: string) => void;
 };
@@ -155,6 +161,8 @@ function NutritionNumberField({
   value,
   className = "",
   step = "0.1",
+  subtitle = null,
+  subtitleClassName,
   unit = "g",
   onChange,
 }: NutritionNumberFieldProps) {
@@ -172,6 +180,9 @@ function NutritionNumberField({
         />
         <span className={recipeBrowserStyles.numberFieldSuffix(theme)}>{unit}</span>
       </span>
+      {subtitleClassName !== undefined && (
+        <span className={subtitleClassName}>{subtitle ?? "\u00A0"}</span>
+      )}
     </label>
   );
 }
