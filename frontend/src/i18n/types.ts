@@ -169,6 +169,7 @@ export type TranslationDictionary = {
     saturatedFats: string;
     transFatsPer100g: string;
     transFats: string;
+    totalCaloriesInDish: string;
     saveIngredient: string;
     saveRecipe: string;
     scale: string;

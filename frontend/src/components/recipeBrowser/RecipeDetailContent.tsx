@@ -117,8 +117,8 @@ function RecipeDetailContent({
         />
       </div>
 
-      <DetailSection title={t.cookbook.dietaryInformation} theme={theme}>
-        <NutritionGrid nutrition={nutrition} theme={theme} />
+      <DetailSection title={t.cookbook.dietaryInformation} subtitle="per 100g" theme={theme}>
+        <NutritionGrid nutrition={nutrition} theme={theme} variant="recipe" />
       </DetailSection>
     </div>
   );

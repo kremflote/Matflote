@@ -154,6 +154,7 @@ export const en: TranslationDictionary = {
     saturatedFatsPer100g: "Saturated fats per 100g",
     transFats: "Trans fats",
     transFatsPer100g: "Trans fats per 100g",
+    totalCaloriesInDish: "Total calories in dish",
     saveIngredient: "Save ingredient",
     saveRecipe: "Save recipe",
     scale: "Scale",

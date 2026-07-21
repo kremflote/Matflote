@@ -153,6 +153,7 @@ export const nb: TranslationDictionary = {
     saturatedFatsPer100g: "Mettet fett per 100g",
     transFats: "Transfett",
     transFatsPer100g: "Transfett per 100g",
+    totalCaloriesInDish: "Totale kalorier i retten",
     saveIngredient: "Lagre ingrediens",
     saveRecipe: "Lagre oppskrift",
     scale: "Skaler",

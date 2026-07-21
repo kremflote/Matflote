@@ -658,7 +658,16 @@ export const recipeBrowserStyles = {
     "h-[260px] grid-rows-[auto_minmax(0,1fr)] max-md:h-auto max-sm:min-h-[38vw]",
   recipeDetailSplitGrid: "grid grid-cols-2 gap-6 max-md:grid-cols-1",
   detailSectionHeader: "flex flex-wrap items-center justify-between gap-3",
+  detailSectionTitleRow: "flex flex-wrap items-baseline gap-2",
   detailSectionTitle: "text-sm font-bold uppercase tracking-wide",
+  detailSectionSubtitle: (theme: SiteTheme) =>
+    `text-xs font-semibold normal-case tracking-normal ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
   detailText:
     "self-start whitespace-pre-wrap text-left text-sm font-semibold leading-[1.55]",
   detailTextScrollable:

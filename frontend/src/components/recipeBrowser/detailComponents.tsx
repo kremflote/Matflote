@@ -9,13 +9,19 @@ type DetailSectionProps = {
   theme: SiteTheme;
   children: ReactNode;
   headerAction?: ReactNode;
+  subtitle?: string;
 };
 
-export function DetailSection({ title, theme, children, headerAction }: DetailSectionProps) {
+export function DetailSection({ title, theme, children, headerAction, subtitle }: DetailSectionProps) {
   return (
     <section className={recipeBrowserStyles.detailsPanel(theme)}>
       <div className={recipeBrowserStyles.detailSectionHeader}>
-        <h3 className={recipeBrowserStyles.detailSectionTitle}>{title}</h3>
+        <div className={recipeBrowserStyles.detailSectionTitleRow}>
+          <h3 className={recipeBrowserStyles.detailSectionTitle}>{title}</h3>
+          {subtitle !== undefined && (
+            <span className={recipeBrowserStyles.detailSectionSubtitle(theme)}>{subtitle}</span>
+          )}
+        </div>
         {headerAction}
       </div>
       {children}
@@ -100,23 +106,39 @@ export function ChipList({ compact = false, label, values, theme }: ChipListProp
 type NutritionGridProps = {
   nutrition: INutritionFacts | null;
   theme: SiteTheme;
+  variant?: "default" | "recipe";
 };
 
-export function NutritionGrid({ nutrition, theme }: NutritionGridProps) {
+export function NutritionGrid({ nutrition, theme, variant = "default" }: NutritionGridProps) {
   const { t } = useLanguage();
 
   if (nutrition === null) {
     return <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noDietaryInformation}</p>;
   }
 
+  const overviewRows: Array<[string, string | null]> =
+    variant === "recipe"
+      ? [
+        [t.cookbook.totalCaloriesInDish, nutrition.calories === null ? null : `${nutrition.calories} kcal`],
+        [t.cookbook.carbs, formatGrams(nutrition.carbohydrateGrams)],
+        [t.cookbook.protein, formatGrams(nutrition.proteinGrams)],
+        [t.cookbook.nutritionFats, formatGrams(sumNutritionValues([
+          nutrition.saturatedFatGrams,
+          nutrition.transFatGrams,
+          nutrition.monounsaturatedFatGrams,
+          nutrition.polyunsaturatedFatGrams,
+        ]))],
+      ]
+      : [
+        [t.cookbook.calories, nutrition.calories === null ? null : `${nutrition.calories} kcal`],
+        [t.cookbook.carbs, formatGrams(nutrition.carbohydrateGrams)],
+        [t.cookbook.protein, formatGrams(nutrition.proteinGrams)],
+      ];
+
   const rowGroups: Array<{ title: string; rows: Array<[string, string | null]> }> = [
     {
-      title: t.cookbook.nutritionMacros,
-      rows: [
-      [t.cookbook.calories, nutrition.calories === null ? null : `${nutrition.calories} kcal`],
-      [t.cookbook.carbs, formatGrams(nutrition.carbohydrateGrams)],
-      [t.cookbook.protein, formatGrams(nutrition.proteinGrams)],
-      ],
+      title: variant === "recipe" ? t.cookbook.overview : t.cookbook.nutritionMacros,
+      rows: overviewRows,
     },
     {
       title: t.cookbook.nutritionFats,
@@ -174,6 +196,16 @@ export function NutritionGrid({ nutrition, theme }: NutritionGridProps) {
 
 function formatGrams(value: number | null) {
   return value === null ? null : `${value} g`;
+}
+
+function sumNutritionValues(values: Array<number | null>) {
+  const knownValues = values.filter((value): value is number => value !== null);
+
+  if (knownValues.length === 0) {
+    return null;
+  }
+
+  return knownValues.reduce((total, value) => total + value, 0);
 }
 
 function formatUnit(value: number | null, unit: string) {
