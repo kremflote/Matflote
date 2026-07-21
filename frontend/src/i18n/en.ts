@@ -60,22 +60,18 @@ export const en: TranslationDictionary = {
     chooseAtLeastOneIngredientTag: "Choose at least one ingredient tag.",
     conversionHelper: "Conversion Helper",
     conversionHelperIntro:
-      "Use these quick references when a recipe gives everyday kitchen amounts. Save the converted amount as g, kg, ml, or l.",
+      "Reference conversions when a recipe gives everyday kitchen amounts.",
     conversionHelperSections: [
       {
-        title: "Volume",
+        title: "Conversions",
         items: [
-          { from: "1 tsp", to: "5 ml" },
-          { from: "1 tbsp", to: "15 ml" },
-          { from: "1 cup", to: "240 ml" },
-        ],
-      },
-      {
-        title: "Common vegetables",
-        items: [
+          { from: "1 tsp", to: "5 ml / 5 g" },
+          { from: "1 tbsp", to: "15 ml / 15 g" },
+          { from: "1 cup", to: "240 ml / 240 g" },
           { from: "1 yellow onion", to: "170 g" },
           { from: "1 garlic clove", to: "3 g" },
           { from: "1 carrot", to: "70 g" },
+          { from: "1 broth cube", to: "10 g" },
         ],
       },
     ],
@@ -258,7 +254,8 @@ export const en: TranslationDictionary = {
     settings: "Settings",
   },
   nutrition: {
-    comparedTo: (target, percent) => `${percent.toLocaleString("en", { maximumFractionDigits: 1 })}% of ${target} weekly target`,
+    comparedTo: (target, percent) =>
+      `${percent.toLocaleString("en", { maximumFractionDigits: 1 })}% of ${target} weekly target`,
     couldNotLoad: "Could not load nutrition summary.",
     defaultProfile: "Female 25-50",
     items: {
@@ -280,11 +277,13 @@ export const en: TranslationDictionary = {
       `${count} planned ingredient${count === 1 ? " is" : "s are"} missing nutrition data, so totals may be incomplete.`,
     missingNutritionTitle: "Missing nutrition data",
     noData: "No planned nutrition data found for this week.",
-    pageIntro: "See nutrition totals from planned meals and compare micronutrients against the selected profile.",
+    pageIntro:
+      "See nutrition totals from planned meals and compare micronutrients against the selected profile.",
     pageTitle: "Nutrition",
     profile: "Profile",
     referenceNotSet: "No reference target yet.",
-    referenceSource: (provider, importedAt) => `Reference values from ${provider}, imported ${importedAt}.`,
+    referenceSource: (provider, importedAt) =>
+      `Reference values from ${provider}, imported ${importedAt}.`,
     referenceSourceLink: "View source",
     weekStart: "Week starts",
   },

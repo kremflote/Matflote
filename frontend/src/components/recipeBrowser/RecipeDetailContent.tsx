@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useLanguage } from "../../contexts";
-import IngredientThumbnail from "../IngredientThumbnail";
 import type { IIngredient, INutritionFacts, MeasurementUnit } from "../../interfaces/IIngredient";
 import { getApiAssetUrl } from "../../services/apiClient";
 import type { SiteTheme } from "../../styles/appStyles";
@@ -176,21 +175,40 @@ function RecipeIngredientSection({
               type="button"
               onClick={() => onIngredientClick?.(recipeIngredient.ingredient)}
             >
-              <IngredientThumbnail
-                className={recipeBrowserStyles.detailIngredientThumbnail}
-                ingredient={recipeIngredient.ingredient}
-                theme={theme}
-              />
-              <span className={recipeBrowserStyles.detailIngredientAmount}>
-                {formatRecipeIngredientAmount(
-                  recipeIngredient.amount,
-                  recipeIngredient.unit,
-                  t.enums.measurementUnits,
-                  amountMultiplier,
+              <span
+                aria-hidden="true"
+                className={recipeBrowserStyles.detailIngredientImageFrame(theme)}
+                style={{ backgroundColor: recipeIngredient.ingredient.color ?? undefined }}
+              >
+                {recipeIngredient.ingredient.imageUrl ? (
+                  <img
+                    alt=""
+                    className={recipeBrowserStyles.detailIngredientImage}
+                    src={getApiAssetUrl(recipeIngredient.ingredient.imageUrl) ?? undefined}
+                  />
+                ) : (
+                  <span className={recipeBrowserStyles.detailIngredientImageFallback}>
+                    {getInitials(recipeIngredient.ingredient.ingredientName)}
+                  </span>
                 )}
               </span>
-              <span className={recipeBrowserStyles.detailIngredientPreparation}>
-                {recipeIngredient.preparation !== "None" ? t.enums.ingredientPreparations[recipeIngredient.preparation] : ""}
+              <span className={recipeBrowserStyles.detailIngredientContent}>
+                <span className={recipeBrowserStyles.detailIngredientName}>
+                  {recipeIngredient.ingredient.ingredientName}
+                </span>
+                <span className={recipeBrowserStyles.detailIngredientMetaRow}>
+                  <span className={recipeBrowserStyles.detailIngredientAmount}>
+                    {formatRecipeIngredientAmount(
+                      recipeIngredient.amount,
+                      recipeIngredient.unit,
+                      t.enums.measurementUnits,
+                      amountMultiplier,
+                    )}
+                  </span>
+                  <span className={recipeBrowserStyles.detailIngredientPreparation}>
+                    {recipeIngredient.preparation !== "None" ? t.enums.ingredientPreparations[recipeIngredient.preparation] : ""}
+                  </span>
+                </span>
               </span>
             </button>
           ))}
@@ -198,6 +216,15 @@ function RecipeIngredientSection({
       )}
     </section>
   );
+}
+
+function getInitials(value: string) {
+  return value
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "?";
 }
 
 function calculateRecipeNutrition(recipe: EnrichedRecipe): INutritionFacts | null {

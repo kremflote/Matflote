@@ -62,19 +62,15 @@ export const nb: TranslationDictionary = {
       "Bruk disse hurtigverdiene når en oppskrift bruker vanlige kjøkkenmål. Lagre den omregnede mengden som g, kg, ml eller l.",
     conversionHelperSections: [
       {
-        title: "Volum",
+        title: "Konverteringer",
         items: [
-          { from: "1 ts", to: "5 ml" },
-          { from: "1 ss", to: "15 ml" },
-          { from: "1 kopp", to: "240 ml" },
-        ],
-      },
-      {
-        title: "Vanlige grønnsaker",
-        items: [
+          { from: "1 ts", to: "5 ml / 5 g" },
+          { from: "1 ss", to: "15 ml / 15 g" },
+          { from: "1 kopp", to: "240 ml / 240 g" },
           { from: "1 gul løk", to: "170 g" },
           { from: "1 hvitløksfedd", to: "3 g" },
           { from: "1 gulrot", to: "70 g" },
+          { from: "1 kube med buljong", to: "10 g" },
         ],
       },
     ],

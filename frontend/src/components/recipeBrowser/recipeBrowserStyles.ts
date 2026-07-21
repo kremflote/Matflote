@@ -446,7 +446,7 @@ export const recipeBrowserStyles = {
   compactIngredientImageButton: (theme: SiteTheme) =>
     `${recipeBrowserStyles.imageUploadFloatingButton(theme)} absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-md:static max-md:translate-x-0 max-md:translate-y-0`,
   detailsPanel: (theme: SiteTheme) =>
-    `grid gap-4 rounded-md border p-3 ${surfaceClasses.panel(theme)}`,
+    `grid content-start gap-4 rounded-md border p-3 ${surfaceClasses.panel(theme)}`,
   formActions:
     "flex flex-wrap items-center justify-end gap-3 pt-2 max-sm:flex-nowrap",
   formActionButton:
@@ -699,18 +699,33 @@ export const recipeBrowserStyles = {
   detailRowLabel: "font-bold",
   detailRowValue: "shrink-0",
   detailIngredientRow: (theme: SiteTheme) =>
-    `grid min-h-12 w-full grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 rounded-md p-1.5 text-left text-sm font-semibold transition-colors max-sm:grid-cols-[minmax(0,1fr)] max-sm:text-xs ${
+    `grid min-h-14 w-full grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-2 rounded-md p-1.5 text-left text-sm font-semibold transition-colors ${
       theme === "dark"
         ? "bg-white/[0.05] text-neutral-200 hover:bg-white/[0.09]"
         : theme === "paletteLight"
           ? "bg-[#E5D5BC]/45 text-[#556145] hover:bg-[#E5D5BC]/70"
           : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
     }`,
-  detailIngredientThumbnail: "min-w-0 shadow-none",
+  detailIngredientImageFrame: (theme: SiteTheme) =>
+    `flex aspect-square h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-md border ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-white/[0.08]"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-[#FAF7F2]"
+          : "border-neutral-200 bg-white"
+    }`,
+  detailIngredientImage: "h-full w-full object-cover",
+  detailIngredientImageFallback:
+    "text-xs font-black leading-none text-white/90",
+  detailIngredientContent: "grid min-w-0 gap-1",
+  detailIngredientName:
+    "min-w-0 truncate text-sm font-bold leading-tight",
+  detailIngredientMetaRow:
+    "grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2",
   detailIngredientAmount:
-    "min-w-0 truncate text-center text-xs font-semibold opacity-80 max-sm:text-left",
+    "min-w-0 truncate text-left text-xs font-semibold opacity-80",
   detailIngredientPreparation:
-    "min-w-0 truncate text-right text-xs font-bold max-sm:text-left",
+    "min-w-0 truncate text-right text-xs font-bold",
   ingredientDetailOverviewGrid: "grid grid-cols-2 gap-3",
   ingredientDetailImageFrame: (theme: SiteTheme) =>
     `flex aspect-square min-h-0 w-full items-center justify-center overflow-hidden rounded-md border ${shadowClasses.subtle} ${
