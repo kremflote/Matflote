@@ -20,6 +20,10 @@ import {
 import { GroupedCheckboxPanel } from "../components/recipeBrowser/BrowserFilterGroups";
 import { recipeBrowserStyles } from "../components/recipeBrowser/recipeBrowserStyles";
 import IngredientTagCreateDialog from "../components/recipeBrowser/IngredientTagCreateDialog";
+import MatvaretabellenSearchDialog, {
+  MatvaretabellenCandidateList,
+  type MatvaretabellenNutritionCandidate,
+} from "../components/recipeBrowser/MatvaretabellenSearchDialog";
 import NutritionEditor, { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "../components/recipeBrowser/NutritionEditor";
 
 type ScannerPageProps = {
@@ -79,13 +83,7 @@ type IngredientDraft = {
   nutritionAutofillSources: Partial<Record<keyof NutritionEditorValues, AutofillSource>>;
 };
 
-type MatvaretabellenCandidate = {
-  foodId: string;
-  foodName: string;
-  url: string | null;
-  confidence: number;
-  nutrition: INutritionFacts;
-};
+type MatvaretabellenCandidate = MatvaretabellenNutritionCandidate;
 
 type AutofillSource = Exclude<NutritionDataSource, "None">;
 type ScannerAutofillField = "name" | "brand" | "store" | "price" | "image" | "tags";
@@ -732,22 +730,15 @@ function IngredientDraftEditor({
                 ? t.scanner.matvaretabellenNoMatchFound
                 : t.scanner.matvaretabellenSupplementFailed}
             </span>
-            <button
-              className={scannerStyles.sourceActionButton(theme)}
-              type="button"
-              onClick={() => {
-                if (draft.matvaretabellenCandidates.length > 0) {
-                  setIsMatvarePickerOpen(true);
-                  return;
-                }
-
-                setIsMatvareSearchOpen(true);
-              }}
-            >
-              {draft.matvaretabellenCandidates.length > 0
-                ? t.scanner.chooseMatvaretabellenMatch
-                : t.scanner.searchMatvaretabellen}
-            </button>
+            {draft.matvaretabellenCandidates.length > 0 && (
+              <button
+                className={scannerStyles.sourceActionButton(theme)}
+                type="button"
+                onClick={() => setIsMatvarePickerOpen(true)}
+              >
+                {t.scanner.chooseMatvaretabellenMatch}
+              </button>
+            )}
           </div>
         )}
         <button
@@ -765,6 +756,7 @@ function IngredientDraftEditor({
             theme={theme}
             values={nutritionValues}
             onChange={(key, value) => onChange(clearNutritionAutofillSource(updateNutritionDraft(draft, key, value), key))}
+            onSearchMatvaretabellen={() => setIsMatvareSearchOpen(true)}
           />
         )}
       </section>
@@ -839,7 +831,7 @@ function IngredientDraftEditor({
         />
       )}
       {isMatvareSearchOpen && (
-        <MatvaretabellenSearchModal
+        <MatvaretabellenSearchDialog
           initialQuery={draft.name}
           theme={theme}
           onCancel={() => setIsMatvareSearchOpen(false)}
@@ -1034,136 +1026,6 @@ function MatvaretabellenCandidateModal({
         onSelect={onSelect}
       />
     </Modal>
-  );
-}
-
-function MatvaretabellenSearchModal({
-  initialQuery,
-  theme,
-  onCancel,
-  onSelect,
-}: {
-  initialQuery: string;
-  theme: SiteTheme;
-  onCancel: () => void;
-  onSelect: (candidate: MatvaretabellenCandidate, candidates: MatvaretabellenCandidate[]) => void;
-}) {
-  const { t } = useLanguage();
-  const titleId = useId();
-  const [query, setQuery] = useState(initialQuery);
-  const [candidates, setCandidates] = useState<MatvaretabellenCandidate[]>([]);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSearch(event: FormEvent) {
-    event.preventDefault();
-
-    const trimmedQuery = query.trim();
-    if (trimmedQuery.length === 0) {
-      return;
-    }
-
-    setIsSearching(true);
-    setError(null);
-    try {
-      const results = await productLookupService.searchMatvaretabellen(trimmedQuery);
-      setCandidates(results.map(toMatvaretabellenCandidate));
-      setHasSearched(true);
-    } catch {
-      setCandidates([]);
-      setHasSearched(true);
-      setError(t.scanner.searchMatvaretabellenError);
-    } finally {
-      setIsSearching(false);
-    }
-  }
-
-  return (
-    <Modal
-      backdropClassName={scannerStyles.editorModalBackdrop}
-      bodyClassName={scannerStyles.matvareCandidateModalBody}
-      closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
-      closeLabel={t.common.close}
-      footer={(
-        <button className={scannerStyles.manualEntryButton(theme)} type="button" onClick={onCancel}>
-          {t.common.cancel}
-        </button>
-      )}
-      footerClassName={scannerStyles.editorModalFooter(theme)}
-      headerClassName={scannerStyles.editorModalHeader}
-      panelClassName={scannerStyles.matvareCandidateModalPanel(theme)}
-      title={t.scanner.searchMatvaretabellenTitle}
-      titleClassName={scannerStyles.editorModalTitle}
-      titleId={titleId}
-      onClose={onCancel}
-    >
-      <form className={scannerStyles.matvareSearchForm} onSubmit={handleSearch}>
-        <input
-          className={scannerStyles.input(theme)}
-          placeholder={t.scanner.searchMatvaretabellenPlaceholder}
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-        <button
-          className={scannerStyles.submitButton(theme)}
-          disabled={isSearching || query.trim().length === 0}
-          type="submit"
-        >
-          {isSearching ? t.scanner.searching : t.scanner.searchMatvaretabellen}
-        </button>
-      </form>
-      {error !== null && (
-        <p className={scannerStyles.statusError(theme)}>{error}</p>
-      )}
-      {hasSearched && candidates.length === 0 && error === null && (
-        <p className={scannerStyles.emptyState(theme)}>{t.scanner.searchMatvaretabellenEmpty}</p>
-      )}
-      <MatvaretabellenCandidateList
-        candidates={candidates}
-        theme={theme}
-        onSelect={(candidate) => onSelect(candidate, candidates)}
-      />
-    </Modal>
-  );
-}
-
-function MatvaretabellenCandidateList({
-  candidates,
-  theme,
-  onSelect,
-}: {
-  candidates: MatvaretabellenCandidate[];
-  theme: SiteTheme;
-  onSelect: (candidate: MatvaretabellenCandidate) => void;
-}) {
-  const { t } = useLanguage();
-
-  return (
-    <>
-      {candidates.map((candidate) => (
-        <button
-          className={scannerStyles.matvareCandidateButton(theme)}
-          key={candidate.foodId}
-          type="button"
-          onClick={() => onSelect(candidate)}
-        >
-          <span className={scannerStyles.matvareCandidateName}>{candidate.foodName}</span>
-          <span className={scannerStyles.matvareCandidateMeta(theme)}>
-            {t.scanner.matvaretabellenScore(candidate.confidence)}
-          </span>
-          <span className={scannerStyles.matvareCandidateMacros(theme)}>
-            {formatCandidateMacros(candidate.nutrition, {
-              calories: t.cookbook.calories,
-              carbs: t.cookbook.carbs,
-              fiber: t.cookbook.fiber,
-              protein: t.cookbook.protein,
-            })}
-          </span>
-        </button>
-      ))}
-    </>
   );
 }
 
@@ -1534,20 +1396,6 @@ function sourceLink(
       : labels[source];
 
   return { label, url };
-}
-
-function formatCandidateMacros(
-  nutrition: INutritionFacts,
-  labels: { calories: string; carbs: string; fiber: string; protein: string },
-) {
-  const parts = [
-    nutrition.calories === null ? null : `${labels.calories}: ${nutrition.calories} kcal`,
-    nutrition.carbohydrateGrams === null ? null : `${labels.carbs}: ${nutrition.carbohydrateGrams} g`,
-    nutrition.proteinGrams === null ? null : `${labels.protein}: ${nutrition.proteinGrams} g`,
-    nutrition.dietaryFiberGrams === null ? null : `${labels.fiber}: ${nutrition.dietaryFiberGrams} g`,
-  ].filter(Boolean);
-
-  return parts.join(" / ");
 }
 
 function findBrandId(brandName: string, brands: IBrand[]) {

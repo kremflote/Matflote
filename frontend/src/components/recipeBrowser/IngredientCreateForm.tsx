@@ -1,6 +1,6 @@
 import { useCallback, useId, useState, type FormEvent } from "react";
 import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useRecipes, useStores } from "../../contexts";
-import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
+import type { IIngredient, IngredientTag, NutritionDataSource } from "../../interfaces/IIngredient";
 import { brandService, imageUploadService, ingredientPriceService, ingredientService, ingredientTagCategoryService, storeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
 import { normalizePriceInput, todayInputValue } from "../../utils/priceFormatting";
@@ -14,6 +14,7 @@ import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import CreatableSelect from "./CreatableSelect";
 import ImageCropPicker from "./ImageCropPicker";
 import IngredientTagCreateDialog from "./IngredientTagCreateDialog";
+import MatvaretabellenSearchDialog, { type MatvaretabellenNutritionCandidate } from "./MatvaretabellenSearchDialog";
 import NutritionEditor, { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "./NutritionEditor";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 
@@ -100,6 +101,12 @@ function IngredientCreateForm({
     numberToInputValue(initialIngredient?.nutritionPer100?.cholineMilligrams),
   );
   const [showNutrition, setShowNutrition] = useState(false);
+  const [isMatvareSearchOpen, setIsMatvareSearchOpen] = useState(false);
+  const [nutritionSource, setNutritionSource] = useState<NutritionDataSource>(initialIngredient?.nutritionSource ?? "Manual");
+  const [nutritionSourceLabel, setNutritionSourceLabel] = useState<string | null>(initialIngredient?.nutritionSourceLabel ?? null);
+  const [matvaretabellenFoodId, setMatvaretabellenFoodId] = useState<string | null>(initialIngredient?.matvaretabellenFoodId ?? null);
+  const [nutritionMatchedName, setNutritionMatchedName] = useState<string | null>(initialIngredient?.nutritionMatchedName ?? null);
+  const [nutritionMatchConfidence, setNutritionMatchConfidence] = useState<number | null>(initialIngredient?.nutritionMatchConfidence ?? null);
   const [showPriceInformation, setShowPriceInformation] = useState(false);
   const [priceStoreId, setPriceStoreId] = useState<number | null>(null);
   const [priceValue, setPriceValue] = useState("");
@@ -195,11 +202,11 @@ function IngredientCreateForm({
           cholineMilligrams: nullableNumber(cholineMilligrams),
           vitamins: deriveVitaminsFromNutritionValues(nutritionValues),
         },
-        nutritionSource: initialIngredient?.nutritionSource ?? "Manual",
-        nutritionSourceLabel: initialIngredient?.nutritionSourceLabel ?? null,
-        matvaretabellenFoodId: initialIngredient?.matvaretabellenFoodId ?? null,
-        nutritionMatchedName: initialIngredient?.nutritionMatchedName ?? null,
-        nutritionMatchConfidence: initialIngredient?.nutritionMatchConfidence ?? null,
+        nutritionSource,
+        nutritionSourceLabel,
+        matvaretabellenFoodId,
+        nutritionMatchedName,
+        nutritionMatchConfidence,
         color: initialIngredient?.color ?? null,
       };
 
@@ -280,11 +287,40 @@ function IngredientCreateForm({
 
     setters[key](value);
   };
+  const applyMatvaretabellenNutrition = (candidate: MatvaretabellenNutritionCandidate) => {
+    setCalories(numberToInputValue(candidate.nutrition.calories));
+    setCarbohydrateGrams(numberToInputValue(candidate.nutrition.carbohydrateGrams));
+    setProteinGrams(numberToInputValue(candidate.nutrition.proteinGrams));
+    setSaltGrams(numberToInputValue(candidate.nutrition.saltGrams));
+    setDietaryFiberGrams(numberToInputValue(candidate.nutrition.dietaryFiberGrams));
+    setSaturatedFatGrams(numberToInputValue(candidate.nutrition.saturatedFatGrams));
+    setTransFatGrams(numberToInputValue(candidate.nutrition.transFatGrams));
+    setMonounsaturatedFatGrams(numberToInputValue(candidate.nutrition.monounsaturatedFatGrams));
+    setPolyunsaturatedFatGrams(numberToInputValue(candidate.nutrition.polyunsaturatedFatGrams));
+    setOmega3Grams(numberToInputValue(candidate.nutrition.omega3Grams));
+    setOmega6Grams(numberToInputValue(candidate.nutrition.omega6Grams));
+    setCholesterolMilligrams(numberToInputValue(candidate.nutrition.cholesterolMilligrams));
+    setVitaminAMicrograms(numberToInputValue(candidate.nutrition.vitaminAMicrograms));
+    setVitaminB9Micrograms(numberToInputValue(candidate.nutrition.vitaminB9Micrograms));
+    setVitaminB12Micrograms(numberToInputValue(candidate.nutrition.vitaminB12Micrograms));
+    setVitaminCMilligrams(numberToInputValue(candidate.nutrition.vitaminCMilligrams));
+    setVitaminDMicrograms(numberToInputValue(candidate.nutrition.vitaminDMicrograms));
+    setVitaminEMilligrams(numberToInputValue(candidate.nutrition.vitaminEMilligrams));
+    setVitaminKMicrograms(numberToInputValue(candidate.nutrition.vitaminKMicrograms));
+    setCholineMilligrams(numberToInputValue(candidate.nutrition.cholineMilligrams));
+    setNutritionSource("Matvaretabellen");
+    setNutritionSourceLabel("Matvaretabellen");
+    setMatvaretabellenFoodId(candidate.foodId);
+    setNutritionMatchedName(candidate.foodName);
+    setNutritionMatchConfidence(candidate.confidence);
+    setShowNutrition(true);
+  };
   const nutritionPanel = (
     <NutritionEditor
       theme={theme}
       values={nutritionValues}
       onChange={updateNutritionValue}
+      onSearchMatvaretabellen={() => setIsMatvareSearchOpen(true)}
     />
   );
 
@@ -494,6 +530,18 @@ function IngredientCreateForm({
             await refreshIngredientTagCategories();
             await refreshIngredients();
             await refreshRecipes();
+          }}
+        />
+      )}
+
+      {isMatvareSearchOpen && (
+        <MatvaretabellenSearchDialog
+          initialQuery={ingredientName}
+          theme={theme}
+          onCancel={() => setIsMatvareSearchOpen(false)}
+          onSelect={(candidate) => {
+            applyMatvaretabellenNutrition(candidate);
+            setIsMatvareSearchOpen(false);
           }}
         />
       )}

@@ -822,6 +822,7 @@ export const recipeBrowserStyles = {
           ? "border-[#C8C0B5] bg-[#FAF7F2]/55"
           : "border-neutral-200 bg-white"
     }`,
+  nutritionEditorActionRow: "flex items-center justify-start",
   nutritionEditorGroupButton: (theme: SiteTheme) =>
     `flex w-full items-center justify-between gap-3 text-left text-sm font-semibold leading-tight transition-opacity hover:opacity-80 ${
       theme === "dark"
@@ -836,6 +837,32 @@ export const recipeBrowserStyles = {
     }`,
   nutritionEditorGroupSvg: "h-3.5 w-3.5 fill-current",
   nutritionEditorSection: "grid grid-cols-2 gap-4 max-md:grid-cols-1",
+  matvareSearchForm: "grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]",
+  matvareCandidateButton: (theme: SiteTheme) =>
+    `grid gap-1 rounded-md border p-3 text-left transition-colors ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-white/[0.05] text-neutral-100 hover:bg-white/[0.10]"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-[#FAF7F2]/70 text-[#556145] hover:bg-[#E5D5BC]/55"
+          : "border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
+    }`,
+  matvareCandidateName: "text-sm font-extrabold leading-tight",
+  matvareCandidateMeta: (theme: SiteTheme) =>
+    `text-xs font-bold ${
+      theme === "dark"
+        ? "text-neutral-300"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
+  matvareCandidateMacros: (theme: SiteTheme) =>
+    `text-xs font-semibold leading-[1.4] ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
   nutritionSeparator: (theme: SiteTheme) =>
     `h-px w-full ${
       theme === "dark"

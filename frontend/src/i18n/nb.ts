@@ -420,6 +420,7 @@ export const nb: TranslationDictionary = {
     matvaretabellenSupplementFailed:
       "Kunne ikke supplere manglende data fra Matvaretabellen.",
     searchMatvaretabellen: "Søk...",
+    searchAndFillMatvaretabellen: "Søk og fyll fra Matvarehallen.no...",
     searchMatvaretabellenEmpty: "Ingen treff i Matvaretabellen.",
     searchMatvaretabellenError: "Kunne ikke søke i Matvaretabellen.",
     searchMatvaretabellenPlaceholder: "Søk etter matvare...",

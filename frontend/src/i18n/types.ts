@@ -300,6 +300,7 @@ export type TranslationDictionary = {
     matvaretabellenNoMatchFound: string;
     matvaretabellenSupplementFailed: string;
     searchMatvaretabellen: string;
+    searchAndFillMatvaretabellen: string;
     searchMatvaretabellenEmpty: string;
     searchMatvaretabellenError: string;
     searchMatvaretabellenPlaceholder: string;

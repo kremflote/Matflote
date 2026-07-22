@@ -33,6 +33,7 @@ type NutritionEditorProps = {
   fieldSubtitles?: Partial<Record<keyof NutritionEditorValues, string | null>>;
   fieldSubtitleClassName?: string;
   onChange: (key: keyof NutritionEditorValues, value: string) => void;
+  onSearchMatvaretabellen?: () => void;
 };
 
 function NutritionEditor({
@@ -41,6 +42,7 @@ function NutritionEditor({
   theme,
   values,
   onChange,
+  onSearchMatvaretabellen,
 }: NutritionEditorProps) {
   const { t } = useLanguage();
   const [openSections, setOpenSections] = useState<Record<NutritionEditorSectionId, boolean>>({
@@ -59,6 +61,17 @@ function NutritionEditor({
 
   return (
     <div className={recipeBrowserStyles.detailsPanel(theme)}>
+      {onSearchMatvaretabellen !== undefined && (
+        <div className={recipeBrowserStyles.nutritionEditorActionRow}>
+          <button
+            className={`${recipeBrowserStyles.inlineHelperButton(theme)} text-sm`}
+            type="button"
+            onClick={onSearchMatvaretabellen}
+          >
+            {t.scanner.searchAndFillMatvaretabellen}
+          </button>
+        </div>
+      )}
       <NutritionEditorSection
         isOpen={openSections.macros}
         theme={theme}

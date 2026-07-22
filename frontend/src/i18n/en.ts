@@ -351,6 +351,7 @@ export const en: TranslationDictionary = {
     matvaretabellenSupplementFailed:
       "Failed to supplement missing data from Matvaretabellen.",
     searchMatvaretabellen: "Search...",
+    searchAndFillMatvaretabellen: "Search and fill from Matvarehallen.no...",
     searchMatvaretabellenEmpty: "No Matvaretabellen entries found.",
     searchMatvaretabellenError: "Could not search Matvaretabellen.",
     searchMatvaretabellenPlaceholder: "Search food name...",
