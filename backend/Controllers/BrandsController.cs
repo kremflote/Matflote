@@ -26,21 +26,20 @@ public class BrandsController(DinnerPlannerContext context) : ControllerBase
     public async Task<ActionResult<BrandDto>> CreateBrand(LookupRequest request)
     {
         var name = request.Name.Trim();
-        var existingBrand = await context.Brands
-            .FirstOrDefaultAsync(brand => brand.Name.ToLower() == name.ToLower());
+        var existingBrands = await context.Brands
+            .AsNoTracking()
+            .ToListAsync();
+        var existingBrandName = LookupDuplicateDetector.FindNormalizedDuplicate(
+            name,
+            existingBrands.Select(brand => brand.Name)
+        );
+        var existingBrand = existingBrandName is null
+            ? null
+            : existingBrands.First(brand => brand.Name == existingBrandName);
 
         if (existingBrand is not null)
         {
             return Ok(ToDto(existingBrand));
-        }
-
-        var possibleDuplicate = LookupDuplicateDetector.FindNearDuplicate(
-            name,
-            await context.Brands.AsNoTracking().Select(brand => brand.Name).ToListAsync()
-        );
-        if (possibleDuplicate is not null)
-        {
-            return Conflict($"Possible duplicate: {possibleDuplicate}.");
         }
 
         var brand = new Brand { Name = name };

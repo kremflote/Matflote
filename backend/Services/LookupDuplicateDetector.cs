@@ -5,6 +5,17 @@ namespace DinnerPlanner.Api.Services;
 
 public static class LookupDuplicateDetector
 {
+    public static string? FindNormalizedDuplicate(string candidate, IEnumerable<string> existingNames)
+    {
+        var normalizedCandidate = Normalize(candidate);
+        if (normalizedCandidate.Length == 0)
+        {
+            return null;
+        }
+
+        return existingNames.FirstOrDefault(existingName => Normalize(existingName) == normalizedCandidate);
+    }
+
     public static string? FindNearDuplicate(string candidate, IEnumerable<string> existingNames)
     {
         var normalizedCandidate = Normalize(candidate);

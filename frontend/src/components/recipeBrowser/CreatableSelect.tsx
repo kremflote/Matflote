@@ -55,7 +55,10 @@ function CreatableSelect({
   const [isSaving, setIsSaving] = useState(false);
   const [deletingOptionId, setDeletingOptionId] = useState<number | null>(null);
   const [optionPendingDelete, setOptionPendingDelete] = useState<CreatableOption | null>(null);
-  const selectedOption = options.find((option) => option.id === value) ?? null;
+  const sortedOptions = options
+    .slice()
+    .sort((first, second) => first.name.localeCompare(second.name));
+  const selectedOption = sortedOptions.find((option) => option.id === value) ?? null;
   const createPanelLabel = typeof label === "string" ? label : placeholder;
 
   useEffect(() => {
@@ -154,6 +157,16 @@ function CreatableSelect({
           {isOpen && (
             <div className={recipeBrowserStyles.customSelectMenu(theme)}>
               <button
+                className={recipeBrowserStyles.customSelectOption(theme, false)}
+                type="button"
+                onClick={() => {
+                  setIsCreating(true);
+                  setIsOpen(false);
+                }}
+              >
+                <span>{createLabel}</span>
+              </button>
+              <button
                 className={recipeBrowserStyles.customSelectOption(theme, value === null)}
                 type="button"
                 onClick={() => {
@@ -163,7 +176,7 @@ function CreatableSelect({
               >
                 <span>{placeholder}</span>
               </button>
-              {options.map((option) => (
+              {sortedOptions.map((option) => (
                 <button
                   className={recipeBrowserStyles.customSelectOption(theme, value === option.id)}
                   key={option.id}
@@ -195,16 +208,6 @@ function CreatableSelect({
                   </span>
                 </button>
               ))}
-              <button
-                className={recipeBrowserStyles.customSelectOption(theme, false)}
-                type="button"
-                onClick={() => {
-                  setIsCreating(true);
-                  setIsOpen(false);
-                }}
-              >
-                <span>{createLabel}</span>
-              </button>
             </div>
           )}
         </div>
@@ -259,13 +262,13 @@ function CreatableSelect({
           onChange(event.target.value ? Number(event.target.value) : null);
         }}
       >
+        <option value={createNewValue}>{createLabel}</option>
         <option value="">{placeholder}</option>
-        {options.map((option) => (
+        {sortedOptions.map((option) => (
           <option key={option.id} value={option.id}>
             {option.name}
           </option>
         ))}
-        <option value={createNewValue}>{createLabel}</option>
       </select>
       {helperClassName !== undefined && (
         <span className={helperClassName}>{helperText ?? "\u00A0"}</span>
