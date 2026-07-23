@@ -505,6 +505,11 @@ export const nb: TranslationDictionary = {
       "Se over ingrediensene før de sendes til handlelisten.",
     groceryExportEmpty: "Ingen ingredienser funnet for denne perioden.",
     groceryExportLoading: "Bygger handleliste...",
+    groceryExportManageRules: "Administrer regler",
+    groceryExportRulesCouldNotSave: "Kunne ikke lagre regler for handlelisteeksport.",
+    groceryExportRulesDescription:
+      "Ingredienser med disse taggene starter som ikke valgt når du ser over handlelisten.",
+    groceryExportRulesTitle: "Regler for handleliste",
     groceryExportSections: {
       Dairy: "Meieri",
       Frozen: "Frossent",

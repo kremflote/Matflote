@@ -113,7 +113,10 @@ public class GroceryListsController(
                                     : item.BrandName,
                                 SourceRecipes = item.SourceRecipes.Count > 0
                                     ? item.SourceRecipes
-                                    : fullItem.SourceRecipes
+                                    : fullItem.SourceRecipes,
+                                Tags = item.Tags.Count > 0
+                                    ? item.Tags
+                                    : fullItem.Tags
                             };
                         })
                         .ToList()

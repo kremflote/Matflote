@@ -13,4 +13,9 @@ export const appSettingsService = {
       method: "POST",
       body: settings,
     }),
+  updateGroceryExportRules: (defaultExcludedIngredientTags: string[]) =>
+    apiRequest<IAppSettings>("/api/app-settings/grocery-export-rules", {
+      method: "PUT",
+      body: { defaultExcludedIngredientTags },
+    }),
 };

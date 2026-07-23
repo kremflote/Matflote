@@ -21,6 +21,7 @@ export interface IGroceryListItem {
   isApproximate: boolean;
   displayAmount: string;
   sourceRecipes: string[];
+  tags: string[];
 }
 
 export interface IShoppingListExportResult {

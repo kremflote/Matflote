@@ -108,7 +108,11 @@ public class GroceryListService(DinnerPlannerContext context)
                         group.Key.Unit,
                         amount is null,
                         FormatAmount(amount, group.Key.Unit),
-                        sourceRecipes
+                        sourceRecipes,
+                        group.SelectMany(row => row.Tags)
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .Order(StringComparer.OrdinalIgnoreCase)
+                            .ToList()
                     )
                 );
             })

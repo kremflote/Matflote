@@ -23,7 +23,8 @@ public record GroceryListItemDto(
     MeasurementUnit Unit,
     bool IsApproximate,
     string DisplayAmount,
-    IReadOnlyCollection<string> SourceRecipes
+    IReadOnlyCollection<string> SourceRecipes,
+    IReadOnlyCollection<string> Tags
 );
 
 public record ShoppingListExportResultDto(

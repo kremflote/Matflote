@@ -8,7 +8,8 @@ public record AppSettingsDto(
 public record ShoppingListExportSettingsDto(
     string Provider,
     string TaskMode,
-    VikunjaSettingsDto Vikunja
+    VikunjaSettingsDto Vikunja,
+    IReadOnlyCollection<string> DefaultExcludedIngredientTags
 );
 
 public record VikunjaSettingsDto(
@@ -31,6 +32,10 @@ public record UpdateVikunjaSettingsRequest(
     string BaseUrl,
     int? ProjectId,
     string? ApiToken
+);
+
+public record UpdateGroceryExportRulesRequest(
+    IReadOnlyCollection<string>? DefaultExcludedIngredientTags
 );
 
 public record SystemInfoDto(

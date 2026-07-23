@@ -371,6 +371,10 @@ export type TranslationDictionary = {
     groceryExportDescription: string;
     groceryExportEmpty: string;
     groceryExportLoading: string;
+    groceryExportManageRules: string;
+    groceryExportRulesCouldNotSave: string;
+    groceryExportRulesDescription: string;
+    groceryExportRulesTitle: string;
     groceryExportSections: Record<string, string>;
     groceryExportSelectedCount: (selected: number, total: number) => string;
     groceryExportSend: string;

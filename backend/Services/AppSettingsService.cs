@@ -19,6 +19,7 @@ public class AppSettingsService(
         var baseUrl = await GetValueAsync(AppSettingKeys.VikunjaBaseUrl, cancellationToken) ?? string.Empty;
         var projectIdValue = await GetValueAsync(AppSettingKeys.VikunjaProjectId, cancellationToken);
         var apiToken = await GetValueAsync(AppSettingKeys.VikunjaApiToken, cancellationToken);
+        var excludedTags = await GetDefaultExcludedIngredientTagsAsync(cancellationToken);
 
         return new AppSettingsDto(
             new ShoppingListExportSettingsDto(
@@ -28,7 +29,8 @@ public class AppSettingsService(
                     baseUrl,
                     int.TryParse(projectIdValue, out var projectId) ? projectId : null,
                     !string.IsNullOrWhiteSpace(apiToken)
-                )
+                ),
+                excludedTags
             ),
             new SystemInfoDto(
                 environment.EnvironmentName,
@@ -50,6 +52,21 @@ public class AppSettingsService(
             await SetValueAsync(AppSettingKeys.VikunjaApiToken, request.ShoppingListExport.Vikunja.ApiToken.Trim(), cancellationToken);
         }
 
+        await context.SaveChangesAsync(cancellationToken);
+
+        return await GetAsync(cancellationToken);
+    }
+
+    public async Task<AppSettingsDto> UpdateGroceryExportRulesAsync(
+        UpdateGroceryExportRulesRequest request,
+        CancellationToken cancellationToken
+    )
+    {
+        await SetValueAsync(
+            AppSettingKeys.GroceryExportDefaultExcludedIngredientTags,
+            string.Join(",", NormalizeTags(request.DefaultExcludedIngredientTags)),
+            cancellationToken
+        );
         await context.SaveChangesAsync(cancellationToken);
 
         return await GetAsync(cancellationToken);
@@ -96,6 +113,24 @@ public class AppSettingsService(
         string.Equals(taskMode, ExportTaskModes.SeparateTasks, StringComparison.OrdinalIgnoreCase)
             ? ExportTaskModes.SeparateTasks
             : ExportTaskModes.SingleTask;
+
+    private async Task<IReadOnlyCollection<string>> GetDefaultExcludedIngredientTagsAsync(CancellationToken cancellationToken)
+    {
+        var storedValue = await GetValueAsync(AppSettingKeys.GroceryExportDefaultExcludedIngredientTags, cancellationToken);
+        return string.IsNullOrWhiteSpace(storedValue)
+            ? ["Spice"]
+            : NormalizeTags(storedValue.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
+
+    private static IReadOnlyCollection<string> NormalizeTags(IEnumerable<string>? tags) =>
+        tags is null
+            ? []
+            : tags
+                .Select(tag => tag.Trim())
+                .Where(tag => tag.Length > 0 && tag.Length <= 64)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Order(StringComparer.OrdinalIgnoreCase)
+                .ToList();
 }
 
 public static class AppSettingKeys
@@ -106,6 +141,7 @@ public static class AppSettingKeys
     public const string VikunjaApiToken = "Vikunja:ApiToken";
     public const string VikunjaProjectId = "Vikunja:ProjectId";
     public const string NutritionProfileId = "Nutrition:ProfileId";
+    public const string GroceryExportDefaultExcludedIngredientTags = "GroceryExport:DefaultExcludedIngredientTags";
 }
 
 public static class ExportTaskModes

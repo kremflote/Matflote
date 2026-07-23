@@ -1550,4 +1550,20 @@ export const groceryExportStyles = {
   actionGroup: "flex flex-wrap items-center justify-end gap-4",
   secondaryButton: controlStyles.secondaryButton,
   primaryButton: controlStyles.primaryButton,
+  rulesBackdrop: "fixed inset-0 z-[80] flex items-center justify-center bg-black/45 px-4 py-6",
+  rulesPanel: (theme: SiteTheme) =>
+    `grid max-h-[min(28rem,calc(100vh_-_48px))] w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  rulesBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
+  rulesFooter: "flex items-center justify-end gap-3 border-t pt-4",
+  ruleTagGrid: "grid grid-cols-2 gap-2 max-sm:grid-cols-1",
+  ruleTagButton: (theme: SiteTheme, selected: boolean) =>
+    `min-h-9 rounded-md border px-3 py-2 text-left text-xs font-bold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+      selected
+        ? siteColorClasses[theme].plannerControl
+        : theme === "dark"
+          ? "border-white/[0.10] bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]"
+          : theme === "paletteLight"
+            ? "border-[#7A8864]/25 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]"
+            : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100"
+    }`,
 };

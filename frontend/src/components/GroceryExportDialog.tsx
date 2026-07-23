@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { useLanguage } from "../contexts";
+import { useIngredientTagCategories, useLanguage } from "../contexts";
 import type { IGroceryList, IGroceryListItem } from "../interfaces/IGroceryList";
-import { ApiError, groceryListService } from "../services";
+import { ApiError, appSettingsService, groceryListService } from "../services";
 import { groceryExportStyles, type SiteTheme } from "../styles/appStyles";
 import Modal from "./Modal";
 
@@ -21,20 +21,54 @@ function GroceryExportDialog({
   onClose,
 }: GroceryExportDialogProps) {
   const { t } = useLanguage();
+  const { ingredientTagCategories } = useIngredientTagCategories();
   const titleId = useId();
   const descriptionId = useId();
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [selectedItemKeys, setSelectedItemKeys] = useState(() => getInitialSelectedKeys(groceryList));
+  const [defaultExcludedTags, setDefaultExcludedTags] = useState<string[]>(["Spice"]);
+  const [draftExcludedTags, setDraftExcludedTags] = useState<string[]>(["Spice"]);
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [isRulesSaving, setIsRulesSaving] = useState(false);
+  const [rulesError, setRulesError] = useState<string | null>(null);
+  const [selectedItemKeys, setSelectedItemKeys] = useState(() => getInitialSelectedKeys(groceryList, defaultExcludedTags));
   const [exportStatus, setExportStatus] = useState<"idle" | "exporting" | "success">("idle");
   const [exportMessage, setExportMessage] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
-    setSelectedItemKeys(getInitialSelectedKeys(groceryList));
+    setSelectedItemKeys(getInitialSelectedKeys(groceryList, defaultExcludedTags));
     setExportStatus("idle");
     setExportMessage(null);
     setExportError(null);
-  }, [groceryList]);
+  }, [defaultExcludedTags, groceryList]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const loadRules = async () => {
+      try {
+        const settings = await appSettingsService.get();
+        if (ignore) {
+          return;
+        }
+
+        const tags = settings.shoppingListExport.defaultExcludedIngredientTags;
+        setDefaultExcludedTags(tags.length === 0 ? ["Spice"] : tags);
+        setDraftExcludedTags(tags.length === 0 ? ["Spice"] : tags);
+      } catch {
+        if (!ignore) {
+          setDefaultExcludedTags(["Spice"]);
+          setDraftExcludedTags(["Spice"]);
+        }
+      }
+    };
+
+    void loadRules();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -59,6 +93,10 @@ function GroceryExportDialog({
   const selectedGroceryList = useMemo(
     () => getSelectedGroceryList(groceryList, selectedItemKeys),
     [groceryList, selectedItemKeys],
+  );
+  const availableRuleTags = useMemo(
+    () => getAvailableRuleTags(ingredientTagCategories, groceryList, defaultExcludedTags),
+    [defaultExcludedTags, groceryList, ingredientTagCategories],
   );
 
   const toggleItem = (sectionName: string, item: IGroceryListItem) => {
@@ -100,6 +138,29 @@ function GroceryExportDialog({
     }
   };
 
+  const openRules = () => {
+    setDraftExcludedTags(defaultExcludedTags);
+    setRulesError(null);
+    setIsRulesOpen(true);
+  };
+
+  const saveRules = async () => {
+    setIsRulesSaving(true);
+    setRulesError(null);
+
+    try {
+      const settings = await appSettingsService.updateGroceryExportRules(draftExcludedTags);
+      const tags = settings.shoppingListExport.defaultExcludedIngredientTags;
+      setDefaultExcludedTags(tags);
+      setDraftExcludedTags(tags);
+      setIsRulesOpen(false);
+    } catch (error) {
+      setRulesError(getExportErrorMessage(error, t.planner.groceryExportRulesCouldNotSave));
+    } finally {
+      setIsRulesSaving(false);
+    }
+  };
+
   return (
     <Modal
       backdropClassName={groceryExportStyles.modalBackdrop}
@@ -116,6 +177,14 @@ function GroceryExportDialog({
             {t.planner.groceryExportSelectedCount(selectedCount, itemCount)}
           </p>
           <div className={groceryExportStyles.actionGroup}>
+            <button
+              className={groceryExportStyles.secondaryButton(theme)}
+              disabled={exportStatus === "exporting"}
+              type="button"
+              onClick={openRules}
+            >
+              {t.planner.groceryExportManageRules}
+            </button>
             <button
               className={groceryExportStyles.secondaryButton(theme)}
               disabled={exportStatus === "exporting"}
@@ -197,16 +266,122 @@ function GroceryExportDialog({
         {exportMessage !== null && (
           <p className={groceryExportStyles.statusSuccess(theme)}>{exportMessage}</p>
         )}
+        {isRulesOpen && (
+          <GroceryExportRulesDialog
+            availableTags={availableRuleTags}
+            excludedTags={draftExcludedTags}
+            isSaving={isRulesSaving}
+            rulesError={rulesError}
+            theme={theme}
+            onCancel={() => setIsRulesOpen(false)}
+            onSave={() => void saveRules()}
+            onToggleTag={(tag) => setDraftExcludedTags((currentTags) => toggleTag(currentTags, tag))}
+          />
+        )}
     </Modal>
   );
 }
 
-function getInitialSelectedKeys(groceryList: IGroceryList) {
+type GroceryExportRulesDialogProps = {
+  availableTags: string[];
+  excludedTags: string[];
+  isSaving: boolean;
+  rulesError: string | null;
+  theme: SiteTheme;
+  onCancel: () => void;
+  onSave: () => void;
+  onToggleTag: (tag: string) => void;
+};
+
+function GroceryExportRulesDialog({
+  availableTags,
+  excludedTags,
+  isSaving,
+  rulesError,
+  theme,
+  onCancel,
+  onSave,
+  onToggleTag,
+}: GroceryExportRulesDialogProps) {
+  const { t } = useLanguage();
+
+  return (
+    <Modal
+      backdropClassName={groceryExportStyles.rulesBackdrop}
+      bodyClassName={groceryExportStyles.rulesBody}
+      closeButtonClassName={groceryExportStyles.closeButton(theme)}
+      closeLabel={t.common.close}
+      footer={
+        <>
+          <button className={groceryExportStyles.secondaryButton(theme)} disabled={isSaving} type="button" onClick={onCancel}>
+            {t.common.cancel}
+          </button>
+          <button className={groceryExportStyles.primaryButton(theme)} disabled={isSaving} type="button" onClick={onSave}>
+            {isSaving ? t.common.saving : t.common.save}
+          </button>
+        </>
+      }
+      footerClassName={groceryExportStyles.rulesFooter}
+      headerClassName={groceryExportStyles.header}
+      panelClassName={groceryExportStyles.rulesPanel(theme)}
+      title={t.planner.groceryExportRulesTitle}
+      titleClassName={groceryExportStyles.title}
+      onClose={onCancel}
+    >
+      <p className={groceryExportStyles.subtitle(theme)}>{t.planner.groceryExportRulesDescription}</p>
+      <div className={groceryExportStyles.ruleTagGrid}>
+        {availableTags.map((tag) => {
+          const selected = excludedTags.some((currentTag) => currentTag.toLowerCase() === tag.toLowerCase());
+
+          return (
+            <button
+              aria-pressed={selected}
+              className={groceryExportStyles.ruleTagButton(theme, selected)}
+              key={tag}
+              type="button"
+              onClick={() => onToggleTag(tag)}
+            >
+              {t.enums.ingredientTags[tag] ?? tag}
+            </button>
+          );
+        })}
+      </div>
+      {rulesError !== null && (
+        <p className={groceryExportStyles.statusError(theme)}>{rulesError}</p>
+      )}
+    </Modal>
+  );
+}
+
+function getInitialSelectedKeys(groceryList: IGroceryList, excludedTags: string[]) {
+  const excludedTagSet = new Set(excludedTags.map((tag) => tag.toLowerCase()));
+
   return new Set(
     groceryList.sections.flatMap((section) =>
-      section.items.map((item) => getItemKey(section.name, item)),
+      section.items
+        .filter((item) => !item.tags.some((tag) => excludedTagSet.has(tag.toLowerCase())))
+        .map((item) => getItemKey(section.name, item)),
     ),
   );
+}
+
+function getAvailableRuleTags(
+  ingredientTagCategories: Array<{ tags: string[] }>,
+  groceryList: IGroceryList,
+  excludedTags: string[],
+) {
+  const categoryTags = ingredientTagCategories.flatMap((category) => category.tags);
+  const fallbackPreviewTags = groceryList.sections.flatMap((section) => section.items.flatMap((item) => item.tags));
+  const sourceTags = categoryTags.length > 0 ? categoryTags : fallbackPreviewTags;
+
+  return Array.from(new Set([...sourceTags, ...excludedTags]))
+    .sort((left, right) => left.localeCompare(right));
+}
+
+function toggleTag(tags: string[], tag: string) {
+  return tags.some((currentTag) => currentTag.toLowerCase() === tag.toLowerCase())
+    ? tags.filter((currentTag) => currentTag.toLowerCase() !== tag.toLowerCase())
+    : [...tags, tag].sort((left, right) => left.localeCompare(right));
 }
 
 function getItemKey(sectionName: string, item: IGroceryListItem) {

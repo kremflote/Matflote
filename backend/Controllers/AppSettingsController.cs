@@ -66,6 +66,20 @@ public class AppSettingsController(
         }
     }
 
+    [HttpPut("grocery-export-rules")]
+    public async Task<ActionResult<AppSettingsDto>> UpdateGroceryExportRules(
+        [FromBody] UpdateGroceryExportRulesRequest? request,
+        CancellationToken cancellationToken
+    )
+    {
+        if (request is null)
+        {
+            return BadRequest("Settings payload is required.");
+        }
+
+        return Ok(await appSettingsService.UpdateGroceryExportRulesAsync(request, cancellationToken));
+    }
+
     private static string? ValidateShoppingListExportSettings(UpdateShoppingListExportSettingsRequest request)
     {
         if (!string.Equals(request.Provider, "Vikunja", StringComparison.OrdinalIgnoreCase))

@@ -433,6 +433,11 @@ export const en: TranslationDictionary = {
       "Review the ingredients before sending them to your shopping list.",
     groceryExportEmpty: "No ingredients found for this range.",
     groceryExportLoading: "Building grocery list...",
+    groceryExportManageRules: "Manage rules",
+    groceryExportRulesCouldNotSave: "Could not save grocery export rules.",
+    groceryExportRulesDescription:
+      "Ingredients with these tags will start unselected when you review a grocery export.",
+    groceryExportRulesTitle: "Grocery export rules",
     groceryExportSections: {
       Dairy: "Dairy",
       Frozen: "Frozen",

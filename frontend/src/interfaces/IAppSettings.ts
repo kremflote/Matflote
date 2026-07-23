@@ -7,6 +7,7 @@ export interface IShoppingListExportSettings {
   provider: string;
   taskMode: ShoppingListTaskMode;
   vikunja: IVikunjaSettings;
+  defaultExcludedIngredientTags: string[];
 }
 
 export type ShoppingListTaskMode = "SingleTask" | "SeparateTasks";
