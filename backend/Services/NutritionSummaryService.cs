@@ -23,13 +23,6 @@ public class NutritionSummaryService(DinnerPlannerContext context)
             .Where(entry => entry.Date >= from && entry.Date <= to)
             .ToListAsync();
 
-        var recipeIds = entries
-            .SelectMany(entry => entry.Recipes)
-            .Where(recipe => recipe.RecipeId is not null)
-            .Select(recipe => recipe.RecipeId!.Value)
-            .Distinct()
-            .ToList();
-
         var recipes = await context.Recipes
             .AsNoTracking()
             .Include(recipe => recipe.Ingredients)
@@ -40,7 +33,6 @@ public class NutritionSummaryService(DinnerPlannerContext context)
                     .ThenInclude(childRecipe => childRecipe.Ingredients)
                         .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                             .ThenInclude(ingredient => ingredient.Brand)
-            .Where(recipe => recipeIds.Contains(recipe.RecipeId))
             .ToDictionaryAsync(recipe => recipe.RecipeId);
 
         var total = new NutritionTotals();
@@ -61,13 +53,8 @@ public class NutritionSummaryService(DinnerPlannerContext context)
             }
 
             var portionFactor = GetPortionFactor(recipe, entryRecipe.Portions);
-            AddRecipeNutrition(total, recipe, portionFactor);
-            AddMissingNutrition(missingNutrition, recipe);
-            foreach (var component in recipe.Components)
-            {
-                AddRecipeNutrition(total, component.ChildRecipe, portionFactor);
-                AddMissingNutrition(missingNutrition, component.ChildRecipe);
-            }
+            AddRecipeNutrition(total, recipe, recipes, new HashSet<int>(), portionFactor);
+            AddMissingNutrition(missingNutrition, recipe, recipes, new HashSet<int>());
         }
 
         return new NutritionSummaryDto(
@@ -89,13 +76,42 @@ public class NutritionSummaryService(DinnerPlannerContext context)
         );
     }
 
-    private static void AddRecipeNutrition(NutritionTotals total, Recipe recipe, decimal portionFactor = 1m)
+    private static void AddRecipeNutrition(
+        NutritionTotals total,
+        Recipe recipe,
+        IReadOnlyDictionary<int, Recipe> recipesById,
+        HashSet<int> visitedRecipeIds,
+        decimal portionFactor = 1m
+    )
     {
+        if (!visitedRecipeIds.Add(recipe.RecipeId))
+        {
+            return;
+        }
+
         foreach (var recipeIngredient in recipe.Ingredients)
         {
             var grams = ToGramAmount(recipeIngredient.Amount, recipeIngredient.Unit);
             AddNutrition(total, recipeIngredient.Ingredient.NutritionPer100, grams * portionFactor);
         }
+
+        foreach (var component in recipe.Components.OrderBy(component => component.SortOrder))
+        {
+            if (!recipesById.TryGetValue(component.ChildRecipeId, out var childRecipe))
+            {
+                continue;
+            }
+
+            AddRecipeNutrition(
+                total,
+                childRecipe,
+                recipesById,
+                visitedRecipeIds,
+                portionFactor * GetComponentFactor(component, childRecipe)
+            );
+        }
+
+        visitedRecipeIds.Remove(recipe.RecipeId);
     }
 
     private static void AddIngredientNutrition(
@@ -143,8 +159,18 @@ public class NutritionSummaryService(DinnerPlannerContext context)
             total.CholineMilligrams = AddScaled(total.CholineMilligrams, nutrition.CholineMilligrams, factor);
     }
 
-    private static void AddMissingNutrition(Dictionary<int, MissingNutritionAccumulator> missingNutrition, Recipe recipe)
+    private static void AddMissingNutrition(
+        Dictionary<int, MissingNutritionAccumulator> missingNutrition,
+        Recipe recipe,
+        IReadOnlyDictionary<int, Recipe> recipesById,
+        HashSet<int> visitedRecipeIds
+    )
     {
+        if (!visitedRecipeIds.Add(recipe.RecipeId))
+        {
+            return;
+        }
+
         foreach (var recipeIngredient in recipe.Ingredients)
         {
             if (recipeIngredient.Ingredient.NutritionPer100 is not null)
@@ -164,6 +190,16 @@ public class NutritionSummaryService(DinnerPlannerContext context)
 
             missingIngredient.SourceRecipes.Add(recipe.Name);
         }
+
+        foreach (var component in recipe.Components.OrderBy(component => component.SortOrder))
+        {
+            if (recipesById.TryGetValue(component.ChildRecipeId, out var childRecipe))
+            {
+                AddMissingNutrition(missingNutrition, childRecipe, recipesById, visitedRecipeIds);
+            }
+        }
+
+        visitedRecipeIds.Remove(recipe.RecipeId);
     }
 
     private static void AddMissingNutrition(
@@ -195,6 +231,33 @@ public class NutritionSummaryService(DinnerPlannerContext context)
         var basePortions = recipe.Portions <= 0m ? 1m : recipe.Portions;
         var portions = selectedPortions is null or <= 0m ? basePortions : selectedPortions.Value;
         return portions / basePortions;
+    }
+
+    private static decimal GetComponentFactor(RecipeComponent component, Recipe childRecipe)
+    {
+        var componentBaseAmount = ToBaseAmount(component.Amount, component.Unit);
+        var recipeBaseAmount = GetRecipeBaseAmount(childRecipe, component.Unit);
+
+        return componentBaseAmount is null || recipeBaseAmount is null or <= 0m
+            ? 1m
+            : componentBaseAmount.Value / recipeBaseAmount.Value;
+    }
+
+    private static decimal? GetRecipeBaseAmount(Recipe recipe, MeasurementUnit targetUnit)
+    {
+        var targetFamily = GetMeasurementFamily(targetUnit);
+        if (targetFamily is null)
+        {
+            return null;
+        }
+
+        var total = recipe.Ingredients
+            .Where(recipeIngredient => GetMeasurementFamily(recipeIngredient.Unit) == targetFamily)
+            .Select(recipeIngredient => ToBaseAmount(recipeIngredient.Amount, recipeIngredient.Unit))
+            .Where(amount => amount is not null)
+            .Sum(amount => amount!.Value);
+
+        return total > 0m ? total : null;
     }
 
     private static IReadOnlyCollection<NutritionSummaryItemDto> BuildItems(
@@ -263,6 +326,30 @@ public class NutritionSummaryService(DinnerPlannerContext context)
                 MeasurementUnit.Liter => amount * 1000m,
                 _ => null
             };
+
+    private static decimal? ToBaseAmount(decimal? amount, MeasurementUnit unit)
+    {
+        if (amount is null)
+        {
+            return null;
+        }
+
+        return unit switch
+        {
+            MeasurementUnit.Gram => amount,
+            MeasurementUnit.Kilogram => amount * 1000m,
+            MeasurementUnit.Milliliter => amount,
+            MeasurementUnit.Liter => amount * 1000m,
+            _ => null
+        };
+    }
+
+    private static string? GetMeasurementFamily(MeasurementUnit unit) => unit switch
+    {
+        MeasurementUnit.Gram or MeasurementUnit.Kilogram => "mass",
+        MeasurementUnit.Milliliter or MeasurementUnit.Liter => "volume",
+        _ => null
+    };
 
     private static decimal? AddScaled(decimal? total, decimal? value, decimal factor) =>
         value is null ? total : (total ?? 0m) + value.Value * factor;

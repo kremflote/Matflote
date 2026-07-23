@@ -1,13 +1,5 @@
 {
   "brands": [],
-  "cuisines": [
-    {
-      "name": "Norwegian"
-    },
-    {
-      "name": "Other"
-    }
-  ],
   "ingredients": [],
   "recipes": []
 }

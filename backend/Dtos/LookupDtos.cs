@@ -13,13 +13,14 @@ public record BrandDto(
     string Name
 );
 
-public record CuisineDto(
-    int CuisineId,
-    string Name
-);
-
 public record IngredientTagCategoryDto(
     int IngredientTagCategoryId,
+    string Name,
+    IReadOnlyCollection<string> Tags
+);
+
+public record RecipeTagCategoryDto(
+    int RecipeTagCategoryId,
     string Name,
     IReadOnlyCollection<string> Tags
 );

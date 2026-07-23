@@ -23,7 +23,7 @@ function RecipeDetailContent({
 }: RecipeDetailContentProps) {
   const { t } = useLanguage();
   const imageUrl = getApiAssetUrl(recipe.imageUrl);
-  const nutrition = calculateRecipeNutrition(recipe);
+  const nutrition = calculateRecipeNutrition(recipe, allRecipes);
   const [selectedPortions, setSelectedPortions] = useState(formatPortionInputValue(recipe.portions));
   const amountMultiplier = parsePortionMultiplier(selectedPortions, recipe.portions);
 
@@ -50,7 +50,6 @@ function RecipeDetailContent({
             label={t.cookbook.description}
             meta={[
               t.enums.recipeTypes[recipe.recipeType],
-              recipe.cuisine?.name,
               recipe.dessertType ? t.enums.dessertTypes[recipe.dessertType] : null,
             ].filter(Boolean).join(" · ")}
             theme={theme}
@@ -95,15 +94,18 @@ function RecipeDetailContent({
               .map((component) => {
                 const fullComponentRecipe = allRecipes.find((currentRecipe) => currentRecipe.recipeId === component.recipeId);
                 const componentIngredients = component.ingredients ?? fullComponentRecipe?.ingredients ?? [];
+                const componentScale = fullComponentRecipe === undefined
+                  ? 1
+                  : getComponentScale(component.amount, component.unit, fullComponentRecipe);
 
                 return (
                   <RecipeIngredientSection
-                    amountMultiplier={amountMultiplier}
+                    amountMultiplier={amountMultiplier * componentScale}
                     ingredients={componentIngredients}
                     key={component.recipeId}
                     recipeId={component.recipeId}
                     title={t.enums.recipeTypes[component.recipeType]}
-                    titleLinkLabel={component.name}
+                    titleLinkLabel={`${component.name} (${formatRecipeIngredientAmount(component.amount, component.unit, t.enums.measurementUnits)})`}
                     theme={theme}
                     onIngredientClick={onIngredientClick}
                     onRecipeClick={onRecipeClick}
@@ -230,8 +232,25 @@ function getInitials(value: string) {
     .join("") || "?";
 }
 
-function calculateRecipeNutrition(recipe: EnrichedRecipe): INutritionFacts | null {
+function calculateRecipeNutrition(recipe: EnrichedRecipe, allRecipes: EnrichedRecipe[]): INutritionFacts | null {
   const total = createEmptyNutrition();
+  const hasNutrition = addRecipeNutrition(total, recipe, allRecipes, new Set<number>(), 1);
+
+  return hasNutrition ? total : null;
+}
+
+function addRecipeNutrition(
+  total: INutritionFacts,
+  recipe: EnrichedRecipe,
+  allRecipes: EnrichedRecipe[],
+  visitedRecipeIds: Set<number>,
+  multiplier: number,
+) {
+  if (visitedRecipeIds.has(recipe.recipeId)) {
+    return false;
+  }
+
+  visitedRecipeIds.add(recipe.recipeId);
   let hasNutrition = false;
 
   recipe.ingredients.forEach((recipeIngredient) => {
@@ -243,7 +262,7 @@ function calculateRecipeNutrition(recipe: EnrichedRecipe): INutritionFacts | nul
     }
 
     hasNutrition = true;
-    const factor = grams / 100;
+    const factor = grams * multiplier / 100;
     total.calories = addScaled(total.calories, nutrition.calories, factor);
     total.carbohydrateGrams = addScaled(total.carbohydrateGrams, nutrition.carbohydrateGrams, factor);
     total.proteinGrams = addScaled(total.proteinGrams, nutrition.proteinGrams, factor);
@@ -267,7 +286,24 @@ function calculateRecipeNutrition(recipe: EnrichedRecipe): INutritionFacts | nul
     total.vitamins = Array.from(new Set([...total.vitamins, ...nutrition.vitamins]));
   });
 
-  return hasNutrition ? total : null;
+  recipe.components.forEach((component) => {
+    const componentRecipe = allRecipes.find((currentRecipe) => currentRecipe.recipeId === component.recipeId);
+    if (componentRecipe === undefined) {
+      return;
+    }
+
+    const componentHasNutrition = addRecipeNutrition(
+      total,
+      componentRecipe,
+      allRecipes,
+      visitedRecipeIds,
+      multiplier * getComponentScale(component.amount, component.unit, componentRecipe),
+    );
+    hasNutrition = hasNutrition || componentHasNutrition;
+  });
+
+  visitedRecipeIds.delete(recipe.recipeId);
+  return hasNutrition;
 }
 
 function createEmptyNutrition(): INutritionFacts {
@@ -319,6 +355,69 @@ function toGramAmount(amount: number | null, unit: string) {
 
   if (unit === "Kilogram") {
     return amount * 1000;
+  }
+
+  if (unit === "Milliliter") {
+    return amount;
+  }
+
+  if (unit === "Liter") {
+    return amount * 1000;
+  }
+
+  return null;
+}
+
+function getComponentScale(amount: number, unit: MeasurementUnit, childRecipe: EnrichedRecipe) {
+  const componentBaseAmount = toBaseAmount(amount, unit);
+  const childBaseAmount = getRecipeBaseAmount(childRecipe, unit);
+
+  return componentBaseAmount === null || childBaseAmount === null || childBaseAmount <= 0
+    ? 1
+    : componentBaseAmount / childBaseAmount;
+}
+
+function getRecipeBaseAmount(recipe: EnrichedRecipe, targetUnit: MeasurementUnit) {
+  const targetFamily = getMeasurementFamily(targetUnit);
+  if (targetFamily === null) {
+    return null;
+  }
+
+  const total = recipe.ingredients.reduce((sum, recipeIngredient) => {
+    if (getMeasurementFamily(recipeIngredient.unit) !== targetFamily) {
+      return sum;
+    }
+
+    const baseAmount = toBaseAmount(recipeIngredient.amount, recipeIngredient.unit);
+    return baseAmount === null ? sum : sum + baseAmount;
+  }, 0);
+
+  return total > 0 ? total : null;
+}
+
+function toBaseAmount(amount: number | null, unit: MeasurementUnit) {
+  if (amount === null) {
+    return null;
+  }
+
+  if (unit === "Gram" || unit === "Milliliter") {
+    return amount;
+  }
+
+  if (unit === "Kilogram" || unit === "Liter") {
+    return amount * 1000;
+  }
+
+  return null;
+}
+
+function getMeasurementFamily(unit: MeasurementUnit) {
+  if (unit === "Gram" || unit === "Kilogram") {
+    return "mass";
+  }
+
+  if (unit === "Milliliter" || unit === "Liter") {
+    return "volume";
   }
 
   return null;

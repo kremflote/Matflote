@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useCuisines, useIngredients, useLanguage, useRecipes } from "../../contexts";
+import { useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
@@ -9,7 +9,6 @@ import BrowserDetailModal from "./BrowserDetailModal";
 import BrowserFilterSection from "./BrowserFilterSection";
 import BrowserResults from "./BrowserResults";
 import {
-  matchesCuisines,
   matchesIngredientSearch,
   matchesIngredientTags,
   matchesRecipeSearch,
@@ -34,7 +33,6 @@ type BrowserProps = {
 
 function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
   const { t } = useLanguage();
-  const { cuisines } = useCuisines();
   const { recipes, recipeIsLoading, initError: recipeError } = useRecipes();
   const {
     ingredients,
@@ -45,7 +43,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
   const [selectedIngredientTags, setSelectedIngredientTags] = useState<IngredientTag[]>([]);
   const [selectedRecipeTypes, setSelectedRecipeTypes] = useState<RecipeType[]>([]);
   const [selectedRecipeTags, setSelectedRecipeTags] = useState<RecipeTag[]>([]);
-  const [selectedCuisineIds, setSelectedCuisineIds] = useState<number[]>([]);
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
   const [selectedDetailKey, setSelectedDetailKey] = useState<BrowserDetailKey | null>(null);
   const [ingredientPickerSearch, setIngredientPickerSearch] = useState("");
@@ -60,8 +57,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
         matchesRecipeSearch(recipe, searchTerm) &&
         matchesSelectedIngredients(recipe, selectedIngredientIds) &&
         matchesRecipeTypes(recipe, selectedRecipeTypes) &&
-        matchesRecipeTags(recipe, selectedRecipeTags) &&
-        matchesCuisines(recipe, selectedCuisineIds),
+        matchesRecipeTags(recipe, selectedRecipeTags),
       ),
     [
       recipes,
@@ -69,7 +65,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
       selectedIngredientIds,
       selectedRecipeTypes,
       selectedRecipeTags,
-      selectedCuisineIds,
     ],
   );
 
@@ -126,7 +121,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
     setSelectedIngredientTags([]);
     setSelectedRecipeTypes([]);
     setSelectedRecipeTags([]);
-    setSelectedCuisineIds([]);
     setSelectedIngredientIds([]);
   };
 
@@ -261,17 +255,12 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
           </div>
           <ActiveFilterChips
             mode={mode}
-            cuisines={cuisines}
-            selectedCuisineIds={selectedCuisineIds}
             selectedRecipeTags={selectedRecipeTags}
             selectedIngredientTags={selectedIngredientTags}
             selectedIngredients={selectedIngredients}
             selectedRecipeTypes={selectedRecipeTypes}
             theme={theme}
             onClear={clearFilters}
-            onRemoveCuisine={(value) =>
-              setSelectedCuisineIds((currentValues) => currentValues.filter((currentValue) => currentValue !== value))
-            }
             onRemoveRecipeTag={(value) =>
               setSelectedRecipeTags((currentValues) => currentValues.filter((currentValue) => currentValue !== value))
             }
@@ -326,12 +315,9 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
         >
           <BrowserFilterSection
             mode={mode}
-            cuisines={cuisines}
-            selectedCuisineIds={selectedCuisineIds}
             selectedRecipeTags={selectedRecipeTags}
             selectedIngredientTags={selectedIngredientTags}
             selectedRecipeTypes={selectedRecipeTypes}
-            setSelectedCuisineIds={setSelectedCuisineIds}
             setSelectedRecipeTags={setSelectedRecipeTags}
             setSelectedIngredientTags={setSelectedIngredientTags}
             setSelectedRecipeTypes={setSelectedRecipeTypes}
@@ -344,12 +330,9 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
       <section className={recipeBrowserStyles.browserBodyGrid}>
         <BrowserFilterSection
           mode={mode}
-          cuisines={cuisines}
-          selectedCuisineIds={selectedCuisineIds}
           selectedRecipeTags={selectedRecipeTags}
           selectedIngredientTags={selectedIngredientTags}
           selectedRecipeTypes={selectedRecipeTypes}
-          setSelectedCuisineIds={setSelectedCuisineIds}
           setSelectedRecipeTags={setSelectedRecipeTags}
           setSelectedIngredientTags={setSelectedIngredientTags}
           setSelectedRecipeTypes={setSelectedRecipeTypes}

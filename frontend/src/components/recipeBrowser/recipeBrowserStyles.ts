@@ -51,6 +51,19 @@ export const recipeBrowserStyles = {
       mode === "recipes" ? "pl-12 max-[1100px]:pl-0" : ""
     } ${hasVisibleFilters ? "" : "max-[1100px]:hidden"}`,
   browserBodyGrid: "mt-3 grid grid-cols-12 gap-3 max-sm:mt-3",
+  embeddedBrowser: "grid min-h-0 gap-3",
+  embeddedSearchFilterRow: "grid gap-3",
+  embeddedSearchControls:
+    "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2",
+  embeddedFilterButtonSlot: "flex items-center gap-2",
+  embeddedBrowserBodyGrid:
+    "grid min-h-0 grid-cols-12 gap-3 max-[1100px]:grid-cols-1",
+  embeddedResultsWithFilters:
+    "col-span-10 min-h-0 overflow-y-auto pr-1 max-[1100px]:col-span-1",
+  embeddedRecipeGrid:
+    "grid grid-cols-3 gap-3 min-[641px]:max-[1100px]:grid-cols-4 max-md:grid-cols-2 max-[380px]:grid-cols-1",
+  embeddedCategoryFilterButton: (theme: SiteTheme) =>
+    `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
   filterButton: (theme: SiteTheme) =>
     `inline-flex h-9 w-9 items-center justify-center rounded-md border min-[641px]:max-[1100px]:h-11 min-[641px]:max-[1100px]:w-11 min-[641px]:max-[1100px]:[&_svg]:h-5 min-[641px]:max-[1100px]:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
   categoryFilterButton: (theme: SiteTheme) =>
@@ -303,6 +316,10 @@ export const recipeBrowserStyles = {
   recipeIngredientPickerGrid: "grid gap-2 overflow-y-auto rounded-md p-2",
   desktopIngredientPicker: "grid gap-2 max-sm:hidden",
   mobileIngredientSummary: "hidden gap-3 max-sm:grid",
+  recipeLineModeToggle: (theme: SiteTheme) =>
+    `${segmentedToggleStyles.shell(theme)} w-full max-w-md`,
+  recipeLineModeOption: (theme: SiteTheme, selected: boolean) =>
+    segmentedToggleStyles.option(theme, selected),
   selectedIngredientCapsules:
     "flex flex-wrap gap-2 max-sm:grid max-sm:grid-cols-1",
   selectedIngredientCapsule: (theme: SiteTheme) =>
@@ -334,8 +351,14 @@ export const recipeBrowserStyles = {
   selectedComponentThumbnail: "w-20 max-sm:w-16",
   selectedComponentThumbnailCard:
     "[&_h3]:text-xs [&_p]:text-[9px] max-sm:[&_h3]:text-[10px] max-sm:[&_p]:text-[8px]",
-  componentRecipeSelected:
-    "outline outline-2 outline-offset-[-2px] outline-current",
+  componentRecipeSelected: (theme: SiteTheme) =>
+    `after:pointer-events-none after:absolute after:inset-0 after:z-20 after:rounded-md after:ring-2 after:ring-inset ${
+      theme === "dark"
+        ? "after:ring-white"
+        : theme === "paletteLight"
+          ? "after:ring-[#7A8864]"
+          : "after:ring-neutral-900"
+    }`,
   conversionHelperIntro: (theme: SiteTheme) =>
     `text-sm font-semibold leading-snug ${
       theme === "dark"

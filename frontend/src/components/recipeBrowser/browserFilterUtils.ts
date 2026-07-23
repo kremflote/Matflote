@@ -13,7 +13,6 @@ export function matchesRecipeSearch(recipe: EnrichedRecipe, searchTerm: string) 
     recipe.description,
     recipe.instructions,
     recipe.recipeType,
-    recipe.cuisine?.name,
     ...recipe.tags,
     ...recipe.ingredients.map((recipeIngredient) => recipeIngredient.ingredient.ingredientName),
   ]
@@ -66,14 +65,6 @@ export function matchesRecipeTags(recipe: EnrichedRecipe, selectedRecipeTags: Re
   }
 
   return recipe.tags.some((tag) => selectedRecipeTags.includes(tag));
-}
-
-export function matchesCuisines(recipe: EnrichedRecipe, selectedCuisineIds: number[]) {
-  if (selectedCuisineIds.length === 0) {
-    return true;
-  }
-
-  return recipe.cuisineId !== null && selectedCuisineIds.includes(recipe.cuisineId);
 }
 
 export function matchesIngredientTags(

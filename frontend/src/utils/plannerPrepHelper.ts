@@ -178,7 +178,7 @@ function buildRecipePrepRows(
       preparationLabels,
       actionLabels,
       visitedRecipeIds,
-      portionFactor,
+      portionFactor * getComponentScale(component.amount, component.unit, componentRecipe),
     );
   });
 
@@ -190,6 +190,61 @@ function getPortionFactor(recipe: IRecipe, selectedPortions: number | null) {
   const basePortions = recipe.portions > 0 ? recipe.portions : 1;
   const portions = selectedPortions !== null && selectedPortions > 0 ? selectedPortions : basePortions;
   return portions / basePortions;
+}
+
+function getComponentScale(amount: number, unit: MeasurementUnit, childRecipe: IRecipe) {
+  const componentBaseAmount = toBaseAmount(amount, unit);
+  const childBaseAmount = getRecipeBaseAmount(childRecipe, unit);
+
+  return componentBaseAmount === null || childBaseAmount === null || childBaseAmount <= 0
+    ? 1
+    : componentBaseAmount / childBaseAmount;
+}
+
+function getRecipeBaseAmount(recipe: IRecipe, targetUnit: MeasurementUnit) {
+  const targetFamily = getMeasurementFamily(targetUnit);
+  if (targetFamily === null) {
+    return null;
+  }
+
+  const total = recipe.ingredients.reduce((sum, recipeIngredient) => {
+    if (getMeasurementFamily(recipeIngredient.unit) !== targetFamily) {
+      return sum;
+    }
+
+    const baseAmount = toBaseAmount(recipeIngredient.amount, recipeIngredient.unit);
+    return baseAmount === null ? sum : sum + baseAmount;
+  }, 0);
+
+  return total > 0 ? total : null;
+}
+
+function toBaseAmount(amount: number | null, unit: MeasurementUnit) {
+  if (amount === null) {
+    return null;
+  }
+
+  if (unit === "Gram" || unit === "Milliliter") {
+    return amount;
+  }
+
+  if (unit === "Kilogram" || unit === "Liter") {
+    return amount * 1000;
+  }
+
+  return null;
+}
+
+function getMeasurementFamily(unit: MeasurementUnit) {
+  if (unit === "Gram" || unit === "Kilogram") {
+    return "mass";
+  }
+
+  if (unit === "Milliliter" || unit === "Liter") {
+    return "volume";
+  }
+
+  return null;
 }
 
 function shouldPrepIngredient(tags: IngredientTag[]) {

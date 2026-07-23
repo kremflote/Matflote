@@ -68,14 +68,6 @@ export function isSupplementaryRecipe(recipe: IRecipe, selectedFilters: Suppleme
   );
 }
 
-export function matchesSelectedCuisines(recipe: IRecipe, selectedCuisineIds: number[]) {
-  if (selectedCuisineIds.length === 0) {
-    return true;
-  }
-
-  return recipe.cuisineId !== null && selectedCuisineIds.includes(recipe.cuisineId);
-}
-
 export function matchesSelectedIngredients(recipe: IRecipe, selectedIngredientIds: number[]) {
   if (selectedIngredientIds.length === 0) {
     return true;
@@ -111,7 +103,6 @@ export function matchesSearch(recipe: IRecipe, searchTerm: string) {
   return [
     recipe.name,
     recipe.recipeType,
-    recipe.cuisine?.name,
     ...recipe.tags,
   ]
     .filter((value): value is string => Boolean(value))

@@ -8,7 +8,7 @@ import type { MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import type {
   DessertType,
   IngredientPreparation,
-  RecipeTag,
+  KnownRecipeTag,
   RecipeType,
 } from "../interfaces/IRecipe";
 
@@ -20,7 +20,7 @@ type EnumLabels = {
   ingredientPreparations: Record<IngredientPreparation, string>;
   mealSlots: Record<MealSlot, string>;
   measurementUnits: Record<MeasurementUnit, string>;
-  recipeTags: Record<RecipeTag, string>;
+  recipeTags: Record<KnownRecipeTag, string> & Record<string, string | undefined>;
   recipeTypes: Record<RecipeType, string>;
   vitamins: Record<Vitamin, string>;
   viewModes: Record<PlannerViewMode, string>;
@@ -80,6 +80,7 @@ export type TranslationDictionary = {
     chooseFile: string;
     choosePhoto: string;
     chooseIngredients: string;
+    chooseRecipes: string;
     chooseAtLeastOneIngredient: string;
     chooseAtLeastOneIngredientTag: string;
     conversionHelper: string;
@@ -100,7 +101,6 @@ export type TranslationDictionary = {
     couldNotLoadIngredients: string;
     couldNotLoadRecipes: string;
     couldNotSaveIngredient: string;
-    cuisine: string;
     description: string;
     dessertType: string;
     dietaryInformation: string;
@@ -134,6 +134,7 @@ export type TranslationDictionary = {
     noIngredientsAdded: string;
     noIngredientsFound: string;
     noIngredientsSelected: string;
+    noRecipesSelected: string;
     noInstructions: string;
     noPrice: string;
     noRecipesFound: string;
@@ -163,6 +164,9 @@ export type TranslationDictionary = {
     recipes: string;
     recipeNeedsName: string;
     recipeNameTooLong: (max: number) => string;
+    recipeComponentAmountRequired: string;
+    recipeLineMode: string;
+    recipeLinesHelp: string;
     recipeSingular: string;
     recipeType: string;
     saltPer100g: string;
@@ -181,7 +185,6 @@ export type TranslationDictionary = {
     addRecipeDetails: string;
     hideRecipeDetails: string;
     selectBrand: string;
-    selectCuisine: string;
     tags: string;
     takePhoto: string;
     confirmImage: string;
@@ -202,7 +205,6 @@ export type TranslationDictionary = {
   enums: EnumLabels;
   filters: {
     categories: string;
-    cuisine: string;
     ingredientTags: string;
     ingredientTagGroups: Record<string, string>;
     includes: string;

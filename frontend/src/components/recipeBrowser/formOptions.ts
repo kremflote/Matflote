@@ -1,5 +1,5 @@
 import type { IngredientTag, KnownIngredientTag, MeasurementUnit, Vitamin } from "../../interfaces/IIngredient";
-import type { IIngredientTagCategory } from "../../interfaces/ILookup";
+import type { IIngredientTagCategory, IRecipeTagCategory } from "../../interfaces/ILookup";
 import type { DessertType, IngredientPreparation, RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 
 export const recipeTypes: RecipeType[] = [
@@ -49,6 +49,60 @@ export const recipeTagGroups: Array<{
     values: ["Grill", "Pasta", "Vegetarian", "SousVide"],
   },
 ];
+
+export function getRecipeTagGroupsWithCustomTags(
+  customTags: readonly RecipeTag[],
+  fallbackGroup: RecipeTagGroupKey = "style",
+  categories: readonly IRecipeTagCategory[] = [],
+) {
+  const baseGroups = categories.length === 0
+    ? recipeTagGroups
+    : categories.map((category) => ({
+        key: category.recipeTagCategoryId.toString(),
+        values: category.tags as RecipeTag[],
+      }));
+  const styleCategory = categories.find((category) => category.name.trim().toLowerCase() === "style");
+  const fallbackKey = categories.length === 0
+    ? fallbackGroup
+    : styleCategory?.recipeTagCategoryId.toString() ?? categories[0]?.recipeTagCategoryId.toString() ?? fallbackGroup;
+  const knownTags = new Set(baseGroups.flatMap((group) => group.values));
+  const normalizedCustomTags = customTags
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0 && !knownTags.has(tag));
+
+  if (normalizedCustomTags.length === 0) {
+    return baseGroups;
+  }
+
+  return baseGroups.map((group) =>
+    group.key === fallbackKey
+      ? {
+          ...group,
+          values: [...group.values, ...Array.from(new Set(normalizedCustomTags))],
+        }
+      : group,
+  );
+}
+
+export function formatRecipeTagCategoryName(
+  name: string,
+  localizedNames: Record<string, string>,
+) {
+  const normalizedName = name.trim().toLowerCase();
+  if (normalizedName === "meal") {
+    return localizedNames.meal ?? name;
+  }
+
+  if (normalizedName === "format") {
+    return localizedNames.format ?? name;
+  }
+
+  if (normalizedName === "style") {
+    return localizedNames.style ?? name;
+  }
+
+  return name;
+}
 
 export const dessertTypes: DessertType[] = [
   "Cake",

@@ -37,11 +37,6 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<RecipeDto>> CreateRecipe(RecipeRequest request)
     {
-        if (!await CuisineExists(request.CuisineId))
-        {
-            return BadRequest("No cuisine found with that ID.");
-        }
-
         var ingredients = await GetIngredients(GetRequestedIngredientIds(request.Ingredients));
         var missingIngredientIds = GetMissingIngredientIds(GetRequestedIngredientIds(request.Ingredients), ingredients);
         if (missingIngredientIds.Count > 0)
@@ -85,11 +80,6 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         if (ToType(recipe) != request.RecipeType)
         {
             return BadRequest("Recipe type cannot be changed.");
-        }
-
-        if (!await CuisineExists(request.CuisineId))
-        {
-            return BadRequest("No cuisine found with that ID.");
         }
 
         var requestedIngredientIds = GetRequestedIngredientIds(request.Ingredients);
@@ -189,7 +179,6 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         .Include(recipe => recipe.Ingredients)
             .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                 .ThenInclude(ingredient => ingredient.Tags)
-        .Include(recipe => (recipe as Dish)!.Cuisine)
         .Include(recipe => recipe.Tags)
         .Include(recipe => recipe.Components)
             .ThenInclude(component => component.ChildRecipe)
@@ -260,12 +249,6 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
 
     private static void ApplySpecialRecipeFields(Recipe recipe, RecipeRequest request)
     {
-        if (recipe is Dish dish)
-        {
-            dish.CuisineId = request.CuisineId;
-            return;
-        }
-
         if (recipe is Dessert dessert)
         {
             dessert.Type = request.DessertType ?? DessertType.Other;
@@ -286,10 +269,6 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
             .OrderBy(component => component.SortOrder)
             .Select(ToDto)
             .ToList(),
-        recipe is Dish dish ? dish.CuisineId : null,
-        recipe is Dish { Cuisine: not null } dishWithCuisine
-            ? new CuisineDto(dishWithCuisine.Cuisine.CuisineId, dishWithCuisine.Cuisine.Name)
-            : null,
         recipe is Dessert dessert ? dessert.Type : null
     );
 
@@ -306,11 +285,12 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
 
     private static decimal NormalizePortions(decimal portions) => portions <= 0m ? 1m : portions;
 
-    private static List<RecipeTag> NormalizeTags(IReadOnlyCollection<RecipeTag>? tags) =>
+    private static List<string> NormalizeTags(IReadOnlyCollection<string>? tags) =>
         tags is null
             ? []
             : tags
-                .Where(tag => Enum.IsDefined(tag))
+                .Select(tag => tag.Trim())
+                .Where(tag => tag.Length > 0 && tag.Length <= 64)
                 .Distinct()
                 .ToList();
 
@@ -346,9 +326,9 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
             return "A recipe cannot include itself as a component.";
         }
 
-        if (componentRecipes.Any(recipe => recipe is Dish or Dessert))
+        if (requestedComponents.Any(component => component.Amount <= 0m))
         {
-            return "Recipe components must be sauce, dip, side, or spice mix recipes.";
+            return "Recipe component amounts must be greater than zero.";
         }
 
         return null;
@@ -435,6 +415,11 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
             {
                 ParentRecipeId = parentRecipeId,
                 ChildRecipeId = component.RecipeId,
+                Amount = component.Amount,
+                Unit = component.Unit,
+                Preparation = Enum.IsDefined(component.Preparation)
+                    ? component.Preparation
+                    : IngredientPreparation.None,
                 SortOrder = component.SortOrder > 0 ? component.SortOrder : index + 1
             })
             .ToList();
@@ -452,12 +437,12 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         ToType(component.ChildRecipe),
         component.ChildRecipe.Name,
         component.ChildRecipe.ImageUrl,
+        component.Amount,
+        component.Unit,
+        component.Preparation,
         component.SortOrder,
         component.ChildRecipe.Ingredients.Select(ToDto).ToList()
     );
-
-    private async Task<bool> CuisineExists(int? cuisineId) =>
-        cuisineId is null || await context.Cuisines.AnyAsync(cuisine => cuisine.CuisineId == cuisineId);
 
     private static IngredientDto ToDto(Ingredient ingredient) => new(
         ingredient.IngredientId,

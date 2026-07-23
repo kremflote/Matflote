@@ -8,6 +8,7 @@ type RecipeSelectionGridProps = {
   recipes: IRecipe[];
   theme: SiteTheme;
   getSubtitle?: (recipe: IRecipe) => string;
+  gridClassName?: string;
   selectedRecipeIds?: number[];
   onSelect: (recipe: IRecipe) => void;
 };
@@ -16,13 +17,14 @@ function RecipeSelectionGrid({
   recipes,
   theme,
   getSubtitle,
+  gridClassName = recipeBrowserStyles.recipeGrid,
   selectedRecipeIds = [],
   onSelect,
 }: RecipeSelectionGridProps) {
   const { t } = useLanguage();
 
   return (
-    <div className={recipeBrowserStyles.recipeGrid}>
+    <div className={gridClassName}>
       {recipes.map((recipe) => {
         const selected = selectedRecipeIds.includes(recipe.recipeId);
 
@@ -30,7 +32,7 @@ function RecipeSelectionGrid({
           <RecipeThumbnail
             ariaPressed={selected}
             className={`${recipeBrowserStyles.recipeCard(theme)} ${
-              selected ? recipeBrowserStyles.componentRecipeSelected : ""
+              selected ? recipeBrowserStyles.componentRecipeSelected(theme) : ""
             }`}
             interactiveEffect={false}
             key={recipe.recipeId}
@@ -38,7 +40,7 @@ function RecipeSelectionGrid({
             recipe={{
               imageUrl: recipe.imageUrl,
               name: recipe.name,
-              subtitle: getSubtitle?.(recipe) ?? recipe.cuisine?.name ?? t.enums.recipeTypes[recipe.recipeType],
+              subtitle: getSubtitle?.(recipe) ?? t.enums.recipeTypes[recipe.recipeType],
             }}
             onClick={() => onSelect(recipe)}
           />

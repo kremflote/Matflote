@@ -1,45 +1,39 @@
 import type { Dispatch, SetStateAction } from "react";
-import { useIngredientTagCategories, useLanguage } from "../../contexts";
+import { useIngredientTagCategories, useLanguage, useRecipeTagCategories } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
-import type { ICuisine } from "../../interfaces/ILookup";
 import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
-import { formatIngredientTagCategoryName, getIngredientTagGroupsWithCustomTags, ingredientTagGroups, recipeTagGroups, recipeTypes } from "./formOptions";
+import { formatIngredientTagCategoryName, formatRecipeTagCategoryName, getIngredientTagGroupsWithCustomTags, getRecipeTagGroupsWithCustomTags, ingredientTagGroups, recipeTagGroups, recipeTypes } from "./formOptions";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
-import { FilterGroup, GroupedFilterGroup, NumberFilterGroup } from "./BrowserFilterGroups";
+import { FilterGroup, GroupedFilterGroup } from "./BrowserFilterGroups";
 import type { BrowserMode } from "./types";
 
 type BrowserFilterSectionProps = {
   mode: BrowserMode;
-  cuisines: ICuisine[];
   selectedIngredientTags: IngredientTag[];
   selectedRecipeTypes: RecipeType[];
   selectedRecipeTags: RecipeTag[];
-  selectedCuisineIds: number[];
   theme: SiteTheme;
   variant?: "rail" | "panel";
   setSelectedIngredientTags: Dispatch<SetStateAction<IngredientTag[]>>;
   setSelectedRecipeTypes: Dispatch<SetStateAction<RecipeType[]>>;
   setSelectedRecipeTags: Dispatch<SetStateAction<RecipeTag[]>>;
-  setSelectedCuisineIds: Dispatch<SetStateAction<number[]>>;
 };
 
 function BrowserFilterSection({
   mode,
-  cuisines,
   selectedIngredientTags,
   selectedRecipeTypes,
   selectedRecipeTags,
-  selectedCuisineIds,
   theme,
   variant = "rail",
   setSelectedIngredientTags,
   setSelectedRecipeTypes,
   setSelectedRecipeTags,
-  setSelectedCuisineIds,
 }: BrowserFilterSectionProps) {
   const { t } = useLanguage();
   const { ingredientTagCategories } = useIngredientTagCategories();
+  const { recipeTagCategories } = useRecipeTagCategories();
   const className = variant === "rail"
     ? recipeBrowserStyles.filterRail(theme)
     : recipeBrowserStyles.filterPanel(theme);
@@ -50,6 +44,15 @@ function BrowserFilterSection({
         ingredientTagCategories.map((category) => [
           category.ingredientTagCategoryId.toString(),
           formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
+        ]),
+      );
+  const liveRecipeTagGroups = getRecipeTagGroupsWithCustomTags([], "style", recipeTagCategories);
+  const recipeTagGroupLabels = recipeTagCategories.length === 0
+    ? t.filters.recipeTagGroups
+    : Object.fromEntries(
+        recipeTagCategories.map((category) => [
+          category.recipeTagCategoryId.toString(),
+          formatRecipeTagCategoryName(category.name, t.filters.recipeTagGroups),
         ]),
       );
 
@@ -76,20 +79,13 @@ function BrowserFilterSection({
             onToggle={(value) => toggleSelection(value, setSelectedRecipeTypes)}
           />
           <GroupedFilterGroup
-            formatValue={(value) => t.enums.recipeTags[value]}
-            groupLabels={t.filters.recipeTagGroups}
-            groups={recipeTagGroups}
+            formatValue={(value) => t.enums.recipeTags[value] ?? formatLabel(value)}
+            groupLabels={recipeTagGroupLabels}
+            groups={recipeTagCategories.length === 0 ? recipeTagGroups : liveRecipeTagGroups}
             selectedValues={selectedRecipeTags}
             theme={theme}
             title={t.filters.tags}
             onToggle={(value) => toggleSelection(value, setSelectedRecipeTags)}
-          />
-          <NumberFilterGroup
-            selectedValues={selectedCuisineIds}
-            theme={theme}
-            title={t.filters.cuisine}
-            values={cuisines.map((cuisine) => ({ id: cuisine.cuisineId, label: cuisine.name }))}
-            onToggle={(value) => toggleSelection(value, setSelectedCuisineIds)}
           />
         </>
       )}

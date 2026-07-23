@@ -1,17 +1,17 @@
 import { useLanguage } from "../../contexts";
-import type { IngredientTag } from "../../interfaces/IIngredient";
-import type { IIngredientTagCategory } from "../../interfaces/ILookup";
+import type { IRecipeTagCategory } from "../../interfaces/ILookup";
+import type { RecipeTag } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
 import type { CreatableOption } from "./CreatableSelect";
-import { formatIngredientTagCategoryName } from "./formOptions";
+import { formatRecipeTagCategoryName } from "./formOptions";
 import TagManagementDialog from "./TagManagementDialog";
 
-type IngredientTagCreateDialogProps = {
-  categories: readonly IIngredientTagCategory[];
-  existingTags: readonly IngredientTag[];
+type RecipeTagCreateDialogProps = {
+  categories: readonly IRecipeTagCategory[];
+  existingTags: readonly RecipeTag[];
   theme: SiteTheme;
   onCancel: () => void;
-  onCreate: (tag: IngredientTag, categoryId: number) => Promise<void>;
+  onCreate: (tag: RecipeTag, categoryId: number) => Promise<void>;
   onCreateCategory: (name: string) => Promise<CreatableOption>;
   onUpdateCategory: (category: CreatableOption) => Promise<void>;
   onDeleteCategory: (category: CreatableOption) => Promise<void>;
@@ -19,7 +19,7 @@ type IngredientTagCreateDialogProps = {
   onDeleteTag: (tagName: string) => Promise<void>;
 };
 
-function IngredientTagCreateDialog({
+function RecipeTagCreateDialog({
   categories,
   existingTags,
   theme,
@@ -30,23 +30,21 @@ function IngredientTagCreateDialog({
   onDeleteCategory,
   onUpdateTag,
   onDeleteTag,
-}: IngredientTagCreateDialogProps) {
+}: RecipeTagCreateDialogProps) {
   const { t } = useLanguage();
 
   return (
     <TagManagementDialog
       categories={categories.map((category) => ({
-        id: category.ingredientTagCategoryId,
+        id: category.recipeTagCategoryId,
         name: category.name,
         tags: category.tags,
       }))}
       existingTags={existingTags}
-      formatCategoryName={(name) =>
-        formatIngredientTagCategoryName(name, t.filters.ingredientTagGroups)
-      }
+      formatCategoryName={(name) => formatRecipeTagCategoryName(name, t.filters.recipeTagGroups)}
       theme={theme}
       onCancel={onCancel}
-      onCreate={(tag, categoryId) => onCreate(tag as IngredientTag, categoryId)}
+      onCreate={(tag, categoryId) => onCreate(tag as RecipeTag, categoryId)}
       onCreateCategory={onCreateCategory}
       onDeleteCategory={onDeleteCategory}
       onDeleteTag={onDeleteTag}
@@ -56,4 +54,4 @@ function IngredientTagCreateDialog({
   );
 }
 
-export default IngredientTagCreateDialog;
+export default RecipeTagCreateDialog;

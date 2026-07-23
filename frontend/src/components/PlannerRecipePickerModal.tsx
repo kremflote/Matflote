@@ -1,11 +1,11 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { useCuisines, useIngredients, useLanguage } from "../contexts";
+import { useIngredients, useLanguage, useRecipeTagCategories } from "../contexts";
 import type { IIngredient, IngredientTag, MeasurementUnit } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, MealSlot } from "../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
 import { plannerPickerStyles, type SiteTheme } from "../styles/appStyles";
-import { recipeTagGroups, recipeTags } from "./recipeBrowser/formOptions";
+import { formatRecipeTagCategoryName, getRecipeTagGroupsWithCustomTags, recipeTagGroups, recipeTags } from "./recipeBrowser/formOptions";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
 import {
   excludedSupplementaryTags,
@@ -14,7 +14,6 @@ import {
   isSupplementaryRecipe,
   mainProteinFilters,
   matchesSearch,
-  matchesSelectedCuisines,
   matchesIngredientSearch,
   matchesSelectedIngredients,
   matchesSelectedIngredientTags,
@@ -26,7 +25,7 @@ import {
   supplementaryRecipeTypeFilters,
   toggleSelection,
 } from "./plannerRecipePicker/plannerRecipePickerFilters";
-import { FilterGroup, GroupedFilterGroup, NumberFilterGroup } from "./recipeBrowser/BrowserFilterGroups";
+import { FilterGroup, GroupedFilterGroup } from "./recipeBrowser/BrowserFilterGroups";
 import {
   FilterIcon,
   IngredientFilterChips,
@@ -74,8 +73,8 @@ function PlannerRecipePickerModal({
 }: PlannerRecipePickerModalProps) {
   const { t } = useLanguage();
   const titleId = useId();
-  const { cuisines } = useCuisines();
   const { ingredients } = useIngredients();
+  const { recipeTagCategories } = useRecipeTagCategories();
   const initialMainRecipe = entry?.recipes
     .slice()
     .sort((first, second) => first.sortOrder - second.sortOrder)
@@ -127,7 +126,6 @@ function PlannerRecipePickerModal({
     useState<SupplementaryFilter[]>(supplementaryFilters);
   const [selectedMainProteinTags, setSelectedMainProteinTags] = useState<IngredientTag[]>([]);
   const [selectedMainRecipeTags, setSelectedMainRecipeTags] = useState<RecipeTag[]>([]);
-  const [selectedCuisineIds, setSelectedCuisineIds] = useState<number[]>([]);
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
   const [ingredientPickerSearch, setIngredientPickerSearch] = useState("");
   const [ingredientPickerPosition, setIngredientPickerPosition] = useState<{ x: number; y: number } | null>(null);
@@ -161,7 +159,6 @@ function PlannerRecipePickerModal({
               matchesSelectedRecipeTags(recipe, selectedMainRecipeTags)
             : isSupplementaryRecipe(recipe, selectedSupplementaryFilters),
         )
-        .filter((recipe) => matchesSelectedCuisines(recipe, selectedCuisineIds))
         .filter((recipe) => matchesSelectedIngredients(recipe, selectedIngredientIds))
         .filter((recipe) => recipe.recipeId !== mainRecipeId || phase === "main")
         .filter((recipe) => matchesSearch(recipe, searchTerm))
@@ -171,7 +168,6 @@ function PlannerRecipePickerModal({
       phase,
       recipes,
       searchTerm,
-      selectedCuisineIds,
       selectedIngredientIds,
       selectedMainProteinTags,
       selectedMainRecipeTags,
@@ -210,6 +206,17 @@ function PlannerRecipePickerModal({
 
     return availableTags;
   }, [recipes]);
+  const mainRecipeCustomTags = Array.from(availableMainRecipeTags)
+    .filter((tag) => !recipeTags.includes(tag));
+  const liveRecipeTagGroups = getRecipeTagGroupsWithCustomTags(mainRecipeCustomTags, "style", recipeTagCategories);
+  const recipeTagGroupLabels = recipeTagCategories.length === 0
+    ? t.filters.recipeTagGroups
+    : Object.fromEntries(
+        recipeTagCategories.map((category) => [
+          category.recipeTagCategoryId.toString(),
+          formatRecipeTagCategoryName(category.name, t.filters.recipeTagGroups),
+        ]),
+      );
 
   const availableSupplementaryFilters = useMemo(() => {
     const availableFilters = new Set<SupplementaryFilter>();
@@ -232,27 +239,6 @@ function PlannerRecipePickerModal({
 
     return availableFilters;
   }, [recipes]);
-
-  const cuisineOptions = useMemo(() => {
-    const availableCuisineIds = new Set(
-      recipes
-        .filter((recipe) =>
-          phase === "main"
-            ? isMainDish(recipe)
-            : isSupplementaryRecipe(recipe, selectedSupplementaryFilters),
-        )
-        .map((recipe) => recipe.cuisineId)
-        .filter((cuisineId): cuisineId is number => cuisineId !== null),
-    );
-
-    return cuisines
-      .map((cuisine) => ({
-        disabled: !availableCuisineIds.has(cuisine.cuisineId),
-        id: cuisine.cuisineId,
-        label: cuisine.name,
-      }))
-      .sort((first, second) => first.label.localeCompare(second.label));
-  }, [cuisines, phase, recipes, selectedSupplementaryFilters]);
 
   const selectedIngredients = useMemo(
     () => ingredients.filter((ingredient) => selectedIngredientIds.includes(ingredient.ingredientId)),
@@ -503,9 +489,9 @@ function PlannerRecipePickerModal({
             disabledValues={recipeTags.filter(
               (filter) => !availableMainRecipeTags.has(filter),
             )}
-            formatValue={(value) => t.enums.recipeTags[value]}
-            groupLabels={t.filters.recipeTagGroups}
-            groups={recipeTagGroups}
+            formatValue={(value) => t.enums.recipeTags[value] ?? formatLabel(value)}
+            groupLabels={recipeTagGroupLabels}
+            groups={recipeTagCategories.length === 0 ? recipeTagGroups : liveRecipeTagGroups}
             selectedValues={selectedMainRecipeTags}
             theme={theme}
             title={t.filters.tags}
@@ -524,18 +510,9 @@ function PlannerRecipePickerModal({
           formatValue={(value) =>
             value in t.enums.recipeTypes
               ? t.enums.recipeTypes[value as keyof typeof t.enums.recipeTypes]
-              : t.enums.recipeTags[value as keyof typeof t.enums.recipeTags]
+              : t.enums.recipeTags[value] ?? formatLabel(value)
           }
           onToggle={(value) => toggleSelection(value, setSelectedSupplementaryFilters)}
-        />
-      )}
-      {cuisines.length > 0 && (
-        <NumberFilterGroup
-          selectedValues={selectedCuisineIds}
-          theme={theme}
-          title={t.filters.cuisine}
-          values={cuisineOptions}
-          onToggle={(value) => toggleSelection(value, setSelectedCuisineIds)}
         />
       )}
     </aside>

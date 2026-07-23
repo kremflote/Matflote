@@ -8,6 +8,13 @@ export type SelectedRecipeIngredient = {
   preparation: IngredientPreparation;
 };
 
+export type SelectedRecipeComponent = {
+  recipeId: number;
+  amount: string;
+  unit: MeasurementUnit;
+  preparation: IngredientPreparation;
+};
+
 export function getSelectedIngredient(ingredients: SelectedRecipeIngredient[], ingredientId: number) {
   return ingredients.find((ingredient) => ingredient.ingredientId === ingredientId);
 }
@@ -44,5 +51,44 @@ export function updateSelectedIngredient(
           ...value,
         }
       : ingredient,
+  );
+}
+
+export function getSelectedRecipeComponent(components: SelectedRecipeComponent[], recipeId: number) {
+  return components.find((component) => component.recipeId === recipeId);
+}
+
+export function toggleRecipeComponent(components: SelectedRecipeComponent[], recipeId: number) {
+  if (components.some((component) => component.recipeId === recipeId)) {
+    return components.filter((component) => component.recipeId !== recipeId);
+  }
+
+  return [
+    ...components,
+    {
+      recipeId,
+      amount: "",
+      unit: "Gram" as MeasurementUnit,
+      preparation: "None" as IngredientPreparation,
+    },
+  ];
+}
+
+export function updateSelectedRecipeComponent(
+  components: SelectedRecipeComponent[],
+  recipeId: number,
+  value: Partial<Omit<SelectedRecipeComponent, "recipeId">>,
+) {
+  if (!components.some((component) => component.recipeId === recipeId)) {
+    return components;
+  }
+
+  return components.map((component) =>
+    component.recipeId === recipeId
+      ? {
+          ...component,
+          ...value,
+        }
+      : component,
   );
 }

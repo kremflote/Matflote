@@ -77,7 +77,7 @@ function PlannerRecipePickerGrid({
                 recipe={{
                   imageUrl: recipe.imageUrl,
                   name: recipe.name,
-                  subtitle: recipe.cuisine?.name ?? t.enums.recipeTypes[recipe.recipeType],
+                  subtitle: t.enums.recipeTypes[recipe.recipeType],
                 }}
                 interactiveEffect={false}
                 theme={theme}

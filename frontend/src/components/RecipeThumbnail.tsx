@@ -5,7 +5,6 @@ import { thumbnailStyles, type SiteTheme } from "../styles/appStyles";
 
 type RecipeThumbnailProps = {
   recipe: Pick<IRecipe, "name" | "imageUrl"> & {
-    cuisine?: string | null;
     subtitle?: string | null;
   };
   className?: string;
@@ -29,7 +28,7 @@ function RecipeThumbnail({
   theme = "dark",
   onClick,
 }: RecipeThumbnailProps) {
-  const subtitle = recipe.subtitle ?? recipe.cuisine ?? "No cuisine";
+  const subtitle = recipe.subtitle ?? "";
   const imageUrl = getApiAssetUrl(recipe.imageUrl);
   const titleClassName =
     textScale === "micro"

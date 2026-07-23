@@ -93,8 +93,8 @@ function NutritionEditor({
         <NutritionNumberField label={t.cookbook.transFatsPer100g} subtitle={fieldSubtitles.transFatGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.transFatGrams} onChange={(value) => onChange("transFatGrams", value)} />
         <NutritionNumberField label={t.cookbook.monounsaturatedFatsPer100g} subtitle={fieldSubtitles.monounsaturatedFatGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.monounsaturatedFatGrams} onChange={(value) => onChange("monounsaturatedFatGrams", value)} />
         <NutritionNumberField label={t.cookbook.polyunsaturatedFatsPer100g} subtitle={fieldSubtitles.polyunsaturatedFatGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.polyunsaturatedFatGrams} onChange={(value) => onChange("polyunsaturatedFatGrams", value)} />
-        <NutritionNumberField label={t.cookbook.omega3Per100g} subtitle={fieldSubtitles.omega3Grams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.omega3Grams} onChange={(value) => onChange("omega3Grams", value)} />
-        <NutritionNumberField label={t.cookbook.omega6Per100g} subtitle={fieldSubtitles.omega6Grams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.omega6Grams} onChange={(value) => onChange("omega6Grams", value)} />
+        <NutritionNumberField label={t.cookbook.omega3Per100g} step="0.01" subtitle={fieldSubtitles.omega3Grams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.omega3Grams} onChange={(value) => onChange("omega3Grams", value)} />
+        <NutritionNumberField label={t.cookbook.omega6Per100g} step="0.01" subtitle={fieldSubtitles.omega6Grams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.omega6Grams} onChange={(value) => onChange("omega6Grams", value)} />
         <NutritionNumberField label={t.cookbook.cholesterolPer100g} subtitle={fieldSubtitles.cholesterolMilligrams} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="mg" value={values.cholesterolMilligrams} onChange={(value) => onChange("cholesterolMilligrams", value)} />
       </NutritionEditorSection>
 

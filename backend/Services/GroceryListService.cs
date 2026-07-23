@@ -235,7 +235,7 @@ public class GroceryListService(DinnerPlannerContext context)
                 recipesById,
                 rows,
                 visitedRecipeIds,
-                portionFactor
+                portionFactor * GetComponentFactor(component, childRecipe)
             );
         }
 
@@ -248,6 +248,57 @@ public class GroceryListService(DinnerPlannerContext context)
         var portions = selectedPortions is null or <= 0m ? basePortions : selectedPortions.Value;
         return portions / basePortions;
     }
+
+    private static decimal GetComponentFactor(RecipeComponent component, Recipe childRecipe)
+    {
+        var componentBaseAmount = ToBaseAmount(component.Amount, component.Unit);
+        var recipeBaseAmount = GetRecipeBaseAmount(childRecipe, component.Unit);
+
+        return componentBaseAmount is null || recipeBaseAmount is null or <= 0m
+            ? 1m
+            : componentBaseAmount.Value / recipeBaseAmount.Value;
+    }
+
+    private static decimal? GetRecipeBaseAmount(Recipe recipe, MeasurementUnit targetUnit)
+    {
+        var targetFamily = GetMeasurementFamily(targetUnit);
+        if (targetFamily is null)
+        {
+            return null;
+        }
+
+        var total = recipe.Ingredients
+            .Where(recipeIngredient => GetMeasurementFamily(recipeIngredient.Unit) == targetFamily)
+            .Select(recipeIngredient => ToBaseAmount(recipeIngredient.Amount, recipeIngredient.Unit))
+            .Where(amount => amount is not null)
+            .Sum(amount => amount!.Value);
+
+        return total > 0m ? total : null;
+    }
+
+    private static decimal? ToBaseAmount(decimal? amount, MeasurementUnit unit)
+    {
+        if (amount is null)
+        {
+            return null;
+        }
+
+        return unit switch
+        {
+            MeasurementUnit.Gram => amount,
+            MeasurementUnit.Kilogram => amount * 1000m,
+            MeasurementUnit.Milliliter => amount,
+            MeasurementUnit.Liter => amount * 1000m,
+            _ => null
+        };
+    }
+
+    private static string? GetMeasurementFamily(MeasurementUnit unit) => unit switch
+    {
+        MeasurementUnit.Gram or MeasurementUnit.Kilogram => "mass",
+        MeasurementUnit.Milliliter or MeasurementUnit.Liter => "volume",
+        _ => null
+    };
 
     private record GroceryIngredientRow(
         int IngredientId,

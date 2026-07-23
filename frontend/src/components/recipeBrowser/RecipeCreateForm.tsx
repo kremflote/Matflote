@@ -1,29 +1,33 @@
 import { useCallback, useMemo, useState, type FormEvent } from "react";
-import { useCuisines, useIngredients, useLanguage, useRecipes } from "../../contexts";
+import { useIngredients, useLanguage, useRecipeTagCategories, useRecipes } from "../../contexts";
 import type { DessertType, IRecipe, RecipeTag, RecipeType } from "../../interfaces/IRecipe";
-import { cuisineService, imageUploadService, recipeService } from "../../services";
+import { imageUploadService, recipeService, recipeTagCategoryService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
-import RecipeThumbnail from "../RecipeThumbnail";
 import {
   dessertTypes,
+  formatRecipeTagCategoryName,
+  getRecipeTagGroupsWithCustomTags,
   recipeTagGroups,
-  recipeTags,
   recipeTypes,
 } from "./formOptions";
 import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
-import CreatableSelect from "./CreatableSelect";
 import ImageCropPicker from "./ImageCropPicker";
 import Modal from "../Modal";
-import RecipeSelectionGrid from "./RecipeSelectionGrid";
+import RecipeTagCreateDialog from "./RecipeTagCreateDialog";
 import {
+  RecipeComponentPickerContent,
   RecipeIngredientPickerContent,
   RecipeIngredientPickerDialog,
   SelectedIngredientCapsules,
+  SelectedRecipeComponentCapsules,
 } from "./RecipeIngredientPicker";
-import { recipeBrowserStyles } from "./recipeBrowserStyles";
+import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import {
+  toggleRecipeComponent,
   toggleRecipeIngredient,
+  updateSelectedRecipeComponent,
   updateSelectedIngredient,
+  type SelectedRecipeComponent,
   type SelectedRecipeIngredient,
 } from "./recipeIngredientSelection";
 
@@ -38,6 +42,7 @@ type RecipeCreateFormProps = {
 };
 
 const RECIPE_NAME_MAX_LENGTH = 30;
+type RecipeLinePickerMode = "ingredients" | "recipes";
 
 function RecipeCreateForm({
   imageInputId,
@@ -50,9 +55,9 @@ function RecipeCreateForm({
 }: RecipeCreateFormProps) {
   const isEditing = initialRecipe !== null;
   const { t } = useLanguage();
-  const { cuisines, refreshCuisines } = useCuisines();
   const { ingredients } = useIngredients();
   const { recipes, refreshRecipes } = useRecipes();
+  const { recipeTagCategories, refreshRecipeTagCategories } = useRecipeTagCategories();
   const [recipeType, setRecipeType] = useState<RecipeType>(initialRecipe?.recipeType ?? "Dish");
   const [name, setName] = useState(initialRecipe?.name ?? "");
   const [portions, setPortions] = useState((initialRecipe?.portions ?? 1).toString());
@@ -66,22 +71,29 @@ function RecipeCreateForm({
       preparation: recipeIngredient.preparation,
     })) ?? [],
   );
-  const [selectedComponentIds, setSelectedComponentIds] = useState<number[]>(
+  const [selectedComponents, setSelectedComponents] = useState<SelectedRecipeComponent[]>(
     initialRecipe?.components
       .slice()
       .sort((first, second) => first.sortOrder - second.sortOrder)
-      .map((component) => component.recipeId) ?? [],
+      .map((component) => ({
+        recipeId: component.recipeId,
+        amount: component.amount.toString(),
+        unit: component.unit,
+        preparation: component.preparation,
+      })) ?? [],
   );
   const [selectedTags, setSelectedTags] = useState<RecipeTag[]>(
-    initialRecipe?.tags.filter((tag) => recipeTags.includes(tag)) ?? [],
+    initialRecipe?.tags ?? [],
   );
-  const [cuisineId, setCuisineId] = useState<number | null>(initialRecipe?.cuisineId ?? null);
+  const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
   const [dessertType, setDessertType] = useState<DessertType>(initialRecipe?.dessertType ?? "Other");
   const [ingredientSearch, setIngredientSearch] = useState("");
+  const [recipeSearch, setRecipeSearch] = useState("");
+  const [recipeLinePickerMode, setRecipeLinePickerMode] = useState<RecipeLinePickerMode>("ingredients");
   const [isIngredientPickerOpen, setIsIngredientPickerOpen] = useState(false);
-  const [isComponentPickerOpen, setIsComponentPickerOpen] = useState(false);
   const [isConversionHelperOpen, setIsConversionHelperOpen] = useState(false);
   const [mobileIngredientDraft, setMobileIngredientDraft] = useState<SelectedRecipeIngredient[]>([]);
+  const [mobileComponentDraft, setMobileComponentDraft] = useState<SelectedRecipeComponent[]>([]);
   const [croppedImageFile, setCroppedImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,6 +102,29 @@ function RecipeCreateForm({
     () => selectedIngredients.map((ingredient) => ingredient.ingredientId),
     [selectedIngredients],
   );
+  const selectedComponentIds = useMemo(
+    () => selectedComponents.map((component) => component.recipeId),
+    [selectedComponents],
+  );
+  const knownRecipeTags = (recipeTagCategories.length === 0
+    ? recipeTagGroups.flatMap((group) => group.values)
+    : recipeTagCategories.flatMap((category) => category.tags)) as RecipeTag[];
+  const existingCustomRecipeTags = recipes
+    .flatMap((recipe) => recipe.tags)
+    .filter((tag) => !knownRecipeTags.includes(tag));
+  const customRecipeTags = Array.from(new Set([
+    ...existingCustomRecipeTags,
+    ...selectedTags.filter((tag) => !knownRecipeTags.includes(tag)),
+  ]));
+  const groupedRecipeTags = getRecipeTagGroupsWithCustomTags(customRecipeTags, "style", recipeTagCategories);
+  const recipeTagGroupLabels = recipeTagCategories.length === 0
+    ? t.filters.recipeTagGroups
+    : Object.fromEntries(
+        recipeTagCategories.map((category) => [
+          category.recipeTagCategoryId.toString(),
+          formatRecipeTagCategoryName(category.name, t.filters.recipeTagGroups),
+        ]),
+      );
 
   const visibleIngredients = useMemo(() => {
     const normalizedSearch = ingredientSearch.trim().toLowerCase();
@@ -135,23 +170,51 @@ function RecipeCreateForm({
   const componentRecipeOptions = useMemo(
     () =>
       recipes
-        .filter((recipe) =>
-          recipe.recipeId !== initialRecipe?.recipeId &&
-          (recipe.recipeType === "Sauce" ||
-            recipe.recipeType === "Dip" ||
-            recipe.recipeType === "Side" ||
-            recipe.recipeType === "SpiceMix"),
-        )
+        .filter((recipe) => recipe.recipeId !== initialRecipe?.recipeId)
         .sort((first, second) => first.name.localeCompare(second.name)),
     [initialRecipe?.recipeId, recipes],
   );
-  const selectedComponentRecipes = useMemo(
-    () =>
-      selectedComponentIds
-        .map((recipeId) => recipes.find((recipe) => recipe.recipeId === recipeId))
-        .filter((recipe): recipe is IRecipe => recipe !== undefined),
-    [recipes, selectedComponentIds],
+
+  const visibleComponentRecipes = useMemo(() => {
+    const normalizedSearch = recipeSearch.trim().toLowerCase();
+    const selectedIds = new Set(selectedComponentIds);
+
+    return componentRecipeOptions
+      .filter((recipe) => recipe.name.toLowerCase().includes(normalizedSearch))
+      .sort((first, second) => {
+        const firstIsSelected = selectedIds.has(first.recipeId);
+        const secondIsSelected = selectedIds.has(second.recipeId);
+
+        if (firstIsSelected !== secondIsSelected) {
+          return firstIsSelected ? -1 : 1;
+        }
+
+        return first.name.localeCompare(second.name);
+      });
+  }, [componentRecipeOptions, recipeSearch, selectedComponentIds]);
+
+  const mobileSelectedComponentIds = useMemo(
+    () => mobileComponentDraft.map((component) => component.recipeId),
+    [mobileComponentDraft],
   );
+
+  const visibleMobileComponentRecipes = useMemo(() => {
+    const normalizedSearch = recipeSearch.trim().toLowerCase();
+    const selectedIds = new Set(mobileSelectedComponentIds);
+
+    return componentRecipeOptions
+      .filter((recipe) => recipe.name.toLowerCase().includes(normalizedSearch))
+      .sort((first, second) => {
+        const firstIsSelected = selectedIds.has(first.recipeId);
+        const secondIsSelected = selectedIds.has(second.recipeId);
+
+        if (firstIsSelected !== secondIsSelected) {
+          return firstIsSelected ? -1 : 1;
+        }
+
+        return first.name.localeCompare(second.name);
+      });
+  }, [componentRecipeOptions, mobileSelectedComponentIds, recipeSearch]);
 
   const handleCroppedFileChange = useCallback((file: File | null) => {
     setCroppedImageFile(file);
@@ -159,11 +222,13 @@ function RecipeCreateForm({
 
   const openMobileIngredientPicker = () => {
     setMobileIngredientDraft(selectedIngredients);
+    setMobileComponentDraft(selectedComponents);
     setIsIngredientPickerOpen(true);
   };
 
   const confirmMobileIngredients = () => {
     setSelectedIngredients(mobileIngredientDraft);
+    setSelectedComponents(mobileComponentDraft);
     setIsIngredientPickerOpen(false);
   };
 
@@ -181,7 +246,7 @@ function RecipeCreateForm({
       return;
     }
 
-    if (selectedIngredients.length === 0) {
+    if (selectedIngredients.length === 0 && selectedComponents.length === 0) {
       setError(t.cookbook.chooseAtLeastOneIngredient);
       return;
     }
@@ -189,6 +254,15 @@ function RecipeCreateForm({
     const parsedPortions = nullableNumber(portions);
     if (parsedPortions === null || parsedPortions <= 0) {
       setError(t.cookbook.portionsRequired);
+      return;
+    }
+
+    const parsedComponents = selectedComponents.map((component) => ({
+      ...component,
+      amount: nullableNumber(component.amount),
+    }));
+    if (parsedComponents.some((component) => component.amount === null || component.amount <= 0)) {
+      setError(t.cookbook.recipeComponentAmountRequired);
       return;
     }
 
@@ -214,11 +288,13 @@ function RecipeCreateForm({
           preparation: ingredient.preparation,
         })),
         tags: selectedTags,
-        components: selectedComponentIds.map((recipeId, index) => ({
-          recipeId,
+        components: parsedComponents.map((component, index) => ({
+          recipeId: component.recipeId,
+          amount: component.amount ?? 0,
+          unit: component.unit,
+          preparation: component.preparation,
           sortOrder: index + 1,
         })),
-        cuisineId: recipeType === "Dish" ? cuisineId : null,
         dessertType: recipeType === "Dessert" ? dessertType : null,
       };
 
@@ -299,28 +375,6 @@ function RecipeCreateForm({
 
               {renderRecipeTypeField()}
 
-              {recipeType === "Dish" && (
-                <CreatableSelect
-                  createLabel="Create New"
-                  label={t.cookbook.cuisine}
-                  options={cuisines.map((cuisine) => ({ id: cuisine.cuisineId, name: cuisine.name }))}
-                  placeholder={t.cookbook.selectCuisine}
-                  theme={theme}
-                  value={cuisineId}
-                  onChange={setCuisineId}
-                  onCreate={async (name) => {
-                    const cuisine = await cuisineService.create({ name });
-                    await refreshCuisines();
-                    return { id: cuisine.cuisineId, name: cuisine.name };
-                  }}
-                  onDeleteOption={async (option) => {
-                    await cuisineService.delete(option.id);
-                    await refreshCuisines();
-                    await refreshRecipes();
-                  }}
-                />
-              )}
-
               {recipeType === "Dessert" && (
                 <label className={recipeBrowserStyles.field}>
                   <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.dessertType}</span>
@@ -359,112 +413,16 @@ function RecipeCreateForm({
               <span className={recipeBrowserStyles.inlineHint(theme)}>{t.cookbook.optional}</span>
             </span>
             <GroupedCheckboxPanel
-              formatValue={(value) => t.enums.recipeTags[value]}
-              groupLabels={t.filters.recipeTagGroups}
-              groups={recipeTagGroups}
+              addActionLabel={t.common.manageTags}
+              formatValue={(value) => t.enums.recipeTags[value] ?? formatLabel(value)}
+              groupLabels={recipeTagGroupLabels}
+              groups={groupedRecipeTags}
               panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
               selectedValues={selectedTags}
               theme={theme}
+              onAddTag={() => setIsTagCreateOpen(true)}
               onToggle={(value) => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
             />
-          </section>
-
-          <section className={recipeBrowserStyles.field}>
-            <span className={recipeBrowserStyles.label(theme)}>
-              {t.cookbook.addSides}
-              <span className={recipeBrowserStyles.inlineHint(theme)}>
-                {t.cookbook.addSidesHelp}
-              </span>
-            </span>
-            <button
-              className={recipeBrowserStyles.detailsToggleFull(theme)}
-              type="button"
-              onClick={() => setIsComponentPickerOpen(true)}
-            >
-              {t.cookbook.addSides}
-            </button>
-            {selectedComponentRecipes.length === 0 ? (
-              <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noSidesAdded}</p>
-            ) : (
-              <div className={recipeBrowserStyles.selectedComponentThumbnails}>
-                {selectedComponentRecipes.map((componentRecipe) => (
-                  <div className={recipeBrowserStyles.selectedComponentThumbnail} key={componentRecipe.recipeId}>
-                    <RecipeThumbnail
-                      className={recipeBrowserStyles.selectedComponentThumbnailCard}
-                      interactiveEffect={false}
-                      recipe={{
-                        name: componentRecipe.name,
-                        imageUrl: componentRecipe.imageUrl,
-                        subtitle: t.enums.recipeTypes[componentRecipe.recipeType],
-                      }}
-                      textScale="micro"
-                      theme={theme}
-                      onClick={() =>
-                        setSelectedComponentIds((currentIds) =>
-                          currentIds.filter((recipeId) => recipeId !== componentRecipe.recipeId),
-                        )
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className={recipeBrowserStyles.field}>
-            <div className={recipeBrowserStyles.fieldHeaderRow}>
-              <span className={recipeBrowserStyles.label(theme)}>
-                {t.cookbook.ingredients}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-              </span>
-              <button
-                className={recipeBrowserStyles.inlineHelperButton(theme)}
-                type="button"
-                onClick={() => setIsConversionHelperOpen(true)}
-              >
-                {t.cookbook.conversionHelper}
-              </button>
-            </div>
-            <div className={recipeBrowserStyles.mobileIngredientSummary}>
-              <button className={recipeBrowserStyles.detailsToggleFull(theme)} type="button" onClick={openMobileIngredientPicker}>
-                {t.cookbook.chooseIngredients}
-              </button>
-              <SelectedIngredientCapsules
-                ingredients={ingredients}
-                selectedIngredients={selectedIngredients}
-                theme={theme}
-              />
-            </div>
-            <div className={recipeBrowserStyles.desktopIngredientPicker}>
-              <RecipeIngredientPickerContent
-                ingredientSearch={ingredientSearch}
-                ingredients={visibleIngredients}
-                preparationLabels={t.enums.ingredientPreparations}
-                selectedIngredientIds={selectedIngredientIds}
-                selectedIngredients={selectedIngredients}
-                theme={theme}
-                onAmountChange={(ingredientId, amount) =>
-                  setSelectedIngredients((currentIngredients) =>
-                    updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
-                  )
-                }
-                onPreparationChange={(ingredientId, preparation) =>
-                  setSelectedIngredients((currentIngredients) =>
-                    updateSelectedIngredient(currentIngredients, ingredientId, { preparation }),
-                  )
-                }
-                onSearchChange={setIngredientSearch}
-                onToggle={(ingredientId) =>
-                  setSelectedIngredients((currentIngredients) =>
-                    toggleRecipeIngredient(currentIngredients, ingredientId),
-                  )
-                }
-                onUnitChange={(ingredientId, unit) =>
-                  setSelectedIngredients((currentIngredients) =>
-                    updateSelectedIngredient(currentIngredients, ingredientId, { unit }),
-                  )
-                }
-              />
-            </div>
           </section>
 
           {onToggleRecipeDetails && (
@@ -502,6 +460,110 @@ function RecipeCreateForm({
               </div>
             </div>
           )}
+
+          <section className={recipeBrowserStyles.field}>
+            <div className={recipeBrowserStyles.fieldHeaderRow}>
+              <span className={recipeBrowserStyles.label(theme)}>
+                {t.cookbook.ingredients}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+                <span className={recipeBrowserStyles.inlineHint(theme)}>
+                  {t.cookbook.recipeLinesHelp}
+                </span>
+              </span>
+              <button
+                className={recipeBrowserStyles.inlineHelperButton(theme)}
+                type="button"
+                onClick={() => setIsConversionHelperOpen(true)}
+              >
+                {t.cookbook.conversionHelper}
+              </button>
+            </div>
+            <RecipeLineModeToggle
+              mode={recipeLinePickerMode}
+              theme={theme}
+              onChange={setRecipeLinePickerMode}
+            />
+            <div className={recipeBrowserStyles.mobileIngredientSummary}>
+              <button className={recipeBrowserStyles.detailsToggleFull(theme)} type="button" onClick={openMobileIngredientPicker}>
+                {recipeLinePickerMode === "ingredients" ? t.cookbook.chooseIngredients : t.cookbook.chooseRecipes}
+              </button>
+              {recipeLinePickerMode === "ingredients" ? (
+                <SelectedIngredientCapsules
+                  ingredients={ingredients}
+                  selectedIngredients={selectedIngredients}
+                  theme={theme}
+                />
+              ) : (
+                <SelectedRecipeComponentCapsules
+                  recipes={recipes}
+                  selectedComponents={selectedComponents}
+                  theme={theme}
+                />
+              )}
+            </div>
+            <div className={recipeBrowserStyles.desktopIngredientPicker}>
+              {recipeLinePickerMode === "ingredients" ? (
+                <RecipeIngredientPickerContent
+                  ingredientSearch={ingredientSearch}
+                  ingredients={visibleIngredients}
+                  preparationLabels={t.enums.ingredientPreparations}
+                  selectedIngredientIds={selectedIngredientIds}
+                  selectedIngredients={selectedIngredients}
+                  theme={theme}
+                  onAmountChange={(ingredientId, amount) =>
+                    setSelectedIngredients((currentIngredients) =>
+                      updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
+                    )
+                  }
+                  onPreparationChange={(ingredientId, preparation) =>
+                    setSelectedIngredients((currentIngredients) =>
+                      updateSelectedIngredient(currentIngredients, ingredientId, { preparation }),
+                    )
+                  }
+                  onSearchChange={setIngredientSearch}
+                  onToggle={(ingredientId) =>
+                    setSelectedIngredients((currentIngredients) =>
+                      toggleRecipeIngredient(currentIngredients, ingredientId),
+                    )
+                  }
+                  onUnitChange={(ingredientId, unit) =>
+                    setSelectedIngredients((currentIngredients) =>
+                      updateSelectedIngredient(currentIngredients, ingredientId, { unit }),
+                    )
+                  }
+                />
+              ) : (
+                <RecipeComponentPickerContent
+                  preparationLabels={t.enums.ingredientPreparations}
+                  recipeSearch={recipeSearch}
+                  recipes={visibleComponentRecipes}
+                  selectedComponentIds={selectedComponentIds}
+                  selectedComponents={selectedComponents}
+                  theme={theme}
+                  onAmountChange={(recipeId, amount) =>
+                    setSelectedComponents((currentComponents) =>
+                      updateSelectedRecipeComponent(currentComponents, recipeId, { amount }),
+                    )
+                  }
+                  onPreparationChange={(recipeId, preparation) =>
+                    setSelectedComponents((currentComponents) =>
+                      updateSelectedRecipeComponent(currentComponents, recipeId, { preparation }),
+                    )
+                  }
+                  onSearchChange={setRecipeSearch}
+                  onToggle={(recipeId) =>
+                    setSelectedComponents((currentComponents) =>
+                      toggleRecipeComponent(currentComponents, recipeId),
+                    )
+                  }
+                  onUnitChange={(recipeId, unit) =>
+                    setSelectedComponents((currentComponents) =>
+                      updateSelectedRecipeComponent(currentComponents, recipeId, { unit }),
+                    )
+                  }
+                />
+              )}
+            </div>
+          </section>
         </div>
       </div>
 
@@ -513,7 +575,7 @@ function RecipeCreateForm({
           {isSaving ? t.common.saving : isEditing ? t.cookbook.saveRecipe : t.cookbook.createRecipe}
         </button>
       </div>
-      {isIngredientPickerOpen && (
+      {isIngredientPickerOpen && recipeLinePickerMode === "ingredients" && (
         <RecipeIngredientPickerDialog
           closeLabel={t.common.close}
           ingredientSearch={ingredientSearch}
@@ -547,26 +609,108 @@ function RecipeCreateForm({
           }
         />
       )}
+      {isIngredientPickerOpen && recipeLinePickerMode === "recipes" && (
+        <Modal
+          backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
+          bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
+          closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+          closeLabel={t.common.close}
+          footer={
+            <>
+              <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={() => setIsIngredientPickerOpen(false)}>
+                {t.common.cancel}
+              </button>
+              <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={confirmMobileIngredients}>
+                {t.common.confirm}
+              </button>
+            </>
+          }
+          footerClassName={recipeBrowserStyles.formActions}
+          headerClassName={recipeBrowserStyles.modalHeader}
+          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+          title={t.cookbook.recipes}
+          titleClassName={recipeBrowserStyles.modalTitle}
+          onClose={() => setIsIngredientPickerOpen(false)}
+        >
+          <RecipeComponentPickerContent
+            preparationLabels={t.enums.ingredientPreparations}
+            recipeSearch={recipeSearch}
+            recipes={visibleMobileComponentRecipes}
+            selectedComponentIds={mobileSelectedComponentIds}
+            selectedComponents={mobileComponentDraft}
+            theme={theme}
+            onAmountChange={(recipeId, amount) =>
+              setMobileComponentDraft((currentComponents) =>
+                updateSelectedRecipeComponent(currentComponents, recipeId, { amount }),
+              )
+            }
+            onPreparationChange={(recipeId, preparation) =>
+              setMobileComponentDraft((currentComponents) =>
+                updateSelectedRecipeComponent(currentComponents, recipeId, { preparation }),
+              )
+            }
+            onSearchChange={setRecipeSearch}
+            onToggle={(recipeId) =>
+              setMobileComponentDraft((currentComponents) =>
+                toggleRecipeComponent(currentComponents, recipeId),
+              )
+            }
+            onUnitChange={(recipeId, unit) =>
+              setMobileComponentDraft((currentComponents) =>
+                updateSelectedRecipeComponent(currentComponents, recipeId, { unit }),
+              )
+            }
+          />
+        </Modal>
+      )}
       {isConversionHelperOpen && (
         <ConversionHelperDialog
           theme={theme}
           onClose={() => setIsConversionHelperOpen(false)}
         />
       )}
-      {isComponentPickerOpen && (
-        <RecipeComponentPickerDialog
-          recipes={componentRecipeOptions}
-          selectedRecipeIds={selectedComponentIds}
+      {isTagCreateOpen && (
+        <RecipeTagCreateDialog
+          categories={recipeTagCategories}
+          existingTags={[...knownRecipeTags, ...customRecipeTags]}
           theme={theme}
-          onCancel={() => setIsComponentPickerOpen(false)}
-          onConfirm={() => setIsComponentPickerOpen(false)}
-          onToggle={(recipeId) =>
-            setSelectedComponentIds((currentIds) =>
-              currentIds.includes(recipeId)
-                ? currentIds.filter((currentId) => currentId !== recipeId)
-                : [...currentIds, recipeId],
-            )
-          }
+          onCancel={() => setIsTagCreateOpen(false)}
+          onCreate={async (tag, categoryId) => {
+            await recipeTagCategoryService.createTag(categoryId, { name: tag });
+            await refreshRecipeTagCategories();
+            setSelectedTags((currentTags) => currentTags.includes(tag) ? currentTags : [...currentTags, tag]);
+            setIsTagCreateOpen(false);
+          }}
+          onCreateCategory={async (name) => {
+            const category = await recipeTagCategoryService.create({ name });
+            await refreshRecipeTagCategories();
+            return { id: category.recipeTagCategoryId, name: category.name };
+          }}
+          onUpdateCategory={async (category) => {
+            await recipeTagCategoryService.update(category.id, { name: category.name });
+            await refreshRecipeTagCategories();
+          }}
+          onDeleteCategory={async (category) => {
+            await recipeTagCategoryService.delete(category.id);
+            await refreshRecipeTagCategories();
+            await refreshRecipes();
+          }}
+          onUpdateTag={async (tagName, nextName) => {
+            await recipeTagCategoryService.updateTag(tagName, { name: nextName });
+            await refreshRecipeTagCategories();
+            await refreshRecipes();
+            setSelectedTags((currentTags) =>
+              currentTags.map((tag) => tag.toLowerCase() === tagName.toLowerCase() ? nextName : tag),
+            );
+          }}
+          onDeleteTag={async (tagName) => {
+            await recipeTagCategoryService.deleteTag(tagName);
+            await refreshRecipeTagCategories();
+            await refreshRecipes();
+            setSelectedTags((currentTags) =>
+              currentTags.filter((tag) => tag.toLowerCase() !== tagName.toLowerCase()),
+            );
+          }}
         />
       )}
     </form>
@@ -577,6 +721,37 @@ type ConversionHelperDialogProps = {
   theme: SiteTheme;
   onClose: () => void;
 };
+
+type RecipeLineModeToggleProps = {
+  mode: RecipeLinePickerMode;
+  theme: SiteTheme;
+  onChange: (mode: RecipeLinePickerMode) => void;
+};
+
+function RecipeLineModeToggle({ mode, theme, onChange }: RecipeLineModeToggleProps) {
+  const { t } = useLanguage();
+
+  return (
+    <div className={recipeBrowserStyles.recipeLineModeToggle(theme)} role="group" aria-label={t.cookbook.recipeLineMode}>
+      <button
+        aria-pressed={mode === "ingredients"}
+        className={recipeBrowserStyles.recipeLineModeOption(theme, mode === "ingredients")}
+        type="button"
+        onClick={() => onChange("ingredients")}
+      >
+        {t.cookbook.ingredients}
+      </button>
+      <button
+        aria-pressed={mode === "recipes"}
+        className={recipeBrowserStyles.recipeLineModeOption(theme, mode === "recipes")}
+        type="button"
+        onClick={() => onChange("recipes")}
+      >
+        {t.cookbook.recipes}
+      </button>
+    </div>
+  );
+}
 
 function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps) {
   const { t } = useLanguage();
@@ -616,63 +791,6 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
           </div>
         </section>
       ))}
-    </Modal>
-  );
-}
-
-type RecipeComponentPickerDialogProps = {
-  recipes: IRecipe[];
-  selectedRecipeIds: number[];
-  theme: SiteTheme;
-  onCancel: () => void;
-  onConfirm: () => void;
-  onToggle: (recipeId: number) => void;
-};
-
-function RecipeComponentPickerDialog({
-  recipes,
-  selectedRecipeIds,
-  theme,
-  onCancel,
-  onConfirm,
-  onToggle,
-}: RecipeComponentPickerDialogProps) {
-  const { t } = useLanguage();
-
-  return (
-    <Modal
-      backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
-      bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-      closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
-      closeLabel={t.common.close}
-      footer={
-        <>
-          <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onCancel}>
-            {t.common.cancel}
-          </button>
-          <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onConfirm}>
-            {t.common.confirm}
-          </button>
-        </>
-      }
-      footerClassName={recipeBrowserStyles.formActions}
-      headerClassName={recipeBrowserStyles.modalHeader}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
-      title={t.cookbook.addSides}
-      titleClassName={recipeBrowserStyles.modalTitle}
-      onClose={onCancel}
-    >
-      {recipes.length === 0 ? (
-        <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.createSideRecipeFirst}</p>
-      ) : (
-        <RecipeSelectionGrid
-          getSubtitle={(recipe) => t.enums.recipeTypes[recipe.recipeType]}
-          recipes={recipes}
-          selectedRecipeIds={selectedRecipeIds}
-          theme={theme}
-          onSelect={(recipe) => onToggle(recipe.recipeId)}
-        />
-      )}
     </Modal>
   );
 }

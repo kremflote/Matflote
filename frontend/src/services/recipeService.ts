@@ -12,7 +12,6 @@ export interface RecipeRequest {
   ingredients: RecipeIngredientRequest[];
   tags: RecipeTag[];
   components: RecipeComponentRequest[];
-  cuisineId: number | null;
   dessertType: DessertType | null;
 }
 
@@ -25,6 +24,9 @@ export interface RecipeIngredientRequest {
 
 export interface RecipeComponentRequest {
   recipeId: number;
+  amount: number;
+  unit: MeasurementUnit;
+  preparation: IngredientPreparation;
   sortOrder: number;
 }
 

@@ -3,6 +3,7 @@ using System;
 using DinnerPlanner.Api.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace backend.Migrations
 {
     [DbContext(typeof(DinnerPlannerContext))]
-    partial class DinnerPlannerContextModelSnapshot : ModelSnapshot
+    [Migration("20260723110029_RemoveCuisine")]
+    partial class RemoveCuisine
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -2380,26 +2383,8 @@ namespace backend.Migrations
                     b.Property<int>("ChildRecipeId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Preparation")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(40)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("None");
-
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(40)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Gram");
 
                     b.HasKey("ParentRecipeId", "ChildRecipeId");
 
@@ -2516,170 +2501,6 @@ namespace backend.Migrations
                         {
                             RecipeId = 2,
                             Tag = "Bowl"
-                        });
-                });
-
-            modelBuilder.Entity("DinnerPlanner.Api.Models.RecipeTagCategory", b =>
-                {
-                    b.Property<int>("RecipeTagCategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("RecipeTagCategoryId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("RecipeTagCategories");
-
-                    b.HasData(
-                        new
-                        {
-                            RecipeTagCategoryId = 1,
-                            Name = "Meal",
-                            SortOrder = 100
-                        },
-                        new
-                        {
-                            RecipeTagCategoryId = 2,
-                            Name = "Format",
-                            SortOrder = 200
-                        },
-                        new
-                        {
-                            RecipeTagCategoryId = 3,
-                            Name = "Style",
-                            SortOrder = 300
-                        });
-                });
-
-            modelBuilder.Entity("DinnerPlanner.Api.Models.RecipeTagDefinition", b =>
-                {
-                    b.Property<int>("RecipeTagDefinitionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("RecipeTagCategoryId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("RecipeTagDefinitionId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.HasIndex("RecipeTagCategoryId");
-
-                    b.ToTable("RecipeTagDefinitions");
-
-                    b.HasData(
-                        new
-                        {
-                            RecipeTagDefinitionId = 1,
-                            Name = "Breakfast",
-                            RecipeTagCategoryId = 1
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 2,
-                            Name = "Lunch",
-                            RecipeTagCategoryId = 1
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 3,
-                            Name = "Dinner",
-                            RecipeTagCategoryId = 1
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 4,
-                            Name = "Bowl",
-                            RecipeTagCategoryId = 2
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 5,
-                            Name = "Plate",
-                            RecipeTagCategoryId = 2
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 6,
-                            Name = "Porridge",
-                            RecipeTagCategoryId = 2
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 7,
-                            Name = "Soup",
-                            RecipeTagCategoryId = 2
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 8,
-                            Name = "Stew",
-                            RecipeTagCategoryId = 2
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 9,
-                            Name = "Salad",
-                            RecipeTagCategoryId = 2
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 10,
-                            Name = "Pizza",
-                            RecipeTagCategoryId = 2
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 11,
-                            Name = "Sandwich",
-                            RecipeTagCategoryId = 2
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 12,
-                            Name = "Casserole",
-                            RecipeTagCategoryId = 2
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 13,
-                            Name = "Grill",
-                            RecipeTagCategoryId = 3
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 14,
-                            Name = "Pasta",
-                            RecipeTagCategoryId = 3
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 15,
-                            Name = "Vegetarian",
-                            RecipeTagCategoryId = 3
-                        },
-                        new
-                        {
-                            RecipeTagDefinitionId = 16,
-                            Name = "SousVide",
-                            RecipeTagCategoryId = 3
                         });
                 });
 
@@ -3062,17 +2883,6 @@ namespace backend.Migrations
                     b.Navigation("Recipe");
                 });
 
-            modelBuilder.Entity("DinnerPlanner.Api.Models.RecipeTagDefinition", b =>
-                {
-                    b.HasOne("DinnerPlanner.Api.Models.RecipeTagCategory", "Category")
-                        .WithMany("Tags")
-                        .HasForeignKey("RecipeTagCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("DinnerPlanner.Api.Models.Ingredient", b =>
                 {
                     b.Navigation("Tags");
@@ -3102,11 +2912,6 @@ namespace backend.Migrations
                     b.Navigation("Tags");
 
                     b.Navigation("UsedInRecipes");
-                });
-
-            modelBuilder.Entity("DinnerPlanner.Api.Models.RecipeTagCategory", b =>
-                {
-                    b.Navigation("Tags");
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.Store", b =>

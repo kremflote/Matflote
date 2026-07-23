@@ -1,5 +1,4 @@
 import type { IIngredient, MeasurementUnit } from "./IIngredient";
-import type { ICuisine } from "./ILookup";
 
 export interface IRecipe {
   recipeId: number;
@@ -12,8 +11,6 @@ export interface IRecipe {
   ingredients: IRecipeIngredient[];
   tags: RecipeTag[];
   components: IRecipeComponent[];
-  cuisineId: number | null;
-  cuisine: ICuisine | null;
   dessertType: DessertType | null;
 }
 
@@ -22,6 +19,9 @@ export interface IRecipeComponent {
   recipeType: RecipeType;
   name: string;
   imageUrl: string | null;
+  amount: number;
+  unit: MeasurementUnit;
+  preparation: IngredientPreparation;
   sortOrder: number;
   ingredients?: IRecipeIngredient[];
 }
@@ -59,7 +59,7 @@ export type RecipeType =
   | "Side"
   | "SpiceMix";
 
-export type RecipeTag =
+export type KnownRecipeTag =
   | "Breakfast"
   | "Lunch"
   | "Dinner"
@@ -76,6 +76,8 @@ export type RecipeTag =
   | "Porridge"
   | "Plate"
   | "SousVide";
+
+export type RecipeTag = KnownRecipeTag | (string & {});
 
 export type DessertType =
   | "Cake"

@@ -8,5 +8,8 @@ public class RecipeComponent
     public int ChildRecipeId { get; set; }
     public Recipe ChildRecipe { get; set; } = null!;
 
+    public decimal Amount { get; set; }
+    public MeasurementUnit Unit { get; set; } = MeasurementUnit.Gram;
+    public IngredientPreparation Preparation { get; set; } = IngredientPreparation.None;
     public int SortOrder { get; set; }
 }

@@ -18,11 +18,7 @@ public abstract class Recipe
     public ICollection<RecipeComponent> UsedInRecipes { get; set; } = [];
 }
 
-public class Dish : Recipe
-{
-    public int? CuisineId { get; set; }
-    public Cuisine? Cuisine { get; set; }
-}
+public class Dish : Recipe;
 
 public class Dessert : Recipe
 {

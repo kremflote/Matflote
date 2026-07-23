@@ -171,7 +171,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
             .filter((tag) => recipeTags.includes(tag))
             .map((tag) => (
               <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
-                {t.enums.recipeTags[tag]}
+                {t.enums.recipeTags[tag] ?? tag}
               </span>
             ))}
         </span>

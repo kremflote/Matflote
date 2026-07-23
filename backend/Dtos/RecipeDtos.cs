@@ -27,9 +27,8 @@ public record RecipeRequest(
     [Required]
     IReadOnlyCollection<RecipeIngredientRequest> Ingredients,
     [Required]
-    IReadOnlyCollection<RecipeTag> Tags,
+    IReadOnlyCollection<string> Tags,
     IReadOnlyCollection<RecipeComponentRequest>? Components,
-    int? CuisineId,
     DessertType? DessertType
 );
 
@@ -43,6 +42,10 @@ public record RecipeIngredientRequest(
 
 public record RecipeComponentRequest(
     int RecipeId,
+    [Range(typeof(decimal), "0.01", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true)]
+    decimal Amount,
+    MeasurementUnit Unit,
+    IngredientPreparation Preparation,
     int SortOrder
 );
 
@@ -55,10 +58,8 @@ public record RecipeDto(
     string? Instructions,
     decimal Portions,
     IReadOnlyCollection<RecipeIngredientDto> Ingredients,
-    IReadOnlyCollection<RecipeTag> Tags,
+    IReadOnlyCollection<string> Tags,
     IReadOnlyCollection<RecipeComponentDto> Components,
-    int? CuisineId,
-    CuisineDto? Cuisine,
     DessertType? DessertType
 );
 
@@ -75,6 +76,9 @@ public record RecipeComponentDto(
     RecipeType RecipeType,
     string Name,
     string? ImageUrl,
+    decimal Amount,
+    MeasurementUnit Unit,
+    IngredientPreparation Preparation,
     int SortOrder,
     IReadOnlyCollection<RecipeIngredientDto> Ingredients
 );

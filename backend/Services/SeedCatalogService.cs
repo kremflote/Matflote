@@ -43,7 +43,6 @@ public class SeedCatalogService(
     public async Task ImportCatalogAsync(SeedCatalogDto catalog, CancellationToken cancellationToken = default)
     {
         await UpsertBrandsAsync(catalog.Brands, cancellationToken);
-        await UpsertCuisinesAsync(catalog.Cuisines, cancellationToken);
         await UpsertIngredientsAsync(catalog.Ingredients, cancellationToken);
         await UpsertRecipesAsync(catalog.Recipes, cancellationToken);
     }
@@ -54,12 +53,6 @@ public class SeedCatalogService(
             .AsNoTracking()
             .OrderBy(brand => brand.Name)
             .Select(brand => new SeedBrandDto(brand.Name))
-            .ToListAsync(cancellationToken);
-
-        var cuisines = await context.Cuisines
-            .AsNoTracking()
-            .OrderBy(cuisine => cuisine.Name)
-            .Select(cuisine => new SeedCuisineDto(cuisine.Name))
             .ToListAsync(cancellationToken);
 
         var ingredients = await context.Ingredients
@@ -90,7 +83,6 @@ public class SeedCatalogService(
             .Include(recipe => recipe.Ingredients)
                 .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                     .ThenInclude(ingredient => ingredient.Brand)
-            .Include(recipe => (recipe as Dish)!.Cuisine)
             .Include(recipe => recipe.Tags)
             .Include(recipe => recipe.Components)
                 .ThenInclude(component => component.ChildRecipe)
@@ -99,7 +91,6 @@ public class SeedCatalogService(
 
         return new SeedCatalogDto(
             brands,
-            cuisines,
             ingredients,
             recipes.Select(ToSeedRecipe).ToList()
         );
@@ -119,23 +110,6 @@ public class SeedCatalogService(
         foreach (var brand in brands)
         {
             await GetOrCreateBrandAsync(brand.Name, cancellationToken);
-        }
-
-        await context.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task UpsertCuisinesAsync(
-        IReadOnlyCollection<SeedCuisineDto>? cuisines,
-        CancellationToken cancellationToken)
-    {
-        if (cuisines is null)
-        {
-            return;
-        }
-
-        foreach (var cuisine in cuisines)
-        {
-            await GetOrCreateCuisineAsync(cuisine.Name, cancellationToken);
         }
 
         await context.SaveChangesAsync(cancellationToken);
@@ -208,11 +182,6 @@ public class SeedCatalogService(
             }
 
             var recipe = CreateRecipe(seedRecipe, name);
-            if (recipe is Dish dish)
-            {
-                dish.Cuisine = await GetOrCreateCuisineAsync(seedRecipe.CuisineName, cancellationToken);
-            }
-
             recipe.Tags = NormalizeRecipeTags(seedRecipe.Tags)
                 .Select(tag => new RecipeTagAssignment { Tag = tag })
                 .ToList();
@@ -296,6 +265,9 @@ public class SeedCatalogService(
                 {
                     ParentRecipeId = parentRecipe.RecipeId,
                     ChildRecipeId = childRecipe.RecipeId,
+                    Amount = seedComponent.Amount is > 0m ? seedComponent.Amount.Value : 1m,
+                    Unit = seedComponent.Unit ?? MeasurementUnit.Gram,
+                    Preparation = seedComponent.Preparation ?? IngredientPreparation.None,
                     SortOrder = seedComponent.SortOrder ?? parentRecipe.Components.Count + 1
                 });
             }
@@ -323,27 +295,6 @@ public class SeedCatalogService(
         context.Brands.Add(brand);
         await context.SaveChangesAsync(cancellationToken);
         return brand;
-    }
-
-    private async Task<Cuisine?> GetOrCreateCuisineAsync(string? name, CancellationToken cancellationToken)
-    {
-        var cleanName = CleanName(name);
-        if (cleanName.Length == 0)
-        {
-            return null;
-        }
-
-        var existing = await context.Cuisines
-            .FirstOrDefaultAsync(cuisine => cuisine.Name.ToLower() == cleanName.ToLower(), cancellationToken);
-        if (existing is not null)
-        {
-            return existing;
-        }
-
-        var cuisine = new Cuisine { Name = cleanName };
-        context.Cuisines.Add(cuisine);
-        await context.SaveChangesAsync(cancellationToken);
-        return cuisine;
     }
 
     private Task<Ingredient?> FindIngredientAsync(
@@ -444,10 +395,12 @@ public class SeedCatalogService(
             .Select(component => new SeedRecipeComponentDto(
                 component.ChildRecipe.Name,
                 ToRecipeType(component.ChildRecipe),
+                component.Amount,
+                component.Unit,
+                component.Preparation,
                 component.SortOrder
             ))
             .ToList(),
-        recipe is Dish dish ? dish.Cuisine?.Name : null,
         recipe is Dessert dessert ? dessert.Type : null
     );
 
@@ -471,11 +424,12 @@ public class SeedCatalogService(
                 .Distinct()
                 .ToList();
 
-    private static List<RecipeTag> NormalizeRecipeTags(IReadOnlyCollection<RecipeTag>? tags) =>
+    private static List<string> NormalizeRecipeTags(IReadOnlyCollection<string>? tags) =>
         tags is null || tags.Count == 0
             ? []
             : tags
-                .Where(Enum.IsDefined)
+                .Select(tag => tag.Trim())
+                .Where(tag => tag.Length > 0 && tag.Length <= 64)
                 .Distinct()
                 .ToList();
 

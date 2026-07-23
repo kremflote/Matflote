@@ -1,7 +1,6 @@
 export { ApiError, apiRequest } from "./apiClient";
 export { appSettingsService } from "./appSettingsService";
 export { brandService } from "./brandService";
-export { cuisineService } from "./cuisineService";
 export { imageUploadService } from "./imageUploadService";
 export { groceryListService } from "./groceryListService";
 export { ingredientPriceService } from "./ingredientPriceService";
@@ -11,6 +10,7 @@ export { mealPlanService } from "./mealPlanService";
 export { nutritionService } from "./nutritionService";
 export { productLookupService } from "./productLookupService";
 export { recipeService } from "./recipeService";
+export { recipeTagCategoryService } from "./recipeTagCategoryService";
 export { storeService } from "./storeService";
 export type { ImageFolder, ImageUploadResponse } from "./imageUploadService";
 export type { IngredientPricePointRequest } from "./ingredientPriceService";

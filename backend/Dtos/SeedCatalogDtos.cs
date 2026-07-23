@@ -4,14 +4,11 @@ namespace DinnerPlanner.Api.Dtos;
 
 public record SeedCatalogDto(
     IReadOnlyCollection<SeedBrandDto>? Brands,
-    IReadOnlyCollection<SeedCuisineDto>? Cuisines,
     IReadOnlyCollection<SeedIngredientDto>? Ingredients,
     IReadOnlyCollection<SeedRecipeDto>? Recipes
 );
 
 public record SeedBrandDto(string Name);
-
-public record SeedCuisineDto(string Name);
 
 public record SeedIngredientDto(
     string IngredientName,
@@ -37,9 +34,8 @@ public record SeedRecipeDto(
     string? Instructions,
     decimal? Portions,
     IReadOnlyCollection<SeedRecipeIngredientDto>? Ingredients,
-    IReadOnlyCollection<RecipeTag>? Tags,
+    IReadOnlyCollection<string>? Tags,
     IReadOnlyCollection<SeedRecipeComponentDto>? Components,
-    string? CuisineName,
     DessertType? DessertType
 );
 
@@ -54,5 +50,8 @@ public record SeedRecipeIngredientDto(
 public record SeedRecipeComponentDto(
     string RecipeName,
     RecipeType? RecipeType,
+    decimal? Amount,
+    MeasurementUnit? Unit,
+    IngredientPreparation? Preparation,
     int? SortOrder
 );
