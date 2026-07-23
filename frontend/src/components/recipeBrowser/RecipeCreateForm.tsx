@@ -14,6 +14,7 @@ import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import CreatableSelect from "./CreatableSelect";
 import ImageCropPicker from "./ImageCropPicker";
 import Modal from "../Modal";
+import RecipeSelectionGrid from "./RecipeSelectionGrid";
 import {
   RecipeIngredientPickerContent,
   RecipeIngredientPickerDialog,
@@ -311,6 +312,11 @@ function RecipeCreateForm({
                     const cuisine = await cuisineService.create({ name });
                     await refreshCuisines();
                     return { id: cuisine.cuisineId, name: cuisine.name };
+                  }}
+                  onDeleteOption={async (option) => {
+                    await cuisineService.delete(option.id);
+                    await refreshCuisines();
+                    await refreshRecipes();
                   }}
                 />
               )}
@@ -659,28 +665,13 @@ function RecipeComponentPickerDialog({
       {recipes.length === 0 ? (
         <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.createSideRecipeFirst}</p>
       ) : (
-        <div className={recipeBrowserStyles.componentRecipeBrowserGrid}>
-          {recipes.map((recipe) => {
-            const selected = selectedRecipeIds.includes(recipe.recipeId);
-
-            return (
-              <RecipeThumbnail
-                ariaPressed={selected}
-                className={selected ? recipeBrowserStyles.componentRecipeSelected : ""}
-                interactiveEffect={false}
-                key={recipe.recipeId}
-                recipe={{
-                  name: recipe.name,
-                  imageUrl: recipe.imageUrl,
-                  subtitle: t.enums.recipeTypes[recipe.recipeType],
-                }}
-                textScale="compact"
-                theme={theme}
-                onClick={() => onToggle(recipe.recipeId)}
-              />
-            );
-          })}
-        </div>
+        <RecipeSelectionGrid
+          getSubtitle={(recipe) => t.enums.recipeTypes[recipe.recipeType]}
+          recipes={recipes}
+          selectedRecipeIds={selectedRecipeIds}
+          theme={theme}
+          onSelect={(recipe) => onToggle(recipe.recipeId)}
+        />
       )}
     </Modal>
   );

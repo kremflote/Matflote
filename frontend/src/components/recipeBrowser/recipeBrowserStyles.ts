@@ -330,10 +330,6 @@ export const recipeBrowserStyles = {
           ? "text-[#556145]"
           : "text-neutral-700"
     }`,
-  componentRecipeGrid:
-    "grid max-h-56 grid-cols-3 gap-2 overflow-y-auto rounded-md p-2 max-md:grid-cols-2 max-sm:grid-cols-2",
-  componentRecipeBrowserGrid:
-    "grid grid-cols-[repeat(auto-fill,5.5rem)] justify-start gap-2 rounded-md p-2 max-sm:grid-cols-2",
   selectedComponentThumbnails: "flex flex-wrap gap-2",
   selectedComponentThumbnail: "w-20 max-sm:w-16",
   selectedComponentThumbnailCard:

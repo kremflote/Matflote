@@ -9,4 +9,8 @@ export const cuisineService = {
       method: "POST",
       body: cuisine,
     }),
+  delete: (id: number) =>
+    apiRequest<void>(`/api/cuisines/${id}`, {
+      method: "DELETE",
+    }),
 };

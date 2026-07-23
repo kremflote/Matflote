@@ -1,10 +1,10 @@
 import { useLanguage } from "../../contexts";
 import IngredientThumbnail from "../IngredientThumbnail";
-import RecipeThumbnail from "../RecipeThumbnail";
 import type { IIngredient } from "../../interfaces/IIngredient";
 import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 import type { BrowserDetail, BrowserMode, EnrichedRecipe } from "./types";
+import RecipeSelectionGrid from "./RecipeSelectionGrid";
 
 type BrowserResultsProps = {
   filteredIngredients: IIngredient[];
@@ -73,21 +73,11 @@ function BrowserResults({
   }
 
   return (
-    <div className={recipeBrowserStyles.recipeGrid}>
-      {filteredRecipes.map((recipe) => (
-        <RecipeThumbnail
-          className={recipeBrowserStyles.recipeCard(theme)}
-          key={recipe.recipeId}
-          theme={theme}
-          recipe={{
-            imageUrl: recipe.imageUrl,
-            name: recipe.name,
-            subtitle: recipe.cuisine?.name ?? t.enums.recipeTypes[recipe.recipeType],
-          }}
-          onClick={() => onSelectDetail({ kind: "recipe", recipe })}
-        />
-      ))}
-    </div>
+    <RecipeSelectionGrid
+      recipes={filteredRecipes}
+      theme={theme}
+      onSelect={(recipe) => onSelectDetail({ kind: "recipe", recipe })}
+    />
   );
 }
 
