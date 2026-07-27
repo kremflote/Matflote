@@ -56,6 +56,7 @@ function TagManagementDialog({
   const [managedCategoryNames, setManagedCategoryNames] = useState<Record<number, string>>({});
   const [managedTagNames, setManagedTagNames] = useState<Record<string, string>>({});
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId) ?? null;
+  const canCreateTagInSelectedCategory = selectedCategory !== null && selectedCategory.id > 0;
 
   async function saveNewName() {
     const normalizedName = normalizeCustomTagName(newName);
@@ -72,7 +73,7 @@ function TagManagementDialog({
       return;
     }
 
-    if (nameDialogMode === "tag" && selectedCategoryId === null) {
+    if (nameDialogMode === "tag" && !canCreateTagInSelectedCategory) {
       setNameDialogError(t.filters.selectCategory);
       return;
     }
@@ -84,7 +85,7 @@ function TagManagementDialog({
       if (nameDialogMode === "category") {
         const category = await onCreateCategory(normalizedName);
         setSelectedCategoryId(category.id);
-      } else if (nameDialogMode === "tag" && selectedCategoryId !== null) {
+      } else if (nameDialogMode === "tag" && canCreateTagInSelectedCategory && selectedCategoryId !== null) {
         await onCreate(normalizedName, selectedCategoryId);
       }
 
@@ -110,7 +111,7 @@ function TagManagementDialog({
         name: categoryPendingDelete.name,
       });
       if (selectedCategoryId === categoryPendingDelete.id) {
-        setSelectedCategoryId(null);
+        setSelectedCategoryId(categories.find((category) => category.id > 0 && category.id !== categoryPendingDelete.id)?.id ?? null);
       }
       setCategoryPendingDelete(null);
     } finally {
@@ -186,7 +187,7 @@ function TagManagementDialog({
           </button>
           <button
             className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
-            disabled={selectedCategory === null}
+            disabled={!canCreateTagInSelectedCategory}
             type="button"
             onClick={() => openNameDialog("tag")}
           >
@@ -205,6 +206,7 @@ function TagManagementDialog({
       <div className={recipeBrowserStyles.manageTagsList}>
         {categories.map((category) => {
           const isSelected = selectedCategoryId === category.id;
+          const isSyntheticCategory = category.id <= 0;
 
           return (
             <section
@@ -215,6 +217,7 @@ function TagManagementDialog({
               <div className={`${recipeBrowserStyles.manageTagCategoryRow} ${recipeBrowserStyles.manageTagDivider(theme, "category")}`}>
                 <input
                   className={recipeBrowserStyles.textField(theme)}
+                  readOnly={isSyntheticCategory}
                   value={managedCategoryNames[category.id] ?? category.name}
                   onChange={(event) =>
                     setManagedCategoryNames((currentNames) => ({
@@ -225,7 +228,7 @@ function TagManagementDialog({
                 />
                 <button
                   className={recipeBrowserStyles.manageTagActionButton(theme)}
-                  disabled={isManagingTags}
+                  disabled={isManagingTags || isSyntheticCategory}
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
@@ -236,7 +239,7 @@ function TagManagementDialog({
                 </button>
                 <button
                   className={recipeBrowserStyles.manageTagRemoveButton(theme)}
-                  disabled={isManagingTags}
+                  disabled={isManagingTags || isSyntheticCategory}
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
@@ -340,7 +343,7 @@ function TagManagementDialog({
                   onChange={(event) => setSelectedCategoryId(event.target.value.length === 0 ? null : Number(event.target.value))}
                 >
                   <option value="">{t.filters.selectCategory}</option>
-                  {categories.map((category) => (
+                  {categories.filter((category) => category.id > 0).map((category) => (
                     <option key={category.id} value={category.id}>
                       {formatCategoryName(category.name)}
                     </option>

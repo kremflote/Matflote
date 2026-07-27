@@ -21,7 +21,28 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context) : C
             .ThenBy(category => category.Name)
             .ToListAsync();
 
-        return Ok(categories.Select(ToDto));
+        var categoryDtos = categories.Select(ToDto).ToList();
+        var definedTags = categories
+            .SelectMany(category => category.Tags)
+            .Select(tag => tag.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var assignedTags = await context.IngredientTagAssignments
+            .AsNoTracking()
+            .Select(assignment => assignment.Tag)
+            .Concat(context.RecipeTagAssignments.AsNoTracking().Select(assignment => assignment.Tag))
+            .Distinct()
+            .ToListAsync();
+        var orphanedTags = assignedTags
+            .Where(tag => !definedTags.Contains(tag))
+            .OrderBy(tag => tag)
+            .ToList();
+
+        if (orphanedTags.Count > 0)
+        {
+            categoryDtos.Add(new IngredientTagCategoryDto(0, "Uncategorized", orphanedTags));
+        }
+
+        return Ok(categoryDtos);
     }
 
     [HttpPost]
@@ -122,11 +143,6 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context) : C
         var tag = await context.IngredientTagDefinitions
             .FirstOrDefaultAsync(value => value.Name.ToLower() == oldName.ToLower());
 
-        if (tag is null)
-        {
-            return NotFound();
-        }
-
         var existingTag = await context.IngredientTagDefinitions
             .AsNoTracking()
             .FirstOrDefaultAsync(value => value.Name.ToLower() == newName.ToLower() && value.Name.ToLower() != oldName.ToLower());
@@ -146,7 +162,10 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context) : C
             .ToListAsync();
         var existingNewIngredientIds = existingNewAssignments.ToHashSet();
 
-        tag.Name = newName;
+        if (tag is not null)
+        {
+            tag.Name = newName;
+        }
         context.IngredientTagAssignments.RemoveRange(assignments);
         context.IngredientTagAssignments.AddRange(
             ingredientIds
@@ -157,6 +176,32 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context) : C
                     Tag = newName
                 })
         );
+
+        var recipeAssignments = await context.RecipeTagAssignments
+            .Where(assignment => assignment.Tag.ToLower() == oldName.ToLower())
+            .ToListAsync();
+        var recipeIds = recipeAssignments.Select(assignment => assignment.RecipeId).Distinct().ToList();
+        var existingNewRecipeAssignments = await context.RecipeTagAssignments
+            .Where(assignment => assignment.Tag.ToLower() == newName.ToLower())
+            .Select(assignment => assignment.RecipeId)
+            .ToListAsync();
+        var existingNewRecipeIds = existingNewRecipeAssignments.ToHashSet();
+
+        context.RecipeTagAssignments.RemoveRange(recipeAssignments);
+        context.RecipeTagAssignments.AddRange(
+            recipeIds
+                .Where(recipeId => !existingNewRecipeIds.Contains(recipeId))
+                .Select(recipeId => new RecipeTagAssignment
+                {
+                    RecipeId = recipeId,
+                    Tag = newName
+                })
+        );
+
+        if (tag is null && assignments.Count == 0 && recipeAssignments.Count == 0)
+        {
+            return NotFound();
+        }
 
         await context.SaveChangesAsync();
         return NoContent();
@@ -170,17 +215,21 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context) : C
             .Where(tag => tag.Name.ToLower() == name.ToLower())
             .ToListAsync();
 
-        if (tags.Count == 0)
+        var assignments = await context.IngredientTagAssignments
+            .Where(assignment => assignment.Tag.ToLower() == name.ToLower())
+            .ToListAsync();
+        var recipeAssignments = await context.RecipeTagAssignments
+            .Where(assignment => assignment.Tag.ToLower() == name.ToLower())
+            .ToListAsync();
+
+        if (tags.Count == 0 && assignments.Count == 0 && recipeAssignments.Count == 0)
         {
             return NotFound();
         }
 
-        var assignments = await context.IngredientTagAssignments
-            .Where(assignment => assignment.Tag.ToLower() == name.ToLower())
-            .ToListAsync();
-
         context.IngredientTagDefinitions.RemoveRange(tags);
         context.IngredientTagAssignments.RemoveRange(assignments);
+        context.RecipeTagAssignments.RemoveRange(recipeAssignments);
         await context.SaveChangesAsync();
         return NoContent();
     }
@@ -200,8 +249,12 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context) : C
         var assignments = await context.IngredientTagAssignments
             .Where(assignment => tagNames.Contains(assignment.Tag.ToLower()))
             .ToListAsync();
+        var recipeAssignments = await context.RecipeTagAssignments
+            .Where(assignment => tagNames.Contains(assignment.Tag.ToLower()))
+            .ToListAsync();
 
         context.IngredientTagAssignments.RemoveRange(assignments);
+        context.RecipeTagAssignments.RemoveRange(recipeAssignments);
         context.IngredientTagCategories.Remove(category);
         await context.SaveChangesAsync();
         return NoContent();
