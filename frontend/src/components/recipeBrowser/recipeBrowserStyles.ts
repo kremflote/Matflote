@@ -166,8 +166,6 @@ export const recipeBrowserStyles = {
   createFormTopGrid:
     "grid grid-cols-[minmax(0,1fr)_minmax(220px,280px)] gap-4 max-md:grid-cols-1",
   createFormPrimaryFields: "grid min-w-0 content-start gap-4",
-  recipeTypeFieldMobile: "md:hidden",
-  recipeTypeFieldDesktop: "hidden md:grid",
   createImageField:
     "relative mt-6 grid min-w-0 content-start max-md:mt-0 max-md:gap-2 md:pt-0",
   createImageLabel: "absolute -top-6 left-0 max-md:static",
@@ -316,10 +314,6 @@ export const recipeBrowserStyles = {
   recipeIngredientPickerGrid: "grid gap-2 overflow-y-auto rounded-md p-2",
   desktopIngredientPicker: "grid gap-2 max-sm:hidden",
   mobileIngredientSummary: "hidden gap-3 max-sm:grid",
-  recipeLineModeToggle: (theme: SiteTheme) =>
-    `${segmentedToggleStyles.shell(theme)} w-full max-w-md`,
-  recipeLineModeOption: (theme: SiteTheme, selected: boolean) =>
-    segmentedToggleStyles.option(theme, selected),
   selectedIngredientCapsules:
     "flex flex-wrap gap-2 max-sm:grid max-sm:grid-cols-1",
   selectedIngredientCapsule: (theme: SiteTheme) =>

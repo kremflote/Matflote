@@ -156,7 +156,7 @@ public class GroceryListService(DinnerPlannerContext context)
             return "Frozen";
         }
 
-        if (tagSet.Overlaps(["Grain", "Bread", "Spice", "Sauce", "Dip", "Pantry"]))
+        if (tagSet.Overlaps(["Grain", "Bread", "Spice", "Sauce", "Dip"]))
         {
             return "Pantry";
         }

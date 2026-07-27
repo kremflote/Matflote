@@ -5,5 +5,4 @@ export { IngredientTagCategoryProvider, useIngredientTagCategories } from "./Ing
 export { LanguageProvider, useLanguage } from "./LanguageContext";
 export { MealPlanProvider, useMealPlan } from "./MealPlanContext";
 export { RecipeProvider, useRecipes } from "./RecipeContext";
-export { RecipeTagCategoryProvider, useRecipeTagCategories } from "./RecipeTagCategoryContext";
 export { StoreProvider, useStores } from "./StoreContext";

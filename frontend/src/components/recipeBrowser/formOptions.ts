@@ -1,20 +1,32 @@
 import type { IngredientTag, KnownIngredientTag, MeasurementUnit, Vitamin } from "../../interfaces/IIngredient";
-import type { IIngredientTagCategory, IRecipeTagCategory } from "../../interfaces/ILookup";
-import type { DessertType, IngredientPreparation, RecipeTag, RecipeType } from "../../interfaces/IRecipe";
-
-export const recipeTypes: RecipeType[] = [
-  "Dish",
-  "Dessert",
-  "Sauce",
-  "Dip",
-  "Side",
-  "SpiceMix",
-];
+import type { IIngredientTagCategory } from "../../interfaces/ILookup";
+import type { IngredientPreparation, RecipeTag } from "../../interfaces/IRecipe";
 
 export const recipeTags: RecipeTag[] = [
+  "Vegetable",
+  "Fruit",
+  "Chicken",
+  "Fish",
+  "Beef",
+  "Lamb",
+  "Mince",
+  "Dairy",
+  "Grain",
+  "Spice",
+  "Herb",
+  "Sauce",
+  "Frozen",
+  "LeafyGreen",
+  "Berry",
+  "RootVegetable",
+  "Bread",
+  "Dip",
   "Breakfast",
   "Lunch",
   "Dinner",
+  "Dish",
+  "Side",
+  "Dessert",
   "Bowl",
   "Plate",
   "Porridge",
@@ -28,6 +40,7 @@ export const recipeTags: RecipeTag[] = [
   "Sandwich",
   "Casserole",
   "SousVide",
+  "SpiceMix",
 ];
 
 export type RecipeTagGroupKey = "meal" | "format" | "style";
@@ -53,18 +66,18 @@ export const recipeTagGroups: Array<{
 export function getRecipeTagGroupsWithCustomTags(
   customTags: readonly RecipeTag[],
   fallbackGroup: RecipeTagGroupKey = "style",
-  categories: readonly IRecipeTagCategory[] = [],
+  categories: readonly IIngredientTagCategory[] = [],
 ) {
   const baseGroups = categories.length === 0
     ? recipeTagGroups
     : categories.map((category) => ({
-        key: category.recipeTagCategoryId.toString(),
+        key: category.ingredientTagCategoryId.toString(),
         values: category.tags as RecipeTag[],
       }));
   const styleCategory = categories.find((category) => category.name.trim().toLowerCase() === "style");
   const fallbackKey = categories.length === 0
     ? fallbackGroup
-    : styleCategory?.recipeTagCategoryId.toString() ?? categories[0]?.recipeTagCategoryId.toString() ?? fallbackGroup;
+    : styleCategory?.ingredientTagCategoryId.toString() ?? categories[0]?.ingredientTagCategoryId.toString() ?? fallbackGroup;
   const knownTags = new Set(baseGroups.flatMap((group) => group.values));
   const normalizedCustomTags = customTags
     .map((tag) => tag.trim())
@@ -84,7 +97,7 @@ export function getRecipeTagGroupsWithCustomTags(
   );
 }
 
-export function formatRecipeTagCategoryName(
+export function formatRecipeTagGroupName(
   name: string,
   localizedNames: Record<string, string>,
 ) {
@@ -104,19 +117,6 @@ export function formatRecipeTagCategoryName(
   return name;
 }
 
-export const dessertTypes: DessertType[] = [
-  "Cake",
-  "Pastry",
-  "IceCream",
-  "Pudding",
-  "Cookie",
-  "Pie",
-  "Tart",
-  "Chocolate",
-  "FruitDessert",
-  "Other",
-];
-
 export const ingredientTags: KnownIngredientTag[] = [
   "Vegetable",
   "Fruit",
@@ -130,7 +130,6 @@ export const ingredientTags: KnownIngredientTag[] = [
   "Spice",
   "Herb",
   "Sauce",
-  "Pantry",
   "Frozen",
   "LeafyGreen",
   "Berry",
@@ -155,7 +154,7 @@ export const ingredientTagGroups: Array<{
   },
   {
     key: "pantry",
-    values: ["Grain", "Bread", "Spice", "Sauce", "Dip", "Pantry", "Frozen"],
+    values: ["Grain", "Bread", "Spice", "Sauce", "Dip", "Frozen"],
   },
 ];
 
@@ -215,6 +214,18 @@ export function formatIngredientTagCategoryName(
 
   if (normalizedName === "pantry") {
     return localizedNames.pantry ?? name;
+  }
+
+  if (normalizedName === "meal") {
+    return localizedNames.meal ?? name;
+  }
+
+  if (normalizedName === "format") {
+    return localizedNames.format ?? name;
+  }
+
+  if (normalizedName === "style") {
+    return localizedNames.style ?? name;
   }
 
   return name;

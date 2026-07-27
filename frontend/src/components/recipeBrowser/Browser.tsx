@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
-import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
+import type { RecipeTag } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
 import Modal from "../Modal";
 import ActiveFilterChips from "./ActiveFilterChips";
@@ -13,7 +13,6 @@ import {
   matchesIngredientTags,
   matchesRecipeSearch,
   matchesRecipeTags,
-  matchesRecipeTypes,
   matchesSelectedIngredients,
 } from "./browserFilterUtils";
 import IngredientPickerPopover, { FilterIcon } from "./IngredientFilterPopover";
@@ -41,7 +40,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
   } = useIngredients();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIngredientTags, setSelectedIngredientTags] = useState<IngredientTag[]>([]);
-  const [selectedRecipeTypes, setSelectedRecipeTypes] = useState<RecipeType[]>([]);
   const [selectedRecipeTags, setSelectedRecipeTags] = useState<RecipeTag[]>([]);
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
   const [selectedDetailKey, setSelectedDetailKey] = useState<BrowserDetailKey | null>(null);
@@ -56,14 +54,12 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
       recipes.filter((recipe) =>
         matchesRecipeSearch(recipe, searchTerm) &&
         matchesSelectedIngredients(recipe, selectedIngredientIds) &&
-        matchesRecipeTypes(recipe, selectedRecipeTypes) &&
         matchesRecipeTags(recipe, selectedRecipeTags),
       ),
     [
       recipes,
       searchTerm,
       selectedIngredientIds,
-      selectedRecipeTypes,
       selectedRecipeTags,
     ],
   );
@@ -119,7 +115,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
 
   const clearFilters = () => {
     setSelectedIngredientTags([]);
-    setSelectedRecipeTypes([]);
     setSelectedRecipeTags([]);
     setSelectedIngredientIds([]);
   };
@@ -258,7 +253,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             selectedRecipeTags={selectedRecipeTags}
             selectedIngredientTags={selectedIngredientTags}
             selectedIngredients={selectedIngredients}
-            selectedRecipeTypes={selectedRecipeTypes}
             theme={theme}
             onClear={clearFilters}
             onRemoveRecipeTag={(value) =>
@@ -273,9 +267,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
               setSelectedIngredientTags((currentValues) =>
                 currentValues.filter((currentValue) => currentValue !== value),
               )
-            }
-            onRemoveRecipeType={(value) =>
-              setSelectedRecipeTypes((currentValues) => currentValues.filter((currentValue) => currentValue !== value))
             }
           />
         </div>
@@ -317,10 +308,8 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             mode={mode}
             selectedRecipeTags={selectedRecipeTags}
             selectedIngredientTags={selectedIngredientTags}
-            selectedRecipeTypes={selectedRecipeTypes}
             setSelectedRecipeTags={setSelectedRecipeTags}
             setSelectedIngredientTags={setSelectedIngredientTags}
-            setSelectedRecipeTypes={setSelectedRecipeTypes}
             theme={theme}
             variant="panel"
           />
@@ -332,10 +321,8 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
           mode={mode}
           selectedRecipeTags={selectedRecipeTags}
           selectedIngredientTags={selectedIngredientTags}
-          selectedRecipeTypes={selectedRecipeTypes}
           setSelectedRecipeTags={setSelectedRecipeTags}
           setSelectedIngredientTags={setSelectedIngredientTags}
-          setSelectedRecipeTypes={setSelectedRecipeTypes}
           theme={theme}
         />
 

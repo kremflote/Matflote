@@ -1186,7 +1186,6 @@ function buildIngredientCandidates(products: IProductLookupResult[]): Ingredient
     .map((product, index) => {
       const name = cleanIngredientName(product.name);
       const brandName = (product.brand ?? product.vendor ?? "").trim();
-      const tags = inferIngredientTags(`${name} ${brandName}`);
       const candidate: IngredientCandidate = {
         id: `${product.ean}-${product.store?.name ?? "store"}-${index}`,
         name,
@@ -1208,7 +1207,7 @@ function buildIngredientCandidates(products: IProductLookupResult[]): Ingredient
         matvaretabellenUrl: product.matvaretabellenUrl,
         nutritionMatchedName: product.nutritionMatchedName,
         nutritionMatchConfidence: product.nutritionMatchConfidence,
-        tags,
+        tags: [],
         product,
       };
 
@@ -1267,7 +1266,6 @@ function candidateToDraft(candidate: IngredientCandidate, stores: IStore[], bran
       store: candidate.storeName.trim().length > 0 ? ["Kassalapp"] : undefined,
       price: candidate.price !== null ? ["Kassalapp"] : undefined,
       image: candidate.imageUrl !== null ? ["Kassalapp"] : undefined,
-      tags: candidate.tags.length > 0 ? ["Kassalapp"] : undefined,
     },
     nutritionAutofillSources: getNutritionAutofillSources(
       candidate.kassalappNutritionPer100,
@@ -1418,30 +1416,6 @@ function findStoreId(storeName: string, stores: IStore[]) {
 
 function cleanIngredientName(name: string) {
   return name.replace(/\s{2,}/g, " ").trim();
-}
-
-function inferIngredientTags(searchText: string): IngredientTag[] {
-  const normalized = searchText.toLowerCase();
-
-  if (/\b(kylling|chicken)\b/.test(normalized)) return ["Chicken"];
-  if (/\b(okse|storfe|beef|biff)\b/.test(normalized)) return ["Beef"];
-  if (/\b(lam|lamb)\b/.test(normalized)) return ["Lamb"];
-  if (/\b(fisk|fish|laks|salmon|torsk|cod)\b/.test(normalized)) return ["Fish"];
-  if (/\b(melk|milk|yoghurt|yogurt|ost|cheese|fløte|cream)\b/.test(normalized)) return ["Dairy"];
-  if (/\b(brød|bread|loff|baguette|rundstykke)\b/.test(normalized)) return ["Bread", "Pantry"];
-  if (/\b(ris|rice|pasta|nudler|noodle|mel|flour|havre|oat)\b/.test(normalized)) return ["Grain", "Pantry"];
-  if (/\b(dip|dipp)\b/.test(normalized)) return ["Dip", "Pantry"];
-  if (/\b(saus|sauce|dressing)\b/.test(normalized)) return ["Sauce"];
-  if (/\b(krydder|spice|pepper|salt)\b/.test(normalized)) return ["Spice"];
-  if (/\b(basilikum|basil|persille|parsley|koriander|cilantro|dill)\b/.test(normalized)) return ["Herb"];
-  if (/\b(bær|berry|berries|jordbær|strawberry|bringebær|raspberry|blåbær|blueberry)\b/.test(normalized)) return ["Fruit", "Berry"];
-  if (/\b(eple|apple|banan|banana|appelsin|orange|druer|grape)\b/.test(normalized)) return ["Fruit"];
-  if (/\b(salat|spinach|spinat|ruccola|kale|grønnkål)\b/.test(normalized)) return ["Vegetable", "LeafyGreen"];
-  if (/\b(gulrot|carrot|potet|potato|pastinakk|parsnip|sellerirot|celeriac|kålrot|swede|rødbete|beetroot)\b/.test(normalized)) return ["Vegetable", "RootVegetable"];
-  if (/\b(løk|onion|tomat|tomato|agurk|cucumber|paprika)\b/.test(normalized)) return ["Vegetable"];
-  if (/\b(frossen|frozen)\b/.test(normalized)) return ["Frozen"];
-
-  return [];
 }
 
 function toIngredientNutrition(nutrition: IProductLookupNutrition | null): INutritionFacts | null {

@@ -1,9 +1,8 @@
 import type { MeasurementUnit } from "../interfaces/IIngredient";
-import type { DessertType, IngredientPreparation, IRecipe, RecipeTag, RecipeType } from "../interfaces/IRecipe";
+import type { IngredientPreparation, IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import { apiRequest } from "./apiClient";
 
 export interface RecipeRequest {
-  recipeType: RecipeType;
   name: string;
   imageUrl: string | null;
   description: string | null;
@@ -12,7 +11,6 @@ export interface RecipeRequest {
   ingredients: RecipeIngredientRequest[];
   tags: RecipeTag[];
   components: RecipeComponentRequest[];
-  dessertType: DessertType | null;
 }
 
 export interface RecipeIngredientRequest {
@@ -31,10 +29,7 @@ export interface RecipeComponentRequest {
 }
 
 export const recipeService = {
-  getAll: (type?: RecipeType) => {
-    const query = type ? `?type=${encodeURIComponent(type)}` : "";
-    return apiRequest<IRecipe[]>(`/api/recipes${query}`);
-  },
+  getAll: () => apiRequest<IRecipe[]>("/api/recipes"),
   getById: (id: number) => apiRequest<IRecipe>(`/api/recipes/${id}`),
   create: (recipe: RecipeRequest) =>
     apiRequest<IRecipe>("/api/recipes", {

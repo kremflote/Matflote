@@ -31,7 +31,6 @@ export type KnownIngredientTag =
   | "Spice"
   | "Herb"
   | "Sauce"
-  | "Pantry"
   | "Frozen"
   | "LeafyGreen"
   | "Berry"

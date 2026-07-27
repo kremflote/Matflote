@@ -1,5 +1,5 @@
 import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
-import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
+import type { RecipeTag } from "../../interfaces/IRecipe";
 import type { EnrichedRecipe } from "./types";
 
 export function matchesRecipeSearch(recipe: EnrichedRecipe, searchTerm: string) {
@@ -12,7 +12,6 @@ export function matchesRecipeSearch(recipe: EnrichedRecipe, searchTerm: string) 
     recipe.name,
     recipe.description,
     recipe.instructions,
-    recipe.recipeType,
     ...recipe.tags,
     ...recipe.ingredients.map((recipeIngredient) => recipeIngredient.ingredient.ingredientName),
   ]
@@ -51,14 +50,6 @@ export function matchesSelectedIngredients(recipe: EnrichedRecipe, selectedIngre
   );
 }
 
-export function matchesRecipeTypes(recipe: EnrichedRecipe, selectedRecipeTypes: RecipeType[]) {
-  if (selectedRecipeTypes.length === 0) {
-    return true;
-  }
-
-  return selectedRecipeTypes.includes(recipe.recipeType);
-}
-
 export function matchesRecipeTags(recipe: EnrichedRecipe, selectedRecipeTags: RecipeTag[]) {
   if (selectedRecipeTags.length === 0) {
     return true;
@@ -75,39 +66,5 @@ export function matchesIngredientTags(
     return true;
   }
 
-  return ingredient.tags.some((tag) => selectedIngredientTags.includes(normalizeIngredientTag(tag)));
+  return ingredient.tags.some((tag) => selectedIngredientTags.includes(tag));
 }
-
-function normalizeIngredientTag(tag: IngredientTag | number | string): IngredientTag {
-  if (typeof tag === "string" && ingredientTagByIndex.includes(tag as IngredientTag)) {
-    return tag as IngredientTag;
-  }
-
-  if (typeof tag === "number" && ingredientTagByIndex[tag]) {
-    return ingredientTagByIndex[tag];
-  }
-
-  return "Pantry";
-}
-
-const ingredientTagByIndex: IngredientTag[] = [
-  "Vegetable",
-  "Fruit",
-  "Chicken",
-  "Fish",
-  "Beef",
-  "Lamb",
-  "Mince",
-  "Dairy",
-  "Grain",
-  "Spice",
-  "Herb",
-  "Sauce",
-  "Pantry",
-  "Frozen",
-  "LeafyGreen",
-  "Berry",
-  "RootVegetable",
-  "Bread",
-  "Dip",
-];

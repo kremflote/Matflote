@@ -1,4 +1,3 @@
-import { useLanguage } from "../../contexts";
 import type { IRecipe } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
 import RecipeThumbnail from "../RecipeThumbnail";
@@ -21,8 +20,6 @@ function RecipeSelectionGrid({
   selectedRecipeIds = [],
   onSelect,
 }: RecipeSelectionGridProps) {
-  const { t } = useLanguage();
-
   return (
     <div className={gridClassName}>
       {recipes.map((recipe) => {
@@ -40,7 +37,7 @@ function RecipeSelectionGrid({
             recipe={{
               imageUrl: recipe.imageUrl,
               name: recipe.name,
-              subtitle: getSubtitle?.(recipe) ?? t.enums.recipeTypes[recipe.recipeType],
+              subtitle: getSubtitle?.(recipe) ?? recipe.tags.slice(0, 2).join(" · "),
             }}
             onClick={() => onSelect(recipe)}
           />

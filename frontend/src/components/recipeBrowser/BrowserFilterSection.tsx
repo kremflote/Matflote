@@ -1,39 +1,34 @@
 import type { Dispatch, SetStateAction } from "react";
-import { useIngredientTagCategories, useLanguage, useRecipeTagCategories } from "../../contexts";
+import { useIngredientTagCategories, useLanguage } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
-import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
+import type { RecipeTag } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
-import { formatIngredientTagCategoryName, formatRecipeTagCategoryName, getIngredientTagGroupsWithCustomTags, getRecipeTagGroupsWithCustomTags, ingredientTagGroups, recipeTagGroups, recipeTypes } from "./formOptions";
+import { formatIngredientTagCategoryName, formatRecipeTagGroupName, getIngredientTagGroupsWithCustomTags, getRecipeTagGroupsWithCustomTags, ingredientTagGroups, recipeTagGroups } from "./formOptions";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
-import { FilterGroup, GroupedFilterGroup } from "./BrowserFilterGroups";
+import { GroupedFilterGroup } from "./BrowserFilterGroups";
 import type { BrowserMode } from "./types";
 
 type BrowserFilterSectionProps = {
   mode: BrowserMode;
   selectedIngredientTags: IngredientTag[];
-  selectedRecipeTypes: RecipeType[];
   selectedRecipeTags: RecipeTag[];
   theme: SiteTheme;
   variant?: "rail" | "panel";
   setSelectedIngredientTags: Dispatch<SetStateAction<IngredientTag[]>>;
-  setSelectedRecipeTypes: Dispatch<SetStateAction<RecipeType[]>>;
   setSelectedRecipeTags: Dispatch<SetStateAction<RecipeTag[]>>;
 };
 
 function BrowserFilterSection({
   mode,
   selectedIngredientTags,
-  selectedRecipeTypes,
   selectedRecipeTags,
   theme,
   variant = "rail",
   setSelectedIngredientTags,
-  setSelectedRecipeTypes,
   setSelectedRecipeTags,
 }: BrowserFilterSectionProps) {
   const { t } = useLanguage();
   const { ingredientTagCategories } = useIngredientTagCategories();
-  const { recipeTagCategories } = useRecipeTagCategories();
   const className = variant === "rail"
     ? recipeBrowserStyles.filterRail(theme)
     : recipeBrowserStyles.filterPanel(theme);
@@ -46,13 +41,13 @@ function BrowserFilterSection({
           formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
         ]),
       );
-  const liveRecipeTagGroups = getRecipeTagGroupsWithCustomTags([], "style", recipeTagCategories);
-  const recipeTagGroupLabels = recipeTagCategories.length === 0
+  const liveRecipeTagGroups = getRecipeTagGroupsWithCustomTags([], "style", ingredientTagCategories);
+  const recipeTagGroupLabels = ingredientTagCategories.length === 0
     ? t.filters.recipeTagGroups
     : Object.fromEntries(
-        recipeTagCategories.map((category) => [
-          category.recipeTagCategoryId.toString(),
-          formatRecipeTagCategoryName(category.name, t.filters.recipeTagGroups),
+        ingredientTagCategories.map((category) => [
+          category.ingredientTagCategoryId.toString(),
+          formatRecipeTagGroupName(category.name, t.filters.recipeTagGroups),
         ]),
       );
 
@@ -69,25 +64,15 @@ function BrowserFilterSection({
           onToggle={(value) => toggleSelection(value, setSelectedIngredientTags)}
         />
       ) : (
-        <>
-          <FilterGroup
-            formatValue={(value) => t.enums.recipeTypes[value]}
-            selectedValues={selectedRecipeTypes}
-            theme={theme}
-            title={t.filters.recipeType}
-            values={recipeTypes}
-            onToggle={(value) => toggleSelection(value, setSelectedRecipeTypes)}
-          />
-          <GroupedFilterGroup
-            formatValue={(value) => t.enums.recipeTags[value] ?? formatLabel(value)}
-            groupLabels={recipeTagGroupLabels}
-            groups={recipeTagCategories.length === 0 ? recipeTagGroups : liveRecipeTagGroups}
-            selectedValues={selectedRecipeTags}
-            theme={theme}
-            title={t.filters.tags}
-            onToggle={(value) => toggleSelection(value, setSelectedRecipeTags)}
-          />
-        </>
+        <GroupedFilterGroup
+          formatValue={(value) => t.enums.recipeTags[value] ?? t.enums.ingredientTags[value] ?? formatLabel(value)}
+          groupLabels={recipeTagGroupLabels}
+          groups={ingredientTagCategories.length === 0 ? recipeTagGroups : liveRecipeTagGroups}
+          selectedValues={selectedRecipeTags}
+          theme={theme}
+          title={t.filters.tags}
+          onToggle={(value) => toggleSelection(value, setSelectedRecipeTags)}
+        />
       )}
     </aside>
   );

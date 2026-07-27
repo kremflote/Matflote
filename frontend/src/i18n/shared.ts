@@ -1,16 +1,4 @@
 export const commonEnumLabels = {
-  dessertTypes: {
-    Cake: "Cake",
-    Pastry: "Pastry",
-    IceCream: "Ice cream",
-    Pudding: "Pudding",
-    Cookie: "Cookie",
-    Pie: "Pie",
-    Tart: "Tart",
-    Chocolate: "Chocolate",
-    FruitDessert: "Fruit dessert",
-    Other: "Other",
-  },
   ingredientTags: {
     Vegetable: "Vegetable",
     Fruit: "Fruit",
@@ -24,7 +12,6 @@ export const commonEnumLabels = {
     Spice: "Spice",
     Herb: "Herb",
     Sauce: "Sauce",
-    Pantry: "Pantry",
     Frozen: "Frozen",
     LeafyGreen: "Leafy green",
     Berry: "Berry",
@@ -54,14 +41,6 @@ export const commonEnumLabels = {
     Kilogram: "kg",
     Milliliter: "ml",
     Liter: "l",
-  },
-  recipeTypes: {
-    Dish: "Dish",
-    Dessert: "Dessert",
-    Sauce: "Sauce",
-    Dip: "Dip",
-    Side: "Side",
-    SpiceMix: "Spice mix",
   },
   vitamins: {
     VitaminA: "Vitamin A",

@@ -48,10 +48,7 @@ function RecipeDetailContent({
           <DetailTextWithMeta
             className={recipeBrowserStyles.recipeDetailDescriptionPanel}
             label={t.cookbook.description}
-            meta={[
-              t.enums.recipeTypes[recipe.recipeType],
-              recipe.dessertType ? t.enums.dessertTypes[recipe.dessertType] : null,
-            ].filter(Boolean).join(" · ")}
+            meta={recipe.tags.join(" · ")}
             theme={theme}
             value={recipe.description || t.cookbook.noDescription}
           />
@@ -104,7 +101,7 @@ function RecipeDetailContent({
                     ingredients={componentIngredients}
                     key={component.recipeId}
                     recipeId={component.recipeId}
-                    title={t.enums.recipeTypes[component.recipeType]}
+                    title={component.name}
                     titleLinkLabel={`${component.name} (${formatRecipeIngredientAmount(component.amount, component.unit, t.enums.measurementUnits)})`}
                     theme={theme}
                     onIngredientClick={onIngredientClick}

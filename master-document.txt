@@ -480,14 +480,14 @@ Starter ingredients and recipes should be shipped through `backend/SeedData/cata
 
 Backend startup imports this catalog after EF migrations. The import is additive and idempotent:
 
-- Brands and cuisines are created when missing
+- Brands are created when missing
 - Ingredients are matched by ingredient name plus optional brand name
-- Recipes are matched by recipe name plus recipe type
+- Recipes are matched by recipe name
 - Existing matching records are not overwritten
 
 The app exposes `GET /api/seed-catalog/export` so curated data can be created through the UI, exported to JSON, reviewed, and then committed as starter data.
 
-The JSON catalog should use stable English enum identifiers for recipe type, recipe tags, ingredient tags, measurement units, dessert type, and ingredient preparation.
+The JSON catalog should use stable English enum identifiers for recipe tags, ingredient tags, measurement units, ingredient preparation, and nutrition fields. Recipes are no longer separated by recipe type; labels such as side, sauce, dinner, and format live in the shared tag system.
 
 ### Confirmation dialogs
 

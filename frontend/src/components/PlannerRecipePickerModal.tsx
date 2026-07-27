@@ -1,28 +1,23 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { useIngredients, useLanguage, useRecipeTagCategories } from "../contexts";
+import { useIngredientTagCategories, useIngredients, useLanguage } from "../contexts";
 import type { IIngredient, IngredientTag, MeasurementUnit } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, MealSlot } from "../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
 import { plannerPickerStyles, type SiteTheme } from "../styles/appStyles";
-import { formatRecipeTagCategoryName, getRecipeTagGroupsWithCustomTags, recipeTagGroups, recipeTags } from "./recipeBrowser/formOptions";
+import { formatRecipeTagGroupName, getRecipeTagGroupsWithCustomTags, recipeTagGroups, recipeTags } from "./recipeBrowser/formOptions";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
 import {
-  excludedSupplementaryTags,
   getSupplementaryRole,
   isMainDish,
-  isSupplementaryRecipe,
   mainProteinFilters,
   matchesSearch,
   matchesIngredientSearch,
   matchesSelectedIngredients,
   matchesSelectedIngredientTags,
   matchesSelectedRecipeTags,
-  maxSupplementaryRecipes,
+  maxSupplementaryItems,
   recipeHasIngredientTag,
-  supplementaryFilters,
-  supplementaryRecipeTagFilters,
-  supplementaryRecipeTypeFilters,
   toggleSelection,
 } from "./plannerRecipePicker/plannerRecipePickerFilters";
 import { FilterGroup, GroupedFilterGroup } from "./recipeBrowser/BrowserFilterGroups";
@@ -33,10 +28,6 @@ import {
 } from "./plannerRecipePicker/PlannerRecipePickerIngredients";
 import PlannerRecipePickerGrid from "./plannerRecipePicker/PlannerRecipePickerGrid";
 import PlannerRecipePickerSelection from "./plannerRecipePicker/PlannerRecipePickerSelection";
-import type {
-  PickerPhase,
-  SupplementaryFilter,
-} from "./plannerRecipePicker/plannerRecipePickerTypes";
 import Modal from "./Modal";
 
 type PlannerRecipePickerModalProps = {
@@ -74,7 +65,7 @@ function PlannerRecipePickerModal({
   const { t } = useLanguage();
   const titleId = useId();
   const { ingredients } = useIngredients();
-  const { recipeTagCategories } = useRecipeTagCategories();
+  const { ingredientTagCategories } = useIngredientTagCategories();
   const initialMainRecipe = entry?.recipes
     .slice()
     .sort((first, second) => first.sortOrder - second.sortOrder)
@@ -102,7 +93,6 @@ function PlannerRecipePickerModal({
         amount: plannedRecipe.amount ?? 1,
       unit: plannedRecipe.unit ?? ("Gram" as MeasurementUnit),
       })) ?? [];
-  const [phase, setPhase] = useState<PickerPhase>("main");
   const [browserMode, setBrowserMode] = useState<PickerBrowserMode>("recipes");
   const [searchTerm, setSearchTerm] = useState("");
   const [mainRecipeSelection, setMainRecipeSelection] = useState<SelectedPlannerRecipe | null>(
@@ -122,8 +112,6 @@ function PlannerRecipePickerModal({
     useState<SelectedPlannerRecipe[]>(initialSupplementaryRecipes);
   const [supplementaryIngredientSelections, setSupplementaryIngredientSelections] =
     useState<SelectedPlannerIngredient[]>(initialSupplementaryIngredients);
-  const [selectedSupplementaryFilters, setSelectedSupplementaryFilters] =
-    useState<SupplementaryFilter[]>(supplementaryFilters);
   const [selectedMainProteinTags, setSelectedMainProteinTags] = useState<IngredientTag[]>([]);
   const [selectedMainRecipeTags, setSelectedMainRecipeTags] = useState<RecipeTag[]>([]);
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
@@ -153,25 +141,20 @@ function PlannerRecipePickerModal({
     () =>
       recipes
         .filter((recipe) =>
-          phase === "main"
-            ? isMainDish(recipe) &&
-              matchesSelectedIngredientTags(recipe, selectedMainProteinTags) &&
-              matchesSelectedRecipeTags(recipe, selectedMainRecipeTags)
-            : isSupplementaryRecipe(recipe, selectedSupplementaryFilters),
+          isMainDish(recipe) &&
+          matchesSelectedIngredientTags(recipe, selectedMainProteinTags) &&
+          matchesSelectedRecipeTags(recipe, selectedMainRecipeTags),
         )
         .filter((recipe) => matchesSelectedIngredients(recipe, selectedIngredientIds))
-        .filter((recipe) => recipe.recipeId !== mainRecipeId || phase === "main")
         .filter((recipe) => matchesSearch(recipe, searchTerm))
         .sort((first, second) => first.name.localeCompare(second.name)),
     [
       mainRecipeId,
-      phase,
       recipes,
       searchTerm,
       selectedIngredientIds,
       selectedMainProteinTags,
       selectedMainRecipeTags,
-      selectedSupplementaryFilters,
     ],
   );
 
@@ -208,37 +191,15 @@ function PlannerRecipePickerModal({
   }, [recipes]);
   const mainRecipeCustomTags = Array.from(availableMainRecipeTags)
     .filter((tag) => !recipeTags.includes(tag));
-  const liveRecipeTagGroups = getRecipeTagGroupsWithCustomTags(mainRecipeCustomTags, "style", recipeTagCategories);
-  const recipeTagGroupLabels = recipeTagCategories.length === 0
+  const liveRecipeTagGroups = getRecipeTagGroupsWithCustomTags(mainRecipeCustomTags, "style", ingredientTagCategories);
+  const recipeTagGroupLabels = ingredientTagCategories.length === 0
     ? t.filters.recipeTagGroups
     : Object.fromEntries(
-        recipeTagCategories.map((category) => [
-          category.recipeTagCategoryId.toString(),
-          formatRecipeTagCategoryName(category.name, t.filters.recipeTagGroups),
+        ingredientTagCategories.map((category) => [
+          category.ingredientTagCategoryId.toString(),
+          formatRecipeTagGroupName(category.name, t.filters.recipeTagGroups),
         ]),
       );
-
-  const availableSupplementaryFilters = useMemo(() => {
-    const availableFilters = new Set<SupplementaryFilter>();
-
-    recipes.forEach((recipe) => {
-      if (excludedSupplementaryTags.some((tag) => recipe.tags.includes(tag))) {
-        return;
-      }
-
-      if (supplementaryRecipeTypeFilters.includes(recipe.recipeType)) {
-        availableFilters.add(recipe.recipeType);
-      }
-
-      supplementaryRecipeTagFilters.forEach((recipeTag) => {
-        if (recipe.tags.includes(recipeTag)) {
-          availableFilters.add(recipeTag);
-        }
-      });
-    });
-
-    return availableFilters;
-  }, [recipes]);
 
   const selectedIngredients = useMemo(
     () => ingredients.filter((ingredient) => selectedIngredientIds.includes(ingredient.ingredientId)),
@@ -352,24 +313,39 @@ function PlannerRecipePickerModal({
   const selectMainRecipe = (recipe: IRecipe, portions: number) => {
     setMainRecipeSelection({ recipeId: recipe.recipeId, portions });
     setMainIngredientSelection(null);
-    setSupplementaryRecipeSelections([]);
-    setSupplementaryIngredientSelections([]);
   };
 
   const selectMainIngredient = (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => {
     setMainIngredientSelection({ ingredientId: ingredient.ingredientId, amount, unit });
     setMainRecipeSelection(null);
-    setSupplementaryRecipeSelections([]);
-    setSupplementaryIngredientSelections([]);
   };
 
-  const confirmHighlightedMainRecipe = () => {
-    if (mainRecipeSelection === null && mainIngredientSelection === null) {
+  const toggleMealRecipe = (recipe: IRecipe, portions = recipe.portions) => {
+    if (mainRecipeSelection?.recipeId === recipe.recipeId) {
+      setMainRecipeSelection(null);
       return;
     }
 
-    setPhase("supplements");
-    setSearchTerm("");
+    if (mainRecipeSelection === null && mainIngredientSelection === null) {
+      selectMainRecipe(recipe, portions);
+      return;
+    }
+
+    toggleSupplementaryRecipe(recipe, portions);
+  };
+
+  const toggleMealIngredient = (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => {
+    if (mainIngredientSelection?.ingredientId === ingredient.ingredientId) {
+      setMainIngredientSelection(null);
+      return;
+    }
+
+    if (mainRecipeSelection === null && mainIngredientSelection === null) {
+      selectMainIngredient(ingredient, amount, unit);
+      return;
+    }
+
+    toggleSupplementaryIngredient(ingredient, amount, unit);
   };
 
   const toggleSupplementaryRecipe = (recipe: IRecipe, portions = recipe.portions) => {
@@ -378,7 +354,7 @@ function PlannerRecipePickerModal({
         return currentSelections.filter((selection) => selection.recipeId !== recipe.recipeId);
       }
 
-      if (currentSelections.length + supplementaryIngredientSelections.length >= maxSupplementaryRecipes) {
+      if (currentSelections.length + supplementaryIngredientSelections.length >= maxSupplementaryItems) {
         return currentSelections;
       }
 
@@ -392,7 +368,7 @@ function PlannerRecipePickerModal({
         return currentSelections.filter((selection) => selection.ingredientId !== ingredient.ingredientId);
       }
 
-      if (supplementaryRecipeSelections.length + currentSelections.length >= maxSupplementaryRecipes) {
+      if (supplementaryRecipeSelections.length + currentSelections.length >= maxSupplementaryItems) {
         return currentSelections;
       }
 
@@ -472,49 +448,29 @@ function PlannerRecipePickerModal({
 
   const filterSection = (
     <aside className={plannerPickerStyles.filterRail(theme)} aria-label={t.filters.recipeFilters}>
-      {phase === "main" ? (
-        <>
-          <FilterGroup
-            disabledValues={mainProteinFilters.filter(
-              (filter) => !availableMainProteinTags.has(filter),
-            )}
-            selectedValues={selectedMainProteinTags}
-            theme={theme}
-            title={t.filters.protein}
-            values={mainProteinFilters}
-            formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
-            onToggle={(value) => toggleSelection(value, setSelectedMainProteinTags)}
-          />
-          <GroupedFilterGroup
-            disabledValues={recipeTags.filter(
-              (filter) => !availableMainRecipeTags.has(filter),
-            )}
-            formatValue={(value) => t.enums.recipeTags[value] ?? formatLabel(value)}
-            groupLabels={recipeTagGroupLabels}
-            groups={recipeTagCategories.length === 0 ? recipeTagGroups : liveRecipeTagGroups}
-            selectedValues={selectedMainRecipeTags}
-            theme={theme}
-            title={t.filters.tags}
-            onToggle={(value) => toggleSelection(value, setSelectedMainRecipeTags)}
-          />
-        </>
-      ) : (
-        <FilterGroup
-          disabledValues={supplementaryFilters.filter(
-            (filter) => !availableSupplementaryFilters.has(filter),
-          )}
-          selectedValues={selectedSupplementaryFilters}
-          theme={theme}
-          title={t.filters.type}
-          values={supplementaryFilters}
-          formatValue={(value) =>
-            value in t.enums.recipeTypes
-              ? t.enums.recipeTypes[value as keyof typeof t.enums.recipeTypes]
-              : t.enums.recipeTags[value] ?? formatLabel(value)
-          }
-          onToggle={(value) => toggleSelection(value, setSelectedSupplementaryFilters)}
-        />
-      )}
+      <FilterGroup
+        disabledValues={mainProteinFilters.filter(
+          (filter) => !availableMainProteinTags.has(filter),
+        )}
+        selectedValues={selectedMainProteinTags}
+        theme={theme}
+        title={t.filters.protein}
+        values={mainProteinFilters}
+        formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
+        onToggle={(value) => toggleSelection(value, setSelectedMainProteinTags)}
+      />
+      <GroupedFilterGroup
+        disabledValues={recipeTags.filter(
+          (filter) => !availableMainRecipeTags.has(filter),
+        )}
+        formatValue={(value) => t.enums.recipeTags[value] ?? formatLabel(value)}
+        groupLabels={recipeTagGroupLabels}
+        groups={ingredientTagCategories.length === 0 ? recipeTagGroups : liveRecipeTagGroups}
+        selectedValues={selectedMainRecipeTags}
+        theme={theme}
+        title={t.filters.tags}
+        onToggle={(value) => toggleSelection(value, setSelectedMainRecipeTags)}
+      />
     </aside>
   );
 
@@ -525,9 +481,7 @@ function PlannerRecipePickerModal({
       closeButtonClassName={plannerPickerStyles.closeButton(theme)}
       closeLabel={t.common.close}
       description={
-        phase === "main"
-          ? t.planner.selectMainDescription
-          : t.planner.addSupplementsDescription
+        t.planner.selectMainDescription
       }
       descriptionClassName={plannerPickerStyles.subtitle(theme)}
       footer={
@@ -538,27 +492,6 @@ function PlannerRecipePickerModal({
             theme={theme}
           />
           <div className={plannerPickerStyles.footerActions}>
-            {phase === "main" ? (
-              <button
-                className={plannerPickerStyles.primaryButton(theme)}
-                disabled={mainRecipeSelection === null && mainIngredientSelection === null || isSaving}
-                type="button"
-                onClick={confirmHighlightedMainRecipe}
-              >
-                {t.planner.chooseSides}
-              </button>
-            ) : (
-              <button
-                className={plannerPickerStyles.secondaryButton(theme)}
-                disabled={isSaving}
-                type="button"
-                onClick={() => {
-                  setPhase("main");
-                }}
-              >
-                {t.planner.backToMain}
-              </button>
-            )}
             <button
               className={plannerPickerStyles.primaryButton(theme)}
               disabled={(mainRecipe === null && mainIngredient === null && entry === undefined) || isSaving}
@@ -574,7 +507,7 @@ function PlannerRecipePickerModal({
       headerClassName={plannerPickerStyles.header}
       panelClassName={plannerPickerStyles.modalPanel(theme)}
       ref={modalPanelRef}
-      title={phase === "main" ? t.planner.chooseMainDish : t.planner.chooseSupplements}
+      title={t.planner.chooseMainDish}
       titleClassName={plannerPickerStyles.title}
       titleId={titleId}
       onClose={onClose}
@@ -698,14 +631,10 @@ function PlannerRecipePickerModal({
               ]}
               theme={theme}
               onAddIngredient={(ingredient, amount, unit) =>
-                phase === "main"
-                  ? selectMainIngredient(ingredient, amount, unit)
-                  : toggleSupplementaryIngredient(ingredient, amount, unit)
+                toggleMealIngredient(ingredient, amount, unit)
               }
               onAddRecipe={(recipe, portions) =>
-                phase === "main"
-                  ? selectMainRecipe(recipe, portions)
-                  : toggleSupplementaryRecipe(recipe, portions)
+                toggleMealRecipe(recipe, portions)
               }
             />
           </div>

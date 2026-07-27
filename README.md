@@ -366,9 +366,9 @@ Starter ingredients and recipes can be shipped through `backend/SeedData/catalog
 
 On backend startup, after database migrations, MATFLOTE imports that JSON file if it exists. Import is intentionally additive:
 
-- Brands and cuisines are created when missing.
+- Brands are created when missing.
 - Ingredients are matched by ingredient name plus optional brand name.
-- Recipes are matched by recipe name plus recipe type.
+- Recipes are matched by recipe name.
 - Existing matching ingredients and recipes are left alone, so user edits are not overwritten.
 
 This means you can safely keep a starter catalog in the repository while allowing each household instance to evolve independently.
@@ -385,12 +385,11 @@ GET /api/seed-catalog/export
 
 The endpoint downloads `matflote-seed-catalog.json`. Review it, remove anything personal or experimental, then copy the curated content into `backend/SeedData/catalog.json`.
 
-The catalog uses string enum values, for example:
+The catalog uses string enum values for tags, measurement units, preparation, and nutrition fields. Example:
 
 ```json
 {
   "brands": [],
-  "cuisines": [{ "name": "Norwegian" }],
   "ingredients": [
     {
       "ingredientName": "Carrot",
@@ -405,7 +404,6 @@ The catalog uses string enum values, for example:
   ],
   "recipes": [
     {
-      "recipeType": "Side",
       "name": "Carrot sticks",
       "imageUrl": null,
       "description": "Simple crunchy side.",
@@ -414,14 +412,12 @@ The catalog uses string enum values, for example:
         {
           "ingredientName": "Carrot",
           "brandName": null,
-          "amount": 2,
-          "unit": "Piece",
+          "amount": 140,
+          "unit": "Gram",
           "preparation": "Batons"
         }
       ],
-      "tags": ["Other"],
-      "cuisineName": null,
-      "dessertType": null
+      "tags": ["Side"]
     }
   ]
 }

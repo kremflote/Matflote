@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DinnerPlanner.Api.Models;
 
-public abstract class Recipe
+public class Recipe
 {
     [Key]
     public int RecipeId { get; set; }
@@ -17,18 +17,3 @@ public abstract class Recipe
     public ICollection<RecipeComponent> Components { get; set; } = [];
     public ICollection<RecipeComponent> UsedInRecipes { get; set; } = [];
 }
-
-public class Dish : Recipe;
-
-public class Dessert : Recipe
-{
-    public DessertType Type { get; set; } = DessertType.Other;
-}
-
-public class Sauce : Recipe;
-
-public class Dip : Recipe;
-
-public class Side : Recipe;
-
-public class SpiceMix : Recipe;

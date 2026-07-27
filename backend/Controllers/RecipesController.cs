@@ -11,16 +11,11 @@ namespace DinnerPlanner.Api.Controllers;
 public class RecipesController(DinnerPlannerContext context) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<RecipeDto>>> GetRecipes([FromQuery] RecipeType? type)
+    public async Task<ActionResult<IEnumerable<RecipeDto>>> GetRecipes()
     {
         var recipes = await RecipeDetails(asNoTracking: true)
             .OrderBy(recipe => recipe.Name)
             .ToListAsync();
-
-        if (type is not null)
-        {
-            recipes = recipes.Where(recipe => ToType(recipe) == type.Value).ToList();
-        }
 
         return Ok(recipes.Select(ToDto));
     }
@@ -54,7 +49,8 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
 
         var recipe = CreateRecipeModel(request);
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients);
-        recipe.Tags = NormalizeTags(request.Tags)
+        var knownTags = await NormalizeKnownTagsAsync(request.Tags);
+        recipe.Tags = knownTags
             .Select(tag => new RecipeTagAssignment { Tag = tag })
             .ToList();
         recipe.Components = ToRecipeComponents(requestedComponents);
@@ -75,11 +71,6 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         if (recipe is null)
         {
             return NotFound();
-        }
-
-        if (ToType(recipe) != request.RecipeType)
-        {
-            return BadRequest("Recipe type cannot be changed.");
         }
 
         var requestedIngredientIds = GetRequestedIngredientIds(request.Ingredients);
@@ -110,9 +101,9 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         recipe.Portions = NormalizePortions(request.Portions);
         context.RecipeIngredients.RemoveRange(recipe.Ingredients);
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients, recipe.RecipeId);
-        ApplySpecialRecipeFields(recipe, request);
         context.RecipeTagAssignments.RemoveRange(recipe.Tags);
-        recipe.Tags = NormalizeTags(request.Tags)
+        var knownTags = await NormalizeKnownTagsAsync(request.Tags);
+        recipe.Tags = knownTags
             .Select(tag => new RecipeTagAssignment
             {
                 RecipeId = recipe.RecipeId,
@@ -227,37 +218,18 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
 
     private static Recipe CreateRecipeModel(RecipeRequest request)
     {
-        Recipe recipe = request.RecipeType switch
-        {
-            RecipeType.Dish => new Dish(),
-            RecipeType.Dessert => new Dessert(),
-            RecipeType.Sauce => new Sauce(),
-            RecipeType.Dip => new Dip(),
-            RecipeType.Side => new Side(),
-            RecipeType.SpiceMix => new SpiceMix(),
-            _ => throw new ArgumentOutOfRangeException(nameof(request), "Unsupported recipe type.")
-        };
+        var recipe = new Recipe();
 
         recipe.Name = request.Name;
         recipe.ImageUrl = request.ImageUrl;
         recipe.Description = request.Description;
         recipe.Instructions = request.Instructions;
         recipe.Portions = NormalizePortions(request.Portions);
-        ApplySpecialRecipeFields(recipe, request);
         return recipe;
-    }
-
-    private static void ApplySpecialRecipeFields(Recipe recipe, RecipeRequest request)
-    {
-        if (recipe is Dessert dessert)
-        {
-            dessert.Type = request.DessertType ?? DessertType.Other;
-        }
     }
 
     private static RecipeDto ToDto(Recipe recipe) => new(
         recipe.RecipeId,
-        ToType(recipe),
         recipe.Name,
         recipe.ImageUrl,
         recipe.Description,
@@ -268,20 +240,8 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         recipe.Components
             .OrderBy(component => component.SortOrder)
             .Select(ToDto)
-            .ToList(),
-        recipe is Dessert dessert ? dessert.Type : null
+            .ToList()
     );
-
-    private static RecipeType ToType(Recipe recipe) => recipe switch
-    {
-        Dish => RecipeType.Dish,
-        Dessert => RecipeType.Dessert,
-        Sauce => RecipeType.Sauce,
-        Dip => RecipeType.Dip,
-        Side => RecipeType.Side,
-        SpiceMix => RecipeType.SpiceMix,
-        _ => throw new ArgumentOutOfRangeException(nameof(recipe), "Unsupported recipe type.")
-    };
 
     private static decimal NormalizePortions(decimal portions) => portions <= 0m ? 1m : portions;
 
@@ -293,6 +253,34 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
                 .Where(tag => tag.Length > 0 && tag.Length <= 64)
                 .Distinct()
                 .ToList();
+
+    private async Task<List<string>> NormalizeKnownTagsAsync(IReadOnlyCollection<string>? tags)
+    {
+        var requestedTags = NormalizeTags(tags);
+        if (requestedTags.Count == 0)
+        {
+            return [];
+        }
+
+        var knownTags = await context.IngredientTagDefinitions
+            .AsNoTracking()
+            .Select(tag => tag.Name)
+            .ToListAsync();
+        var canonicalTags = new List<string>();
+
+        foreach (var requestedTag in requestedTags)
+        {
+            var canonicalTag = knownTags.FirstOrDefault(knownTag =>
+                string.Equals(knownTag, requestedTag, StringComparison.OrdinalIgnoreCase));
+            if (canonicalTag is not null && !canonicalTags.Any(tag =>
+                    string.Equals(tag, canonicalTag, StringComparison.OrdinalIgnoreCase)))
+            {
+                canonicalTags.Add(canonicalTag);
+            }
+        }
+
+        return canonicalTags;
+    }
 
     private static List<RecipeComponentRequest> NormalizeComponents(IReadOnlyCollection<RecipeComponentRequest>? components) =>
         components is null
@@ -434,7 +422,6 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
 
     private static RecipeComponentDto ToDto(RecipeComponent component) => new(
         component.ChildRecipe.RecipeId,
-        ToType(component.ChildRecipe),
         component.ChildRecipe.Name,
         component.ChildRecipe.ImageUrl,
         component.Amount,

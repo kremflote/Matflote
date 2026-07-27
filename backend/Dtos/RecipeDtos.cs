@@ -3,18 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DinnerPlanner.Api.Dtos;
 
-public enum RecipeType
-{
-    Dish,
-    Dessert,
-    Sauce,
-    Dip,
-    Side,
-    SpiceMix
-}
-
 public record RecipeRequest(
-    RecipeType RecipeType,
     [Required]
     [StringLength(30, MinimumLength = 1)]
     string Name,
@@ -28,8 +17,7 @@ public record RecipeRequest(
     IReadOnlyCollection<RecipeIngredientRequest> Ingredients,
     [Required]
     IReadOnlyCollection<string> Tags,
-    IReadOnlyCollection<RecipeComponentRequest>? Components,
-    DessertType? DessertType
+    IReadOnlyCollection<RecipeComponentRequest>? Components
 );
 
 public record RecipeIngredientRequest(
@@ -51,7 +39,6 @@ public record RecipeComponentRequest(
 
 public record RecipeDto(
     int RecipeId,
-    RecipeType RecipeType,
     string Name,
     string? ImageUrl,
     string? Description,
@@ -59,8 +46,7 @@ public record RecipeDto(
     decimal Portions,
     IReadOnlyCollection<RecipeIngredientDto> Ingredients,
     IReadOnlyCollection<string> Tags,
-    IReadOnlyCollection<RecipeComponentDto> Components,
-    DessertType? DessertType
+    IReadOnlyCollection<RecipeComponentDto> Components
 );
 
 public record RecipeIngredientDto(
@@ -73,7 +59,6 @@ public record RecipeIngredientDto(
 
 public record RecipeComponentDto(
     int RecipeId,
-    RecipeType RecipeType,
     string Name,
     string? ImageUrl,
     decimal Amount,

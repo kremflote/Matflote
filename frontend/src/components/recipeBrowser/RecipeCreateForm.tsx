@@ -1,19 +1,18 @@
 import { useCallback, useMemo, useState, type FormEvent } from "react";
-import { useIngredients, useLanguage, useRecipeTagCategories, useRecipes } from "../../contexts";
-import type { DessertType, IRecipe, RecipeTag, RecipeType } from "../../interfaces/IRecipe";
-import { imageUploadService, recipeService, recipeTagCategoryService } from "../../services";
+import { useIngredientTagCategories, useIngredients, useLanguage, useRecipes } from "../../contexts";
+import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
+import { imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
 import {
-  dessertTypes,
-  formatRecipeTagCategoryName,
+  formatRecipeTagGroupName,
   getRecipeTagGroupsWithCustomTags,
   recipeTagGroups,
-  recipeTypes,
 } from "./formOptions";
 import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import ImageCropPicker from "./ImageCropPicker";
 import Modal from "../Modal";
-import RecipeTagCreateDialog from "./RecipeTagCreateDialog";
+import RecipeIngredientToggle from "./RecipeIngredientToggle";
+import IngredientTagCreateDialog from "./IngredientTagCreateDialog";
 import {
   RecipeComponentPickerContent,
   RecipeIngredientPickerContent,
@@ -57,8 +56,7 @@ function RecipeCreateForm({
   const { t } = useLanguage();
   const { ingredients } = useIngredients();
   const { recipes, refreshRecipes } = useRecipes();
-  const { recipeTagCategories, refreshRecipeTagCategories } = useRecipeTagCategories();
-  const [recipeType, setRecipeType] = useState<RecipeType>(initialRecipe?.recipeType ?? "Dish");
+  const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
   const [name, setName] = useState(initialRecipe?.name ?? "");
   const [portions, setPortions] = useState((initialRecipe?.portions ?? 1).toString());
   const [description, setDescription] = useState(initialRecipe?.description ?? "");
@@ -86,7 +84,6 @@ function RecipeCreateForm({
     initialRecipe?.tags ?? [],
   );
   const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
-  const [dessertType, setDessertType] = useState<DessertType>(initialRecipe?.dessertType ?? "Other");
   const [ingredientSearch, setIngredientSearch] = useState("");
   const [recipeSearch, setRecipeSearch] = useState("");
   const [recipeLinePickerMode, setRecipeLinePickerMode] = useState<RecipeLinePickerMode>("ingredients");
@@ -106,9 +103,9 @@ function RecipeCreateForm({
     () => selectedComponents.map((component) => component.recipeId),
     [selectedComponents],
   );
-  const knownRecipeTags = (recipeTagCategories.length === 0
+  const knownRecipeTags = (ingredientTagCategories.length === 0
     ? recipeTagGroups.flatMap((group) => group.values)
-    : recipeTagCategories.flatMap((category) => category.tags)) as RecipeTag[];
+    : ingredientTagCategories.flatMap((category) => category.tags)) as RecipeTag[];
   const existingCustomRecipeTags = recipes
     .flatMap((recipe) => recipe.tags)
     .filter((tag) => !knownRecipeTags.includes(tag));
@@ -116,13 +113,13 @@ function RecipeCreateForm({
     ...existingCustomRecipeTags,
     ...selectedTags.filter((tag) => !knownRecipeTags.includes(tag)),
   ]));
-  const groupedRecipeTags = getRecipeTagGroupsWithCustomTags(customRecipeTags, "style", recipeTagCategories);
-  const recipeTagGroupLabels = recipeTagCategories.length === 0
+  const groupedRecipeTags = getRecipeTagGroupsWithCustomTags(customRecipeTags, "style", ingredientTagCategories);
+  const recipeTagGroupLabels = ingredientTagCategories.length === 0
     ? t.filters.recipeTagGroups
     : Object.fromEntries(
-        recipeTagCategories.map((category) => [
-          category.recipeTagCategoryId.toString(),
-          formatRecipeTagCategoryName(category.name, t.filters.recipeTagGroups),
+        ingredientTagCategories.map((category) => [
+          category.ingredientTagCategoryId.toString(),
+          formatRecipeTagGroupName(category.name, t.filters.recipeTagGroups),
         ]),
       );
 
@@ -275,7 +272,6 @@ function RecipeCreateForm({
         : await imageUploadService.upload(croppedImageFile, "recipes");
 
       const request = {
-        recipeType,
         name: trimmedName,
         imageUrl: upload?.url ?? initialRecipe?.imageUrl ?? null,
         description: nullableText(description),
@@ -295,7 +291,6 @@ function RecipeCreateForm({
           preparation: component.preparation,
           sortOrder: index + 1,
         })),
-        dessertType: recipeType === "Dessert" ? dessertType : null,
       };
 
       if (isEditing) {
@@ -312,26 +307,6 @@ function RecipeCreateForm({
       setIsSaving(false);
     }
   };
-
-  const renderRecipeTypeField = (className = "") => (
-    <label className={`${recipeBrowserStyles.field} ${className}`}>
-      <span className={recipeBrowserStyles.label(theme)}>
-        {t.cookbook.recipeType}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-      </span>
-      <select
-        className={recipeBrowserStyles.textField(theme)}
-        disabled={isEditing}
-        value={recipeType}
-        onChange={(event) => setRecipeType(event.target.value as RecipeType)}
-      >
-        {recipeTypes.map((type) => (
-          <option key={type} value={type}>
-            {t.enums.recipeTypes[type]}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
 
   return (
     <form className={recipeBrowserStyles.form} onSubmit={submitRecipe}>
@@ -373,24 +348,6 @@ function RecipeCreateForm({
                 />
               </label>
 
-              {renderRecipeTypeField()}
-
-              {recipeType === "Dessert" && (
-                <label className={recipeBrowserStyles.field}>
-                  <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.dessertType}</span>
-                  <select
-                    className={recipeBrowserStyles.textField(theme)}
-                    value={dessertType}
-                    onChange={(event) => setDessertType(event.target.value as DessertType)}
-                  >
-                    {dessertTypes.map((value) => (
-                      <option key={value} value={value}>
-                        {t.enums.dessertTypes[value]}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
             </div>
             <div className={recipeBrowserStyles.createImageField}>
               <span className={`${recipeBrowserStyles.label(theme)} ${recipeBrowserStyles.createImageLabel}`}>
@@ -670,42 +627,42 @@ function RecipeCreateForm({
         />
       )}
       {isTagCreateOpen && (
-        <RecipeTagCreateDialog
-          categories={recipeTagCategories}
+        <IngredientTagCreateDialog
+          categories={ingredientTagCategories}
           existingTags={[...knownRecipeTags, ...customRecipeTags]}
           theme={theme}
           onCancel={() => setIsTagCreateOpen(false)}
           onCreate={async (tag, categoryId) => {
-            await recipeTagCategoryService.createTag(categoryId, { name: tag });
-            await refreshRecipeTagCategories();
+            await ingredientTagCategoryService.createTag(categoryId, { name: tag });
+            await refreshIngredientTagCategories();
             setSelectedTags((currentTags) => currentTags.includes(tag) ? currentTags : [...currentTags, tag]);
             setIsTagCreateOpen(false);
           }}
           onCreateCategory={async (name) => {
-            const category = await recipeTagCategoryService.create({ name });
-            await refreshRecipeTagCategories();
-            return { id: category.recipeTagCategoryId, name: category.name };
+            const category = await ingredientTagCategoryService.create({ name });
+            await refreshIngredientTagCategories();
+            return { id: category.ingredientTagCategoryId, name: category.name };
           }}
           onUpdateCategory={async (category) => {
-            await recipeTagCategoryService.update(category.id, { name: category.name });
-            await refreshRecipeTagCategories();
+            await ingredientTagCategoryService.update(category.id, { name: category.name });
+            await refreshIngredientTagCategories();
           }}
           onDeleteCategory={async (category) => {
-            await recipeTagCategoryService.delete(category.id);
-            await refreshRecipeTagCategories();
+            await ingredientTagCategoryService.delete(category.id);
+            await refreshIngredientTagCategories();
             await refreshRecipes();
           }}
           onUpdateTag={async (tagName, nextName) => {
-            await recipeTagCategoryService.updateTag(tagName, { name: nextName });
-            await refreshRecipeTagCategories();
+            await ingredientTagCategoryService.updateTag(tagName, { name: nextName });
+            await refreshIngredientTagCategories();
             await refreshRecipes();
             setSelectedTags((currentTags) =>
               currentTags.map((tag) => tag.toLowerCase() === tagName.toLowerCase() ? nextName : tag),
             );
           }}
           onDeleteTag={async (tagName) => {
-            await recipeTagCategoryService.deleteTag(tagName);
-            await refreshRecipeTagCategories();
+            await ingredientTagCategoryService.deleteTag(tagName);
+            await refreshIngredientTagCategories();
             await refreshRecipes();
             setSelectedTags((currentTags) =>
               currentTags.filter((tag) => tag.toLowerCase() !== tagName.toLowerCase()),
@@ -729,27 +686,13 @@ type RecipeLineModeToggleProps = {
 };
 
 function RecipeLineModeToggle({ mode, theme, onChange }: RecipeLineModeToggleProps) {
-  const { t } = useLanguage();
-
   return (
-    <div className={recipeBrowserStyles.recipeLineModeToggle(theme)} role="group" aria-label={t.cookbook.recipeLineMode}>
-      <button
-        aria-pressed={mode === "ingredients"}
-        className={recipeBrowserStyles.recipeLineModeOption(theme, mode === "ingredients")}
-        type="button"
-        onClick={() => onChange("ingredients")}
-      >
-        {t.cookbook.ingredients}
-      </button>
-      <button
-        aria-pressed={mode === "recipes"}
-        className={recipeBrowserStyles.recipeLineModeOption(theme, mode === "recipes")}
-        type="button"
-        onClick={() => onChange("recipes")}
-      >
-        {t.cookbook.recipes}
-      </button>
-    </div>
+    <RecipeIngredientToggle
+      value={mode}
+      theme={theme}
+      className="max-w-md"
+      onChange={onChange}
+    />
   );
 }
 

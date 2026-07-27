@@ -2,7 +2,6 @@ import type { IIngredient, MeasurementUnit } from "./IIngredient";
 
 export interface IRecipe {
   recipeId: number;
-  recipeType: RecipeType;
   name: string;
   imageUrl: string | null;
   description: string | null;
@@ -11,12 +10,10 @@ export interface IRecipe {
   ingredients: IRecipeIngredient[];
   tags: RecipeTag[];
   components: IRecipeComponent[];
-  dessertType: DessertType | null;
 }
 
 export interface IRecipeComponent {
   recipeId: number;
-  recipeType: RecipeType;
   name: string;
   imageUrl: string | null;
   amount: number;
@@ -51,18 +48,31 @@ export type IngredientPreparation =
   | "Shredded"
   | "Crushed";
 
-export type RecipeType =
-  | "Dish"
-  | "Dessert"
-  | "Sauce"
-  | "Dip"
-  | "Side"
-  | "SpiceMix";
-
 export type KnownRecipeTag =
+  | "Vegetable"
+  | "Fruit"
+  | "Chicken"
+  | "Fish"
+  | "Beef"
+  | "Lamb"
+  | "Mince"
+  | "Dairy"
+  | "Grain"
+  | "Spice"
+  | "Herb"
+  | "Sauce"
+  | "Frozen"
+  | "LeafyGreen"
+  | "Berry"
+  | "RootVegetable"
+  | "Bread"
+  | "Dip"
   | "Breakfast"
   | "Lunch"
   | "Dinner"
+  | "Dish"
+  | "Side"
+  | "Dessert"
   | "Bowl"
   | "Grill"
   | "Pasta"
@@ -75,18 +85,7 @@ export type KnownRecipeTag =
   | "Casserole"
   | "Porridge"
   | "Plate"
-  | "SousVide";
+  | "SousVide"
+  | "SpiceMix";
 
 export type RecipeTag = KnownRecipeTag | (string & {});
-
-export type DessertType =
-  | "Cake"
-  | "Pastry"
-  | "IceCream"
-  | "Pudding"
-  | "Cookie"
-  | "Pie"
-  | "Tart"
-  | "Chocolate"
-  | "FruitDessert"
-  | "Other";

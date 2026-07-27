@@ -1,32 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
 import type { MealRecipeRole } from "../../interfaces/IMeal";
-import type { IRecipe, RecipeTag, RecipeType } from "../../interfaces/IRecipe";
-import { ingredientTags, recipeTags, recipeTypes } from "../recipeBrowser/formOptions";
-import type { SupplementaryFilter } from "./plannerRecipePickerTypes";
-
-export const mainRecipeTypes: RecipeType[] = recipeTypes.filter((recipeType) => recipeType === "Dish");
-
-export const supplementaryRecipeTypeFilters: RecipeType[] = recipeTypes.filter(
-  (recipeType) =>
-    recipeType === "Side" ||
-    recipeType === "Sauce" ||
-    recipeType === "Dip" ||
-    recipeType === "SpiceMix",
-);
-
-export const supplementaryRecipeTagFilters: RecipeTag[] = recipeTags.filter(
-  (recipeTag) => recipeTag === "Salad",
-);
-
-export const supplementaryFilters: SupplementaryFilter[] = [
-  ...supplementaryRecipeTypeFilters,
-  ...supplementaryRecipeTagFilters,
-];
-
-export const excludedSupplementaryTags: RecipeTag[] = recipeTags.filter(
-  (recipeTag) => recipeTag === "Breakfast" || recipeTag === "Lunch" || recipeTag === "Dinner",
-);
+import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
+import { ingredientTags } from "../recipeBrowser/formOptions";
 
 export const mainProteinFilters: IngredientTag[] = ingredientTags.filter(
   (ingredientTag) =>
@@ -37,7 +13,7 @@ export const mainProteinFilters: IngredientTag[] = ingredientTags.filter(
     ingredientTag === "Mince",
 );
 
-export const maxSupplementaryRecipes = 6;
+export const maxSupplementaryItems = 6;
 
 export function toggleSelection<TValue extends string | number>(
   value: TValue,
@@ -51,21 +27,7 @@ export function toggleSelection<TValue extends string | number>(
 }
 
 export function isMainDish(recipe: IRecipe) {
-  return mainRecipeTypes.includes(recipe.recipeType);
-}
-
-export function isSupplementaryRecipe(recipe: IRecipe, selectedFilters: SupplementaryFilter[]) {
-  const matchesRecipeType =
-    supplementaryRecipeTypeFilters.includes(recipe.recipeType) &&
-    selectedFilters.includes(recipe.recipeType);
-  const matchesRecipeTag = supplementaryRecipeTagFilters.some(
-    (recipeTag) => selectedFilters.includes(recipeTag) && recipe.tags.includes(recipeTag),
-  );
-
-  return (
-    (matchesRecipeType || matchesRecipeTag) &&
-    !excludedSupplementaryTags.some((tag) => recipe.tags.includes(tag))
-  );
+  return recipe.recipeId > 0;
 }
 
 export function matchesSelectedIngredients(recipe: IRecipe, selectedIngredientIds: number[]) {
@@ -102,7 +64,6 @@ export function matchesSearch(recipe: IRecipe, searchTerm: string) {
 
   return [
     recipe.name,
-    recipe.recipeType,
     ...recipe.tags,
   ]
     .filter((value): value is string => Boolean(value))
@@ -119,7 +80,7 @@ export function matchesIngredientSearch(ingredient: IIngredient, searchTerm: str
 
   return [
     ingredient.ingredientName,
-    ...ingredient.tags.map(normalizeIngredientTag),
+    ...ingredient.tags,
     ingredient.brand?.name,
   ]
     .filter((value): value is string => Boolean(value))
@@ -131,53 +92,18 @@ export function matchesIngredientSearch(ingredient: IIngredient, searchTerm: str
 export function recipeHasIngredientTag(recipe: IRecipe, ingredientTag: IngredientTag) {
   return recipe.ingredients.some((recipeIngredient) =>
     recipeIngredient.ingredient.tags
-      .map(normalizeIngredientTag)
       .includes(ingredientTag),
   );
 }
 
-export function normalizeIngredientTag(tag: IngredientTag | number | string): IngredientTag {
-  if (typeof tag === "string" && ingredientTagByIndex.includes(tag as IngredientTag)) {
-    return tag as IngredientTag;
-  }
-
-  if (typeof tag === "number" && ingredientTagByIndex[tag]) {
-    return ingredientTagByIndex[tag];
-  }
-
-  return "Pantry";
-}
-
 export function getSupplementaryRole(recipe: IRecipe): MealRecipeRole {
-  if (recipe.recipeType === "Sauce" || recipe.recipeType === "Dip") {
+  if (recipe.tags.includes("Sauce") || recipe.tags.includes("Dip")) {
     return "Sauce";
   }
 
-  if (recipe.recipeType === "Side" || recipe.tags.includes("Salad")) {
+  if (recipe.tags.includes("Side") || recipe.tags.includes("Salad")) {
     return "Side";
   }
 
   return "Extra";
 }
-
-const ingredientTagByIndex: IngredientTag[] = [
-  "Vegetable",
-  "Fruit",
-  "Chicken",
-  "Fish",
-  "Beef",
-  "Lamb",
-  "Mince",
-  "Dairy",
-  "Grain",
-  "Spice",
-  "Herb",
-  "Sauce",
-  "Pantry",
-  "Frozen",
-  "LeafyGreen",
-  "Berry",
-  "RootVegetable",
-  "Bread",
-  "Dip",
-];

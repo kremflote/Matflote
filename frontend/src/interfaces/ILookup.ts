@@ -13,9 +13,3 @@ export interface IIngredientTagCategory {
   name: string;
   tags: string[];
 }
-
-export interface IRecipeTagCategory {
-  recipeTagCategoryId: number;
-  name: string;
-  tags: string[];
-}

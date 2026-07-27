@@ -44,20 +44,21 @@ POST {{backend_HostAddress}}/api/recipes
 Content-Type: application/json
 
 {
-  "recipeType": "Side",
   "name": "Simple rice",
   "imageUrl": null,
   "description": "Plain boiled rice.",
   "instructions": "Rinse rice and boil until tender.",
+  "portions": 1,
   "ingredients": [
     {
       "ingredientId": 4,
       "amount": 250,
-      "unit": "Gram"
+      "unit": "Gram",
+      "preparation": "None"
     }
   ],
   "tags": ["Dinner"],
-  "dessertType": null
+  "components": []
 }
 
 ###

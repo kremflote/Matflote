@@ -1,6 +1,6 @@
 import { useLanguage } from "../../contexts";
 import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
-import type { RecipeTag, RecipeType } from "../../interfaces/IRecipe";
+import type { RecipeTag } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import type { BrowserMode } from "./types";
@@ -9,13 +9,11 @@ import FilterChip from "./FilterChip";
 type ActiveFilterChipsProps = {
   mode: BrowserMode;
   selectedIngredientTags: IngredientTag[];
-  selectedRecipeTypes: RecipeType[];
   selectedRecipeTags: RecipeTag[];
   selectedIngredients: IIngredient[];
   theme: SiteTheme;
   onClear: () => void;
   onRemoveIngredientTag: (value: IngredientTag) => void;
-  onRemoveRecipeType: (value: RecipeType) => void;
   onRemoveRecipeTag: (value: RecipeTag) => void;
   onRemoveIngredient: (ingredientId: number) => void;
 };
@@ -23,13 +21,11 @@ type ActiveFilterChipsProps = {
 function ActiveFilterChips({
   mode,
   selectedIngredientTags,
-  selectedRecipeTypes,
   selectedRecipeTags,
   selectedIngredients,
   theme,
   onClear,
   onRemoveIngredientTag,
-  onRemoveRecipeType,
   onRemoveRecipeTag,
   onRemoveIngredient,
 }: ActiveFilterChipsProps) {
@@ -37,7 +33,6 @@ function ActiveFilterChips({
   const hasIngredientFilters = selectedIngredientTags.length > 0;
   const hasRecipeFilters =
     selectedIngredients.length > 0 ||
-    selectedRecipeTypes.length > 0 ||
     selectedRecipeTags.length > 0;
 
   const hasVisibleFilters = mode === "ingredients" ? hasIngredientFilters : hasRecipeFilters;
@@ -61,15 +56,6 @@ function ActiveFilterChips({
             label={`${t.filters.includes}: ${ingredient.ingredientName}`}
             theme={theme}
             onClick={() => onRemoveIngredient(ingredient.ingredientId)}
-          />
-        ))}
-      {mode === "recipes" &&
-        selectedRecipeTypes.map((type) => (
-          <FilterChip
-            key={type}
-            label={t.enums.recipeTypes[type]}
-            theme={theme}
-            onClick={() => onRemoveRecipeType(type)}
           />
         ))}
       {mode === "recipes" &&

@@ -27,7 +27,6 @@ public record SeedIngredientDto(
 );
 
 public record SeedRecipeDto(
-    RecipeType RecipeType,
     string Name,
     string? ImageUrl,
     string? Description,
@@ -35,8 +34,7 @@ public record SeedRecipeDto(
     decimal? Portions,
     IReadOnlyCollection<SeedRecipeIngredientDto>? Ingredients,
     IReadOnlyCollection<string>? Tags,
-    IReadOnlyCollection<SeedRecipeComponentDto>? Components,
-    DessertType? DessertType
+    IReadOnlyCollection<SeedRecipeComponentDto>? Components
 );
 
 public record SeedRecipeIngredientDto(
@@ -49,7 +47,6 @@ public record SeedRecipeIngredientDto(
 
 public record SeedRecipeComponentDto(
     string RecipeName,
-    RecipeType? RecipeType,
     decimal? Amount,
     MeasurementUnit? Unit,
     IngredientPreparation? Preparation,

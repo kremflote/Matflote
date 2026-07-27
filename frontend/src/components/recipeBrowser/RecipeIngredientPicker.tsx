@@ -278,7 +278,7 @@ export function RecipeComponentPickerContent({
                 preparation={selectedComponent?.preparation ?? "None"}
                 preparationLabels={preparationLabels}
                 recipe={recipe}
-                recipeTypeLabel={t.enums.recipeTypes[recipe.recipeType]}
+                recipeSubtitle={formatRecipeSubtitle(recipe)}
                 selected={selected}
                 theme={theme}
                 unit={selectedComponent?.unit ?? "Gram"}
@@ -302,7 +302,7 @@ type RecipeComponentPickerRowProps = {
   preparation: IngredientPreparation;
   preparationLabels: Record<IngredientPreparation, string>;
   recipe: IRecipe;
-  recipeTypeLabel: string;
+  recipeSubtitle: string;
   selected: boolean;
   theme: SiteTheme;
   unit: MeasurementUnit;
@@ -319,7 +319,7 @@ function RecipeComponentPickerRow({
   preparation,
   preparationLabels,
   recipe,
-  recipeTypeLabel,
+  recipeSubtitle,
   selected,
   theme,
   unit,
@@ -342,7 +342,7 @@ function RecipeComponentPickerRow({
         recipe={{
           imageUrl: recipe.imageUrl,
           name: recipe.name,
-          subtitle: recipeTypeLabel,
+          subtitle: recipeSubtitle,
         }}
         mode="compact"
         selected={selected}
@@ -424,7 +424,7 @@ export function SelectedRecipeComponentCapsules({
               recipe={{
                 imageUrl: recipe?.imageUrl ?? null,
                 name: recipe?.name ?? t.cookbook.recipeSingular,
-                subtitle: recipe === undefined ? "" : t.enums.recipeTypes[recipe.recipeType],
+                subtitle: recipe === undefined ? "" : formatRecipeSubtitle(recipe),
               }}
               mode="compact"
               theme={theme}
@@ -449,6 +449,10 @@ function formatSelectedIngredientAmount(
 ) {
   const trimmedAmount = amount.trim();
   return trimmedAmount.length === 0 ? unitLabels[unit] : `${trimmedAmount} ${unitLabels[unit].toLowerCase()}`;
+}
+
+function formatRecipeSubtitle(recipe: IRecipe) {
+  return recipe.tags.slice(0, 2).join(" · ");
 }
 
 type RecipeIngredientPickerDialogProps = RecipeIngredientPickerContentProps & {

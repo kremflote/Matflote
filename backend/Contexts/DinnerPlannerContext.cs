@@ -17,15 +17,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<RecipeComponent> RecipeComponents => Set<RecipeComponent>();
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
-    public DbSet<RecipeTagCategory> RecipeTagCategories => Set<RecipeTagCategory>();
-    public DbSet<RecipeTagDefinition> RecipeTagDefinitions => Set<RecipeTagDefinition>();
     public DbSet<RecipeTagAssignment> RecipeTagAssignments => Set<RecipeTagAssignment>();
-    public DbSet<Dish> Dishes => Set<Dish>();
-    public DbSet<Dessert> Desserts => Set<Dessert>();
-    public DbSet<Sauce> Sauces => Set<Sauce>();
-    public DbSet<Dip> Dips => Set<Dip>();
-    public DbSet<Side> Sides => Set<Side>();
-    public DbSet<SpiceMix> SpiceMixes => Set<SpiceMix>();
     public DbSet<Store> Stores => Set<Store>();
     public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
     public DbSet<MealPlanRecipe> MealPlanRecipes => Set<MealPlanRecipe>();
@@ -163,14 +155,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.Property(recipe => recipe.Name).HasMaxLength(30);
             entity.Property(recipe => recipe.Description).HasMaxLength(600);
 
-            entity.HasDiscriminator<string>("RecipeType")
-                .HasValue<Dish>("Dish")
-                .HasValue<Dessert>("Dessert")
-                .HasValue<Sauce>("Sauce")
-                .HasValue<Dip>("Dip")
-                .HasValue<Side>("Side")
-                .HasValue<SpiceMix>("SpiceMix");
-
             entity.HasMany(recipe => recipe.Ingredients)
                 .WithOne(recipeIngredient => recipeIngredient.Recipe)
                 .HasForeignKey(recipeIngredient => recipeIngredient.RecipeId)
@@ -246,33 +230,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 .WithMany(recipe => recipe.Tags)
                 .HasForeignKey(recipeTag => recipeTag.RecipeId)
                 .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<RecipeTagCategory>(entity =>
-        {
-            entity.Property(category => category.Name).HasMaxLength(120);
-            entity.HasIndex(category => category.Name).IsUnique();
-            entity.HasMany(category => category.Tags)
-                .WithOne(tag => tag.Category)
-                .HasForeignKey(tag => tag.RecipeTagCategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<RecipeTagDefinition>(entity =>
-        {
-            entity.Property(tag => tag.Name).HasMaxLength(64);
-            entity.HasIndex(tag => tag.Name).IsUnique();
-        });
-
-        modelBuilder.Entity<Dish>(entity =>
-        {
-            entity.Property(dish => dish.Name).HasMaxLength(30);
-        });
-
-        modelBuilder.Entity<Dessert>(entity =>
-        {
-            entity.Property(dessert => dessert.Name).HasMaxLength(30);
-            entity.Property(dessert => dessert.Type).HasConversion<string>().HasMaxLength(64);
         });
 
         modelBuilder.Entity<MealPlanEntry>(entity =>
@@ -395,33 +352,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             new { IngredientTagDefinitionId = 15, Name = "Spice", IngredientTagCategoryId = 3 },
             new { IngredientTagDefinitionId = 16, Name = "Sauce", IngredientTagCategoryId = 3 },
             new { IngredientTagDefinitionId = 17, Name = "Dip", IngredientTagCategoryId = 3 },
-            new { IngredientTagDefinitionId = 18, Name = "Pantry", IngredientTagCategoryId = 3 },
             new { IngredientTagDefinitionId = 19, Name = "Frozen", IngredientTagCategoryId = 3 }
-        );
-
-        modelBuilder.Entity<RecipeTagCategory>().HasData(
-            new { RecipeTagCategoryId = 1, Name = "Meal", SortOrder = 100 },
-            new { RecipeTagCategoryId = 2, Name = "Format", SortOrder = 200 },
-            new { RecipeTagCategoryId = 3, Name = "Style", SortOrder = 300 }
-        );
-
-        modelBuilder.Entity<RecipeTagDefinition>().HasData(
-            new { RecipeTagDefinitionId = 1, Name = "Breakfast", RecipeTagCategoryId = 1 },
-            new { RecipeTagDefinitionId = 2, Name = "Lunch", RecipeTagCategoryId = 1 },
-            new { RecipeTagDefinitionId = 3, Name = "Dinner", RecipeTagCategoryId = 1 },
-            new { RecipeTagDefinitionId = 4, Name = "Bowl", RecipeTagCategoryId = 2 },
-            new { RecipeTagDefinitionId = 5, Name = "Plate", RecipeTagCategoryId = 2 },
-            new { RecipeTagDefinitionId = 6, Name = "Porridge", RecipeTagCategoryId = 2 },
-            new { RecipeTagDefinitionId = 7, Name = "Soup", RecipeTagCategoryId = 2 },
-            new { RecipeTagDefinitionId = 8, Name = "Stew", RecipeTagCategoryId = 2 },
-            new { RecipeTagDefinitionId = 9, Name = "Salad", RecipeTagCategoryId = 2 },
-            new { RecipeTagDefinitionId = 10, Name = "Pizza", RecipeTagCategoryId = 2 },
-            new { RecipeTagDefinitionId = 11, Name = "Sandwich", RecipeTagCategoryId = 2 },
-            new { RecipeTagDefinitionId = 12, Name = "Casserole", RecipeTagCategoryId = 2 },
-            new { RecipeTagDefinitionId = 13, Name = "Grill", RecipeTagCategoryId = 3 },
-            new { RecipeTagDefinitionId = 14, Name = "Pasta", RecipeTagCategoryId = 3 },
-            new { RecipeTagDefinitionId = 15, Name = "Vegetarian", RecipeTagCategoryId = 3 },
-            new { RecipeTagDefinitionId = 16, Name = "SousVide", RecipeTagCategoryId = 3 }
         );
 
         modelBuilder.Entity<Ingredient>().HasData(
@@ -550,7 +481,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             }
         );
 
-        modelBuilder.Entity<Sauce>().HasData(new
+        modelBuilder.Entity<Recipe>().HasData(new
         {
             RecipeId = 1,
             Name = "Garlic yogurt sauce",
@@ -560,7 +491,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             Portions = 1m
         });
 
-        modelBuilder.Entity<Dish>().HasData(new
+        modelBuilder.Entity<Recipe>().HasData(new
         {
             RecipeId = 2,
             Name = "Chicken rice bowl",
@@ -627,7 +558,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             }
         );
 
-        modelBuilder.Entity<Side>().HasData(new
+        modelBuilder.Entity<Recipe>().HasData(new
         {
             RecipeId = 3,
             Name = "Steamed rice",

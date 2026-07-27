@@ -18,9 +18,3 @@ public record IngredientTagCategoryDto(
     string Name,
     IReadOnlyCollection<string> Tags
 );
-
-public record RecipeTagCategoryDto(
-    int RecipeTagCategoryId,
-    string Name,
-    IReadOnlyCollection<string> Tags
-);

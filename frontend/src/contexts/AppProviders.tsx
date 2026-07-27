@@ -5,7 +5,6 @@ import { IngredientTagCategoryProvider } from "./IngredientTagCategoryContext";
 import { LanguageProvider } from "./LanguageContext";
 import { MealPlanProvider } from "./MealPlanContext";
 import { RecipeProvider } from "./RecipeContext";
-import { RecipeTagCategoryProvider } from "./RecipeTagCategoryContext";
 import { StoreProvider } from "./StoreContext";
 
 export function AppProviders({ children }: IProviderProps) {
@@ -14,13 +13,11 @@ export function AppProviders({ children }: IProviderProps) {
       <BrandProvider>
         <StoreProvider>
           <IngredientTagCategoryProvider>
-            <RecipeTagCategoryProvider>
-              <IngredientProvider>
-                <RecipeProvider>
-                  <MealPlanProvider>{children}</MealPlanProvider>
-                </RecipeProvider>
-              </IngredientProvider>
-            </RecipeTagCategoryProvider>
+            <IngredientProvider>
+              <RecipeProvider>
+                <MealPlanProvider>{children}</MealPlanProvider>
+              </RecipeProvider>
+            </IngredientProvider>
           </IngredientTagCategoryProvider>
         </StoreProvider>
       </BrandProvider>

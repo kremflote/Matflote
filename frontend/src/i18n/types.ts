@@ -5,23 +5,16 @@ import type {
   Vitamin,
 } from "../interfaces/IIngredient";
 import type { MealSlot, PlannerViewMode } from "../interfaces/IMeal";
-import type {
-  DessertType,
-  IngredientPreparation,
-  KnownRecipeTag,
-  RecipeType,
-} from "../interfaces/IRecipe";
+import type { IngredientPreparation } from "../interfaces/IRecipe";
 
 export type SupportedLanguage = "en" | "nb";
 
 type EnumLabels = {
-  dessertTypes: Record<DessertType, string>;
   ingredientTags: Record<KnownIngredientTag, string> & Record<string, string | undefined>;
   ingredientPreparations: Record<IngredientPreparation, string>;
   mealSlots: Record<MealSlot, string>;
   measurementUnits: Record<MeasurementUnit, string>;
-  recipeTags: Record<KnownRecipeTag, string> & Record<string, string | undefined>;
-  recipeTypes: Record<RecipeType, string>;
+  recipeTags: Record<string, string | undefined>;
   vitamins: Record<Vitamin, string>;
   viewModes: Record<PlannerViewMode, string>;
 };
@@ -102,7 +95,6 @@ export type TranslationDictionary = {
     couldNotLoadRecipes: string;
     couldNotSaveIngredient: string;
     description: string;
-    dessertType: string;
     dietaryInformation: string;
     dietaryInformationPer100g: string;
     fiberPer100g: string;
@@ -168,7 +160,6 @@ export type TranslationDictionary = {
     recipeLineMode: string;
     recipeLinesHelp: string;
     recipeSingular: string;
-    recipeType: string;
     saltPer100g: string;
     salt: string;
     saturatedFatsPer100g: string;
@@ -211,7 +202,6 @@ export type TranslationDictionary = {
     protein: string;
     recipeTagGroups: Record<string, string>;
     recipeFilters: string;
-    recipeType: string;
     selectCategory: string;
     tags: string;
     type: string;
@@ -349,11 +339,7 @@ export type TranslationDictionary = {
     actionPrep: string;
     addMeal: (slot: string) => string;
     addMealLower: (slot: string) => string;
-    addSupplementsDescription: string;
-    backToMain: string;
     chooseMainDish: string;
-    chooseSides: string;
-    chooseSupplements: string;
     clearCurrent: (range: string) => string;
     clearRange: (range: string) => string;
     clearRangeBody: (range: string) => string;

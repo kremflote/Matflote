@@ -7,13 +7,14 @@ type RecipeIngredientToggleProps = {
   value: BrowserMode;
   theme: SiteTheme;
   onChange: (value: BrowserMode) => void;
+  className?: string;
 };
 
-function RecipeIngredientToggle({ value, theme, onChange }: RecipeIngredientToggleProps) {
+function RecipeIngredientToggle({ value, theme, onChange, className = "" }: RecipeIngredientToggleProps) {
   const { t } = useLanguage();
 
   return (
-    <div className={recipeBrowserStyles.tabs(theme)} aria-label={t.cookbook.cookbookSections}>
+    <div className={`${recipeBrowserStyles.tabs(theme)} ${className}`} aria-label={t.cookbook.cookbookSections}>
       <button
         className={recipeBrowserStyles.tab(theme, value === "recipes")}
         type="button"
