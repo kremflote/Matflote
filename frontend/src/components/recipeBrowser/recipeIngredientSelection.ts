@@ -116,21 +116,6 @@ function getNaturalRecipeComponentAmount(recipe: IRecipe) {
     }
   });
 
-  recipe.components.forEach((component) => {
-    const baseAmount = toBaseAmount(component.amount, component.unit);
-    if (baseAmount === null) {
-      return;
-    }
-
-    if (isMassUnit(component.unit)) {
-      totalMassAmount += baseAmount;
-    }
-
-    if (isVolumeUnit(component.unit)) {
-      totalVolumeAmount += baseAmount;
-    }
-  });
-
   if (totalVolumeAmount > totalMassAmount) {
     return {
       amount: totalVolumeAmount,
