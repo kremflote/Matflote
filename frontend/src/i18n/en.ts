@@ -61,7 +61,7 @@ export const en: TranslationDictionary = {
     chooseAtLeastOneIngredientTag: "Choose at least one ingredient tag.",
     conversionHelper: "Conversion Helper",
     conversionHelperIntro:
-      "Reference conversions when a recipe gives everyday kitchen amounts.",
+      "Reference conversions when a recipe gives everyday kitchen amounts. Matflote only allows g and l in order to calculate nutrition, so consult this helper to get rough estimates.",
     conversionHelperSections: [
       {
         title: "Conversions",
@@ -148,9 +148,11 @@ export const en: TranslationDictionary = {
     recipes: "Recipes",
     recipeNeedsName: "Recipe needs a name.",
     recipeNameTooLong: (max) => `Recipe name can be at most ${max} characters.`,
-    recipeComponentAmountRequired: "Choose an amount for every selected recipe.",
+    recipeComponentAmountRequired:
+      "Choose an amount for every selected recipe.",
     recipeLineMode: "Recipe line type",
-    recipeLinesHelp: "Add ingredients directly, or use another recipe as a measured ingredient.",
+    recipeLinesHelp:
+      "Add ingredients directly, or use another recipe as a measured ingredient.",
     recipeSingular: "Recipe",
     salt: "Salt",
     saltPer100g: "Salt per 100g",
@@ -165,8 +167,8 @@ export const en: TranslationDictionary = {
     searchIngredients: "Search ingredients",
     searchIngredientsPlaceholder: "search ingredients...",
     searchRecipes: "Search recipes",
-    addRecipeDetails: "Add recipe details",
-    hideRecipeDetails: "Hide recipe details",
+    addRecipeDetails: "Recipe details",
+    hideRecipeDetails: "Hide details",
     selectBrand: "Select brand",
     tags: "Tags",
     takePhoto: "Take photo",

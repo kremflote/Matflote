@@ -346,13 +346,7 @@ export const recipeBrowserStyles = {
   selectedComponentThumbnailCard:
     "[&_h3]:text-xs [&_p]:text-[9px] max-sm:[&_h3]:text-[10px] max-sm:[&_p]:text-[8px]",
   componentRecipeSelected: (theme: SiteTheme) =>
-    `after:pointer-events-none after:absolute after:inset-0 after:z-20 after:rounded-md after:ring-2 after:ring-inset ${
-      theme === "dark"
-        ? "after:ring-white"
-        : theme === "paletteLight"
-          ? "after:ring-[#7A8864]"
-          : "after:ring-neutral-900"
-    }`,
+    `after:pointer-events-none after:absolute after:inset-0 after:z-20 after:rounded-md after:ring-2 after:ring-inset ${siteColorClasses[theme].selectedThumbnailRing}`,
   conversionHelperIntro: (theme: SiteTheme) =>
     `text-sm font-semibold leading-snug ${
       theme === "dark"
@@ -422,6 +416,9 @@ export const recipeBrowserStyles = {
           ? "border-[#C8C0B5] bg-[#E5D5BC]/45 text-[#556145] hover:bg-[#C8C0B5]/70"
           : "border-neutral-300 bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
     }`,
+  mobileFormActionRow: "hidden max-sm:grid max-sm:grid-cols-2 max-sm:gap-2",
+  mobileFormActionButton: "max-sm:h-11 max-sm:min-w-0 max-sm:px-3 max-sm:text-sm",
+  desktopTagSection: "max-sm:hidden",
   imageUploadActionStack:
     "absolute left-1/2 top-1/2 z-10 grid w-fit -translate-x-1/2 -translate-y-1/2 gap-2 max-[1100px]:static max-[1100px]:translate-x-0 max-[1100px]:translate-y-0 max-sm:absolute max-sm:left-1/2 max-sm:top-1/2 max-sm:w-[min(10rem,calc(100%-1rem))] max-sm:-translate-x-1/2 max-sm:-translate-y-1/2",
   imageUploadFloatingButton: (theme: SiteTheme) =>

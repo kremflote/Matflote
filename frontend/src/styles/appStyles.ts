@@ -94,6 +94,8 @@ export const siteColorClasses = {
     cookbookAddButton:
       "border-neutral-700 bg-neutral-950 text-white hover:bg-neutral-900",
     ingredientThumbnailInteractive: plannerControlHoverClasses.dark,
+    selectedThumbnailBorder: "border-[#7A8864]",
+    selectedThumbnailRing: "after:ring-[#7A8864]",
     plannerDateItem: "bg-white/[0.12]",
     plannerCounter: "border-white/[0.10] bg-white/[0.06] text-white",
     plannerCounterMuted: "text-neutral-300",
@@ -123,6 +125,8 @@ export const siteColorClasses = {
     cookbookAddButton:
       "border-[#EEC642] bg-[#FFD64F] text-neutral-950 hover:bg-[#EEC642]",
     ingredientThumbnailInteractive: plannerControlHoverClasses.light,
+    selectedThumbnailBorder: "border-[#7A8864]",
+    selectedThumbnailRing: "after:ring-[#7A8864]",
     plannerDateItem: "bg-neutral-200",
     plannerCounter: "border-neutral-200 bg-neutral-100 text-neutral-900",
     plannerCounterMuted: "text-neutral-500",
@@ -152,6 +156,8 @@ export const siteColorClasses = {
     cookbookAddButton:
       "border-[#7A8864] bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]",
     ingredientThumbnailInteractive: plannerControlHoverClasses.paletteLight,
+    selectedThumbnailBorder: "border-[#7A8864]",
+    selectedThumbnailRing: "after:ring-[#7A8864]",
     plannerDateItem: "bg-[#C8C0B5]/70",
     plannerCounter: "border-[#C8C0B5] bg-[#E5D5BC]/60 text-[#556145]",
     plannerCounterMuted: "text-[#7A8864]",
@@ -289,7 +295,8 @@ export const thumbnailStyles = {
     }`,
   ingredientShellCompact: "min-h-10 grid-cols-[1.75rem_minmax(0,1fr)] p-1",
   ingredientSelectedOutline: "outline outline-2 outline-current",
-  ingredientSelectedColorBorder: "border-2",
+  ingredientSelectedColorBorder: (theme: SiteTheme) =>
+    `border-2 ${siteColorClasses[theme].selectedThumbnailBorder}`,
   ingredientSelectedMuted: "opacity-45",
   ingredientImageFrame:
     "flex h-9 w-9 items-center justify-center overflow-hidden rounded-md",
@@ -1398,14 +1405,11 @@ export const plannerPickerStyles = {
   recipeGrid: "grid grid-cols-4 gap-3 max-sm:grid-cols-2",
   ingredientGrid: "grid auto-rows-max grid-cols-2 content-start items-start gap-2 max-sm:grid-cols-1",
   pickerCardShell: "relative h-fit min-w-0",
+  pickerFloatingControls: "absolute inset-x-3 top-3 z-20",
   recipeCard: (theme: SiteTheme, selected: boolean) =>
     `${shadowClasses.subtle} ${
       selected
-        ? theme === "dark"
-          ? "after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:ring-white after:content-['']"
-          : theme === "paletteLight"
-            ? "after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:ring-[#7A8864] after:content-['']"
-            : "after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:ring-neutral-900 after:content-['']"
+        ? `after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:content-[''] ${siteColorClasses[theme].selectedThumbnailRing}`
         : theme === "dark"
           ? "ring-1 ring-white/[0.08]"
           : theme === "paletteLight"
@@ -1440,6 +1444,15 @@ export const plannerPickerStyles = {
     }`,
   footer: "border-t pt-4",
   footerContent: "flex items-center justify-between gap-3 max-sm:grid max-sm:grid-cols-1",
+  footerSelectionRow: "flex min-w-0 flex-1 items-center gap-3",
+  footerClearButton: (theme: SiteTheme) =>
+    `shrink-0 border-0 bg-transparent p-0 text-sm font-bold underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-40 ${
+      theme === "dark"
+        ? "text-neutral-300 hover:text-white"
+        : theme === "paletteLight"
+          ? "text-[#556145] hover:text-[#3C4A2E]"
+          : "text-neutral-700 hover:text-neutral-950"
+    }`,
   footerActions:
     "flex shrink-0 flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap max-sm:[&>button]:min-w-0 max-sm:[&>button]:flex-1 max-sm:[&>button]:px-3 max-sm:[&>button]:text-sm",
   secondaryButton: controlStyles.secondaryButton,

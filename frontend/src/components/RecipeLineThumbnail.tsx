@@ -24,11 +24,10 @@ function RecipeLineThumbnail({
   const imageUrl = getApiAssetUrl(recipe.imageUrl);
   const compactClassName = mode === "compact" ? thumbnailStyles.ingredientShellCompact : "";
   const sharedClassName = `${thumbnailStyles.ingredientShell(theme)} ${compactClassName} ${className} ${
-    selected ? thumbnailStyles.ingredientSelectedColorBorder : ""
+    selected ? thumbnailStyles.ingredientSelectedColorBorder(theme) : ""
   } ${onClick ? `cursor-pointer ${siteColorClasses[theme].ingredientThumbnailInteractive}` : ""}`;
   const style = {
     color: theme === "dark" ? colorPalette.ivory : colorPalette.ingredientIconText,
-    ...(selected ? { borderColor: colorPalette.olive } : {}),
   };
 
   const content = (

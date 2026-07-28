@@ -13,10 +13,10 @@ import ImageCropPicker from "./ImageCropPicker";
 import Modal from "../Modal";
 import RecipeIngredientToggle from "./RecipeIngredientToggle";
 import IngredientTagCreateDialog from "./IngredientTagCreateDialog";
+import TagPickerDialog from "./TagPickerDialog";
 import {
   RecipeComponentPickerContent,
   RecipeIngredientPickerContent,
-  RecipeIngredientPickerDialog,
   SelectedIngredientCapsules,
   SelectedRecipeComponentCapsules,
 } from "./RecipeIngredientPicker";
@@ -84,6 +84,7 @@ function RecipeCreateForm({
     initialRecipe?.tags ?? [],
   );
   const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
+  const [isTagPickerOpen, setIsTagPickerOpen] = useState(false);
   const [ingredientSearch, setIngredientSearch] = useState("");
   const [recipeSearch, setRecipeSearch] = useState("");
   const [recipeLinePickerMode, setRecipeLinePickerMode] = useState<RecipeLinePickerMode>("ingredients");
@@ -364,7 +365,7 @@ function RecipeCreateForm({
             </div>
           </div>
 
-          <section className={recipeBrowserStyles.field}>
+          <section className={`${recipeBrowserStyles.field} ${recipeBrowserStyles.desktopTagSection}`}>
             <span className={recipeBrowserStyles.label(theme)}>
               {t.cookbook.tags}
               <span className={recipeBrowserStyles.inlineHint(theme)}>{t.cookbook.optional}</span>
@@ -382,10 +383,30 @@ function RecipeCreateForm({
             />
           </section>
 
+          <div className={recipeBrowserStyles.mobileFormActionRow}>
+            <button
+              className={`${recipeBrowserStyles.detailsToggleFull(theme)} ${recipeBrowserStyles.mobileFormActionButton}`}
+              type="button"
+              onClick={() => setIsTagPickerOpen(true)}
+            >
+              {t.cookbook.tags}
+            </button>
+            {onToggleRecipeDetails && (
+              <button
+                aria-expanded={showRecipeDetails}
+                className={`${recipeBrowserStyles.detailsToggleFull(theme)} ${recipeBrowserStyles.mobileFormActionButton}`}
+                type="button"
+                onClick={onToggleRecipeDetails}
+              >
+                {showRecipeDetails ? t.cookbook.hideRecipeDetails : t.cookbook.addRecipeDetails}
+              </button>
+            )}
+          </div>
+
           {onToggleRecipeDetails && (
             <button
               aria-expanded={showRecipeDetails}
-              className={recipeBrowserStyles.detailsToggleFull(theme)}
+              className={`${recipeBrowserStyles.detailsToggleFull(theme)} max-sm:hidden`}
               type="button"
               onClick={onToggleRecipeDetails}
             >
@@ -435,6 +456,7 @@ function RecipeCreateForm({
               </button>
             </div>
             <RecipeLineModeToggle
+              className="max-w-md max-sm:hidden"
               mode={recipeLinePickerMode}
               theme={theme}
               onChange={setRecipeLinePickerMode}
@@ -443,19 +465,23 @@ function RecipeCreateForm({
               <button className={recipeBrowserStyles.detailsToggleFull(theme)} type="button" onClick={openMobileIngredientPicker}>
                 {recipeLinePickerMode === "ingredients" ? t.cookbook.chooseIngredients : t.cookbook.chooseRecipes}
               </button>
-              {recipeLinePickerMode === "ingredients" ? (
+              {selectedIngredients.length === 0 && selectedComponents.length === 0 ? (
+                <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noIngredientsSelected}</p>
+              ) : null}
+              {selectedIngredients.length > 0 ? (
                 <SelectedIngredientCapsules
                   ingredients={ingredients}
                   selectedIngredients={selectedIngredients}
                   theme={theme}
                 />
-              ) : (
+              ) : null}
+              {selectedComponents.length > 0 ? (
                 <SelectedRecipeComponentCapsules
                   recipes={recipes}
                   selectedComponents={selectedComponents}
                   theme={theme}
                 />
-              )}
+              ) : null}
             </div>
             <div className={recipeBrowserStyles.desktopIngredientPicker}>
               {recipeLinePickerMode === "ingredients" ? (
@@ -532,41 +558,7 @@ function RecipeCreateForm({
           {isSaving ? t.common.saving : isEditing ? t.cookbook.saveRecipe : t.cookbook.createRecipe}
         </button>
       </div>
-      {isIngredientPickerOpen && recipeLinePickerMode === "ingredients" && (
-        <RecipeIngredientPickerDialog
-          closeLabel={t.common.close}
-          ingredientSearch={ingredientSearch}
-          ingredients={visibleMobileIngredients}
-          preparationLabels={t.enums.ingredientPreparations}
-          selectedIngredientIds={mobileSelectedIngredientIds}
-          selectedIngredients={mobileIngredientDraft}
-          theme={theme}
-          onAmountChange={(ingredientId, amount) =>
-            setMobileIngredientDraft((currentIngredients) =>
-              updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
-            )
-          }
-          onCancel={() => setIsIngredientPickerOpen(false)}
-          onConfirm={confirmMobileIngredients}
-          onPreparationChange={(ingredientId, preparation) =>
-            setMobileIngredientDraft((currentIngredients) =>
-              updateSelectedIngredient(currentIngredients, ingredientId, { preparation }),
-            )
-          }
-          onSearchChange={setIngredientSearch}
-          onToggle={(ingredientId) =>
-            setMobileIngredientDraft((currentIngredients) =>
-              toggleRecipeIngredient(currentIngredients, ingredientId),
-            )
-          }
-          onUnitChange={(ingredientId, unit) =>
-            setMobileIngredientDraft((currentIngredients) =>
-              updateSelectedIngredient(currentIngredients, ingredientId, { unit }),
-            )
-          }
-        />
-      )}
-      {isIngredientPickerOpen && recipeLinePickerMode === "recipes" && (
+      {isIngredientPickerOpen && (
         <Modal
           backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
           bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
@@ -585,45 +577,97 @@ function RecipeCreateForm({
           footerClassName={recipeBrowserStyles.formActions}
           headerClassName={recipeBrowserStyles.modalHeader}
           panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
-          title={t.cookbook.recipes}
+          title={t.cookbook.ingredients}
           titleClassName={recipeBrowserStyles.modalTitle}
           onClose={() => setIsIngredientPickerOpen(false)}
         >
-          <RecipeComponentPickerContent
-            preparationLabels={t.enums.ingredientPreparations}
-            recipeSearch={recipeSearch}
-            recipes={visibleMobileComponentRecipes}
-            selectedComponentIds={mobileSelectedComponentIds}
-            selectedComponents={mobileComponentDraft}
+          <RecipeLineModeToggle
+            className="max-w-full"
+            mode={recipeLinePickerMode}
             theme={theme}
-            onAmountChange={(recipeId, amount) =>
-              setMobileComponentDraft((currentComponents) =>
-                updateSelectedRecipeComponent(currentComponents, recipeId, { amount }),
-              )
-            }
-            onPreparationChange={(recipeId, preparation) =>
-              setMobileComponentDraft((currentComponents) =>
-                updateSelectedRecipeComponent(currentComponents, recipeId, { preparation }),
-              )
-            }
-            onSearchChange={setRecipeSearch}
-            onToggle={(recipe) =>
-              setMobileComponentDraft((currentComponents) =>
-                toggleRecipeComponent(currentComponents, recipe),
-              )
-            }
-            onUnitChange={(recipeId, unit) =>
-              setMobileComponentDraft((currentComponents) =>
-                updateSelectedRecipeComponent(currentComponents, recipeId, { unit }),
-              )
-            }
+            onChange={setRecipeLinePickerMode}
           />
+          {recipeLinePickerMode === "ingredients" ? (
+            <RecipeIngredientPickerContent
+              ingredientSearch={ingredientSearch}
+              ingredients={visibleMobileIngredients}
+              preparationLabels={t.enums.ingredientPreparations}
+              selectedIngredientIds={mobileSelectedIngredientIds}
+              selectedIngredients={mobileIngredientDraft}
+              theme={theme}
+              onAmountChange={(ingredientId, amount) =>
+                setMobileIngredientDraft((currentIngredients) =>
+                  updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
+                )
+              }
+              onPreparationChange={(ingredientId, preparation) =>
+                setMobileIngredientDraft((currentIngredients) =>
+                  updateSelectedIngredient(currentIngredients, ingredientId, { preparation }),
+                )
+              }
+              onSearchChange={setIngredientSearch}
+              onToggle={(ingredientId) =>
+                setMobileIngredientDraft((currentIngredients) =>
+                  toggleRecipeIngredient(currentIngredients, ingredientId),
+                )
+              }
+              onUnitChange={(ingredientId, unit) =>
+                setMobileIngredientDraft((currentIngredients) =>
+                  updateSelectedIngredient(currentIngredients, ingredientId, { unit }),
+                )
+              }
+            />
+          ) : (
+            <RecipeComponentPickerContent
+              preparationLabels={t.enums.ingredientPreparations}
+              recipeSearch={recipeSearch}
+              recipes={visibleMobileComponentRecipes}
+              selectedComponentIds={mobileSelectedComponentIds}
+              selectedComponents={mobileComponentDraft}
+              theme={theme}
+              onAmountChange={(recipeId, amount) =>
+                setMobileComponentDraft((currentComponents) =>
+                  updateSelectedRecipeComponent(currentComponents, recipeId, { amount }),
+                )
+              }
+              onPreparationChange={(recipeId, preparation) =>
+                setMobileComponentDraft((currentComponents) =>
+                  updateSelectedRecipeComponent(currentComponents, recipeId, { preparation }),
+                )
+              }
+              onSearchChange={setRecipeSearch}
+              onToggle={(recipe) =>
+                setMobileComponentDraft((currentComponents) =>
+                  toggleRecipeComponent(currentComponents, recipe),
+                )
+              }
+              onUnitChange={(recipeId, unit) =>
+                setMobileComponentDraft((currentComponents) =>
+                  updateSelectedRecipeComponent(currentComponents, recipeId, { unit }),
+                )
+              }
+            />
+          )}
         </Modal>
       )}
       {isConversionHelperOpen && (
         <ConversionHelperDialog
           theme={theme}
           onClose={() => setIsConversionHelperOpen(false)}
+        />
+      )}
+      {isTagPickerOpen && (
+        <TagPickerDialog
+          addActionLabel={t.common.manageTags}
+          formatValue={(value) => t.enums.recipeTags[value] ?? formatLabel(value)}
+          groupLabels={recipeTagGroupLabels}
+          groups={groupedRecipeTags}
+          selectedValues={selectedTags}
+          theme={theme}
+          title={t.cookbook.tags}
+          onAddTag={() => setIsTagCreateOpen(true)}
+          onClose={() => setIsTagPickerOpen(false)}
+          onToggle={(value) => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
         />
       )}
       {isTagCreateOpen && (
@@ -680,17 +724,18 @@ type ConversionHelperDialogProps = {
 };
 
 type RecipeLineModeToggleProps = {
+  className?: string;
   mode: RecipeLinePickerMode;
   theme: SiteTheme;
   onChange: (mode: RecipeLinePickerMode) => void;
 };
 
-function RecipeLineModeToggle({ mode, theme, onChange }: RecipeLineModeToggleProps) {
+function RecipeLineModeToggle({ className = "", mode, theme, onChange }: RecipeLineModeToggleProps) {
   return (
     <RecipeIngredientToggle
       value={mode}
       theme={theme}
-      className="max-w-md"
+      className={className}
       onChange={onChange}
     />
   );

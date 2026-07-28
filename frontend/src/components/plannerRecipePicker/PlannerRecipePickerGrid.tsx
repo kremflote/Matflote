@@ -17,6 +17,8 @@ type PlannerRecipePickerGridProps = {
   theme: SiteTheme;
   onAddIngredient: (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => void;
   onAddRecipe: (recipe: IRecipe, portions: number) => void;
+  onRemoveIngredient: (ingredientId: number) => void;
+  onRemoveRecipe: (recipeId: number) => void;
 };
 
 type ActiveOverlay =
@@ -32,6 +34,8 @@ function PlannerRecipePickerGrid({
   theme,
   onAddIngredient,
   onAddRecipe,
+  onRemoveIngredient,
+  onRemoveRecipe,
 }: PlannerRecipePickerGridProps) {
   const { t } = useLanguage();
   const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay | null>(null);
@@ -51,15 +55,31 @@ function PlannerRecipePickerGrid({
         ? recipes.map((recipe) => {
           const selected = selectedRecipeIds.includes(recipe.recipeId);
           const isActive = activeOverlay?.kind === "recipe" && activeOverlay.id === recipe.recipeId;
+          const visuallySelected = selected || isActive;
           const value = isActive ? activeOverlay.value : recipe.portions.toString();
 
           return (
             <div className={plannerPickerStyles.pickerCardShell} key={recipe.recipeId}>
               <RecipeThumbnail
-                ariaPressed={selected}
-                className={plannerPickerStyles.recipeCard(theme, selected)}
-                titleBandExpanded={isActive}
-                titleBandExtra={isActive ? (
+                ariaPressed={visuallySelected}
+                className={plannerPickerStyles.recipeCard(theme, visuallySelected)}
+                recipe={{
+                  imageUrl: recipe.imageUrl,
+                  name: recipe.name,
+                  subtitle: recipe.tags.slice(0, 2).join(" · "),
+                }}
+                interactiveEffect={false}
+                theme={theme}
+                onClick={
+                  isActive
+                    ? undefined
+                    : selected
+                      ? () => onRemoveRecipe(recipe.recipeId)
+                      : () => setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value })
+                }
+              />
+              {isActive ? (
+                <div className={plannerPickerStyles.pickerFloatingControls}>
                   <PickerInlineControls
                     inputLabel={t.cookbook.portions}
                     theme={theme}
@@ -73,30 +93,36 @@ function PlannerRecipePickerGrid({
                     }}
                     onValueChange={(nextValue) => setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value: nextValue })}
                   />
-                ) : undefined}
-                recipe={{
-                  imageUrl: recipe.imageUrl,
-                  name: recipe.name,
-                  subtitle: recipe.tags.slice(0, 2).join(" · "),
-                }}
-                interactiveEffect={false}
-                theme={theme}
-                onClick={isActive ? undefined : () => setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value })}
-              />
+                </div>
+              ) : null}
             </div>
           );
         })
         : ingredients.map((ingredient) => {
           const selected = selectedIngredientIds.includes(ingredient.ingredientId);
           const isActive = activeOverlay?.kind === "ingredient" && activeOverlay.id === ingredient.ingredientId;
+          const visuallySelected = selected || isActive;
           const value = isActive ? activeOverlay.value : "1";
           const unit = isActive ? activeOverlay.unit : "Gram";
 
           return (
             <div className={plannerPickerStyles.pickerCardShell} key={ingredient.ingredientId}>
               <IngredientThumbnail
-                className={plannerPickerStyles.recipeCard(theme, selected)}
-                footerExtra={isActive ? (
+                className={plannerPickerStyles.recipeCard(theme, visuallySelected)}
+                ingredient={ingredient}
+                selected={visuallySelected}
+                selectedPresentation="outline"
+                theme={theme}
+                onClick={
+                  isActive
+                    ? undefined
+                    : selected
+                      ? () => onRemoveIngredient(ingredient.ingredientId)
+                      : () => setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value, unit })
+                }
+              />
+              {isActive ? (
+                <div className={plannerPickerStyles.pickerFloatingControls}>
                   <PickerInlineControls
                     inputLabel={t.cookbook.amount}
                     theme={theme}
@@ -112,13 +138,8 @@ function PlannerRecipePickerGrid({
                     onUnitChange={(nextUnit) => setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value, unit: nextUnit })}
                     onValueChange={(nextValue) => setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value: nextValue, unit })}
                   />
-                ) : undefined}
-                ingredient={ingredient}
-                selected={selected}
-                selectedPresentation="outline"
-                theme={theme}
-                onClick={isActive ? undefined : () => setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value, unit })}
-              />
+                </div>
+              ) : null}
             </div>
           );
         })}

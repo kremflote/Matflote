@@ -16,6 +16,7 @@ import ImageCropPicker from "./ImageCropPicker";
 import IngredientTagCreateDialog from "./IngredientTagCreateDialog";
 import MatvaretabellenSearchDialog, { type MatvaretabellenNutritionCandidate } from "./MatvaretabellenSearchDialog";
 import NutritionEditor, { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "./NutritionEditor";
+import TagPickerDialog from "./TagPickerDialog";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type IngredientCreateFormProps = {
@@ -46,6 +47,7 @@ function IngredientCreateForm({
     initialIngredient ? [...initialIngredient.tags] : [],
   );
   const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
+  const [isTagPickerOpen, setIsTagPickerOpen] = useState(false);
   const [calories, setCalories] = useState(numberToInputValue(initialIngredient?.nutritionPer100?.calories));
   const [carbohydrateGrams, setCarbohydrateGrams] = useState(
     numberToInputValue(initialIngredient?.nutritionPer100?.carbohydrateGrams),
@@ -437,9 +439,26 @@ function IngredientCreateForm({
 
               <section className={recipeBrowserStyles.field}>
                 <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.nutrition}</span>
+                <div className={recipeBrowserStyles.mobileFormActionRow}>
+                  <button
+                    className={`${recipeBrowserStyles.detailsToggleFull(theme)} ${recipeBrowserStyles.mobileFormActionButton}`}
+                    type="button"
+                    onClick={() => setIsTagPickerOpen(true)}
+                  >
+                    {t.cookbook.tags}
+                  </button>
+                  <button
+                    aria-expanded={showNutrition}
+                    className={`${recipeBrowserStyles.detailsToggleFull(theme)} ${recipeBrowserStyles.mobileFormActionButton}`}
+                    type="button"
+                    onClick={() => setShowNutrition((currentValue) => !currentValue)}
+                  >
+                    {showNutrition ? t.cookbook.hideNutrition : t.cookbook.addNutrition}
+                  </button>
+                </div>
                 <button
                   aria-expanded={showNutrition}
-                  className={recipeBrowserStyles.detailsToggleFull(theme)}
+                  className={`${recipeBrowserStyles.detailsToggleFull(theme)} max-sm:hidden`}
                   type="button"
                   onClick={() => setShowNutrition((currentValue) => !currentValue)}
                 >
@@ -466,7 +485,7 @@ function IngredientCreateForm({
 
           {showNutrition && <div className="max-md:hidden">{nutritionPanel}</div>}
 
-          <section className={recipeBrowserStyles.field}>
+          <section className={`${recipeBrowserStyles.field} ${recipeBrowserStyles.desktopTagSection}`}>
             <span className={recipeBrowserStyles.label(theme)}>
               {t.cookbook.tags}
             </span>
@@ -485,6 +504,21 @@ function IngredientCreateForm({
         </div>
 
       </div>
+
+      {isTagPickerOpen && (
+        <TagPickerDialog
+          addActionLabel={t.common.manageTags}
+          formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
+          groupLabels={groupLabels}
+          groups={groupedTags}
+          selectedValues={selectedTags}
+          theme={theme}
+          title={t.cookbook.tags}
+          onAddTag={() => setIsTagCreateOpen(true)}
+          onClose={() => setIsTagPickerOpen(false)}
+          onToggle={(value) => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
+        />
+      )}
 
       {isTagCreateOpen && (
         <IngredientTagCreateDialog

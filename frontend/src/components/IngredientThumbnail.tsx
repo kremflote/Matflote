@@ -38,7 +38,7 @@ function IngredientThumbnail({
   const imageUrl = getApiAssetUrl(ingredient.imageUrl);
   const selectedClassName =
     selectedPresentation === "colorBorder"
-      ? thumbnailStyles.ingredientSelectedColorBorder
+      ? thumbnailStyles.ingredientSelectedColorBorder(theme)
       : selectedPresentation === "muted"
       ? thumbnailStyles.ingredientSelectedMuted
       : thumbnailStyles.ingredientSelectedOutline;
@@ -48,7 +48,6 @@ function IngredientThumbnail({
   } ${disabled ? "cursor-not-allowed" : onClick ? `cursor-pointer ${siteColorClasses[theme].ingredientThumbnailInteractive}` : ""}`;
   const style = {
     color: tone.text,
-    ...(selected && selectedPresentation === "colorBorder" ? { borderColor: tone.dot } : {}),
   };
 
   const content = (

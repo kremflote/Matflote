@@ -376,6 +376,31 @@ function PlannerRecipePickerModal({
     });
   };
 
+  const clearMealSelection = () => {
+    setMainRecipeSelection(null);
+    setMainIngredientSelection(null);
+    setSupplementaryRecipeSelections([]);
+    setSupplementaryIngredientSelections([]);
+  };
+
+  const removeRecipeSelection = (recipeId: number) => {
+    setMainRecipeSelection((currentSelection) =>
+      currentSelection?.recipeId === recipeId ? null : currentSelection,
+    );
+    setSupplementaryRecipeSelections((currentSelections) =>
+      currentSelections.filter((selection) => selection.recipeId !== recipeId),
+    );
+  };
+
+  const removeIngredientSelection = (ingredientId: number) => {
+    setMainIngredientSelection((currentSelection) =>
+      currentSelection?.ingredientId === ingredientId ? null : currentSelection,
+    );
+    setSupplementaryIngredientSelections((currentSelections) =>
+      currentSelections.filter((selection) => selection.ingredientId !== ingredientId),
+    );
+  };
+
   const saveMealSlot = async () => {
     if (mainRecipe === null && mainIngredient === null && entry === undefined) {
       return;
@@ -486,11 +511,26 @@ function PlannerRecipePickerModal({
       descriptionClassName={plannerPickerStyles.subtitle(theme)}
       footer={
         <div className={plannerPickerStyles.footerContent}>
-          <PlannerRecipePickerSelection
-            mainLabel={mainSelectionLabel}
-            supplementaryLabels={supplementarySelectionLabels}
-            theme={theme}
-          />
+          <div className={plannerPickerStyles.footerSelectionRow}>
+            <PlannerRecipePickerSelection
+              mainLabel={mainSelectionLabel}
+              supplementaryLabels={supplementarySelectionLabels}
+              theme={theme}
+            />
+            <button
+              className={plannerPickerStyles.footerClearButton(theme)}
+              disabled={
+                mainRecipeSelection === null &&
+                mainIngredientSelection === null &&
+                supplementaryRecipeSelections.length === 0 &&
+                supplementaryIngredientSelections.length === 0
+              }
+              type="button"
+              onClick={clearMealSelection}
+            >
+              {t.common.clear}
+            </button>
+          </div>
           <div className={plannerPickerStyles.footerActions}>
             <button
               className={plannerPickerStyles.primaryButton(theme)}
@@ -636,6 +676,8 @@ function PlannerRecipePickerModal({
               onAddRecipe={(recipe, portions) =>
                 toggleMealRecipe(recipe, portions)
               }
+              onRemoveIngredient={removeIngredientSelection}
+              onRemoveRecipe={removeRecipeSelection}
             />
           </div>
         </div>
