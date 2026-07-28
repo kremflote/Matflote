@@ -512,7 +512,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "max-[1100px]:!border-neutral-800 max-[1100px]:!bg-neutral-950"
         : theme === "paletteLight"
-          ? "!border-[#556145] !bg-[#556145]"
+          ? ""
           : "max-[1100px]:!border-neutral-300 max-[1100px]:!bg-neutral-200"
     }`,
   tab: (theme: SiteTheme, selected: boolean) =>
