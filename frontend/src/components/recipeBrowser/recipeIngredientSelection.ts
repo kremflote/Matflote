@@ -124,8 +124,10 @@ function getNaturalRecipeComponentAmount(recipe: IRecipe) {
     hasVolume = hasVolume || isVolumeUnit(component.unit);
   });
 
+  const portionCount = recipe.portions > 0 ? recipe.portions : 1;
+
   return {
-    amount: totalBaseAmount > 0 ? totalBaseAmount : 0,
+    amount: totalBaseAmount > 0 ? totalBaseAmount / portionCount : 0,
     unit: hasVolume && !hasMass ? ("Milliliter" as MeasurementUnit) : ("Gram" as MeasurementUnit),
   };
 }
