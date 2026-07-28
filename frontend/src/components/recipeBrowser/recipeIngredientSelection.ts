@@ -98,9 +98,8 @@ export function updateSelectedRecipeComponent(
 }
 
 function getNaturalRecipeComponentAmount(recipe: IRecipe) {
-  let totalBaseAmount = 0;
-  let hasMass = false;
-  let hasVolume = false;
+  let totalMassAmount = 0;
+  let totalVolumeAmount = 0;
 
   recipe.ingredients.forEach((recipeIngredient) => {
     const baseAmount = toBaseAmount(recipeIngredient.amount, recipeIngredient.unit);
@@ -108,9 +107,13 @@ function getNaturalRecipeComponentAmount(recipe: IRecipe) {
       return;
     }
 
-    totalBaseAmount += baseAmount;
-    hasMass = hasMass || isMassUnit(recipeIngredient.unit);
-    hasVolume = hasVolume || isVolumeUnit(recipeIngredient.unit);
+    if (isMassUnit(recipeIngredient.unit)) {
+      totalMassAmount += baseAmount;
+    }
+
+    if (isVolumeUnit(recipeIngredient.unit)) {
+      totalVolumeAmount += baseAmount;
+    }
   });
 
   recipe.components.forEach((component) => {
@@ -119,16 +122,25 @@ function getNaturalRecipeComponentAmount(recipe: IRecipe) {
       return;
     }
 
-    totalBaseAmount += baseAmount;
-    hasMass = hasMass || isMassUnit(component.unit);
-    hasVolume = hasVolume || isVolumeUnit(component.unit);
+    if (isMassUnit(component.unit)) {
+      totalMassAmount += baseAmount;
+    }
+
+    if (isVolumeUnit(component.unit)) {
+      totalVolumeAmount += baseAmount;
+    }
   });
 
-  const portionCount = recipe.portions > 0 ? recipe.portions : 1;
+  if (totalVolumeAmount > totalMassAmount) {
+    return {
+      amount: totalVolumeAmount,
+      unit: "Milliliter" as MeasurementUnit,
+    };
+  }
 
   return {
-    amount: totalBaseAmount > 0 ? totalBaseAmount / portionCount : 0,
-    unit: hasVolume && !hasMass ? ("Milliliter" as MeasurementUnit) : ("Gram" as MeasurementUnit),
+    amount: totalMassAmount,
+    unit: "Gram" as MeasurementUnit,
   };
 }
 
