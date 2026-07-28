@@ -51,6 +51,7 @@ export const en: TranslationDictionary = {
     brand: "Brand",
     calories: "Calories",
     caloriesPer100g: "Calories per 100g",
+    caloriesPerPortion: "Calories per portion",
     carbs: "Carbs",
     carbsPer100g: "Carbs per 100g",
     chooseFile: "Choose file",

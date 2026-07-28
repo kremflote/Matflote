@@ -24,6 +24,7 @@ function RecipeDetailContent({
   const { t } = useLanguage();
   const imageUrl = getApiAssetUrl(recipe.imageUrl);
   const nutrition = calculateRecipeNutrition(recipe, allRecipes);
+  const recipeTotalGrams = calculateRecipeTotalGrams(recipe, allRecipes);
   const [selectedPortions, setSelectedPortions] = useState(formatPortionInputValue(recipe.portions));
   const amountMultiplier = parsePortionMultiplier(selectedPortions, recipe.portions);
 
@@ -120,7 +121,13 @@ function RecipeDetailContent({
       </div>
 
       <DetailSection title={t.cookbook.dietaryInformation} subtitle="per 100g" theme={theme}>
-        <NutritionGrid nutrition={nutrition} theme={theme} variant="recipe" />
+        <NutritionGrid
+          nutrition={nutrition}
+          recipePortions={recipe.portions}
+          recipeTotalGrams={recipeTotalGrams}
+          theme={theme}
+          variant="recipe"
+        />
       </DetailSection>
     </div>
   );
@@ -236,6 +243,11 @@ function calculateRecipeNutrition(recipe: EnrichedRecipe, allRecipes: EnrichedRe
   return hasNutrition ? total : null;
 }
 
+function calculateRecipeTotalGrams(recipe: EnrichedRecipe, allRecipes: EnrichedRecipe[]) {
+  const totalGrams = addRecipeGramAmount(recipe, allRecipes, new Set<number>(), 1);
+  return totalGrams > 0 ? totalGrams : null;
+}
+
 function addRecipeNutrition(
   total: INutritionFacts,
   recipe: EnrichedRecipe,
@@ -301,6 +313,44 @@ function addRecipeNutrition(
 
   visitedRecipeIds.delete(recipe.recipeId);
   return hasNutrition;
+}
+
+function addRecipeGramAmount(
+  recipe: EnrichedRecipe,
+  allRecipes: EnrichedRecipe[],
+  visitedRecipeIds: Set<number>,
+  multiplier: number,
+) {
+  if (visitedRecipeIds.has(recipe.recipeId)) {
+    return 0;
+  }
+
+  visitedRecipeIds.add(recipe.recipeId);
+  let totalGrams = 0;
+
+  recipe.ingredients.forEach((recipeIngredient) => {
+    const grams = toGramAmount(recipeIngredient.amount, recipeIngredient.unit);
+    if (grams !== null) {
+      totalGrams += grams * multiplier;
+    }
+  });
+
+  recipe.components.forEach((component) => {
+    const componentRecipe = allRecipes.find((currentRecipe) => currentRecipe.recipeId === component.recipeId);
+    if (componentRecipe === undefined) {
+      return;
+    }
+
+    totalGrams += addRecipeGramAmount(
+      componentRecipe,
+      allRecipes,
+      visitedRecipeIds,
+      multiplier * getComponentScale(component.amount, component.unit, componentRecipe),
+    );
+  });
+
+  visitedRecipeIds.delete(recipe.recipeId);
+  return totalGrams;
 }
 
 function createEmptyNutrition(): INutritionFacts {

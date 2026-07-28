@@ -50,6 +50,7 @@ export const nb: TranslationDictionary = {
     brand: "Merke",
     calories: "Kalorier",
     caloriesPer100g: "Kalorier per 100g",
+    caloriesPerPortion: "Kalorier per porsjon",
     carbs: "Karbohydrater",
     carbsPer100g: "Karbohydrater per 100g",
     chooseFile: "Velg fil",

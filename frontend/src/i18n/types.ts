@@ -67,6 +67,7 @@ export type TranslationDictionary = {
     amount: string;
     brand: string;
     caloriesPer100g: string;
+    caloriesPerPortion: string;
     calories: string;
     carbsPer100g: string;
     carbs: string;

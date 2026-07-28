@@ -105,34 +105,46 @@ export function ChipList({ compact = false, label, values, theme }: ChipListProp
 
 type NutritionGridProps = {
   nutrition: INutritionFacts | null;
+  recipePortions?: number;
+  recipeTotalGrams?: number | null;
   theme: SiteTheme;
   variant?: "default" | "recipe";
 };
 
-export function NutritionGrid({ nutrition, theme, variant = "default" }: NutritionGridProps) {
+export function NutritionGrid({
+  nutrition,
+  recipePortions = 1,
+  recipeTotalGrams = null,
+  theme,
+  variant = "default",
+}: NutritionGridProps) {
   const { t } = useLanguage();
 
   if (nutrition === null) {
     return <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noDietaryInformation}</p>;
   }
 
+  const caloriesPerPortion =
+    nutrition.calories === null ? null : nutrition.calories / Math.max(recipePortions, 1);
+  const caloriesPer100g =
+    nutrition.calories === null || recipeTotalGrams === null || recipeTotalGrams <= 0
+      ? null
+      : nutrition.calories / recipeTotalGrams * 100;
+  const totalFatGrams = sumFatGrams(nutrition);
   const overviewRows: Array<[string, string | null]> =
     variant === "recipe"
       ? [
-        [t.cookbook.totalCaloriesInDish, nutrition.calories === null ? null : `${nutrition.calories} kcal`],
+        [t.cookbook.caloriesPerPortion, formatCalories(caloriesPerPortion)],
+        [t.cookbook.calories, formatCalories(caloriesPer100g)],
         [t.cookbook.carbs, formatGrams(nutrition.carbohydrateGrams)],
         [t.cookbook.protein, formatGrams(nutrition.proteinGrams)],
-        [t.cookbook.nutritionFats, formatGrams(sumNutritionValues([
-          nutrition.saturatedFatGrams,
-          nutrition.transFatGrams,
-          nutrition.monounsaturatedFatGrams,
-          nutrition.polyunsaturatedFatGrams,
-        ]), 1)],
+        [t.cookbook.nutritionFats, formatGrams(totalFatGrams, 1)],
       ]
       : [
-        [t.cookbook.calories, nutrition.calories === null ? null : `${nutrition.calories} kcal`],
+        [t.cookbook.calories, formatCalories(nutrition.calories)],
         [t.cookbook.carbs, formatGrams(nutrition.carbohydrateGrams)],
         [t.cookbook.protein, formatGrams(nutrition.proteinGrams)],
+        [t.cookbook.nutritionFats, formatGrams(totalFatGrams, 1)],
       ];
 
   const rowGroups: Array<{ title: string; rows: Array<[string, string | null]> }> = [
@@ -194,6 +206,10 @@ export function NutritionGrid({ nutrition, theme, variant = "default" }: Nutriti
   );
 }
 
+function formatCalories(value: number | null) {
+  return value === null ? null : `${Math.round(value)} kcal`;
+}
+
 function formatGrams(value: number | null, maximumFractionDigits?: number) {
   if (value === null) {
     return null;
@@ -215,6 +231,15 @@ function sumNutritionValues(values: Array<number | null>) {
   }
 
   return knownValues.reduce((total, value) => total + value, 0);
+}
+
+function sumFatGrams(nutrition: INutritionFacts) {
+  return sumNutritionValues([
+    nutrition.saturatedFatGrams,
+    nutrition.transFatGrams,
+    nutrition.monounsaturatedFatGrams,
+    nutrition.polyunsaturatedFatGrams,
+  ]);
 }
 
 function formatUnit(value: number | null, unit: string) {
