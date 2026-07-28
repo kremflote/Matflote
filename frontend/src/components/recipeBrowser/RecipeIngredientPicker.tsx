@@ -233,7 +233,7 @@ type RecipeComponentPickerContentProps = {
   onAmountChange: (recipeId: number, value: string) => void;
   onPreparationChange: (recipeId: number, value: IngredientPreparation) => void;
   onSearchChange: (value: string) => void;
-  onToggle: (recipeId: number) => void;
+  onToggle: (recipe: IRecipe) => void;
   onUnitChange: (recipeId: number, value: MeasurementUnit) => void;
 };
 
@@ -284,7 +284,7 @@ export function RecipeComponentPickerContent({
                 unit={selectedComponent?.unit ?? "Gram"}
                 onAmountChange={(amount) => onAmountChange(recipe.recipeId, amount)}
                 onPreparationChange={(preparation) => onPreparationChange(recipe.recipeId, preparation)}
-                onToggle={() => onToggle(recipe.recipeId)}
+                onToggle={() => onToggle(recipe)}
                 onUnitChange={(unit) => onUnitChange(recipe.recipeId, unit)}
               />
             );

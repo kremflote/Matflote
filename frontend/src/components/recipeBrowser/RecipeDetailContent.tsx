@@ -440,7 +440,7 @@ function formatRecipeIngredientAmount(
     return unitLabels[unit];
   }
 
-  const scaledAmount = Math.round(amount * multiplier * 100) / 100;
+  const scaledAmount = Math.round(amount * multiplier);
   return `${scaledAmount} ${unitLabels[unit].toLowerCase()}`;
 }
 

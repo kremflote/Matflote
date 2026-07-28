@@ -507,9 +507,9 @@ function RecipeCreateForm({
                     )
                   }
                   onSearchChange={setRecipeSearch}
-                  onToggle={(recipeId) =>
+                  onToggle={(recipe) =>
                     setSelectedComponents((currentComponents) =>
-                      toggleRecipeComponent(currentComponents, recipeId),
+                      toggleRecipeComponent(currentComponents, recipe),
                     )
                   }
                   onUnitChange={(recipeId, unit) =>
@@ -607,9 +607,9 @@ function RecipeCreateForm({
               )
             }
             onSearchChange={setRecipeSearch}
-            onToggle={(recipeId) =>
+            onToggle={(recipe) =>
               setMobileComponentDraft((currentComponents) =>
-                toggleRecipeComponent(currentComponents, recipeId),
+                toggleRecipeComponent(currentComponents, recipe),
               )
             }
             onUnitChange={(recipeId, unit) =>
