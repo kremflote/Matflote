@@ -159,18 +159,16 @@ function RecipeIngredientSection({
   return (
     <section className={recipeBrowserStyles.detailIngredientSection}>
       <h3 className={recipeBrowserStyles.detailIngredientSectionTitle(theme)}>
-        <span>{title}</span>
-        {titleLinkLabel !== undefined && recipeId !== undefined && (
-          <>
-            <span aria-hidden="true"> - </span>
-            <button
-              className={recipeBrowserStyles.detailIngredientSectionTitleButton(theme)}
-              type="button"
-              onClick={() => onRecipeClick?.(recipeId)}
-            >
-              {titleLinkLabel}
-            </button>
-          </>
+        {titleLinkLabel !== undefined && recipeId !== undefined ? (
+          <button
+            className={recipeBrowserStyles.detailIngredientSectionTitleButton(theme)}
+            type="button"
+            onClick={() => onRecipeClick?.(recipeId)}
+          >
+            {titleLinkLabel}
+          </button>
+        ) : (
+          <span>{title}</span>
         )}
       </h3>
       {ingredients.length === 0 ? (

@@ -1406,6 +1406,14 @@ export const plannerPickerStyles = {
   ingredientGrid: "grid auto-rows-max grid-cols-2 content-start items-start gap-2 max-sm:grid-cols-1",
   pickerCardShell: "relative h-fit min-w-0",
   pickerFloatingControls: "absolute inset-x-3 top-3 z-20",
+  pickerIngredientCard: (theme: SiteTheme, selected: boolean) =>
+    `relative grid min-w-0 rounded-md ${
+      selected
+        ? `after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:content-[''] ${siteColorClasses[theme].selectedThumbnailRing}`
+        : ""
+    }`,
+  pickerIngredientThumbnail: "shadow-none",
+  pickerIngredientControls: "px-2 pb-2 pt-2",
   recipeCard: (theme: SiteTheme, selected: boolean) =>
     `${shadowClasses.subtle} ${
       selected
@@ -1416,7 +1424,7 @@ export const plannerPickerStyles = {
             ? "ring-1 ring-[#7A8864]/20"
             : "ring-1 ring-neutral-200"
     }`,
-  pickerInlineControls: "mt-1 flex min-w-0 items-center gap-1.5",
+  pickerInlineControls: "flex min-w-0 items-center gap-1.5",
   pickerInlineLabel: "min-w-0 flex-1",
   pickerOverlayInput: (theme: SiteTheme) =>
     `h-7 w-full min-w-0 rounded-md border px-2 text-xs font-bold outline-none ${

@@ -175,7 +175,6 @@ function IngredientDetailContent({ ingredient, theme }: IngredientDetailContentP
                   value={priceForm.price}
                   onChange={(event) => setPriceForm({ ...priceForm, price: normalizePriceInput(event.target.value) })}
                 />
-                <span className={recipeBrowserStyles.labelSubtitle(theme)}>{t.prices.priceUnitSubtitle}</span>
               </label>
             </div>
             <div className={recipeBrowserStyles.ingredientPriceSecondaryGrid}>

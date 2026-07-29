@@ -106,12 +106,13 @@ function PlannerRecipePickerGrid({
           const unit = isActive ? activeOverlay.unit : "Gram";
 
           return (
-            <div className={plannerPickerStyles.pickerCardShell} key={ingredient.ingredientId}>
+            <div
+              className={plannerPickerStyles.pickerIngredientCard(theme, visuallySelected)}
+              key={ingredient.ingredientId}
+            >
               <IngredientThumbnail
-                className={plannerPickerStyles.recipeCard(theme, visuallySelected)}
+                className={plannerPickerStyles.pickerIngredientThumbnail}
                 ingredient={ingredient}
-                selected={visuallySelected}
-                selectedPresentation="outline"
                 theme={theme}
                 onClick={
                   isActive
@@ -122,7 +123,7 @@ function PlannerRecipePickerGrid({
                 }
               />
               {isActive ? (
-                <div className={plannerPickerStyles.pickerFloatingControls}>
+                <div className={plannerPickerStyles.pickerIngredientControls}>
                   <PickerInlineControls
                     inputLabel={t.cookbook.amount}
                     theme={theme}
