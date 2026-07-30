@@ -1363,21 +1363,9 @@ export const plannerPickerStyles = {
     "mt-2 grid grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] items-start gap-3 max-md:grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] max-sm:grid-cols-[minmax(0,1fr)_auto_auto]",
   searchInput: controlStyles.compactSearchInput,
   categoryButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-auto items-center justify-center rounded-md border px-3 text-xs font-extrabold max-[1100px]:w-9 max-[1100px]:px-0 ${shadowClasses.subtle} transition-colors ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-neutral-500 text-neutral-950 hover:bg-neutral-400"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#C8C0B5] text-[#556145] hover:bg-[#A9BDD1]/40"
-          : "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
-    }`,
+    `inline-flex h-9 w-auto items-center justify-center rounded-md border px-3 text-xs font-extrabold max-[1100px]:w-9 max-[1100px]:px-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
   filterButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 text-xs font-extrabold ${shadowClasses.subtle} transition-colors ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-neutral-500 text-neutral-950 hover:bg-neutral-400"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#C8C0B5] text-[#556145] hover:bg-[#A9BDD1]/40"
-          : "border-neutral-300 bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
-    }`,
+    `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 text-xs font-extrabold ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
   browserModeSwitch: (theme: SiteTheme) =>
     `${segmentedToggleStyles.shell(theme)} col-start-5 h-9 w-full justify-self-end max-sm:col-span-3 max-sm:col-start-auto`,
   browserModeOption: (theme: SiteTheme, selected: boolean) =>

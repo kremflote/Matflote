@@ -1,6 +1,7 @@
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;
+using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ namespace DinnerPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RecipesController(DinnerPlannerContext context) : ControllerBase
+public class RecipesController(DinnerPlannerContext context, TagCatalogService tagCatalog) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RecipeDto>>> GetRecipes()
@@ -49,7 +50,7 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
 
         var recipe = CreateRecipeModel(request);
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients);
-        var knownTags = await NormalizeKnownTagsAsync(request.Tags);
+        var knownTags = await tagCatalog.NormalizeKnownTagsAsync(request.Tags, HttpContext.RequestAborted);
         recipe.Tags = knownTags
             .Select(tag => new RecipeTagAssignment { Tag = tag })
             .ToList();
@@ -102,7 +103,7 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
         context.RecipeIngredients.RemoveRange(recipe.Ingredients);
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients, recipe.RecipeId);
         context.RecipeTagAssignments.RemoveRange(recipe.Tags);
-        var knownTags = await NormalizeKnownTagsAsync(request.Tags);
+        var knownTags = await tagCatalog.NormalizeKnownTagsAsync(request.Tags, HttpContext.RequestAborted);
         recipe.Tags = knownTags
             .Select(tag => new RecipeTagAssignment
             {
@@ -244,43 +245,6 @@ public class RecipesController(DinnerPlannerContext context) : ControllerBase
     );
 
     private static decimal NormalizePortions(decimal portions) => portions <= 0m ? 1m : portions;
-
-    private static List<string> NormalizeTags(IReadOnlyCollection<string>? tags) =>
-        tags is null
-            ? []
-            : tags
-                .Select(tag => tag.Trim())
-                .Where(tag => tag.Length > 0 && tag.Length <= 64)
-                .Distinct()
-                .ToList();
-
-    private async Task<List<string>> NormalizeKnownTagsAsync(IReadOnlyCollection<string>? tags)
-    {
-        var requestedTags = NormalizeTags(tags);
-        if (requestedTags.Count == 0)
-        {
-            return [];
-        }
-
-        var knownTags = await context.IngredientTagDefinitions
-            .AsNoTracking()
-            .Select(tag => tag.Name)
-            .ToListAsync();
-        var canonicalTags = new List<string>();
-
-        foreach (var requestedTag in requestedTags)
-        {
-            var canonicalTag = knownTags.FirstOrDefault(knownTag =>
-                string.Equals(knownTag, requestedTag, StringComparison.OrdinalIgnoreCase));
-            if (canonicalTag is not null && !canonicalTags.Any(tag =>
-                    string.Equals(tag, canonicalTag, StringComparison.OrdinalIgnoreCase)))
-            {
-                canonicalTags.Add(canonicalTag);
-            }
-        }
-
-        return canonicalTags;
-    }
 
     private static List<RecipeComponentRequest> NormalizeComponents(IReadOnlyCollection<RecipeComponentRequest>? components) =>
         components is null

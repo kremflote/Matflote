@@ -1,6 +1,7 @@
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;
+using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ namespace DinnerPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class IngredientsController(DinnerPlannerContext context) : ControllerBase
+public class IngredientsController(DinnerPlannerContext context, TagCatalogService tagCatalog) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<IngredientDto>>> GetIngredients()
@@ -43,7 +44,7 @@ public class IngredientsController(DinnerPlannerContext context) : ControllerBas
             return BadRequest("No brand found with that ID.");
         }
 
-        var knownTags = await NormalizeKnownTagsAsync(request.Tags);
+        var knownTags = await tagCatalog.NormalizeKnownTagsAsync(request.Tags, HttpContext.RequestAborted);
         var ingredient = new Ingredient
         {
             IngredientName = request.IngredientName,
@@ -90,7 +91,7 @@ public class IngredientsController(DinnerPlannerContext context) : ControllerBas
         ingredient.BrandId = request.BrandId;
         ingredient.ImageUrl = request.ImageUrl;
         ingredient.Price = request.Price;
-        var knownTags = await NormalizeKnownTagsAsync(request.Tags);
+        var knownTags = await tagCatalog.NormalizeKnownTagsAsync(request.Tags, HttpContext.RequestAborted);
         context.IngredientTagAssignments.RemoveRange(ingredient.Tags);
         ingredient.Tags = knownTags
             .Select(tag => new IngredientTagAssignment
@@ -132,43 +133,6 @@ public class IngredientsController(DinnerPlannerContext context) : ControllerBas
 
     private async Task<bool> BrandExists(int? brandId) =>
         brandId is null || await context.Brands.AnyAsync(brand => brand.BrandId == brandId);
-
-    private static List<string> NormalizeTags(IReadOnlyCollection<string>? tags) =>
-        tags is null
-            ? []
-            : tags
-                .Select(tag => tag.Trim())
-                .Where(tag => tag.Length > 0 && tag.Length <= 64)
-                .Distinct()
-                .ToList();
-
-    private async Task<List<string>> NormalizeKnownTagsAsync(IReadOnlyCollection<string>? tags)
-    {
-        var requestedTags = NormalizeTags(tags);
-        if (requestedTags.Count == 0)
-        {
-            return [];
-        }
-
-        var knownTags = await context.IngredientTagDefinitions
-            .AsNoTracking()
-            .Select(tag => tag.Name)
-            .ToListAsync();
-        var canonicalTags = new List<string>();
-
-        foreach (var requestedTag in requestedTags)
-        {
-            var canonicalTag = knownTags.FirstOrDefault(knownTag =>
-                string.Equals(knownTag, requestedTag, StringComparison.OrdinalIgnoreCase));
-            if (canonicalTag is not null && !canonicalTags.Any(tag =>
-                    string.Equals(tag, canonicalTag, StringComparison.OrdinalIgnoreCase)))
-            {
-                canonicalTags.Add(canonicalTag);
-            }
-        }
-
-        return canonicalTags;
-    }
 
     private static NutritionDataSource NormalizeNutritionSource(NutritionFacts? nutrition, NutritionDataSource? source) =>
         nutrition is null ? NutritionDataSource.None : source ?? NutritionDataSource.Manual;

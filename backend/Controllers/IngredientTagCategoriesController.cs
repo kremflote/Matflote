@@ -9,7 +9,7 @@ namespace DinnerPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/ingredient-tag-categories")]
-public class IngredientTagCategoriesController(DinnerPlannerContext context) : ControllerBase
+public class IngredientTagCategoriesController(DinnerPlannerContext context, TagCatalogService tagCatalog) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<IngredientTagCategoryDto>>> GetCategories()
@@ -21,28 +21,7 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context) : C
             .ThenBy(category => category.Name)
             .ToListAsync();
 
-        var categoryDtos = categories.Select(ToDto).ToList();
-        var definedTags = categories
-            .SelectMany(category => category.Tags)
-            .Select(tag => tag.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var assignedTags = await context.IngredientTagAssignments
-            .AsNoTracking()
-            .Select(assignment => assignment.Tag)
-            .Concat(context.RecipeTagAssignments.AsNoTracking().Select(assignment => assignment.Tag))
-            .Distinct()
-            .ToListAsync();
-        var orphanedTags = assignedTags
-            .Where(tag => !definedTags.Contains(tag))
-            .OrderBy(tag => tag)
-            .ToList();
-
-        if (orphanedTags.Count > 0)
-        {
-            categoryDtos.Add(new IngredientTagCategoryDto(0, "Uncategorized", orphanedTags));
-        }
-
-        return Ok(categoryDtos);
+        return Ok(categories.Select(ToDto).ToList());
     }
 
     [HttpPost]
@@ -245,16 +224,8 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context) : C
             return NotFound();
         }
 
-        var tagNames = category.Tags.Select(tag => tag.Name.ToLower()).ToList();
-        var assignments = await context.IngredientTagAssignments
-            .Where(assignment => tagNames.Contains(assignment.Tag.ToLower()))
-            .ToListAsync();
-        var recipeAssignments = await context.RecipeTagAssignments
-            .Where(assignment => tagNames.Contains(assignment.Tag.ToLower()))
-            .ToListAsync();
-
-        context.IngredientTagAssignments.RemoveRange(assignments);
-        context.RecipeTagAssignments.RemoveRange(recipeAssignments);
+        var tagNames = category.Tags.Select(tag => tag.Name).ToList();
+        await tagCatalog.DeleteTagAssignmentsAsync(tagNames, HttpContext.RequestAborted);
         context.IngredientTagCategories.Remove(category);
         await context.SaveChangesAsync();
         return NoContent();

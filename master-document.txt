@@ -406,6 +406,16 @@ The backend can serve the built frontend from `backend/wwwroot`, but those files
 
 Keep user-uploaded images separate from generated frontend assets. Runtime images are served from `/images/*` through the backend image storage configuration, while generated frontend files under `backend/wwwroot` can be replaced by the deployment script.
 
+### Data storage ownership
+
+Household/shared data belongs in the backend database. This includes ingredients, recipes, recipe ingredients, recipe components, meal plans, tags, tag categories, brands, stores, price points, nutrition data, nutrition reference profile/settings, app integration settings, grocery export rules, import metadata, and image metadata.
+
+User-uploaded image files belong in the configured image storage root, not inside the SQLite database. The database stores image metadata and public paths such as `/images/recipes/...` or `/images/ingredients/...`; the persistent image volume stores the actual files.
+
+Frontend `localStorage` is only for per-device display preferences: theme, language, last open page, cookbook recipe/ingredient mode, planner week/month mode, and the last selected planner date. Do not store secrets, shared household data, uploaded files, or external integration tokens in `localStorage`.
+
+Search text, open modals, and temporary filter drafts should remain in component state unless there is a deliberate product reason to restore them after reload. Persisting too much transient UI state can make the app feel stale when opened later.
+
 ### Docker deployment assumptions
 
 Docker v1 is a single-household, single-server deployment. Phones, tablets, and computers sync by connecting to the same MATFLOTE server over LAN or a hosted address.

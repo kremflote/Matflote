@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header, { type PageId } from "./components/Header";
 import CookbookPage from "./pages/CookbookPage";
 import NutritionPage from "./pages/NutritionPage";
@@ -7,10 +7,26 @@ import PricesPage from "./pages/PricesPage";
 import ScannerPage from "./pages/ScannerPage";
 import SettingsPage from "./pages/SettingsPage";
 import { appStyles, type SiteTheme } from "./styles/appStyles";
+import { getLocalPreference, localPreferenceKeys, setLocalPreference } from "./utils/localPreferences";
+
+const pageIds: PageId[] = ["weekPlanner", "cookbook", "scanner", "prices", "nutrition", "settings"];
+const themes: SiteTheme[] = ["dark", "light", "paletteLight"];
 
 function App() {
-  const [activePage, setActivePage] = useState<PageId>("weekPlanner");
-  const [theme, setTheme] = useState<SiteTheme>("dark");
+  const [activePage, setActivePage] = useState<PageId>(() =>
+    getLocalPreference(localPreferenceKeys.activePage, pageIds, "weekPlanner"),
+  );
+  const [theme, setTheme] = useState<SiteTheme>(() =>
+    getLocalPreference(localPreferenceKeys.theme, themes, "dark"),
+  );
+
+  useEffect(() => {
+    setLocalPreference(localPreferenceKeys.activePage, activePage);
+  }, [activePage]);
+
+  useEffect(() => {
+    setLocalPreference(localPreferenceKeys.theme, theme);
+  }, [theme]);
 
   return (
     <div className={appStyles.shell(theme)}>

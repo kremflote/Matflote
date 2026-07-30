@@ -1,4 +1,6 @@
+using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
+using DinnerPlanner.Api.Models;
 using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +8,7 @@ namespace DinnerPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ImageUploadsController(ImageStoragePathProvider imageStorage) : ControllerBase
+public class ImageUploadsController(ImageStoragePathProvider imageStorage, DinnerPlannerContext context) : ControllerBase
 {
     private const long MaxStoredImageBytes = 5 * 1024 * 1024;
     private const long MaxIncomingImageBytes = 20 * 1024 * 1024;
@@ -63,6 +65,20 @@ public class ImageUploadsController(ImageStoragePathProvider imageStorage) : Con
         await file.CopyToAsync(stream);
 
         var url = $"/images/{safeFolder}/{fileName}";
+        context.UploadedImages.Add(new UploadedImage
+        {
+            FileName = fileName,
+            PublicUrl = url,
+            RelativePath = Path.Combine(safeFolder, fileName).Replace('\\', '/'),
+            Folder = safeFolder,
+            Source = "Upload",
+            OriginalFileName = Path.GetFileName(file.FileName),
+            ContentType = file.ContentType,
+            SizeBytes = file.Length,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+        await context.SaveChangesAsync();
+
         return Ok(new ImageUploadDto(fileName, url));
     }
 

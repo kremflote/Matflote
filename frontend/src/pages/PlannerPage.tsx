@@ -10,6 +10,7 @@ import type { IGroceryList } from "../interfaces/IGroceryList";
 import type { MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import { groceryListService } from "../services";
 import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
+import { getLocalDatePreference, getLocalPreference, localPreferenceKeys, setLocalPreference } from "../utils/localPreferences";
 import {
   addCalendarRange,
   getAnchorLabel,
@@ -29,6 +30,7 @@ type PlannerPageProps = {
 };
 
 const visibleMealSlots: MealSlot[] = ["Breakfast", "Lunch", "Dinner"];
+const plannerViewModes: PlannerViewMode[] = ["week", "month"];
 
 type SelectedPlannerSlot = {
   date: string;
@@ -37,8 +39,12 @@ type SelectedPlannerSlot = {
 
 const PlannerPage = ({ theme }: PlannerPageProps) => {
   const { locale, t } = useLanguage();
-  const [viewMode, setViewMode] = useState<PlannerViewMode>("week");
-  const [anchorDate, setAnchorDate] = useState(() => stripTime(new Date()));
+  const [viewMode, setViewMode] = useState<PlannerViewMode>(() =>
+    getLocalPreference(localPreferenceKeys.plannerViewMode, plannerViewModes, "week"),
+  );
+  const [anchorDate, setAnchorDate] = useState(() =>
+    stripTime(getLocalDatePreference(localPreferenceKeys.plannerAnchorDate, new Date())),
+  );
   const [selectedSlot, setSelectedSlot] = useState<SelectedPlannerSlot | null>(null);
   const [plannerAction, setPlannerAction] = useState<"clear" | "generate" | null>(null);
   const [pendingPlannerAction, setPendingPlannerAction] = useState<"clear" | "generate" | null>(null);
@@ -105,6 +111,14 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   useEffect(() => {
     void loadMealPlan(visibleRange.from, visibleRange.to);
   }, [loadMealPlan, visibleRange.from, visibleRange.to]);
+
+  useEffect(() => {
+    setLocalPreference(localPreferenceKeys.plannerViewMode, viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    setLocalPreference(localPreferenceKeys.plannerAnchorDate, toDateInputValue(anchorDate));
+  }, [anchorDate]);
 
   const getEntryForSlot = (date: string, slot: MealSlot) =>
     entriesByDateSlot.get(getMealPlanEntryKey(date, slot));

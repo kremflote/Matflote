@@ -1,4 +1,5 @@
 using DinnerPlanner.Api.Contexts;
+using DinnerPlanner.Api.Models;
 using DinnerPlanner.Api.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,7 @@ builder.Services.AddScoped<HelsedirektoratetNutritionReferenceParser>();
 builder.Services.AddScoped<NutritionSummaryService>();
 builder.Services.AddScoped<SeedCatalogService>();
 builder.Services.AddScoped<ShoppingListExportService>();
+builder.Services.AddScoped<TagCatalogService>();
 builder.Services.AddHttpClient<MatvaretabellenNutritionLookupService>();
 builder.Services.AddHttpClient<HelsedirektoratetContentClient>();
 builder.Services.AddHttpClient<KassalappProductLookupService>();
@@ -55,6 +57,7 @@ var app = builder.Build();
 
 await PrepareDatabaseAsync(app);
 PrepareImageStorage(app.Services.GetRequiredService<ImageStoragePathProvider>());
+await RecordSeedImageMetadataAsync(app);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -111,6 +114,10 @@ static async Task PrepareDatabaseAsync(WebApplication app)
     var context = scope.ServiceProvider.GetRequiredService<DinnerPlannerContext>();
     await context.Database.MigrateAsync();
 
+    var tagCatalog = scope.ServiceProvider.GetRequiredService<TagCatalogService>();
+    await tagCatalog.RemoveOrphanedAssignmentsAsync();
+    await context.SaveChangesAsync();
+
     var seedCatalogService = scope.ServiceProvider.GetRequiredService<SeedCatalogService>();
     await seedCatalogService.ImportConfiguredCatalogAsync();
 }
@@ -162,3 +169,52 @@ static void PrepareImageStorage(ImageStoragePathProvider imageStorage)
         }
     }
 }
+
+static async Task RecordSeedImageMetadataAsync(WebApplication app)
+{
+    var imageStorage = app.Services.GetRequiredService<ImageStoragePathProvider>();
+    if (!Directory.Exists(imageStorage.SeedRootPath))
+    {
+        return;
+    }
+
+    await using var scope = app.Services.CreateAsyncScope();
+    var context = scope.ServiceProvider.GetRequiredService<DinnerPlannerContext>();
+
+    foreach (var sourcePath in Directory.EnumerateFiles(imageStorage.SeedRootPath, "*", SearchOption.AllDirectories))
+    {
+        var relativePath = Path.GetRelativePath(imageStorage.SeedRootPath, sourcePath).Replace('\\', '/');
+        var publicUrl = $"/images/{relativePath}";
+
+        var exists = await context.UploadedImages.AnyAsync(image => image.PublicUrl == publicUrl);
+        if (exists)
+        {
+            continue;
+        }
+
+        var fileInfo = new FileInfo(sourcePath);
+        context.UploadedImages.Add(new UploadedImage
+        {
+            FileName = fileInfo.Name,
+            PublicUrl = publicUrl,
+            RelativePath = relativePath,
+            Folder = Path.GetDirectoryName(relativePath)?.Replace('\\', '/') ?? "general",
+            Source = "Seed",
+            OriginalFileName = fileInfo.Name,
+            ContentType = GetContentType(fileInfo.Extension),
+            SizeBytes = fileInfo.Length,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+    }
+
+    await context.SaveChangesAsync();
+}
+
+static string? GetContentType(string extension) =>
+    extension.ToLowerInvariant() switch
+    {
+        ".jpg" or ".jpeg" => "image/jpeg",
+        ".png" => "image/png",
+        ".webp" => "image/webp",
+        _ => null
+    };

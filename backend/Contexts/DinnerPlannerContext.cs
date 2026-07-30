@@ -9,6 +9,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
 {
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
     public DbSet<Brand> Brands => Set<Brand>();
+    public DbSet<DataImportRun> DataImportRuns => Set<DataImportRun>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<IngredientPricePoint> IngredientPricePoints => Set<IngredientPricePoint>();
     public DbSet<IngredientTagCategory> IngredientTagCategories => Set<IngredientTagCategory>();
@@ -19,6 +20,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
     public DbSet<RecipeTagAssignment> RecipeTagAssignments => Set<RecipeTagAssignment>();
     public DbSet<Store> Stores => Set<Store>();
+    public DbSet<UploadedImage> UploadedImages => Set<UploadedImage>();
     public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
     public DbSet<MealPlanRecipe> MealPlanRecipes => Set<MealPlanRecipe>();
     public DbSet<NutritionReferenceImportRun> NutritionReferenceImportRuns => Set<NutritionReferenceImportRun>();
@@ -33,13 +35,21 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         {
             entity.HasKey(setting => setting.Key);
             entity.Property(setting => setting.Key).HasMaxLength(160);
-            entity.Property(setting => setting.Value).HasMaxLength(2000);
+            entity.Property(setting => setting.Value).HasMaxLength(8000);
         });
 
         modelBuilder.Entity<Brand>(entity =>
         {
             entity.Property(brand => brand.Name).HasMaxLength(120);
             entity.HasIndex(brand => brand.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<DataImportRun>(entity =>
+        {
+            entity.Property(importRun => importRun.Source).HasMaxLength(120);
+            entity.Property(importRun => importRun.Status).HasMaxLength(80);
+            entity.Property(importRun => importRun.Message).HasMaxLength(1000);
+            entity.HasIndex(importRun => importRun.StartedAt);
         });
 
         modelBuilder.Entity<Ingredient>(entity =>
@@ -126,6 +136,19 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         {
             entity.Property(store => store.Name).HasMaxLength(120);
             entity.HasIndex(store => store.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<UploadedImage>(entity =>
+        {
+            entity.Property(image => image.FileName).HasMaxLength(260);
+            entity.Property(image => image.PublicUrl).HasMaxLength(500);
+            entity.Property(image => image.RelativePath).HasMaxLength(500);
+            entity.Property(image => image.Folder).HasMaxLength(80);
+            entity.Property(image => image.Source).HasMaxLength(80);
+            entity.Property(image => image.OriginalFileName).HasMaxLength(260);
+            entity.Property(image => image.ContentType).HasMaxLength(120);
+            entity.HasIndex(image => image.PublicUrl).IsUnique();
+            entity.HasIndex(image => image.CreatedAt);
         });
 
         modelBuilder.Entity<IngredientPricePoint>(entity =>

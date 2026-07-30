@@ -10,7 +10,8 @@ namespace DinnerPlanner.Api.Services;
 public class SeedCatalogService(
     DinnerPlannerContext context,
     IWebHostEnvironment environment,
-    ILogger<SeedCatalogService> logger)
+    ILogger<SeedCatalogService> logger,
+    TagCatalogService tagCatalog)
 {
     private readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -42,9 +43,36 @@ public class SeedCatalogService(
 
     public async Task ImportCatalogAsync(SeedCatalogDto catalog, CancellationToken cancellationToken = default)
     {
-        await UpsertBrandsAsync(catalog.Brands, cancellationToken);
-        await UpsertIngredientsAsync(catalog.Ingredients, cancellationToken);
-        await UpsertRecipesAsync(catalog.Recipes, cancellationToken);
+        var importRun = new DataImportRun
+        {
+            Source = "SeedCatalog",
+            Status = "Running",
+            StartedAt = DateTimeOffset.UtcNow,
+            BrandCount = catalog.Brands?.Count ?? 0,
+            IngredientCount = catalog.Ingredients?.Count ?? 0,
+            RecipeCount = catalog.Recipes?.Count ?? 0
+        };
+        context.DataImportRuns.Add(importRun);
+        await context.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await UpsertBrandsAsync(catalog.Brands, cancellationToken);
+            await UpsertIngredientsAsync(catalog.Ingredients, cancellationToken);
+            await UpsertRecipesAsync(catalog.Recipes, cancellationToken);
+            importRun.Status = "Completed";
+            importRun.CompletedAt = DateTimeOffset.UtcNow;
+        }
+        catch (Exception exception)
+        {
+            importRun.Status = "Failed";
+            importRun.Message = exception.Message;
+            importRun.CompletedAt = DateTimeOffset.UtcNow;
+            await context.SaveChangesAsync(cancellationToken);
+            throw;
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<SeedCatalogDto> ExportCatalogAsync(CancellationToken cancellationToken = default)
@@ -155,7 +183,7 @@ public class SeedCatalogService(
                 NutritionMatchedName = NullIfWhiteSpace(seedIngredient.NutritionMatchedName),
                 NutritionMatchConfidence = seedIngredient.NutritionMatchConfidence,
                 Color = NullIfWhiteSpace(seedIngredient.Color),
-                Tags = NormalizeIngredientTags(seedIngredient.Tags)
+                Tags = (await tagCatalog.NormalizeKnownTagsAsync(seedIngredient.Tags, cancellationToken))
                     .Select(tag => new IngredientTagAssignment { Tag = tag })
                     .ToList()
             });
@@ -182,7 +210,7 @@ public class SeedCatalogService(
             }
 
             var recipe = CreateRecipe(seedRecipe, name);
-            recipe.Tags = NormalizeRecipeTags(seedRecipe.Tags)
+            recipe.Tags = (await tagCatalog.NormalizeKnownTagsAsync(seedRecipe.Tags, cancellationToken))
                 .Select(tag => new RecipeTagAssignment { Tag = tag })
                 .ToList();
 
@@ -367,24 +395,6 @@ public class SeedCatalogService(
             ))
             .ToList()
     );
-
-    private static List<string> NormalizeIngredientTags(IReadOnlyCollection<string>? tags) =>
-        tags is null || tags.Count == 0
-            ? []
-            : tags
-                .Select(tag => tag.Trim())
-                .Where(tag => tag.Length > 0 && tag.Length <= 64)
-                .Distinct()
-                .ToList();
-
-    private static List<string> NormalizeRecipeTags(IReadOnlyCollection<string>? tags) =>
-        tags is null || tags.Count == 0
-            ? []
-            : tags
-                .Select(tag => tag.Trim())
-                .Where(tag => tag.Length > 0 && tag.Length <= 64)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
 
     private static string CleanName(string? value) => value?.Trim() ?? string.Empty;
 

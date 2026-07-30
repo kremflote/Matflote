@@ -13,8 +13,7 @@ import {
   type SupportedLanguage,
   type TranslationDictionary,
 } from "../i18n";
-
-const languageStorageKey = "matflote-language";
+import { getOptionalLocalPreference, localPreferenceKeys, setLocalPreference } from "../utils/localPreferences";
 
 type LanguageContextValue = {
   language: SupportedLanguage;
@@ -37,7 +36,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   };
 
   useEffect(() => {
-    localStorage.setItem(languageStorageKey, language);
+    setLocalPreference(localPreferenceKeys.language, language);
     document.documentElement.lang = language;
   }, [language]);
 
@@ -65,9 +64,9 @@ export function useLanguage() {
 }
 
 function getInitialLanguage(): SupportedLanguage {
-  const storedLanguage = localStorage.getItem(languageStorageKey);
+  const storedLanguage = getOptionalLocalPreference(localPreferenceKeys.language, supportedLanguages);
 
-  if (isSupportedLanguage(storedLanguage)) {
+  if (storedLanguage !== null) {
     return storedLanguage;
   }
 
@@ -78,8 +77,4 @@ function getInitialLanguage(): SupportedLanguage {
   }
 
   return defaultLanguage;
-}
-
-function isSupportedLanguage(value: string | null): value is SupportedLanguage {
-  return supportedLanguages.includes(value as SupportedLanguage);
 }
