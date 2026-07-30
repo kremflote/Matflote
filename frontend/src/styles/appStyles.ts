@@ -319,14 +319,14 @@ const focusBase =
 
 export const toastStyles = {
   viewport:
-    "pointer-events-none fixed left-1/2 top-20 z-[90] w-[min(24rem,calc(100vw_-_2rem))] -translate-x-1/2 max-sm:top-16",
+    "pointer-events-none fixed left-1/2 top-20 isolate z-[90] w-[min(24rem,calc(100vw_-_2rem))] -translate-x-1/2 max-sm:top-16",
   success: (theme: SiteTheme) =>
-    `pointer-events-auto flex items-center justify-between gap-3 rounded-md border px-4 py-3 text-sm font-bold ${shadowClasses.overlay} ${
+    `pointer-events-auto flex items-center justify-between gap-3 rounded-md border px-4 py-3 text-sm font-bold opacity-100 backdrop-blur-none ${shadowClasses.overlay} ${
       theme === "dark"
-        ? "border-emerald-300/25 bg-emerald-500/20 text-emerald-50"
+        ? "border-emerald-300/35 bg-emerald-950 text-emerald-50"
         : theme === "paletteLight"
-          ? "border-[#7A8864]/40 bg-[#DDECCF] text-[#3C4A2E]"
-          : "border-emerald-200 bg-emerald-50 text-emerald-800"
+          ? "border-[#7A8864] bg-[#DDECCF] text-[#3C4A2E]"
+          : "border-emerald-700 bg-[#ECFDF5] text-emerald-950"
     }`,
   closeButton: (theme: SiteTheme) =>
     `inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm font-extrabold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
