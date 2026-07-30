@@ -63,6 +63,8 @@ export const en: TranslationDictionary = {
     conversionHelper: "Conversion Helper",
     conversionHelperIntro:
       "Reference conversions when a recipe gives everyday kitchen amounts. Matflote only allows g and l in order to calculate nutrition, so consult this helper to get rough estimates.",
+    conversionHelperSourceText: "For more Norwegian kitchen conversions, see",
+    conversionHelperSourceLink: "Matprat's measurements and weights guide",
     conversionHelperSections: [
       {
         title: "Conversions",
@@ -73,6 +75,7 @@ export const en: TranslationDictionary = {
           { from: "1 yellow onion", to: "170 g" },
           { from: "1 garlic clove", to: "3 g" },
           { from: "1 carrot", to: "70 g" },
+          { from: "1 egg", to: "60 g" },
           { from: "1 broth cube", to: "10 g" },
         ],
       },
@@ -348,12 +351,13 @@ export const en: TranslationDictionary = {
     hideManualEntry: "Hide manual entry",
     manualEntry: "Enter barcode manually",
     chooseMatvaretabellenMatch: "Choose match...",
+    chooseMatvaretabellenSuggested: "Choose from suggested",
     matvaretabellenScore: (score) => `Score ${(score * 100).toFixed(0)}%`,
     matvaretabellenNoMatchFound: "No match found in Matvaretabellen.",
     matvaretabellenSupplementFailed:
       "Failed to supplement missing data from Matvaretabellen.",
     searchMatvaretabellen: "Search...",
-    searchAndFillMatvaretabellen: "Search and fill from Matvarehallen.no...",
+    searchAndFillMatvaretabellen: "Search and fill missing fields from Matvarehallen.no",
     searchMatvaretabellenEmpty: "No Matvaretabellen entries found.",
     searchMatvaretabellenError: "Could not search Matvaretabellen.",
     searchMatvaretabellenPlaceholder: "Search food name...",

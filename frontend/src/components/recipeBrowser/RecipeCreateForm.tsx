@@ -365,6 +365,17 @@ function RecipeCreateForm({
             </div>
           </div>
 
+          {onToggleRecipeDetails && (
+            <button
+              aria-expanded={showRecipeDetails}
+              className={recipeBrowserStyles.detailsToggleFull(theme)}
+              type="button"
+              onClick={onToggleRecipeDetails}
+            >
+              {showRecipeDetails ? t.cookbook.hideRecipeDetails : t.cookbook.addRecipeDetails}
+            </button>
+          )}
+
           <section className={`${recipeBrowserStyles.field} ${recipeBrowserStyles.desktopTagSection}`}>
             <span className={recipeBrowserStyles.label(theme)}>
               {t.cookbook.tags}
@@ -391,28 +402,7 @@ function RecipeCreateForm({
             >
               {t.cookbook.tags}
             </button>
-            {onToggleRecipeDetails && (
-              <button
-                aria-expanded={showRecipeDetails}
-                className={`${recipeBrowserStyles.detailsToggleFull(theme)} ${recipeBrowserStyles.mobileFormActionButton}`}
-                type="button"
-                onClick={onToggleRecipeDetails}
-              >
-                {showRecipeDetails ? t.cookbook.hideRecipeDetails : t.cookbook.addRecipeDetails}
-              </button>
-            )}
           </div>
-
-          {onToggleRecipeDetails && (
-            <button
-              aria-expanded={showRecipeDetails}
-              className={`${recipeBrowserStyles.detailsToggleFull(theme)} max-sm:hidden`}
-              type="button"
-              onClick={onToggleRecipeDetails}
-            >
-              {showRecipeDetails ? t.cookbook.hideRecipeDetails : t.cookbook.addRecipeDetails}
-            </button>
-          )}
 
           {showRecipeDetails && (
             <div className={recipeBrowserStyles.detailsPanel(theme)}>
@@ -764,6 +754,18 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
     >
       <p className={recipeBrowserStyles.conversionHelperIntro(theme)}>
         {t.cookbook.conversionHelperIntro}
+      </p>
+      <p className={recipeBrowserStyles.conversionHelperSource(theme)}>
+        {t.cookbook.conversionHelperSourceText}{" "}
+        <a
+          className={recipeBrowserStyles.conversionHelperSourceLink(theme)}
+          href="https://www.matprat.no/artikler/mengde-mal-og-vekt/mal-og-vekt/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          {t.cookbook.conversionHelperSourceLink}
+        </a>
+        .
       </p>
       {t.cookbook.conversionHelperSections.map((section) => (
         <section className={recipeBrowserStyles.conversionSection(theme)} key={section.title}>

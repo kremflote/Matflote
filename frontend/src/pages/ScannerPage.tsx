@@ -685,7 +685,16 @@ function IngredientDraftEditor({
         <span className={scannerStyles.label}>{t.cookbook.nutrition}</span>
         <div className={scannerStyles.nutritionSourceRow}>
           {nutritionSource.primary === null ? (
-            <span className={scannerStyles.nutritionSourceText(theme)}>{nutritionSource.text}</span>
+            <span className={scannerStyles.nutritionSourcePrimaryLine}>
+              <span className={scannerStyles.nutritionSourceText(theme)}>{nutritionSource.text}</span>
+              <button
+                className={scannerStyles.sourceActionButton(theme)}
+                type="button"
+                onClick={() => setIsMatvareSearchOpen(true)}
+              >
+                {t.scanner.searchAndFillMatvaretabellen}
+              </button>
+            </span>
           ) : (
             <div className={scannerStyles.nutritionSourceText(theme)}>
               <span className={scannerStyles.nutritionSourcePrimaryLine}>
@@ -693,16 +702,25 @@ function IngredientDraftEditor({
                   <span>{t.scanner.nutritionFromPrefix}</span>
                   <NutritionSourceAnchor source={nutritionSource.primary} theme={theme} />
                 </span>
-                {nutritionSource.supplement === null ? (
-                  <NutritionSourceActions
-                    hasMatvaretabellenSupplement={hasMatvaretabellenSupplement}
-                    hasMatvaretabellenCandidates={draft.matvaretabellenCandidates.length > 0}
-                    theme={theme}
-                    onChangeMatvaretabellen={() => setIsMatvarePickerOpen(true)}
-                    onInfo={() => setIsAutofillInfoOpen(true)}
-                    onRemoveMatvaretabellen={() => onChange(removeMatvaretabellenSupplement(draft))}
-                  />
-                ) : null}
+                <span className={scannerStyles.nutritionSourceActions}>
+                  <button
+                    className={scannerStyles.sourceActionButton(theme)}
+                    type="button"
+                    onClick={() => setIsMatvareSearchOpen(true)}
+                  >
+                    {t.scanner.searchAndFillMatvaretabellen}
+                  </button>
+                  {nutritionSource.supplement === null ? (
+                    <NutritionSourceActions
+                      hasMatvaretabellenSupplement={hasMatvaretabellenSupplement}
+                      hasMatvaretabellenCandidates={draft.matvaretabellenCandidates.length > 0}
+                      theme={theme}
+                      onChangeMatvaretabellen={() => setIsMatvarePickerOpen(true)}
+                      onInfo={() => setIsAutofillInfoOpen(true)}
+                      onRemoveMatvaretabellen={() => onChange(removeMatvaretabellenSupplement(draft))}
+                    />
+                  ) : null}
+                </span>
               </span>
               {nutritionSource.supplement !== null ? (
                 <span className={scannerStyles.nutritionSourceSupplementLine}>
@@ -736,7 +754,7 @@ function IngredientDraftEditor({
                 type="button"
                 onClick={() => setIsMatvarePickerOpen(true)}
               >
-                {t.scanner.chooseMatvaretabellenMatch}
+                {t.scanner.chooseMatvaretabellenSuggested}
               </button>
             )}
           </div>
@@ -756,7 +774,6 @@ function IngredientDraftEditor({
             theme={theme}
             values={nutritionValues}
             onChange={(key, value) => onChange(clearNutritionAutofillSource(updateNutritionDraft(draft, key, value), key))}
-            onSearchMatvaretabellen={() => setIsMatvareSearchOpen(true)}
           />
         )}
       </section>

@@ -415,24 +415,15 @@ function toGramAmount(amount: number | null, unit: string) {
 
 function getComponentScale(amount: number, unit: MeasurementUnit, childRecipe: EnrichedRecipe) {
   const componentBaseAmount = toBaseAmount(amount, unit);
-  const childBaseAmount = getRecipeBaseAmount(childRecipe, unit);
+  const childBaseAmount = getRecipeBaseAmount(childRecipe);
 
   return componentBaseAmount === null || childBaseAmount === null || childBaseAmount <= 0
     ? 1
     : componentBaseAmount / childBaseAmount;
 }
 
-function getRecipeBaseAmount(recipe: EnrichedRecipe, targetUnit: MeasurementUnit) {
-  const targetFamily = getMeasurementFamily(targetUnit);
-  if (targetFamily === null) {
-    return null;
-  }
-
+function getRecipeBaseAmount(recipe: EnrichedRecipe) {
   const total = recipe.ingredients.reduce((sum, recipeIngredient) => {
-    if (getMeasurementFamily(recipeIngredient.unit) !== targetFamily) {
-      return sum;
-    }
-
     const baseAmount = toBaseAmount(recipeIngredient.amount, recipeIngredient.unit);
     return baseAmount === null ? sum : sum + baseAmount;
   }, 0);
@@ -451,18 +442,6 @@ function toBaseAmount(amount: number | null, unit: MeasurementUnit) {
 
   if (unit === "Kilogram" || unit === "Liter") {
     return amount * 1000;
-  }
-
-  return null;
-}
-
-function getMeasurementFamily(unit: MeasurementUnit) {
-  if (unit === "Gram" || unit === "Kilogram") {
-    return "mass";
-  }
-
-  if (unit === "Milliliter" || unit === "Liter") {
-    return "volume";
   }
 
   return null;

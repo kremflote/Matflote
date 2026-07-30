@@ -62,6 +62,8 @@ export const nb: TranslationDictionary = {
     conversionHelper: "Konverteringshjelp",
     conversionHelperIntro:
       "Bruk disse hurtigverdiene når en oppskrift bruker vanlige kjøkkenmål. Lagre den omregnede mengden som g, kg, ml eller l.",
+    conversionHelperSourceText: "For flere norske kjøkkenmål, se",
+    conversionHelperSourceLink: "Matprats mål og vekt-guide",
     conversionHelperSections: [
       {
         title: "Konverteringer",
@@ -72,6 +74,7 @@ export const nb: TranslationDictionary = {
           { from: "1 gul løk", to: "170 g" },
           { from: "1 hvitløksfedd", to: "3 g" },
           { from: "1 gulrot", to: "70 g" },
+          { from: "1 egg", to: "60 g" },
           { from: "1 kube med buljong", to: "10 g" },
         ],
       },
@@ -394,12 +397,13 @@ export const nb: TranslationDictionary = {
     hideManualEntry: "Skjul manuelt felt",
     manualEntry: "Skriv inn strekkode",
     chooseMatvaretabellenMatch: "Velg treff...",
+    chooseMatvaretabellenSuggested: "Velg fra forslag",
     matvaretabellenScore: (score) => `Treff ${(score * 100).toFixed(0)}%`,
     matvaretabellenNoMatchFound: "Ingen treff funnet i Matvaretabellen.",
     matvaretabellenSupplementFailed:
       "Kunne ikke supplere manglende data fra Matvaretabellen.",
     searchMatvaretabellen: "Søk...",
-    searchAndFillMatvaretabellen: "Søk og fyll fra Matvarehallen.no...",
+    searchAndFillMatvaretabellen: "Søk og fyll manglende felt fra Matvarehallen.no",
     searchMatvaretabellenEmpty: "Ingen treff i Matvaretabellen.",
     searchMatvaretabellenError: "Kunne ikke søke i Matvaretabellen.",
     searchMatvaretabellenPlaceholder: "Søk etter matvare...",

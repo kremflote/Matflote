@@ -79,6 +79,8 @@ export type TranslationDictionary = {
     chooseAtLeastOneIngredientTag: string;
     conversionHelper: string;
     conversionHelperIntro: string;
+    conversionHelperSourceText: string;
+    conversionHelperSourceLink: string;
     conversionHelperSections: ReadonlyArray<{
       title: string;
       items: ReadonlyArray<{
@@ -288,6 +290,7 @@ export type TranslationDictionary = {
     hideManualEntry: string;
     manualEntry: string;
     chooseMatvaretabellenMatch: string;
+    chooseMatvaretabellenSuggested: string;
     chooseMatvaretabellenEntry: string;
     matvaretabellenScore: (score: number) => string;
     matvaretabellenNoMatchFound: string;

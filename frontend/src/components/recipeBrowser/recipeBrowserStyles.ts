@@ -358,6 +358,22 @@ export const recipeBrowserStyles = {
           ? "text-[#7A8864]"
           : "text-neutral-600"
     }`,
+  conversionHelperSource: (theme: SiteTheme) =>
+    `text-xs font-semibold leading-snug ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
+  conversionHelperSourceLink: (theme: SiteTheme) =>
+    `font-bold underline underline-offset-2 ${
+      theme === "dark"
+        ? "text-neutral-200 hover:text-white"
+        : theme === "paletteLight"
+          ? "text-[#556145] hover:text-[#3C4A2E]"
+          : "text-neutral-700 hover:text-neutral-950"
+    }`,
   conversionSection: (theme: SiteTheme) =>
     `grid gap-2 rounded-md border p-3 ${
       theme === "dark"
