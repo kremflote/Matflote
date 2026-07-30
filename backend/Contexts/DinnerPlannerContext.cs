@@ -364,24 +364,24 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         );
 
         modelBuilder.Entity<IngredientTagDefinition>().HasData(
-            new { IngredientTagDefinitionId = 1, Name = "Vegetable", IngredientTagCategoryId = 1 },
-            new { IngredientTagDefinitionId = 2, Name = "Fruit", IngredientTagCategoryId = 1 },
-            new { IngredientTagDefinitionId = 3, Name = "Berry", IngredientTagCategoryId = 1 },
-            new { IngredientTagDefinitionId = 4, Name = "RootVegetable", IngredientTagCategoryId = 1 },
-            new { IngredientTagDefinitionId = 5, Name = "LeafyGreen", IngredientTagCategoryId = 1 },
-            new { IngredientTagDefinitionId = 6, Name = "Herb", IngredientTagCategoryId = 1 },
-            new { IngredientTagDefinitionId = 7, Name = "Chicken", IngredientTagCategoryId = 2 },
-            new { IngredientTagDefinitionId = 8, Name = "Fish", IngredientTagCategoryId = 2 },
-            new { IngredientTagDefinitionId = 9, Name = "Beef", IngredientTagCategoryId = 2 },
-            new { IngredientTagDefinitionId = 10, Name = "Lamb", IngredientTagCategoryId = 2 },
-            new { IngredientTagDefinitionId = 11, Name = "Mince", IngredientTagCategoryId = 2 },
-            new { IngredientTagDefinitionId = 12, Name = "Dairy", IngredientTagCategoryId = 2 },
-            new { IngredientTagDefinitionId = 13, Name = "Grain", IngredientTagCategoryId = 3 },
-            new { IngredientTagDefinitionId = 14, Name = "Bread", IngredientTagCategoryId = 3 },
-            new { IngredientTagDefinitionId = 15, Name = "Spice", IngredientTagCategoryId = 3 },
-            new { IngredientTagDefinitionId = 16, Name = "Sauce", IngredientTagCategoryId = 3 },
-            new { IngredientTagDefinitionId = 17, Name = "Dip", IngredientTagCategoryId = 3 },
-            new { IngredientTagDefinitionId = 19, Name = "Frozen", IngredientTagCategoryId = 3 }
+            new { IngredientTagDefinitionId = 1, Name = "Vegetable", IngredientTagCategoryId = 1, SortOrder = 100 },
+            new { IngredientTagDefinitionId = 2, Name = "Fruit", IngredientTagCategoryId = 1, SortOrder = 200 },
+            new { IngredientTagDefinitionId = 3, Name = "Berry", IngredientTagCategoryId = 1, SortOrder = 300 },
+            new { IngredientTagDefinitionId = 4, Name = "RootVegetable", IngredientTagCategoryId = 1, SortOrder = 400 },
+            new { IngredientTagDefinitionId = 5, Name = "LeafyGreen", IngredientTagCategoryId = 1, SortOrder = 500 },
+            new { IngredientTagDefinitionId = 6, Name = "Herb", IngredientTagCategoryId = 1, SortOrder = 600 },
+            new { IngredientTagDefinitionId = 7, Name = "Chicken", IngredientTagCategoryId = 2, SortOrder = 100 },
+            new { IngredientTagDefinitionId = 8, Name = "Fish", IngredientTagCategoryId = 2, SortOrder = 200 },
+            new { IngredientTagDefinitionId = 9, Name = "Beef", IngredientTagCategoryId = 2, SortOrder = 300 },
+            new { IngredientTagDefinitionId = 10, Name = "Lamb", IngredientTagCategoryId = 2, SortOrder = 400 },
+            new { IngredientTagDefinitionId = 11, Name = "Mince", IngredientTagCategoryId = 2, SortOrder = 500 },
+            new { IngredientTagDefinitionId = 12, Name = "Dairy", IngredientTagCategoryId = 2, SortOrder = 600 },
+            new { IngredientTagDefinitionId = 13, Name = "Grain", IngredientTagCategoryId = 3, SortOrder = 100 },
+            new { IngredientTagDefinitionId = 14, Name = "Bread", IngredientTagCategoryId = 3, SortOrder = 200 },
+            new { IngredientTagDefinitionId = 15, Name = "Spice", IngredientTagCategoryId = 3, SortOrder = 300 },
+            new { IngredientTagDefinitionId = 16, Name = "Sauce", IngredientTagCategoryId = 3, SortOrder = 400 },
+            new { IngredientTagDefinitionId = 17, Name = "Dip", IngredientTagCategoryId = 3, SortOrder = 500 },
+            new { IngredientTagDefinitionId = 19, Name = "Frozen", IngredientTagCategoryId = 3, SortOrder = 600 }
         );
 
         modelBuilder.Entity<Ingredient>().HasData(

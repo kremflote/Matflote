@@ -5,6 +5,7 @@ import { brandService, imageUploadService, ingredientPriceService, ingredientSer
 import type { SiteTheme } from "../../styles/appStyles";
 import { normalizePriceInput, todayInputValue } from "../../utils/priceFormatting";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../../constants/validation";
+import { getAllCategoryTagNames } from "../../utils/tagCatalog";
 import {
   formatIngredientTagCategoryName,
   getIngredientTagGroupsWithCustomTags,
@@ -118,7 +119,7 @@ function IngredientCreateForm({
   const [isSaving, setIsSaving] = useState(false);
   const knownIngredientTags = (ingredientTagCategories.length === 0
     ? ingredientTagGroups.flatMap((group) => group.values)
-    : ingredientTagCategories.flatMap((category) => category.tags)) as IngredientTag[];
+    : getAllCategoryTagNames(ingredientTagCategories)) as IngredientTag[];
   const existingCustomTags = ingredients
     .flatMap((ingredient) => ingredient.tags)
     .filter((tag) => !knownIngredientTags.includes(tag));
@@ -558,6 +559,14 @@ function IngredientCreateForm({
             await refreshIngredientTagCategories();
             await refreshIngredients();
             await refreshRecipes();
+          }}
+          onMoveCategory={async (categoryId, direction) => {
+            await ingredientTagCategoryService.move(categoryId, direction);
+            await refreshIngredientTagCategories();
+          }}
+          onMoveTag={async (tagId, direction) => {
+            await ingredientTagCategoryService.moveTag(tagId, direction);
+            await refreshIngredientTagCategories();
           }}
         />
       )}

@@ -8,8 +8,15 @@ export interface IStore {
   name: string;
 }
 
+export interface IIngredientTagDefinition {
+  ingredientTagDefinitionId: number;
+  name: string;
+  sortOrder: number;
+}
+
 export interface IIngredientTagCategory {
   ingredientTagCategoryId: number;
   name: string;
-  tags: string[];
+  sortOrder: number;
+  tags: IIngredientTagDefinition[];
 }

@@ -100,7 +100,31 @@ function Invoke-SmokeSeedCatalogImport {
     $catalogPath = Join-Path $tempRoot "seed-catalog.json"
 
     try {
+        $categoryBody = @{ name = "Smoke Shelf" } | ConvertTo-Json
+        $category = Invoke-RestMethod `
+            -Uri "$baseUrl/api/ingredient-tag-categories" `
+            -Method Post `
+            -ContentType "application/json" `
+            -Body $categoryBody
+
+        $tagBody = @{ name = "Smoke Tag" } | ConvertTo-Json
+        Invoke-RestMethod `
+            -Uri "$baseUrl/api/ingredient-tag-categories/$($category.ingredientTagCategoryId)/tags" `
+            -Method Post `
+            -ContentType "application/json" `
+            -Body $tagBody | Out-Null
+
         Invoke-WebRequest -Uri "$baseUrl/api/seed-catalog/export" -OutFile $catalogPath
+        $catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json
+        $exportedCategory = $catalog.tagCategories | Where-Object { $_.name -eq "Smoke Shelf" } | Select-Object -First 1
+        if ($null -eq $exportedCategory) {
+            throw "Seed catalog export did not include tag categories."
+        }
+
+        if (-not ($exportedCategory.tags | Where-Object { $_.name -eq "Smoke Tag" })) {
+            throw "Seed catalog export did not include tag definitions."
+        }
+
         $fileStream = [System.IO.File]::OpenRead($catalogPath)
         try {
             $fileContent = [System.Net.Http.StreamContent]::new($fileStream)

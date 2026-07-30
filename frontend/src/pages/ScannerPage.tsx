@@ -12,6 +12,7 @@ import { getApiAssetUrl } from "../services/apiClient";
 import { pageStyles, scannerStyles, type SiteTheme } from "../styles/appStyles";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../constants/validation";
 import { normalizePriceInput, todayInputValue } from "../utils/priceFormatting";
+import { getAllCategoryTagNames } from "../utils/tagCatalog";
 import {
   formatIngredientTagCategoryName,
   getIngredientTagGroupsWithCustomTags,
@@ -526,7 +527,7 @@ function IngredientDraftEditor({
   const imageUrl = getApiAssetUrl(imagePreviewUrl ?? draft.imageUrl);
   const knownIngredientTags = (ingredientTagCategories.length === 0
     ? ingredientTagGroups.flatMap((group) => group.values)
-    : ingredientTagCategories.flatMap((category) => category.tags)) as IngredientTag[];
+    : getAllCategoryTagNames(ingredientTagCategories)) as IngredientTag[];
   const existingCustomTags = ingredients
     .flatMap((ingredient) => ingredient.tags)
     .filter((tag) => !knownIngredientTags.includes(tag));
@@ -833,6 +834,14 @@ function IngredientDraftEditor({
             await ingredientTagCategoryService.deleteTag(tagName);
             await refreshIngredientTagCategories();
             await refreshIngredients();
+          }}
+          onMoveCategory={async (categoryId, direction) => {
+            await ingredientTagCategoryService.move(categoryId, direction);
+            await refreshIngredientTagCategories();
+          }}
+          onMoveTag={async (tagId, direction) => {
+            await ingredientTagCategoryService.moveTag(tagId, direction);
+            await refreshIngredientTagCategories();
           }}
         />
       )}

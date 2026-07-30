@@ -13,8 +13,21 @@ public record BrandDto(
     string Name
 );
 
+public record IngredientTagDto(
+    int IngredientTagDefinitionId,
+    string Name,
+    int SortOrder
+);
+
 public record IngredientTagCategoryDto(
     int IngredientTagCategoryId,
     string Name,
-    IReadOnlyCollection<string> Tags
+    int SortOrder,
+    IReadOnlyCollection<IngredientTagDto> Tags
+);
+
+public record MoveLookupRequest(
+    [Required]
+    [RegularExpression("^(Up|Down)$")]
+    string Direction
 );

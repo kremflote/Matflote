@@ -17,6 +17,8 @@ type IngredientTagCreateDialogProps = {
   onDeleteCategory: (category: CreatableOption) => Promise<void>;
   onUpdateTag: (tagName: string, nextName: string) => Promise<void>;
   onDeleteTag: (tagName: string) => Promise<void>;
+  onMoveCategory: (categoryId: number, direction: "Up" | "Down") => Promise<void>;
+  onMoveTag: (tagId: number, direction: "Up" | "Down") => Promise<void>;
 };
 
 function IngredientTagCreateDialog({
@@ -30,6 +32,8 @@ function IngredientTagCreateDialog({
   onDeleteCategory,
   onUpdateTag,
   onDeleteTag,
+  onMoveCategory,
+  onMoveTag,
 }: IngredientTagCreateDialogProps) {
   const { t } = useLanguage();
 
@@ -38,7 +42,10 @@ function IngredientTagCreateDialog({
       categories={categories.map((category) => ({
         id: category.ingredientTagCategoryId,
         name: category.name,
-        tags: category.tags,
+        tags: category.tags.map((tag) => ({
+          id: tag.ingredientTagDefinitionId,
+          name: tag.name,
+        })),
       }))}
       existingTags={existingTags}
       formatCategoryName={(name) =>
@@ -50,6 +57,8 @@ function IngredientTagCreateDialog({
       onCreateCategory={onCreateCategory}
       onDeleteCategory={onDeleteCategory}
       onDeleteTag={onDeleteTag}
+      onMoveCategory={onMoveCategory}
+      onMoveTag={onMoveTag}
       onUpdateCategory={onUpdateCategory}
       onUpdateTag={onUpdateTag}
     />

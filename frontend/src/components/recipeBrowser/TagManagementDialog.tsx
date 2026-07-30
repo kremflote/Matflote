@@ -7,10 +7,15 @@ import type { CreatableOption } from "./CreatableSelect";
 import { normalizeCustomTagName } from "./formOptions";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
+export type ManagedTag = {
+  id: number;
+  name: string;
+};
+
 export type ManagedTagCategory = {
   id: number;
   name: string;
-  tags: string[];
+  tags: ManagedTag[];
 };
 
 type TagManagementDialogProps = {
@@ -25,6 +30,8 @@ type TagManagementDialogProps = {
   onDeleteCategory: (category: CreatableOption) => Promise<void>;
   onUpdateTag: (tagName: string, nextName: string) => Promise<void>;
   onDeleteTag: (tagName: string) => Promise<void>;
+  onMoveCategory: (categoryId: number, direction: "Up" | "Down") => Promise<void>;
+  onMoveTag: (tagId: number, direction: "Up" | "Down") => Promise<void>;
 };
 
 type NameDialogMode = "tag" | "category";
@@ -41,6 +48,8 @@ function TagManagementDialog({
   onDeleteCategory,
   onUpdateTag,
   onDeleteTag,
+  onMoveCategory,
+  onMoveTag,
 }: TagManagementDialogProps) {
   const { t } = useLanguage();
   const titleId = useId();
@@ -55,6 +64,7 @@ function TagManagementDialog({
   const [categoryPendingDelete, setCategoryPendingDelete] = useState<ManagedTagCategory | null>(null);
   const [managedCategoryNames, setManagedCategoryNames] = useState<Record<number, string>>({});
   const [managedTagNames, setManagedTagNames] = useState<Record<string, string>>({});
+  const [collapsedCategoryIds, setCollapsedCategoryIds] = useState<Set<number>>(() => new Set());
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId) ?? null;
   const canCreateTagInSelectedCategory = selectedCategory !== null && selectedCategory.id > 0;
 
@@ -164,6 +174,36 @@ function TagManagementDialog({
     }
   }
 
+  async function moveCategory(categoryId: number, direction: "Up" | "Down") {
+    setIsManagingTags(true);
+    try {
+      await onMoveCategory(categoryId, direction);
+    } finally {
+      setIsManagingTags(false);
+    }
+  }
+
+  async function moveTag(tagId: number, direction: "Up" | "Down") {
+    setIsManagingTags(true);
+    try {
+      await onMoveTag(tagId, direction);
+    } finally {
+      setIsManagingTags(false);
+    }
+  }
+
+  function toggleCategoryCollapse(categoryId: number) {
+    setCollapsedCategoryIds((currentIds) => {
+      const nextIds = new Set(currentIds);
+      if (nextIds.has(categoryId)) {
+        nextIds.delete(categoryId);
+      } else {
+        nextIds.add(categoryId);
+      }
+      return nextIds;
+    });
+  }
+
   const openNameDialog = (mode: NameDialogMode) => {
     setNewName("");
     setNameDialogError(null);
@@ -207,6 +247,7 @@ function TagManagementDialog({
         {categories.map((category) => {
           const isSelected = selectedCategoryId === category.id;
           const isSyntheticCategory = category.id <= 0;
+          const isCollapsed = collapsedCategoryIds.has(category.id);
 
           return (
             <section
@@ -215,6 +256,17 @@ function TagManagementDialog({
               onClick={() => setSelectedCategoryId(category.id)}
             >
               <div className={`${recipeBrowserStyles.manageTagCategoryRow} ${recipeBrowserStyles.manageTagDivider(theme, "category")}`}>
+                <button
+                  className={recipeBrowserStyles.manageTagIconButton(theme)}
+                  type="button"
+                  aria-label={isCollapsed ? t.common.expand : t.common.collapse}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    toggleCategoryCollapse(category.id);
+                  }}
+                >
+                  {isCollapsed ? "+" : "-"}
+                </button>
                 <input
                   className={recipeBrowserStyles.textField(theme)}
                   readOnly={isSyntheticCategory}
@@ -226,6 +278,32 @@ function TagManagementDialog({
                     }))
                   }
                 />
+                <div className={recipeBrowserStyles.manageTagOrderControls}>
+                  <button
+                    className={recipeBrowserStyles.manageTagIconButton(theme)}
+                    disabled={isManagingTags || isSyntheticCategory}
+                    type="button"
+                    aria-label={t.common.moveUp}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void moveCategory(category.id, "Up");
+                    }}
+                  >
+                    ^
+                  </button>
+                  <button
+                    className={recipeBrowserStyles.manageTagIconButton(theme)}
+                    disabled={isManagingTags || isSyntheticCategory}
+                    type="button"
+                    aria-label={t.common.moveDown}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void moveCategory(category.id, "Down");
+                    }}
+                  >
+                    v
+                  </button>
+                </div>
                 <button
                   className={recipeBrowserStyles.manageTagActionButton(theme)}
                   disabled={isManagingTags || isSyntheticCategory}
@@ -249,27 +327,47 @@ function TagManagementDialog({
                   {t.common.remove}
                 </button>
               </div>
-              <div className={recipeBrowserStyles.manageTagList}>
+              {!isCollapsed && <div className={recipeBrowserStyles.manageTagList}>
                 {category.tags.map((tag) => (
                   <div
                     className={`${recipeBrowserStyles.manageTagRow} ${recipeBrowserStyles.manageTagDivider(theme)}`}
-                    key={tag}
+                    key={tag.id}
                   >
                     <input
                       className={recipeBrowserStyles.textField(theme)}
-                      value={managedTagNames[tag] ?? tag}
+                      value={managedTagNames[tag.name] ?? tag.name}
                       onChange={(event) =>
                         setManagedTagNames((currentNames) => ({
                           ...currentNames,
-                          [tag]: event.target.value,
+                          [tag.name]: event.target.value,
                         }))
                       }
                     />
+                    <div className={recipeBrowserStyles.manageTagOrderControls}>
+                      <button
+                        className={recipeBrowserStyles.manageTagIconButton(theme)}
+                        disabled={isManagingTags}
+                        type="button"
+                        aria-label={t.common.moveUp}
+                        onClick={() => void moveTag(tag.id, "Up")}
+                      >
+                        ^
+                      </button>
+                      <button
+                        className={recipeBrowserStyles.manageTagIconButton(theme)}
+                        disabled={isManagingTags}
+                        type="button"
+                        aria-label={t.common.moveDown}
+                        onClick={() => void moveTag(tag.id, "Down")}
+                      >
+                        v
+                      </button>
+                    </div>
                     <button
                       className={recipeBrowserStyles.manageTagActionButton(theme)}
                       disabled={isManagingTags}
                       type="button"
-                      onClick={() => void updateManagedTag(tag)}
+                      onClick={() => void updateManagedTag(tag.name)}
                     >
                       {t.common.save}
                     </button>
@@ -277,13 +375,13 @@ function TagManagementDialog({
                       className={recipeBrowserStyles.manageTagRemoveButton(theme)}
                       disabled={isManagingTags}
                       type="button"
-                      onClick={() => void deleteManagedTag(tag)}
+                      onClick={() => void deleteManagedTag(tag.name)}
                     >
                       {t.common.remove}
                     </button>
                   </div>
                 ))}
-              </div>
+              </div>}
             </section>
           );
         })}

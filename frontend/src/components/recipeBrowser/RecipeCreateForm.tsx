@@ -3,6 +3,7 @@ import { useIngredientTagCategories, useIngredients, useLanguage, useRecipes } f
 import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
 import { imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
+import { getAllCategoryTagNames } from "../../utils/tagCatalog";
 import {
   formatRecipeTagGroupName,
   getRecipeTagGroupsWithCustomTags,
@@ -106,7 +107,7 @@ function RecipeCreateForm({
   );
   const knownRecipeTags = (ingredientTagCategories.length === 0
     ? recipeTagGroups.flatMap((group) => group.values)
-    : ingredientTagCategories.flatMap((category) => category.tags)) as RecipeTag[];
+    : getAllCategoryTagNames(ingredientTagCategories)) as RecipeTag[];
   const existingCustomRecipeTags = recipes
     .flatMap((recipe) => recipe.tags)
     .filter((tag) => !knownRecipeTags.includes(tag));
@@ -701,6 +702,14 @@ function RecipeCreateForm({
             setSelectedTags((currentTags) =>
               currentTags.filter((tag) => tag.toLowerCase() !== tagName.toLowerCase()),
             );
+          }}
+          onMoveCategory={async (categoryId, direction) => {
+            await ingredientTagCategoryService.move(categoryId, direction);
+            await refreshIngredientTagCategories();
+          }}
+          onMoveTag={async (tagId, direction) => {
+            await ingredientTagCategoryService.moveTag(tagId, direction);
+            await refreshIngredientTagCategories();
           }}
         />
       )}

@@ -3,6 +3,7 @@ import { useIngredientTagCategories, useLanguage } from "../contexts";
 import type { IGroceryList, IGroceryListItem } from "../interfaces/IGroceryList";
 import { ApiError, appSettingsService, groceryListService } from "../services";
 import { groceryExportStyles, type SiteTheme } from "../styles/appStyles";
+import { getAllCategoryTagNames } from "../utils/tagCatalog";
 import Modal from "./Modal";
 
 type GroceryExportDialogProps = {
@@ -366,11 +367,11 @@ function getInitialSelectedKeys(groceryList: IGroceryList, excludedTags: string[
 }
 
 function getAvailableRuleTags(
-  ingredientTagCategories: Array<{ tags: string[] }>,
+  ingredientTagCategories: Parameters<typeof getAllCategoryTagNames>[0],
   groceryList: IGroceryList,
   excludedTags: string[],
 ) {
-  const categoryTags = ingredientTagCategories.flatMap((category) => category.tags);
+  const categoryTags = getAllCategoryTagNames(ingredientTagCategories);
   const fallbackPreviewTags = groceryList.sections.flatMap((section) => section.items.flatMap((item) => item.tags));
   const sourceTags = categoryTags.length > 0 ? categoryTags : fallbackPreviewTags;
 

@@ -1,6 +1,7 @@
 import type { IngredientTag, KnownIngredientTag, MeasurementUnit, Vitamin } from "../../interfaces/IIngredient";
 import type { IIngredientTagCategory } from "../../interfaces/ILookup";
 import type { IngredientPreparation, RecipeTag } from "../../interfaces/IRecipe";
+import { getCategoryTagNames } from "../../utils/tagCatalog";
 
 export const recipeTags: RecipeTag[] = [
   "Vegetable",
@@ -72,7 +73,7 @@ export function getRecipeTagGroupsWithCustomTags(
     ? recipeTagGroups
     : categories.map((category) => ({
         key: category.ingredientTagCategoryId.toString(),
-        values: category.tags as RecipeTag[],
+        values: getCategoryTagNames(category) as RecipeTag[],
       }));
   const styleCategory = categories.find((category) => category.name.trim().toLowerCase() === "style");
   const fallbackKey = categories.length === 0
@@ -167,7 +168,7 @@ export function getIngredientTagGroupsWithCustomTags(
     ? ingredientTagGroups
     : categories.map((category) => ({
         key: category.ingredientTagCategoryId.toString(),
-        values: category.tags as IngredientTag[],
+        values: getCategoryTagNames(category) as IngredientTag[],
       }));
   const pantryCategory = categories.find((category) => category.name.trim().toLowerCase() === "pantry");
   const fallbackKey = categories.length === 0

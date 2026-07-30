@@ -48,6 +48,7 @@ public class SeedCatalogService(
         var startedAt = DateTimeOffset.UtcNow;
         try
         {
+            await UpsertTagCategoriesAsync(catalog.TagCategories, cancellationToken);
             var brandCount = await UpsertBrandsAsync(catalog.Brands, cancellationToken);
             var ingredientCount = await UpsertIngredientsAsync(catalog.Ingredients, cancellationToken);
             var recipeCount = await UpsertRecipesAsync(catalog.Recipes, cancellationToken);
@@ -87,6 +88,22 @@ public class SeedCatalogService(
 
     public async Task<SeedCatalogDto> ExportCatalogAsync(CancellationToken cancellationToken = default)
     {
+        var tagCategories = await context.IngredientTagCategories
+            .AsNoTracking()
+            .Include(category => category.Tags)
+            .OrderBy(category => category.SortOrder)
+            .ThenBy(category => category.Name)
+            .Select(category => new SeedTagCategoryDto(
+                category.Name,
+                category.SortOrder,
+                category.Tags
+                    .OrderBy(tag => tag.SortOrder)
+                    .ThenBy(tag => tag.Name)
+                    .Select(tag => new SeedTagDto(tag.Name, tag.SortOrder))
+                    .ToList()
+            ))
+            .ToListAsync(cancellationToken);
+
         var brands = await context.Brands
             .AsNoTracking()
             .OrderBy(brand => brand.Name)
@@ -130,6 +147,7 @@ public class SeedCatalogService(
             .ToListAsync(cancellationToken);
 
         return new SeedCatalogDto(
+            tagCategories,
             brands,
             ingredients,
             recipes.Select(ToSeedRecipe).ToList()
@@ -177,6 +195,76 @@ public class SeedCatalogService(
         }
 
         return packageStream.ToArray();
+    }
+
+    private async Task UpsertTagCategoriesAsync(
+        IReadOnlyCollection<SeedTagCategoryDto>? categories,
+        CancellationToken cancellationToken)
+    {
+        if (categories is null)
+        {
+            return;
+        }
+
+        foreach (var seedCategory in categories)
+        {
+            var categoryName = CleanName(seedCategory.Name);
+            if (categoryName.Length == 0)
+            {
+                continue;
+            }
+
+            var category = await context.IngredientTagCategories
+                .Include(value => value.Tags)
+                .FirstOrDefaultAsync(value => value.Name.ToLower() == categoryName.ToLower(), cancellationToken);
+            if (category is null)
+            {
+                category = new IngredientTagCategory
+                {
+                    Name = categoryName,
+                    SortOrder = seedCategory.SortOrder ?? await GetNextCategorySortOrderAsync(cancellationToken)
+                };
+                context.IngredientTagCategories.Add(category);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+            else if (seedCategory.SortOrder is not null)
+            {
+                category.SortOrder = seedCategory.SortOrder.Value;
+            }
+
+            foreach (var seedTag in seedCategory.Tags ?? [])
+            {
+                var tagName = CleanName(seedTag.Name);
+                if (tagName.Length == 0)
+                {
+                    continue;
+                }
+
+                var tag = await context.IngredientTagDefinitions
+                    .FirstOrDefaultAsync(value => value.Name.ToLower() == tagName.ToLower(), cancellationToken);
+                if (tag is null)
+                {
+                    tag = new IngredientTagDefinition
+                    {
+                        Name = tagName,
+                        IngredientTagCategoryId = category.IngredientTagCategoryId,
+                        SortOrder = seedTag.SortOrder ?? GetNextTagSortOrder(category)
+                    };
+                    context.IngredientTagDefinitions.Add(tag);
+                    category.Tags.Add(tag);
+                }
+                else
+                {
+                    tag.IngredientTagCategoryId = category.IngredientTagCategoryId;
+                    if (seedTag.SortOrder is not null)
+                    {
+                        tag.SortOrder = seedTag.SortOrder.Value;
+                    }
+                }
+            }
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<int> UpsertBrandsAsync(
@@ -394,6 +482,17 @@ public class SeedCatalogService(
         await context.SaveChangesAsync(cancellationToken);
         return (brand, true);
     }
+
+    private async Task<int> GetNextCategorySortOrderAsync(CancellationToken cancellationToken)
+    {
+        var maxSortOrder = await context.IngredientTagCategories
+            .Select(category => (int?)category.SortOrder)
+            .MaxAsync(cancellationToken) ?? 0;
+        return maxSortOrder + 100;
+    }
+
+    private static int GetNextTagSortOrder(IngredientTagCategory category) =>
+        category.Tags.Count == 0 ? 100 : category.Tags.Max(tag => tag.SortOrder) + 100;
 
     private Task<Ingredient?> FindIngredientAsync(
         string ingredientName,

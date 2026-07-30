@@ -3,9 +3,21 @@ using DinnerPlanner.Api.Models;
 namespace DinnerPlanner.Api.Dtos;
 
 public record SeedCatalogDto(
+    IReadOnlyCollection<SeedTagCategoryDto>? TagCategories,
     IReadOnlyCollection<SeedBrandDto>? Brands,
     IReadOnlyCollection<SeedIngredientDto>? Ingredients,
     IReadOnlyCollection<SeedRecipeDto>? Recipes
+);
+
+public record SeedTagCategoryDto(
+    string Name,
+    int? SortOrder,
+    IReadOnlyCollection<SeedTagDto>? Tags
+);
+
+public record SeedTagDto(
+    string Name,
+    int? SortOrder
 );
 
 public record SeedBrandDto(string Name);

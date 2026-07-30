@@ -625,10 +625,19 @@ export const recipeBrowserStyles = {
           ? "border-neutral-300"
           : "border-neutral-200",
   manageTagCategoryRow:
-    "grid grid-cols-[minmax(0,1fr)_7rem_7rem] items-center gap-2 border-b pb-3 max-sm:grid-cols-2 [&>input]:max-sm:col-span-2 [&>button]:max-sm:w-full",
+    "grid grid-cols-[2rem_minmax(0,1fr)_4.5rem_7rem_7rem] items-center gap-2 border-b pb-3 max-sm:grid-cols-[2rem_minmax(0,1fr)] max-sm:[&>input]:col-span-1 max-sm:[&>div]:col-span-2 max-sm:[&>button:not(:first-child)]:w-full",
   manageTagList: "grid",
   manageTagRow:
-    "grid grid-cols-[minmax(0,1fr)_7rem_7rem] items-center gap-2 border-b py-2 pl-8 last:border-b-0 last:pb-0 max-sm:grid-cols-2 max-sm:pl-4 [&>input]:max-sm:col-span-2 [&>button]:max-sm:w-full",
+    "grid grid-cols-[minmax(0,1fr)_4.5rem_7rem_7rem] items-center gap-2 border-b py-2 pl-10 last:border-b-0 last:pb-0 max-sm:grid-cols-2 max-sm:pl-6 [&>input]:max-sm:col-span-2 [&>div]:max-sm:col-span-2 [&>button]:max-sm:w-full",
+  manageTagOrderControls: "grid grid-cols-2 gap-1",
+  manageTagIconButton: (theme: SiteTheme) =>
+    `flex h-8 w-full min-w-0 items-center justify-center rounded-md border text-xs font-black transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+      theme === "dark"
+        ? "border-white/[0.14] bg-white/[0.06] text-neutral-200 hover:bg-white/[0.11]"
+        : theme === "paletteLight"
+          ? "border-[#7A8864]/35 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]/75"
+          : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100"
+    }`,
   manageTagActionButton: (theme: SiteTheme) =>
     `${controlStyles.secondaryButton(theme)} w-28 min-w-0 px-4 max-sm:h-9 max-sm:w-full max-sm:px-3 max-sm:text-sm`,
   manageTagRemoveButton: (theme: SiteTheme) =>

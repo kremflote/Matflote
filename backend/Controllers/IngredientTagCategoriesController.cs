@@ -79,9 +79,81 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
 
         if (existingTag is null)
         {
-            category.Tags.Add(new IngredientTagDefinition { Name = name });
+            var nextSortOrder = category.Tags.Count == 0
+                ? 100
+                : category.Tags.Max(tag => tag.SortOrder) + 100;
+            category.Tags.Add(new IngredientTagDefinition
+            {
+                Name = name,
+                SortOrder = nextSortOrder
+            });
             await context.SaveChangesAsync();
         }
+
+        return Ok(ToDto(category));
+    }
+
+    [HttpPost("{id:int}/move")]
+    public async Task<ActionResult<IEnumerable<IngredientTagCategoryDto>>> MoveCategory(int id, MoveLookupRequest request)
+    {
+        var categories = await context.IngredientTagCategories
+            .Include(category => category.Tags)
+            .OrderBy(category => category.SortOrder)
+            .ThenBy(category => category.Name)
+            .ToListAsync();
+
+        var index = categories.FindIndex(category => category.IngredientTagCategoryId == id);
+        if (index < 0)
+        {
+            return NotFound();
+        }
+
+        var targetIndex = request.Direction == "Up" ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= categories.Count)
+        {
+            return Ok(categories.Select(ToDto).ToList());
+        }
+
+        (categories[index], categories[targetIndex]) = (categories[targetIndex], categories[index]);
+        ApplySortOrder(categories);
+        await context.SaveChangesAsync();
+
+        return Ok(categories.Select(ToDto).ToList());
+    }
+
+    [HttpPost("tags/{tagId:int}/move")]
+    public async Task<ActionResult<IngredientTagCategoryDto>> MoveTag(int tagId, MoveLookupRequest request)
+    {
+        var tag = await context.IngredientTagDefinitions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(value => value.IngredientTagDefinitionId == tagId);
+        if (tag is null)
+        {
+            return NotFound();
+        }
+
+        var category = await context.IngredientTagCategories
+            .Include(value => value.Tags)
+            .FirstOrDefaultAsync(value => value.IngredientTagCategoryId == tag.IngredientTagCategoryId);
+        if (category is null)
+        {
+            return NotFound();
+        }
+
+        var tags = category.Tags
+            .OrderBy(value => value.SortOrder)
+            .ThenBy(value => value.Name)
+            .ToList();
+        var index = tags.FindIndex(value => value.IngredientTagDefinitionId == tagId);
+        var targetIndex = request.Direction == "Up" ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= tags.Count)
+        {
+            return Ok(ToDto(category));
+        }
+
+        (tags[index], tags[targetIndex]) = (tags[targetIndex], tags[index]);
+        ApplySortOrder(tags);
+        await context.SaveChangesAsync();
 
         return Ok(ToDto(category));
     }
@@ -183,9 +255,27 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
     private static IngredientTagCategoryDto ToDto(IngredientTagCategory category) => new(
         category.IngredientTagCategoryId,
         category.Name,
+        category.SortOrder,
         category.Tags
-            .OrderBy(tag => tag.Name)
-            .Select(tag => tag.Name)
+            .OrderBy(tag => tag.SortOrder)
+            .ThenBy(tag => tag.Name)
+            .Select(tag => new IngredientTagDto(tag.IngredientTagDefinitionId, tag.Name, tag.SortOrder))
             .ToList()
     );
+
+    private static void ApplySortOrder(IReadOnlyList<IngredientTagCategory> categories)
+    {
+        for (var index = 0; index < categories.Count; index++)
+        {
+            categories[index].SortOrder = (index + 1) * 100;
+        }
+    }
+
+    private static void ApplySortOrder(IReadOnlyList<IngredientTagDefinition> tags)
+    {
+        for (var index = 0; index < tags.Count; index++)
+        {
+            tags[index].SortOrder = (index + 1) * 100;
+        }
+    }
 }

@@ -38,8 +38,12 @@ export type TranslationDictionary = {
     couldNotDeleteOption: string;
     deleteNamed: (name: string) => string;
     edit: string;
+    collapse: string;
+    expand: string;
     ingredientAdded: (name: string) => string;
     manageTags: string;
+    moveDown: string;
+    moveUp: string;
     nameAlreadyExists: string;
     nameRequired: string;
     remove: string;

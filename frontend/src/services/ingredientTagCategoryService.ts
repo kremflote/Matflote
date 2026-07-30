@@ -14,6 +14,16 @@ export const ingredientTagCategoryService = {
       method: "POST",
       body: tag,
     }),
+  move: (id: number, direction: "Up" | "Down") =>
+    apiRequest<IIngredientTagCategory[]>(`/api/ingredient-tag-categories/${id}/move`, {
+      method: "POST",
+      body: { direction },
+    }),
+  moveTag: (tagId: number, direction: "Up" | "Down") =>
+    apiRequest<IIngredientTagCategory>(`/api/ingredient-tag-categories/tags/${tagId}/move`, {
+      method: "POST",
+      body: { direction },
+    }),
   update: (id: number, category: LookupRequest) =>
     apiRequest<IIngredientTagCategory>(`/api/ingredient-tag-categories/${id}`, {
       method: "PUT",

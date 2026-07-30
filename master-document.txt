@@ -495,6 +495,7 @@ Starter ingredients and recipes should be shipped through `backend/SeedData/cata
 Backend startup imports this catalog after EF migrations. The import is additive and idempotent:
 
 - Brands are created when missing
+- Tag categories and tag definitions are created when missing, before ingredients and recipes import
 - Ingredients are matched by ingredient name plus optional brand name
 - Recipes are matched by recipe name
 - Existing matching records are not overwritten
@@ -502,6 +503,8 @@ Backend startup imports this catalog after EF migrations. The import is additive
 The app exposes `GET /api/seed-catalog/export` so curated data can be created through the UI, exported to JSON, reviewed, and then committed as starter data.
 
 The JSON catalog should use stable English enum identifiers for recipe tags, ingredient tags, measurement units, ingredient preparation, and nutrition fields. Recipes are no longer separated by recipe type; labels such as side, sauce, dinner, and format live in the shared tag system.
+
+Tag categories and tags have explicit `SortOrder` values. Manage Tags is the owner of display order, and browsers/filter panels should render categories and tags in backend order rather than creation order or local alphabetical sorting.
 
 ### Confirmation dialogs
 
@@ -603,9 +606,7 @@ Icons should align visually with text and buttons.
 
 ## Ingredient tags
 
-`IngredientTag.LeafyGreen` exists in both backend and frontend enum/type definitions.
-
-Existing database ingredients are tagged through the `TagLeafyGreenIngredients` migration when their names match common leafy greens such as spinach, kale, lettuce, arugula, rocket, cabbage, or chard.
+`LeafyGreen` is a shared tag definition in the backend tag catalog and frontend label set.
 
 Future seeded leafy ingredients should normally receive both:
 
@@ -614,7 +615,7 @@ Vegetable
 LeafyGreen
 ```
 
-Recipes do not store `LeafyGreen` directly. Planner filters infer it from the tags on recipe ingredients.
+Recipes and ingredients can both use `LeafyGreen` through the shared tag catalog. Planner filters should read tag assignments through tag definitions, not hardcoded category assumptions.
 
 
 # Overview
