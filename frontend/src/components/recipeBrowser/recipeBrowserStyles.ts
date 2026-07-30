@@ -21,8 +21,11 @@ export const recipeBrowserStyles = {
     "relative col-span-2 max-[1100px]:order-2 max-[1100px]:col-span-12 max-[1100px]:grid max-[1100px]:w-full max-[1100px]:grid-cols-[auto_minmax(0,1fr)] max-[1100px]:items-center max-[1100px]:gap-2",
   searchFieldShell:
     "relative w-full max-[1100px]:col-start-2 max-[1100px]:row-start-1",
+  searchFieldInlineShell: "relative min-w-0 w-full",
   searchInputWithClear:
-    "pr-9 min-[641px]:max-[1100px]:h-11 min-[641px]:max-[1100px]:pr-10 min-[641px]:max-[1100px]:text-base",
+    "pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none min-[641px]:max-[1100px]:h-11 min-[641px]:max-[1100px]:pr-10 min-[641px]:max-[1100px]:text-base",
+  searchInputClearPadding:
+    "pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none",
   searchClearButton: (theme: SiteTheme) =>
     `absolute right-2 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md transition-colors min-[641px]:max-[1100px]:h-6 min-[641px]:max-[1100px]:w-6 [&_svg]:h-3 [&_svg]:w-3 min-[641px]:max-[1100px]:[&_svg]:h-3.5 min-[641px]:max-[1100px]:[&_svg]:w-3.5 ${
       theme === "dark"

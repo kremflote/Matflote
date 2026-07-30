@@ -1,5 +1,6 @@
 import { useId, useState, type KeyboardEvent } from "react";
 import Modal from "../Modal";
+import SearchField from "../SearchField";
 import { useLanguage } from "../../contexts";
 import type { INutritionFacts } from "../../interfaces/IIngredient";
 import type { IMatvaretabellenCandidate, IProductLookupNutrition } from "../../interfaces/IProductLookup";
@@ -89,13 +90,14 @@ function MatvaretabellenSearchDialog({
       onClose={onCancel}
     >
       <div className={recipeBrowserStyles.matvareSearchForm}>
-        <input
-          className={recipeBrowserStyles.textField(theme)}
+        <SearchField
+          aria-label={t.scanner.searchMatvaretabellenPlaceholder}
+          inputClassName={recipeBrowserStyles.textField(theme)}
           placeholder={t.scanner.searchMatvaretabellenPlaceholder}
-          type="search"
+          theme={theme}
           value={query}
           onKeyDown={handleSearchInputKeyDown}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={setQuery}
         />
         <button
           className={recipeBrowserStyles.primaryButton(theme)}

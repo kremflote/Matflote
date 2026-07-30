@@ -25,6 +25,7 @@ import {
 import PlannerRecipePickerGrid from "./plannerRecipePicker/PlannerRecipePickerGrid";
 import PlannerRecipePickerSelection from "./plannerRecipePicker/PlannerRecipePickerSelection";
 import Modal from "./Modal";
+import SearchField from "./SearchField";
 
 type PlannerRecipePickerModalProps = {
   date: string;
@@ -496,14 +497,14 @@ function PlannerRecipePickerModal({
       onClose={onClose}
     >
         <div className={plannerPickerStyles.controls}>
-          <input
+          <SearchField
             aria-label={browserMode === "recipes" ? t.browser.searchRecipes : t.browser.searchIngredients}
-            className={plannerPickerStyles.searchInput(theme)}
+            inputClassName={plannerPickerStyles.searchInput(theme)}
             placeholder={t.planner.mealPickerSearchPlaceholder}
             ref={searchInputRef}
-            type="search"
+            theme={theme}
             value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
+            onChange={setSearchTerm}
           />
           <button
             aria-label={t.filters.categories}

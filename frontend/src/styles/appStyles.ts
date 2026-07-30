@@ -1580,7 +1580,11 @@ export const groceryExportStyles = {
   ruleTagButton: (theme: SiteTheme, selected: boolean) =>
     `min-h-9 rounded-md border px-3 py-2 text-left text-xs font-bold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
       selected
-        ? siteColorClasses[theme].plannerControl
+        ? theme === "dark"
+          ? "border-emerald-300 bg-emerald-950 text-emerald-50 shadow-[inset_0_0_0_1px_rgba(110,231,183,0.75)]"
+          : theme === "paletteLight"
+            ? "border-[#3C4A2E] bg-[#7A8864] text-[#FAF7F2] shadow-[inset_0_0_0_1px_#FAF7F2]"
+            : "border-emerald-900 bg-emerald-100 text-emerald-950 shadow-[inset_0_0_0_1px_#064E3B]"
         : theme === "dark"
           ? "border-white/[0.10] bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]"
           : theme === "paletteLight"

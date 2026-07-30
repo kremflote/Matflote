@@ -1,6 +1,7 @@
 import IngredientThumbnail from "../IngredientThumbnail";
 import Modal from "../Modal";
 import RecipeLineThumbnail from "../RecipeLineThumbnail";
+import SearchField from "../SearchField";
 import { useLanguage } from "../../contexts";
 import type { IIngredient, MeasurementUnit } from "../../interfaces/IIngredient";
 import type { IRecipe, IngredientPreparation } from "../../interfaces/IRecipe";
@@ -45,12 +46,13 @@ export function RecipeIngredientPickerContent({
 
   return (
     <>
-      <input
-        className={recipeBrowserStyles.textField(theme)}
+      <SearchField
+        aria-label={t.cookbook.searchIngredientsPlaceholder}
+        inputClassName={recipeBrowserStyles.textField(theme)}
         placeholder={t.cookbook.searchIngredientsPlaceholder}
-        type="search"
+        theme={theme}
         value={ingredientSearch}
-        onChange={(event) => onSearchChange(event.target.value)}
+        onChange={onSearchChange}
       />
       <div className={`${recipeBrowserStyles.recipeIngredientPickerGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
         {ingredients.length === 0 ? (
@@ -254,12 +256,13 @@ export function RecipeComponentPickerContent({
 
   return (
     <>
-      <input
-        className={recipeBrowserStyles.textField(theme)}
+      <SearchField
+        aria-label={t.cookbook.searchRecipes}
+        inputClassName={recipeBrowserStyles.textField(theme)}
         placeholder={t.cookbook.searchRecipes}
-        type="search"
+        theme={theme}
         value={recipeSearch}
-        onChange={(event) => onSearchChange(event.target.value)}
+        onChange={onSearchChange}
       />
       <div className={`${recipeBrowserStyles.recipeIngredientPickerGrid} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}>
         {recipes.length === 0 ? (

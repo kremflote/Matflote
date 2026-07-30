@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
 import { useLanguage } from "../../contexts";
 import IngredientThumbnail from "../IngredientThumbnail";
+import SearchField from "../SearchField";
 import type { IIngredient } from "../../interfaces/IIngredient";
 import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
@@ -44,13 +45,13 @@ function IngredientFilterPopover({
         top: position.top,
       }}
     >
-      <input
+      <SearchField
         aria-label={t.browser.searchIngredientsToInclude}
-        className={recipeBrowserStyles.ingredientPickerSearch(theme)}
+        inputClassName={recipeBrowserStyles.ingredientPickerSearch(theme)}
         placeholder={t.browser.ingredientSearchPlaceholder}
-        type="search"
+        theme={theme}
         value={searchTerm}
-        onChange={(event) => onSearchChange(event.target.value)}
+        onChange={onSearchChange}
       />
       <div className={recipeBrowserStyles.ingredientPickerList}>
         {ingredients.length === 0 ? (
