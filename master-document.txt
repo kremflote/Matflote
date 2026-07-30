@@ -410,9 +410,13 @@ Keep user-uploaded images separate from generated frontend assets. Runtime image
 
 Household/shared data belongs in the backend database. This includes ingredients, recipes, recipe ingredients, recipe components, meal plans, tags, tag categories, brands, stores, price points, nutrition data, nutrition reference profile/settings, app integration settings, grocery export rules, import metadata, and image metadata.
 
+Tags are a shared catalog for both ingredients and recipes. Ingredient and recipe tag assignments should be stored by tag definition ID, not copied tag-name strings, so rename/delete operations remain consistent across the app.
+
 User-uploaded image files belong in the configured image storage root, not inside the SQLite database. The database stores image metadata and public paths such as `/images/recipes/...` or `/images/ingredients/...`; the persistent image volume stores the actual files.
 
-Frontend `localStorage` is only for per-device display preferences: theme, language, last open page, cookbook recipe/ingredient mode, planner week/month mode, and the last selected planner date. Do not store secrets, shared household data, uploaded files, or external integration tokens in `localStorage`.
+Settings/maintenance tooling should offer a full export package that includes the seed catalog JSON plus stored images, a seed catalog JSON import action, and an image cleanup report/action for unused uploaded image metadata and untracked files. Cleanup must not remove images still referenced by ingredients or recipes.
+
+Frontend `localStorage` is only for per-device display preferences: theme, language, last open page, cookbook recipe/ingredient mode, planner week/month mode, last selected planner date, and collapsed mobile planner day sections. Do not store secrets, shared household data, uploaded files, or external integration tokens in `localStorage`.
 
 Search text, open modals, and temporary filter drafts should remain in component state unless there is a deliberate product reason to restore them after reload. Persisting too much transient UI state can make the app feel stale when opened later.
 

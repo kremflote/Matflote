@@ -94,6 +94,31 @@ function Invoke-SmokeImageUpload {
     }
 }
 
+function Invoke-SmokeSeedCatalogImport {
+    $client = [System.Net.Http.HttpClient]::new()
+    $content = [System.Net.Http.MultipartFormDataContent]::new()
+    $catalogPath = Join-Path $tempRoot "seed-catalog.json"
+
+    try {
+        Invoke-WebRequest -Uri "$baseUrl/api/seed-catalog/export" -OutFile $catalogPath
+        $fileStream = [System.IO.File]::OpenRead($catalogPath)
+        try {
+            $fileContent = [System.Net.Http.StreamContent]::new($fileStream)
+            $fileContent.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::Parse("application/json")
+            $content.Add($fileContent, "file", "seed-catalog.json")
+
+            $response = $client.PostAsync("$baseUrl/api/seed-catalog/import", $content).GetAwaiter().GetResult()
+            $response.EnsureSuccessStatusCode() | Out-Null
+            Write-Host "OK /api/seed-catalog/import"
+        } finally {
+            $fileStream.Dispose()
+        }
+    } finally {
+        $content.Dispose()
+        $client.Dispose()
+    }
+}
+
 try {
     New-Item -ItemType Directory -Path $dataRoot, $imagesRoot -Force | Out-Null
 
@@ -145,15 +170,19 @@ try {
     Invoke-SmokeEndpoint "/api/recipes"
     Invoke-SmokeEndpoint "/api/ingredients"
     Invoke-SmokeEndpoint "/api/seed-catalog/export"
+    Invoke-SmokeEndpoint "/api/seed-catalog/export-package"
     Invoke-SmokeEndpoint "/api/mealplans?from=2026-01-01&to=2026-01-07"
     Invoke-SmokeEndpoint "/api/grocerylists/preview?from=2026-01-01&to=2026-01-07"
     Invoke-SmokeAppSettings
     Invoke-SmokeImageUpload
+    Invoke-SmokeEndpoint "/api/maintenance/images/report"
+    Invoke-SmokeSeedCatalogImport
 
     Write-Host "Smoke test completed."
 } finally {
     if ($process -ne $null -and -not $process.HasExited) {
         Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        Wait-Process -Id $process.Id -Timeout 5 -ErrorAction SilentlyContinue
     }
 
     Remove-Item Env:\ASPNETCORE_ENVIRONMENT -ErrorAction SilentlyContinue
@@ -161,6 +190,17 @@ try {
     Remove-Item Env:\ImageStorage__RootPath -ErrorAction SilentlyContinue
 
     if (Test-Path $tempRoot) {
-        Remove-Item -LiteralPath $tempRoot -Recurse -Force
+        for ($attempt = 1; $attempt -le 5; $attempt++) {
+            try {
+                Remove-Item -LiteralPath $tempRoot -Recurse -Force
+                break
+            } catch {
+                if ($attempt -eq 5) {
+                    throw
+                }
+
+                Start-Sleep -Milliseconds 500
+            }
+        }
     }
 }

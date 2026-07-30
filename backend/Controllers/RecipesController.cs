@@ -50,9 +50,9 @@ public class RecipesController(DinnerPlannerContext context, TagCatalogService t
 
         var recipe = CreateRecipeModel(request);
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients);
-        var knownTags = await tagCatalog.NormalizeKnownTagsAsync(request.Tags, HttpContext.RequestAborted);
+        var knownTags = await tagCatalog.NormalizeKnownTagDefinitionsAsync(request.Tags, HttpContext.RequestAborted);
         recipe.Tags = knownTags
-            .Select(tag => new RecipeTagAssignment { Tag = tag })
+            .Select(tag => new RecipeTagAssignment { IngredientTagDefinitionId = tag.IngredientTagDefinitionId })
             .ToList();
         recipe.Components = ToRecipeComponents(requestedComponents);
 
@@ -103,12 +103,12 @@ public class RecipesController(DinnerPlannerContext context, TagCatalogService t
         context.RecipeIngredients.RemoveRange(recipe.Ingredients);
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients, recipe.RecipeId);
         context.RecipeTagAssignments.RemoveRange(recipe.Tags);
-        var knownTags = await tagCatalog.NormalizeKnownTagsAsync(request.Tags, HttpContext.RequestAborted);
+        var knownTags = await tagCatalog.NormalizeKnownTagDefinitionsAsync(request.Tags, HttpContext.RequestAborted);
         recipe.Tags = knownTags
             .Select(tag => new RecipeTagAssignment
             {
                 RecipeId = recipe.RecipeId,
-                Tag = tag
+                IngredientTagDefinitionId = tag.IngredientTagDefinitionId
             })
             .ToList();
         context.RecipeComponents.RemoveRange(recipe.Components);
@@ -171,7 +171,9 @@ public class RecipesController(DinnerPlannerContext context, TagCatalogService t
         .Include(recipe => recipe.Ingredients)
             .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                 .ThenInclude(ingredient => ingredient.Tags)
+                    .ThenInclude(tag => tag.TagDefinition)
         .Include(recipe => recipe.Tags)
+            .ThenInclude(tag => tag.TagDefinition)
         .Include(recipe => recipe.Components)
             .ThenInclude(component => component.ChildRecipe)
                 .ThenInclude(childRecipe => childRecipe.Ingredients)
@@ -181,7 +183,8 @@ public class RecipesController(DinnerPlannerContext context, TagCatalogService t
             .ThenInclude(component => component.ChildRecipe)
                 .ThenInclude(childRecipe => childRecipe.Ingredients)
                     .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                        .ThenInclude(ingredient => ingredient.Tags);
+                        .ThenInclude(ingredient => ingredient.Tags)
+                            .ThenInclude(tag => tag.TagDefinition);
     }
 
     private async Task<List<Recipe>> GetComponentRecipes(IEnumerable<int> recipeIds)
@@ -237,7 +240,7 @@ public class RecipesController(DinnerPlannerContext context, TagCatalogService t
         recipe.Instructions,
         recipe.Portions,
         recipe.Ingredients.Select(ToDto).ToList(),
-        recipe.Tags.Select(recipeTag => recipeTag.Tag).OrderBy(tag => tag).ToList(),
+        recipe.Tags.Select(recipeTag => recipeTag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
         recipe.Components
             .OrderBy(component => component.SortOrder)
             .Select(ToDto)
@@ -403,7 +406,7 @@ public class RecipesController(DinnerPlannerContext context, TagCatalogService t
         ingredient.Brand is null ? null : new BrandDto(ingredient.Brand.BrandId, ingredient.Brand.Name),
         ingredient.ImageUrl,
         ingredient.Price,
-        ingredient.Tags.Select(ingredientTag => ingredientTag.Tag).OrderBy(tag => tag).ToList(),
+        ingredient.Tags.Select(ingredientTag => ingredientTag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
         ingredient.NutritionPer100,
         ingredient.NutritionSource,
         ingredient.NutritionSourceLabel,

@@ -3,12 +3,14 @@ import {
   ExportSettingsPanel,
   CurrentProviderSummary,
   LanguageSettingsPanel,
+  MaintenancePanel,
   SystemInfoPanel,
   type ExportSettingsForm,
 } from "../components/settings/SettingsPanels";
 import { useLanguage } from "../contexts";
 import type { IAppSettings } from "../interfaces/IAppSettings";
-import { ApiError, appSettingsService } from "../services";
+import type { IImageCleanupReport } from "../interfaces/IMaintenance";
+import { ApiError, appSettingsService, maintenanceService } from "../services";
 import { pageStyles, settingsStyles, type SiteTheme } from "../styles/appStyles";
 
 type SettingsPageProps = {
@@ -30,6 +32,10 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null);
+  const [imageCleanupReport, setImageCleanupReport] = useState<IImageCleanupReport | null>(null);
+  const [isLoadingImageReport, setIsLoadingImageReport] = useState(false);
+  const [isCleaningImages, setIsCleaningImages] = useState(false);
+  const [isImportingSeedCatalog, setIsImportingSeedCatalog] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -130,6 +136,50 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
     }
   };
 
+  const loadImageCleanupReport = async () => {
+    setIsLoadingImageReport(true);
+    setSettingsError(null);
+    setSettingsSuccess(null);
+
+    try {
+      setImageCleanupReport(await maintenanceService.getImageCleanupReport());
+    } catch (error) {
+      setSettingsError(getSettingsError(error, t.settings.couldNotCheckImages));
+    } finally {
+      setIsLoadingImageReport(false);
+    }
+  };
+
+  const cleanupImages = async () => {
+    setIsCleaningImages(true);
+    setSettingsError(null);
+    setSettingsSuccess(null);
+
+    try {
+      setImageCleanupReport(await maintenanceService.cleanupImages());
+      setSettingsSuccess(t.settings.imageCleanupFinished);
+    } catch (error) {
+      setSettingsError(getSettingsError(error, t.settings.couldNotCleanupImages));
+    } finally {
+      setIsCleaningImages(false);
+    }
+  };
+
+  const importSeedCatalog = async (file: File) => {
+    setIsImportingSeedCatalog(true);
+    setSettingsError(null);
+    setSettingsSuccess(null);
+
+    try {
+      await maintenanceService.importSeedCatalog(file);
+      setSettingsSuccess(t.settings.importSeedCatalogFinished);
+    } catch (error) {
+      setSettingsError(getSettingsError(error, t.settings.couldNotImportSeedCatalog));
+    } finally {
+      setIsImportingSeedCatalog(false);
+    }
+  };
+
   return (
     <main className={pageStyles.shell}>
       <section className={settingsStyles.shell}>
@@ -156,6 +206,16 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
         {appSettings !== null && (
           <SystemInfoPanel appSettings={appSettings} theme={theme} />
         )}
+        <MaintenancePanel
+          imageCleanupReport={imageCleanupReport}
+          isCleaningImages={isCleaningImages}
+          isImportingSeedCatalog={isImportingSeedCatalog}
+          isLoadingImageReport={isLoadingImageReport}
+          theme={theme}
+          onCleanupImages={() => void cleanupImages()}
+          onImportSeedCatalog={(file) => void importSeedCatalog(file)}
+          onLoadImageReport={() => void loadImageCleanupReport()}
+        />
       </section>
     </main>
   );

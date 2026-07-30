@@ -4,6 +4,7 @@ export const localPreferenceKeys = {
   activePage: `${keyPrefix}:active-page`,
   cookbookMode: `${keyPrefix}:cookbook-mode`,
   language: `${keyPrefix}:language`,
+  plannerCollapsedDateKeys: `${keyPrefix}:planner-collapsed-date-keys`,
   plannerAnchorDate: `${keyPrefix}:planner-anchor-date`,
   plannerViewMode: `${keyPrefix}:planner-view-mode`,
   theme: `${keyPrefix}:theme`,
@@ -37,4 +38,24 @@ export function getLocalDatePreference(key: string, fallback: Date) {
 
 export function setLocalPreference(key: string, value: string) {
   localStorage.setItem(key, value);
+}
+
+export function getLocalStringListPreference(key: string) {
+  const storedValue = localStorage.getItem(key);
+  if (storedValue === null) {
+    return [];
+  }
+
+  try {
+    const parsedValue = JSON.parse(storedValue) as unknown;
+    return Array.isArray(parsedValue)
+      ? parsedValue.filter((value): value is string => typeof value === "string")
+      : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+export function setLocalStringListPreference(key: string, values: Iterable<string>) {
+  localStorage.setItem(key, JSON.stringify([...values]));
 }

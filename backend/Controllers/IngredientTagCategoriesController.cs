@@ -131,53 +131,12 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
             return Conflict($"Possible duplicate: {existingTag.Name}.");
         }
 
-        var assignments = await context.IngredientTagAssignments
-            .Where(assignment => assignment.Tag.ToLower() == oldName.ToLower())
-            .ToListAsync();
-        var ingredientIds = assignments.Select(assignment => assignment.IngredientId).Distinct().ToList();
-        var existingNewAssignments = await context.IngredientTagAssignments
-            .Where(assignment => assignment.Tag.ToLower() == newName.ToLower())
-            .Select(assignment => assignment.IngredientId)
-            .ToListAsync();
-        var existingNewIngredientIds = existingNewAssignments.ToHashSet();
-
         if (tag is not null)
         {
             tag.Name = newName;
         }
-        context.IngredientTagAssignments.RemoveRange(assignments);
-        context.IngredientTagAssignments.AddRange(
-            ingredientIds
-                .Where(ingredientId => !existingNewIngredientIds.Contains(ingredientId))
-                .Select(ingredientId => new IngredientTagAssignment
-                {
-                    IngredientId = ingredientId,
-                    Tag = newName
-                })
-        );
 
-        var recipeAssignments = await context.RecipeTagAssignments
-            .Where(assignment => assignment.Tag.ToLower() == oldName.ToLower())
-            .ToListAsync();
-        var recipeIds = recipeAssignments.Select(assignment => assignment.RecipeId).Distinct().ToList();
-        var existingNewRecipeAssignments = await context.RecipeTagAssignments
-            .Where(assignment => assignment.Tag.ToLower() == newName.ToLower())
-            .Select(assignment => assignment.RecipeId)
-            .ToListAsync();
-        var existingNewRecipeIds = existingNewRecipeAssignments.ToHashSet();
-
-        context.RecipeTagAssignments.RemoveRange(recipeAssignments);
-        context.RecipeTagAssignments.AddRange(
-            recipeIds
-                .Where(recipeId => !existingNewRecipeIds.Contains(recipeId))
-                .Select(recipeId => new RecipeTagAssignment
-                {
-                    RecipeId = recipeId,
-                    Tag = newName
-                })
-        );
-
-        if (tag is null && assignments.Count == 0 && recipeAssignments.Count == 0)
+        if (tag is null)
         {
             return NotFound();
         }
@@ -193,22 +152,12 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         var tags = await context.IngredientTagDefinitions
             .Where(tag => tag.Name.ToLower() == name.ToLower())
             .ToListAsync();
-
-        var assignments = await context.IngredientTagAssignments
-            .Where(assignment => assignment.Tag.ToLower() == name.ToLower())
-            .ToListAsync();
-        var recipeAssignments = await context.RecipeTagAssignments
-            .Where(assignment => assignment.Tag.ToLower() == name.ToLower())
-            .ToListAsync();
-
-        if (tags.Count == 0 && assignments.Count == 0 && recipeAssignments.Count == 0)
+        if (tags.Count == 0)
         {
             return NotFound();
         }
 
         context.IngredientTagDefinitions.RemoveRange(tags);
-        context.IngredientTagAssignments.RemoveRange(assignments);
-        context.RecipeTagAssignments.RemoveRange(recipeAssignments);
         await context.SaveChangesAsync();
         return NoContent();
     }

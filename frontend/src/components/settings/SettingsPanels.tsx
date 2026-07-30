@@ -1,6 +1,8 @@
 import { useLanguage } from "../../contexts";
 import type { IAppSettings } from "../../interfaces/IAppSettings";
+import type { IImageCleanupReport } from "../../interfaces/IMaintenance";
 import { supportedLanguages } from "../../i18n";
+import { API_BASE_URL } from "../../services/apiClient";
 import { settingsStyles, type SiteTheme } from "../../styles/appStyles";
 
 export type ExportSettingsForm = {
@@ -238,6 +240,90 @@ export function SystemInfoPanel({ appSettings, theme }: SystemInfoPanelProps) {
         <InfoRow label={t.settings.databaseProvider} theme={theme} value={appSettings.systemInfo.databaseProvider} />
         <InfoRow label={t.settings.imageStorage} theme={theme} value={appSettings.systemInfo.imageStorageRootPath} />
       </div>
+    </div>
+  );
+}
+
+type MaintenancePanelProps = {
+  imageCleanupReport: IImageCleanupReport | null;
+  isCleaningImages: boolean;
+  isImportingSeedCatalog: boolean;
+  isLoadingImageReport: boolean;
+  theme: SiteTheme;
+  onCleanupImages: () => void;
+  onImportSeedCatalog: (file: File) => void;
+  onLoadImageReport: () => void;
+};
+
+export function MaintenancePanel({
+  imageCleanupReport,
+  isCleaningImages,
+  isImportingSeedCatalog,
+  isLoadingImageReport,
+  theme,
+  onCleanupImages,
+  onImportSeedCatalog,
+  onLoadImageReport,
+}: MaintenancePanelProps) {
+  const { t } = useLanguage();
+  const unusedImageCount =
+    (imageCleanupReport?.unusedUploadedImages.length ?? 0) +
+    (imageCleanupReport?.untrackedImageFiles.length ?? 0);
+
+  return (
+    <div className={settingsStyles.panel(theme)}>
+      <div>
+        <h2 className={settingsStyles.panelTitle}>{t.settings.maintenanceTitle}</h2>
+        <p className={settingsStyles.panelBody(theme)}>{t.settings.maintenanceBody}</p>
+      </div>
+      <div className={settingsStyles.statusRow}>
+        <a
+          className={settingsStyles.secondaryButton(theme)}
+          href={`${API_BASE_URL}/api/seed-catalog/export-package`}
+        >
+          {t.settings.downloadExportPackage}
+        </a>
+        <label className={settingsStyles.secondaryButton(theme)}>
+          {isImportingSeedCatalog ? t.settings.importingSeedCatalog : t.settings.importSeedCatalog}
+          <input
+            accept="application/json,.json"
+            className="sr-only"
+            disabled={isImportingSeedCatalog}
+            type="file"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (file !== undefined) {
+                onImportSeedCatalog(file);
+              }
+            }}
+          />
+        </label>
+        <button
+          className={settingsStyles.secondaryButton(theme)}
+          disabled={isLoadingImageReport || isCleaningImages}
+          type="button"
+          onClick={onLoadImageReport}
+        >
+          {isLoadingImageReport ? t.settings.checkingImages : t.settings.checkImages}
+        </button>
+        <button
+          className={settingsStyles.saveButton(theme)}
+          disabled={imageCleanupReport === null || unusedImageCount === 0 || isLoadingImageReport || isCleaningImages}
+          type="button"
+          onClick={onCleanupImages}
+        >
+          {isCleaningImages ? t.settings.cleaningImages : t.settings.cleanupImages}
+        </button>
+      </div>
+      {imageCleanupReport !== null && (
+        <p className={settingsStyles.panelBody(theme)}>
+          {t.settings.imageCleanupSummary(
+            imageCleanupReport.unusedUploadedImages.length,
+            imageCleanupReport.untrackedImageFiles.length,
+          )}
+        </p>
+      )}
     </div>
   );
 }

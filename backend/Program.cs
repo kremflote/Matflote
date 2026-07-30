@@ -41,6 +41,7 @@ builder.Services.AddSingleton<ImageStoragePathProvider>();
 builder.Services.AddScoped<AppSettingsService>();
 builder.Services.AddScoped<VikunjaOptionsResolver>();
 builder.Services.AddScoped<GroceryListService>();
+builder.Services.AddScoped<ImageMaintenanceService>();
 builder.Services.AddScoped<NutritionReferenceImportService>();
 builder.Services.AddScoped<HelsedirektoratetNutritionReferenceParser>();
 builder.Services.AddScoped<NutritionSummaryService>();

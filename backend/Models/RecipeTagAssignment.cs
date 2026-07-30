@@ -4,6 +4,6 @@ public class RecipeTagAssignment
 {
     public int RecipeId { get; set; }
     public Recipe Recipe { get; set; } = null!;
-
-    public string Tag { get; set; } = string.Empty;
+    public int IngredientTagDefinitionId { get; set; }
+    public IngredientTagDefinition TagDefinition { get; set; } = null!;
 }

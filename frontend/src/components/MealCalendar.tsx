@@ -5,6 +5,11 @@ import { mealCalendarStyles, type SiteTheme } from "../styles/appStyles";
 import type { IMealPlanEntry, MealSlot as MealSlotId, PlannerViewMode } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
 import { getApiAssetUrl } from "../services/apiClient";
+import {
+  getLocalStringListPreference,
+  localPreferenceKeys,
+  setLocalStringListPreference,
+} from "../utils/localPreferences";
 import MealSlot from "./MealSlot";
 
 type MealCalendarProps = {
@@ -35,7 +40,9 @@ function MealCalendar({
   viewMode,
 }: MealCalendarProps) {
   const { locale, t } = useLanguage();
-  const [collapsedDateKeys, setCollapsedDateKeys] = useState<Set<string>>(() => new Set());
+  const [collapsedDateKeys, setCollapsedDateKeys] = useState<Set<string>>(
+    () => new Set(getLocalStringListPreference(localPreferenceKeys.plannerCollapsedDateKeys)),
+  );
   const [canCollapseDays, setCanCollapseDays] = useState(false);
   const weekDayLabels = t.calendar.weekdaysShort;
 
@@ -48,6 +55,10 @@ function MealCalendar({
 
     return () => mediaQuery.removeEventListener("change", updateCanCollapseDays);
   }, []);
+
+  useEffect(() => {
+    setLocalStringListPreference(localPreferenceKeys.plannerCollapsedDateKeys, collapsedDateKeys);
+  }, [collapsedDateKeys]);
 
   const toggleDay = (dateKey: string) => {
     setCollapsedDateKeys((currentDateKeys) => {

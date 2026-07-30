@@ -25,6 +25,7 @@ public class GroceryListService(DinnerPlannerContext context)
             .Include(entry => entry.Recipes)
                 .ThenInclude(item => item.Ingredient)
                     .ThenInclude(ingredient => ingredient!.Tags)
+                        .ThenInclude(tag => tag.TagDefinition)
             .Include(entry => entry.Recipes)
                 .ThenInclude(item => item.Ingredient)
                     .ThenInclude(ingredient => ingredient!.Brand)
@@ -36,6 +37,7 @@ public class GroceryListService(DinnerPlannerContext context)
             .Include(recipe => recipe.Ingredients)
                 .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                     .ThenInclude(ingredient => ingredient.Tags)
+                        .ThenInclude(tag => tag.TagDefinition)
             .Include(recipe => recipe.Ingredients)
                 .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                     .ThenInclude(ingredient => ingredient.Brand)
@@ -44,6 +46,7 @@ public class GroceryListService(DinnerPlannerContext context)
                     .ThenInclude(childRecipe => childRecipe.Ingredients)
                         .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                             .ThenInclude(ingredient => ingredient.Tags)
+                                .ThenInclude(tag => tag.TagDefinition)
             .Include(recipe => recipe.Components)
                 .ThenInclude(component => component.ChildRecipe)
                     .ThenInclude(childRecipe => childRecipe.Ingredients)
@@ -67,7 +70,7 @@ public class GroceryListService(DinnerPlannerContext context)
                             mealPlanRecipe.Amount,
                             mealPlanRecipe.Unit.Value,
                             "Meal plan",
-                            mealPlanRecipe.Ingredient.Tags.Select(tag => tag.Tag).ToList()
+                            mealPlanRecipe.Ingredient.Tags.Select(tag => tag.TagDefinition.Name).ToList()
                         )
                     ];
                 }
@@ -222,7 +225,7 @@ public class GroceryListService(DinnerPlannerContext context)
             recipeIngredient.Amount * portionFactor,
             recipeIngredient.Unit,
             sourceRecipeName,
-            recipeIngredient.Ingredient.Tags.Select(tag => tag.Tag).ToList()
+            recipeIngredient.Ingredient.Tags.Select(tag => tag.TagDefinition.Name).ToList()
         )));
 
         foreach (var component in recipe.Components.OrderBy(component => component.SortOrder))

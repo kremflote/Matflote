@@ -10,6 +10,14 @@ public class TagCatalogService(DinnerPlannerContext context)
         IReadOnlyCollection<string>? tags,
         CancellationToken cancellationToken = default)
     {
+        var definitions = await NormalizeKnownTagDefinitionsAsync(tags, cancellationToken);
+        return definitions.Select(definition => definition.Name).ToList();
+    }
+
+    public async Task<List<IngredientTagDefinition>> NormalizeKnownTagDefinitionsAsync(
+        IReadOnlyCollection<string>? tags,
+        CancellationToken cancellationToken = default)
+    {
         var requestedTags = NormalizeTags(tags);
         if (requestedTags.Count == 0)
         {
@@ -18,16 +26,15 @@ public class TagCatalogService(DinnerPlannerContext context)
 
         var knownTags = await context.IngredientTagDefinitions
             .AsNoTracking()
-            .Select(tag => tag.Name)
             .ToListAsync(cancellationToken);
 
         return requestedTags
             .Select(requestedTag => knownTags.FirstOrDefault(knownTag =>
-                string.Equals(knownTag, requestedTag, StringComparison.OrdinalIgnoreCase)))
+                string.Equals(knownTag.Name, requestedTag, StringComparison.OrdinalIgnoreCase)))
             .Where(tag => tag is not null)
             .Select(tag => tag!)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
+            .DistinctBy(tag => tag.IngredientTagDefinitionId)
+            .OrderBy(tag => tag.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
@@ -47,10 +54,12 @@ public class TagCatalogService(DinnerPlannerContext context)
         }
 
         var ingredientAssignments = await context.IngredientTagAssignments
-            .Where(assignment => normalizedNames.Contains(assignment.Tag.ToLower()))
+            .Include(assignment => assignment.TagDefinition)
+            .Where(assignment => normalizedNames.Contains(assignment.TagDefinition.Name.ToLower()))
             .ToListAsync(cancellationToken);
         var recipeAssignments = await context.RecipeTagAssignments
-            .Where(assignment => normalizedNames.Contains(assignment.Tag.ToLower()))
+            .Include(assignment => assignment.TagDefinition)
+            .Where(assignment => normalizedNames.Contains(assignment.TagDefinition.Name.ToLower()))
             .ToListAsync(cancellationToken);
 
         context.IngredientTagAssignments.RemoveRange(ingredientAssignments);
@@ -59,15 +68,13 @@ public class TagCatalogService(DinnerPlannerContext context)
 
     public async Task RemoveOrphanedAssignmentsAsync(CancellationToken cancellationToken = default)
     {
-        var knownTags = await context.IngredientTagDefinitions
-            .AsNoTracking()
-            .Select(tag => tag.Name.ToLower())
-            .ToListAsync(cancellationToken);
         var orphanedIngredientAssignments = await context.IngredientTagAssignments
-            .Where(assignment => !knownTags.Contains(assignment.Tag.ToLower()))
+            .Where(assignment => !context.IngredientTagDefinitions.Any(tag =>
+                tag.IngredientTagDefinitionId == assignment.IngredientTagDefinitionId))
             .ToListAsync(cancellationToken);
         var orphanedRecipeAssignments = await context.RecipeTagAssignments
-            .Where(assignment => !knownTags.Contains(assignment.Tag.ToLower()))
+            .Where(assignment => !context.IngredientTagDefinitions.Any(tag =>
+                tag.IngredientTagDefinitionId == assignment.IngredientTagDefinitionId))
             .ToListAsync(cancellationToken);
 
         context.IngredientTagAssignments.RemoveRange(orphanedIngredientAssignments);

@@ -2,6 +2,7 @@ using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,7 +12,8 @@ public class SeedCatalogService(
     DinnerPlannerContext context,
     IWebHostEnvironment environment,
     ILogger<SeedCatalogService> logger,
-    TagCatalogService tagCatalog)
+    TagCatalogService tagCatalog,
+    ImageStoragePathProvider imageStorage)
 {
     private readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -43,36 +45,44 @@ public class SeedCatalogService(
 
     public async Task ImportCatalogAsync(SeedCatalogDto catalog, CancellationToken cancellationToken = default)
     {
-        var importRun = new DataImportRun
-        {
-            Source = "SeedCatalog",
-            Status = "Running",
-            StartedAt = DateTimeOffset.UtcNow,
-            BrandCount = catalog.Brands?.Count ?? 0,
-            IngredientCount = catalog.Ingredients?.Count ?? 0,
-            RecipeCount = catalog.Recipes?.Count ?? 0
-        };
-        context.DataImportRuns.Add(importRun);
-        await context.SaveChangesAsync(cancellationToken);
-
+        var startedAt = DateTimeOffset.UtcNow;
         try
         {
-            await UpsertBrandsAsync(catalog.Brands, cancellationToken);
-            await UpsertIngredientsAsync(catalog.Ingredients, cancellationToken);
-            await UpsertRecipesAsync(catalog.Recipes, cancellationToken);
-            importRun.Status = "Completed";
-            importRun.CompletedAt = DateTimeOffset.UtcNow;
+            var brandCount = await UpsertBrandsAsync(catalog.Brands, cancellationToken);
+            var ingredientCount = await UpsertIngredientsAsync(catalog.Ingredients, cancellationToken);
+            var recipeCount = await UpsertRecipesAsync(catalog.Recipes, cancellationToken);
+
+            if (brandCount + ingredientCount + recipeCount > 0)
+            {
+                context.DataImportRuns.Add(new DataImportRun
+                {
+                    Source = "SeedCatalog",
+                    Status = "Completed",
+                    StartedAt = startedAt,
+                    CompletedAt = DateTimeOffset.UtcNow,
+                    BrandCount = brandCount,
+                    IngredientCount = ingredientCount,
+                    RecipeCount = recipeCount
+                });
+                await context.SaveChangesAsync(cancellationToken);
+            }
         }
         catch (Exception exception)
         {
-            importRun.Status = "Failed";
-            importRun.Message = exception.Message;
-            importRun.CompletedAt = DateTimeOffset.UtcNow;
+            context.DataImportRuns.Add(new DataImportRun
+            {
+                Source = "SeedCatalog",
+                Status = "Failed",
+                StartedAt = startedAt,
+                CompletedAt = DateTimeOffset.UtcNow,
+                Message = exception.Message,
+                BrandCount = catalog.Brands?.Count ?? 0,
+                IngredientCount = catalog.Ingredients?.Count ?? 0,
+                RecipeCount = catalog.Recipes?.Count ?? 0
+            });
             await context.SaveChangesAsync(cancellationToken);
             throw;
         }
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<SeedCatalogDto> ExportCatalogAsync(CancellationToken cancellationToken = default)
@@ -87,6 +97,7 @@ public class SeedCatalogService(
             .AsNoTracking()
             .Include(ingredient => ingredient.Brand)
             .Include(ingredient => ingredient.Tags)
+                .ThenInclude(tag => tag.TagDefinition)
             .OrderBy(ingredient => ingredient.IngredientName)
             .ThenBy(ingredient => ingredient.Brand == null ? "" : ingredient.Brand.Name)
             .Select(ingredient => new SeedIngredientDto(
@@ -95,7 +106,7 @@ public class SeedCatalogService(
                 ingredient.Brand == null ? null : ingredient.Brand.Name,
                 ingredient.ImageUrl,
                 ingredient.Price,
-                ingredient.Tags.Select(tag => tag.Tag).OrderBy(tag => tag).ToList(),
+                ingredient.Tags.Select(tag => tag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
                 ingredient.NutritionPer100,
                 ingredient.NutritionSource,
                 ingredient.NutritionSourceLabel,
@@ -112,6 +123,7 @@ public class SeedCatalogService(
                 .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
                     .ThenInclude(ingredient => ingredient.Brand)
             .Include(recipe => recipe.Tags)
+                .ThenInclude(tag => tag.TagDefinition)
             .Include(recipe => recipe.Components)
                 .ThenInclude(component => component.ChildRecipe)
             .OrderBy(recipe => recipe.Name)
@@ -126,32 +138,80 @@ public class SeedCatalogService(
 
     public string Serialize(SeedCatalogDto catalog) => JsonSerializer.Serialize(catalog, jsonOptions);
 
-    private async Task UpsertBrandsAsync(
+    public async Task ImportCatalogStreamAsync(Stream stream, CancellationToken cancellationToken = default)
+    {
+        var catalog = await JsonSerializer.DeserializeAsync<SeedCatalogDto>(stream, jsonOptions, cancellationToken);
+        if (catalog is null)
+        {
+            throw new InvalidOperationException("Seed catalog file was empty or invalid.");
+        }
+
+        await ImportCatalogAsync(catalog, cancellationToken);
+    }
+
+    public async Task<byte[]> BuildExportPackageAsync(CancellationToken cancellationToken = default)
+    {
+        var catalog = await ExportCatalogAsync(cancellationToken);
+        await using var packageStream = new MemoryStream();
+        using (var archive = new ZipArchive(packageStream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            var catalogEntry = archive.CreateEntry("seed-catalog.json", CompressionLevel.Optimal);
+            await using (var catalogStream = catalogEntry.Open())
+            await using (var writer = new StreamWriter(catalogStream))
+            {
+                await writer.WriteAsync(Serialize(catalog));
+            }
+
+            if (Directory.Exists(imageStorage.RootPath))
+            {
+                foreach (var imagePath in Directory.EnumerateFiles(imageStorage.RootPath, "*", SearchOption.AllDirectories))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var relativePath = Path.GetRelativePath(imageStorage.RootPath, imagePath).Replace('\\', '/');
+                    var entry = archive.CreateEntry($"images/{relativePath}", CompressionLevel.Optimal);
+                    await using var entryStream = entry.Open();
+                    await using var imageStream = File.OpenRead(imagePath);
+                    await imageStream.CopyToAsync(entryStream, cancellationToken);
+                }
+            }
+        }
+
+        return packageStream.ToArray();
+    }
+
+    private async Task<int> UpsertBrandsAsync(
         IReadOnlyCollection<SeedBrandDto>? brands,
         CancellationToken cancellationToken)
     {
         if (brands is null)
         {
-            return;
+            return 0;
         }
 
+        var createdCount = 0;
         foreach (var brand in brands)
         {
-            await GetOrCreateBrandAsync(brand.Name, cancellationToken);
+            var (_, wasCreated) = await GetOrCreateBrandAsync(brand.Name, cancellationToken);
+            if (wasCreated)
+            {
+                createdCount++;
+            }
         }
 
         await context.SaveChangesAsync(cancellationToken);
+        return createdCount;
     }
 
-    private async Task UpsertIngredientsAsync(
+    private async Task<int> UpsertIngredientsAsync(
         IReadOnlyCollection<SeedIngredientDto>? ingredients,
         CancellationToken cancellationToken)
     {
         if (ingredients is null)
         {
-            return;
+            return 0;
         }
 
+        var createdCount = 0;
         foreach (var seedIngredient in ingredients)
         {
             var name = CleanName(seedIngredient.IngredientName);
@@ -160,7 +220,7 @@ public class SeedCatalogService(
                 continue;
             }
 
-            var brand = await GetOrCreateBrandAsync(seedIngredient.BrandName, cancellationToken);
+            var (brand, _) = await GetOrCreateBrandAsync(seedIngredient.BrandName, cancellationToken);
             var existing = await FindIngredientAsync(name, brand?.Name, cancellationToken);
             if (existing is not null)
             {
@@ -183,24 +243,30 @@ public class SeedCatalogService(
                 NutritionMatchedName = NullIfWhiteSpace(seedIngredient.NutritionMatchedName),
                 NutritionMatchConfidence = seedIngredient.NutritionMatchConfidence,
                 Color = NullIfWhiteSpace(seedIngredient.Color),
-                Tags = (await tagCatalog.NormalizeKnownTagsAsync(seedIngredient.Tags, cancellationToken))
-                    .Select(tag => new IngredientTagAssignment { Tag = tag })
+                Tags = (await tagCatalog.NormalizeKnownTagDefinitionsAsync(seedIngredient.Tags, cancellationToken))
+                    .Select(tag => new IngredientTagAssignment
+                    {
+                        IngredientTagDefinitionId = tag.IngredientTagDefinitionId
+                    })
                     .ToList()
             });
+            createdCount++;
         }
 
         await context.SaveChangesAsync(cancellationToken);
+        return createdCount;
     }
 
-    private async Task UpsertRecipesAsync(
+    private async Task<int> UpsertRecipesAsync(
         IReadOnlyCollection<SeedRecipeDto>? recipes,
         CancellationToken cancellationToken)
     {
         if (recipes is null)
         {
-            return;
+            return 0;
         }
 
+        var createdCount = 0;
         foreach (var seedRecipe in recipes)
         {
             var name = CleanName(seedRecipe.Name);
@@ -210,8 +276,11 @@ public class SeedCatalogService(
             }
 
             var recipe = CreateRecipe(seedRecipe, name);
-            recipe.Tags = (await tagCatalog.NormalizeKnownTagsAsync(seedRecipe.Tags, cancellationToken))
-                .Select(tag => new RecipeTagAssignment { Tag = tag })
+            recipe.Tags = (await tagCatalog.NormalizeKnownTagDefinitionsAsync(seedRecipe.Tags, cancellationToken))
+                .Select(tag => new RecipeTagAssignment
+                {
+                    IngredientTagDefinitionId = tag.IngredientTagDefinitionId
+                })
                 .ToList();
 
             foreach (var seedIngredient in seedRecipe.Ingredients ?? [])
@@ -246,10 +315,12 @@ public class SeedCatalogService(
             }
 
             context.Recipes.Add(recipe);
+            createdCount++;
         }
 
         await context.SaveChangesAsync(cancellationToken);
         await UpsertRecipeComponentsAsync(recipes, cancellationToken);
+        return createdCount;
     }
 
     private async Task UpsertRecipeComponentsAsync(
@@ -303,25 +374,25 @@ public class SeedCatalogService(
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<Brand?> GetOrCreateBrandAsync(string? name, CancellationToken cancellationToken)
+    private async Task<(Brand? Brand, bool WasCreated)> GetOrCreateBrandAsync(string? name, CancellationToken cancellationToken)
     {
         var cleanName = CleanName(name);
         if (cleanName.Length == 0)
         {
-            return null;
+            return (null, false);
         }
 
         var existing = await context.Brands
             .FirstOrDefaultAsync(brand => brand.Name.ToLower() == cleanName.ToLower(), cancellationToken);
         if (existing is not null)
         {
-            return existing;
+            return (existing, false);
         }
 
         var brand = new Brand { Name = cleanName };
         context.Brands.Add(brand);
         await context.SaveChangesAsync(cancellationToken);
-        return brand;
+        return (brand, true);
     }
 
     private Task<Ingredient?> FindIngredientAsync(
@@ -383,7 +454,7 @@ public class SeedCatalogService(
                 recipeIngredient.Preparation
             ))
             .ToList(),
-        recipe.Tags.Select(recipeTag => recipeTag.Tag).OrderBy(tag => tag).ToList(),
+        recipe.Tags.Select(recipeTag => recipeTag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
         recipe.Components
             .OrderBy(component => component.SortOrder)
             .Select(component => new SeedRecipeComponentDto(

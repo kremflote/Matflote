@@ -106,13 +106,16 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.HasKey(ingredientTag => new
             {
                 ingredientTag.IngredientId,
-                ingredientTag.Tag
+                ingredientTag.IngredientTagDefinitionId
             });
 
-            entity.Property(ingredientTag => ingredientTag.Tag).HasMaxLength(64);
             entity.HasOne(ingredientTag => ingredientTag.Ingredient)
                 .WithMany(ingredient => ingredient.Tags)
                 .HasForeignKey(ingredientTag => ingredientTag.IngredientId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(ingredientTag => ingredientTag.TagDefinition)
+                .WithMany()
+                .HasForeignKey(ingredientTag => ingredientTag.IngredientTagDefinitionId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -245,13 +248,16 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.HasKey(recipeTag => new
             {
                 recipeTag.RecipeId,
-                recipeTag.Tag
+                recipeTag.IngredientTagDefinitionId
             });
 
-            entity.Property(recipeTag => recipeTag.Tag).HasMaxLength(64);
             entity.HasOne(recipeTag => recipeTag.Recipe)
                 .WithMany(recipe => recipe.Tags)
                 .HasForeignKey(recipeTag => recipeTag.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(recipeTag => recipeTag.TagDefinition)
+                .WithMany()
+                .HasForeignKey(recipeTag => recipeTag.IngredientTagDefinitionId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -480,27 +486,27 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             new
             {
                 IngredientId = 1,
-                Tag = "Chicken"
+                IngredientTagDefinitionId = 7
             },
             new
             {
                 IngredientId = 2,
-                Tag = "Vegetable"
+                IngredientTagDefinitionId = 1
             },
             new
             {
                 IngredientId = 3,
-                Tag = "Dairy"
+                IngredientTagDefinitionId = 12
             },
             new
             {
                 IngredientId = 4,
-                Tag = "Grain"
+                IngredientTagDefinitionId = 13
             },
             new
             {
                 IngredientId = 5,
-                Tag = "Fruit"
+                IngredientTagDefinitionId = 2
             }
         );
 
@@ -522,12 +528,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             Description = "Weeknight bowl with pan-fried chicken, steamed rice, and fresh garlic yogurt sauce. Good as dinner and easy to scale for meal prep.",
             Instructions = "Rinse the rice and cook until tender. Slice the chicken breast, season lightly, and fry in a hot pan until cooked through. Spoon rice into bowls, add chicken, and finish with garlic yogurt sauce.",
             Portions = 1m
-        });
-
-        modelBuilder.Entity<RecipeTagAssignment>().HasData(new
-        {
-            RecipeId = 2,
-            Tag = "Bowl"
         });
 
         modelBuilder.Entity<RecipeIngredient>().HasData(
