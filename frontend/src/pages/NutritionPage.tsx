@@ -162,7 +162,12 @@ function NutritionPage({ theme }: NutritionPageProps) {
             <section className={nutritionStyles.dailyPanel(theme)}>
               <div className={nutritionStyles.dailyHeader}>
                 <h2 className={nutritionStyles.dailyTitle}>{t.nutrition.dailyCaloriesTitle}</h2>
-                <span className={nutritionStyles.dailySubtitle(theme)}>{t.nutrition.dailyCaloriesSubtitle(peopleEating)}</span>
+                <div className={nutritionStyles.dailyHeaderMeta}>
+                  <span className={nutritionStyles.dailySubtitle(theme)}>{t.nutrition.dailyCaloriesSubtitle(peopleEating)}</span>
+                  <span className={nutritionStyles.dailyAverage(theme)}>
+                    {t.nutrition.averageDailyCalories}: {formatAverageDailyCalories(summary.dailyCalories, peopleEating, t.locale)}
+                  </span>
+                </div>
               </div>
               <div className={nutritionStyles.dailyGrid}>
                 {summary.dailyCalories.map((day) => (
@@ -177,28 +182,31 @@ function NutritionPage({ theme }: NutritionPageProps) {
             </section>
 
             <section className={nutritionStyles.grid}>
-              {summary.items.map((item) => (
-                <article className={nutritionStyles.item(theme)} key={item.key}>
-                  <div className={nutritionStyles.itemHeader}>
-                    <h2 className={nutritionStyles.itemTitle}>{t.nutrition.items[item.key] ?? item.label}</h2>
-                    <span className={nutritionStyles.itemTotal(theme)}>{formatAmount(item.total, item.unit, t.locale)}</span>
-                  </div>
-                  <div className={nutritionStyles.progressTrack(theme)}>
-                    <span
-                      className={nutritionStyles.progressFill(theme)}
-                      style={{ width: `${Math.min(item.percentOfRecommended ?? 0, 100)}%` }}
-                    />
-                  </div>
-                  <span className={nutritionStyles.itemMeta(theme)}>
-                    {formatReference(item, t)}
-                  </span>
-                  {item.coveragePercent !== null && (
+              {summary.items.map((item) => {
+                const displayItem = toPerPersonItem(item, peopleEating);
+                return (
+                  <article className={nutritionStyles.item(theme)} key={item.key}>
+                    <div className={nutritionStyles.itemHeader}>
+                      <h2 className={nutritionStyles.itemTitle}>{t.nutrition.items[item.key] ?? item.label}</h2>
+                      <span className={nutritionStyles.itemTotal(theme)}>{formatAmount(displayItem.total, displayItem.unit, t.locale)}</span>
+                    </div>
+                    <div className={nutritionStyles.progressTrack(theme)}>
+                      <span
+                        className={nutritionStyles.progressFill(theme)}
+                        style={{ width: `${Math.min(displayItem.percentOfRecommended ?? 0, 100)}%` }}
+                      />
+                    </div>
                     <span className={nutritionStyles.itemMeta(theme)}>
-                      {t.nutrition.coverage(item.coveragePercent)} · {t.nutrition.statusLabels[item.status] ?? item.status}
+                      {formatReference(displayItem, t)}
                     </span>
-                  )}
-                </article>
-              ))}
+                    {displayItem.coveragePercent !== null && (
+                      <span className={nutritionStyles.itemMeta(theme)}>
+                        {t.nutrition.coverage(displayItem.coveragePercent)} · {t.nutrition.statusLabels[displayItem.status] ?? displayItem.status}
+                      </span>
+                    )}
+                  </article>
+                );
+              })}
             </section>
           </>
         )}
@@ -226,6 +234,37 @@ function formatCaloriesForPeople(value: number | null, peopleEating: number, loc
   }
 
   return `${Math.round(value / peopleEating).toLocaleString(locale)} kcal`;
+}
+
+function formatAverageDailyCalories(
+  dailyCalories: INutritionSummary["dailyCalories"],
+  peopleEating: number,
+  locale: string,
+) {
+  const knownCalories = dailyCalories
+    .map((day) => day.calories)
+    .filter((value): value is number => value !== null);
+
+  if (knownCalories.length === 0) {
+    return "-";
+  }
+
+  const average = knownCalories.reduce((total, value) => total + value, 0) / dailyCalories.length / peopleEating;
+  return `${Math.round(average).toLocaleString(locale)} kcal`;
+}
+
+function toPerPersonItem(item: INutritionSummary["items"][number], peopleEating: number) {
+  const total = item.total === null ? null : item.total / peopleEating;
+  const percentOfRecommended =
+    total === null || item.recommendedWeekly === null || item.targetType.startsWith("energy")
+      ? item.percentOfRecommended
+      : Math.round(total / item.recommendedWeekly * 1000) / 10;
+
+  return {
+    ...item,
+    total,
+    percentOfRecommended,
+  };
 }
 
 function startOfWeek(date: Date) {

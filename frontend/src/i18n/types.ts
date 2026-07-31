@@ -251,6 +251,7 @@ export type TranslationDictionary = {
     peopleEating: string;
     dailyCaloriesTitle: string;
     dailyCaloriesSubtitle: (people: number) => string;
+    averageDailyCalories: string;
     profile: string;
     referenceNotSet: string;
     referenceSource: (provider: string, importedAt: string) => string;

@@ -304,6 +304,7 @@ export const en: TranslationDictionary = {
     dailyCaloriesTitle: "Calories by day",
     dailyCaloriesSubtitle: (people) =>
       people === 1 ? "Approximate planned calories." : `Approximate planned calories per person, divided by ${people}.`,
+    averageDailyCalories: "Avg/day",
     profile: "Profile",
     referenceNotSet: "No reference target yet.",
     referenceSource: (provider, importedAt) =>

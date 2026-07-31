@@ -1010,6 +1010,7 @@ export const nutritionStyles = {
   dailyPanel: (theme: SiteTheme) =>
     `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
   dailyHeader: "flex flex-wrap items-baseline justify-between gap-2",
+  dailyHeaderMeta: "flex flex-wrap items-baseline justify-end gap-3",
   dailyTitle: "text-base font-bold leading-tight",
   dailySubtitle: (theme: SiteTheme) =>
     `text-xs font-semibold leading-tight ${
@@ -1031,6 +1032,8 @@ export const nutritionStyles = {
   dailyDay: "text-xs font-bold uppercase opacity-70",
   dailyCalories: (theme: SiteTheme) =>
     `text-base font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
+  dailyAverage: (theme: SiteTheme) =>
+    `text-sm font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
   item: (theme: SiteTheme) =>
     `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
   itemHeader: "flex items-start justify-between gap-3",

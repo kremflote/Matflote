@@ -349,6 +349,7 @@ export const nb: TranslationDictionary = {
     dailyCaloriesTitle: "Kalorier per dag",
     dailyCaloriesSubtitle: (people) =>
       people === 1 ? "Omtrentlige planlagte kalorier." : `Omtrentlige planlagte kalorier per person, delt på ${people}.`,
+    averageDailyCalories: "Snitt/dag",
     profile: "Profil",
     referenceNotSet: "Ingen referanseverdi ennå.",
     referenceSource: (provider, importedAt) => `Referanseverdier fra ${provider}, importert ${importedAt}.`,
