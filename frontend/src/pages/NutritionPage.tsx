@@ -197,19 +197,51 @@ function formatAmount(value: number | null, unit: string, locale: string) {
 }
 
 function formatReference(item: INutritionSummary["items"][number], t: ReturnType<typeof useLanguage>["t"]) {
-  if (item.targetType.startsWith("energy")) {
-    return item.recommendedWeekly === null
+  if (item.targetType.startsWith("energyRange:")) {
+    const range = parseEnergyRange(item.targetType);
+    return item.recommendedWeekly === null || range === null
       ? t.nutrition.referenceNotSet
-      : t.nutrition.energyPercentTarget(item.recommendedWeekly, item.targetType);
+      : t.nutrition.energyRangeComparison(item.recommendedWeekly, range.minimum, range.maximum);
+  }
+
+  if (item.targetType.startsWith("energyMaximum:")) {
+    const maximum = parseEnergyThreshold(item.targetType);
+    return item.recommendedWeekly === null || maximum === null
+      ? t.nutrition.referenceNotSet
+      : t.nutrition.energyMaximumComparison(item.recommendedWeekly, maximum);
+  }
+
+  if (item.targetType.startsWith("energyMinimum:")) {
+    const minimum = parseEnergyThreshold(item.targetType);
+    return item.recommendedWeekly === null || minimum === null
+      ? t.nutrition.referenceNotSet
+      : t.nutrition.energyMinimumComparison(item.recommendedWeekly, minimum);
   }
 
   if (item.targetType === "asLowAsPossible") {
-    return t.nutrition.statusLabels.watch;
+    return t.nutrition.asLowAsPossibleTarget;
   }
 
   return item.recommendedWeekly === null
     ? t.nutrition.referenceNotSet
     : t.nutrition.comparedTo(formatAmount(item.recommendedWeekly, item.unit, t.locale), item.percentOfRecommended ?? 0);
+}
+
+function parseEnergyRange(targetType: string) {
+  const [, rawRange] = targetType.split(":");
+  const [rawMinimum, rawMaximum] = rawRange?.split("-") ?? [];
+  const minimum = Number(rawMinimum);
+  const maximum = Number(rawMaximum);
+
+  return Number.isFinite(minimum) && Number.isFinite(maximum)
+    ? { minimum, maximum }
+    : null;
+}
+
+function parseEnergyThreshold(targetType: string) {
+  const [, rawThreshold] = targetType.split(":");
+  const threshold = Number(rawThreshold);
+  return Number.isFinite(threshold) ? threshold : null;
 }
 
 function formatDateTime(value: string, locale: string) {

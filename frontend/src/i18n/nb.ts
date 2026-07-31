@@ -310,11 +310,16 @@ export const nb: TranslationDictionary = {
     comparedTo: (target, percent) => `${percent.toLocaleString("nb-NO", { maximumFractionDigits: 1 })}% av ukesmål på ${target}`,
     approximateNotice:
       "Næring er en grov planleggingshjelp. Totalene avhenger av hva MATFLOTE finner fra Kassalapp, Matvaretabellen og dine egne endringer.",
+    asLowAsPossibleTarget: "Mål: så lavt som mulig",
     coverage: (percent) => `${percent.toLocaleString("nb-NO", { maximumFractionDigits: 0 })}% dekning`,
     couldNotLoad: "Kunne ikke laste næringsoversikt.",
     defaultProfile: "Kvinne 25-50",
-    energyPercentTarget: (percent) =>
-      `${percent.toLocaleString("nb-NO", { maximumFractionDigits: 1 })}% energiandel`,
+    energyMaximumComparison: (current, maximum) =>
+      `${current.toLocaleString("nb-NO", { maximumFractionDigits: 1 })}% energiandel · mål under ${maximum.toLocaleString("nb-NO", { maximumFractionDigits: 1 })}%`,
+    energyMinimumComparison: (current, minimum) =>
+      `${current.toLocaleString("nb-NO", { maximumFractionDigits: 1 })}% energiandel · mål over ${minimum.toLocaleString("nb-NO", { maximumFractionDigits: 1 })}%`,
+    energyRangeComparison: (current, minimum, maximum) =>
+      `${current.toLocaleString("nb-NO", { maximumFractionDigits: 1 })}% energiandel · mål ${minimum.toLocaleString("nb-NO", { maximumFractionDigits: 1 })}-${maximum.toLocaleString("nb-NO", { maximumFractionDigits: 1 })}%`,
     items: {
       calories: "Kalorier",
       carbohydrate: "Karbohydrater",

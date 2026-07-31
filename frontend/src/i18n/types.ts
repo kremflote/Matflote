@@ -235,10 +235,13 @@ export type TranslationDictionary = {
   nutrition: {
     comparedTo: (target: string, percent: number) => string;
     approximateNotice: string;
+    asLowAsPossibleTarget: string;
     coverage: (percent: number) => string;
     couldNotLoad: string;
     defaultProfile: string;
-    energyPercentTarget: (percent: number, targetType: string) => string;
+    energyMaximumComparison: (current: number, maximum: number) => string;
+    energyMinimumComparison: (current: number, minimum: number) => string;
+    energyRangeComparison: (current: number, minimum: number, maximum: number) => string;
     items: Record<string, string>;
     missingNutritionIntro: (count: number) => string;
     missingNutritionTitle: string;

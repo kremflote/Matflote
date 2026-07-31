@@ -4,7 +4,7 @@ namespace DinnerPlanner.Api.Services;
 
 public static class NutritionReferenceDefaults
 {
-    public const string SourceUrl = "https://www.helsedirektoratet.no/rapporter/referanseverdier-for-energi-og-naeringsstoffer/anbefalinger-om-energi-og-naeringsstoffer-ved-planlegging-av-kosthold/vitaminer-og-mineraler";
+    public const string SourceUrl = "https://www.helsedirektoratet.no/rapporter/referanseverdier-for-energi-og-naeringsstoffer/anbefalinger-om-energi-og-naeringsstoffer-ved-planlegging-av-kosthold";
 
     public static IReadOnlyCollection<NutritionReferenceProfileDefinition> Profiles { get; } =
     [

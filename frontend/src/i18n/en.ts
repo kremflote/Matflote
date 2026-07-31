@@ -264,11 +264,16 @@ export const en: TranslationDictionary = {
       `${percent.toLocaleString("en", { maximumFractionDigits: 1 })}% of ${target} weekly target`,
     approximateNotice:
       "Nutrition is a rough planning guide. Totals depend on what MATFLOTE finds from Kassalapp, Matvaretabellen, and your own edits.",
+    asLowAsPossibleTarget: "Target: as low as possible",
     coverage: (percent) => `${percent.toLocaleString("en", { maximumFractionDigits: 0 })}% coverage`,
     couldNotLoad: "Could not load nutrition summary.",
     defaultProfile: "Female 25-50",
-    energyPercentTarget: (percent) =>
-      `${percent.toLocaleString("en", { maximumFractionDigits: 1 })}% energy share`,
+    energyMaximumComparison: (current, maximum) =>
+      `${current.toLocaleString("en", { maximumFractionDigits: 1 })}% energy share · target below ${maximum.toLocaleString("en", { maximumFractionDigits: 1 })}%`,
+    energyMinimumComparison: (current, minimum) =>
+      `${current.toLocaleString("en", { maximumFractionDigits: 1 })}% energy share · target above ${minimum.toLocaleString("en", { maximumFractionDigits: 1 })}%`,
+    energyRangeComparison: (current, minimum, maximum) =>
+      `${current.toLocaleString("en", { maximumFractionDigits: 1 })}% energy share · target ${minimum.toLocaleString("en", { maximumFractionDigits: 1 })}-${maximum.toLocaleString("en", { maximumFractionDigits: 1 })}%`,
     items: {
       calories: "Calories",
       carbohydrate: "Carbohydrate",
