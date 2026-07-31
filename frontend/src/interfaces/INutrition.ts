@@ -3,9 +3,15 @@ export interface INutritionSummary {
   to: string;
   profile: INutritionProfile;
   profiles: INutritionProfile[];
+  dailyCalories: IDailyCalories[];
   items: INutritionSummaryItem[];
   missingNutritionIngredients: IMissingNutritionIngredient[];
   referenceSource: INutritionReferenceSource | null;
+}
+
+export interface IDailyCalories {
+  date: string;
+  calories: number | null;
 }
 
 export interface INutritionProfile {

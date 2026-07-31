@@ -36,25 +36,34 @@ public class NutritionSummaryService(DinnerPlannerContext context)
             .ToDictionaryAsync(recipe => recipe.RecipeId);
 
         var total = new NutritionTotals();
+        var dailyTotals = Enumerable.Range(0, to.DayNumber - from.DayNumber + 1)
+            .Select(offset => from.AddDays(offset))
+            .ToDictionary(date => date, _ => new NutritionTotals());
         var missingNutrition = new Dictionary<int, MissingNutritionAccumulator>();
 
-        foreach (var entryRecipe in entries.SelectMany(entry => entry.Recipes))
+        foreach (var entry in entries)
         {
-            if (entryRecipe.Ingredient is not null)
+            var dailyTotal = dailyTotals[entry.Date];
+            foreach (var entryRecipe in entry.Recipes)
             {
-                AddIngredientNutrition(total, entryRecipe.Ingredient, entryRecipe.Amount, entryRecipe.Unit);
-                AddMissingNutrition(missingNutrition, entryRecipe.Ingredient, "Meal plan");
-                continue;
-            }
+                if (entryRecipe.Ingredient is not null)
+                {
+                    AddIngredientNutrition(total, entryRecipe.Ingredient, entryRecipe.Amount, entryRecipe.Unit);
+                    AddIngredientNutrition(dailyTotal, entryRecipe.Ingredient, entryRecipe.Amount, entryRecipe.Unit);
+                    AddMissingNutrition(missingNutrition, entryRecipe.Ingredient, "Meal plan");
+                    continue;
+                }
 
-            if (entryRecipe.RecipeId is null || !recipes.TryGetValue(entryRecipe.RecipeId.Value, out var recipe))
-            {
-                continue;
-            }
+                if (entryRecipe.RecipeId is null || !recipes.TryGetValue(entryRecipe.RecipeId.Value, out var recipe))
+                {
+                    continue;
+                }
 
-            var portionFactor = GetPortionFactor(recipe, entryRecipe.Portions);
-            AddRecipeNutrition(total, recipe, recipes, new HashSet<int>(), portionFactor);
-            AddMissingNutrition(missingNutrition, recipe, recipes, new HashSet<int>());
+                var portionFactor = GetPortionFactor(recipe, entryRecipe.Portions);
+                AddRecipeNutrition(total, recipe, recipes, new HashSet<int>(), portionFactor);
+                AddRecipeNutrition(dailyTotal, recipe, recipes, new HashSet<int>(), portionFactor);
+                AddMissingNutrition(missingNutrition, recipe, recipes, new HashSet<int>());
+            }
         }
 
         return new NutritionSummaryDto(
@@ -62,6 +71,10 @@ public class NutritionSummaryService(DinnerPlannerContext context)
             to,
             ToDto(selectedProfile),
             profiles.Select(ToDto).ToList(),
+            dailyTotals
+                .OrderBy(pair => pair.Key)
+                .Select(pair => new DailyCaloriesDto(pair.Key, pair.Value.Calories is null ? null : Math.Round(pair.Value.Calories.Value, 0)))
+                .ToList(),
             BuildItems(total, selectedProfile),
             missingNutrition.Values
                 .OrderBy(item => item.IngredientName)
@@ -287,14 +300,10 @@ public class NutritionSummaryService(DinnerPlannerContext context)
 
         return
         [
-        CreateItem("calories", "Calories", total.Calories, "kcal", null, GetCoverage(total, "calories"), "estimate"),
         CreateEnergyPercentItem("carbohydrate", "Carbohydrate", total.CarbohydrateGrams, total.Calories, "g", 45m, 60m, GetCoverage(total, "carbohydrate")),
         CreateEnergyPercentItem("protein", "Protein", total.ProteinGrams, total.Calories, "g", 10m, 20m, GetCoverage(total, "protein")),
-        CreateEnergyPercentItem("fat", "Fat", total.FatGrams, total.Calories, "g", 25m, 40m, GetCoverage(total, "fat"), 9m),
         CreateItem("fiber", "Fiber", total.DietaryFiberGrams, "g", 25m * 7m, GetCoverage(total, "fiber"), "minimum"),
-        CreateItem("salt", "Salt", total.SaltGrams, "g", null, GetCoverage(total, "salt"), "estimate"),
         CreateEnergyPercentItem("saturatedFat", "Saturated fat", total.SaturatedFatGrams, total.Calories, "g", null, 10m, GetCoverage(total, "saturatedFat"), 9m),
-        CreateItem("transFat", "Trans fat", total.TransFatGrams, "g", null, GetCoverage(total, "transFat"), "asLowAsPossible"),
         CreateEnergyPercentItem("monounsaturatedFat", "Monounsaturated fat", total.MonounsaturatedFatGrams, total.Calories, "g", 10m, 20m, GetCoverage(total, "monounsaturatedFat"), 9m),
         CreateEnergyPercentItem("polyunsaturatedFat", "Polyunsaturated fat", total.PolyunsaturatedFatGrams, total.Calories, "g", 5m, 10m, GetCoverage(total, "polyunsaturatedFat"), 9m),
         CreateEnergyPercentItem("omega3", "Omega-3", total.Omega3Grams, total.Calories, "g", 1m, null, GetCoverage(total, "omega3"), 9m),

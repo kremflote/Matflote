@@ -5,9 +5,15 @@ public record NutritionSummaryDto(
     DateOnly To,
     NutritionProfileDto Profile,
     IReadOnlyCollection<NutritionProfileDto> Profiles,
+    IReadOnlyCollection<DailyCaloriesDto> DailyCalories,
     IReadOnlyCollection<NutritionSummaryItemDto> Items,
     IReadOnlyCollection<MissingNutritionIngredientDto> MissingNutritionIngredients,
     NutritionReferenceSourceDto? ReferenceSource
+);
+
+public record DailyCaloriesDto(
+    DateOnly Date,
+    decimal? Calories
 );
 
 public record NutritionProfileDto(

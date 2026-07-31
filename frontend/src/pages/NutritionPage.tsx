@@ -9,10 +9,12 @@ type NutritionPageProps = {
 };
 
 const DEFAULT_PROFILE_ID = "female-25-50";
+const DEFAULT_PEOPLE_EATING = 1;
 
 function NutritionPage({ theme }: NutritionPageProps) {
   const { t } = useLanguage();
   const [profileId, setProfileId] = useState(DEFAULT_PROFILE_ID);
+  const [peopleEating, setPeopleEating] = useState(DEFAULT_PEOPLE_EATING);
   const [weekStart, setWeekStart] = useState(() => toDateInput(startOfWeek(new Date())));
   const [summary, setSummary] = useState<INutritionSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,6 +111,17 @@ function NutritionPage({ theme }: NutritionPageProps) {
               {summary === null && <option value={DEFAULT_PROFILE_ID}>{t.nutrition.defaultProfile}</option>}
             </select>
           </label>
+          <label className={nutritionStyles.field}>
+            <span className={nutritionStyles.label}>{t.nutrition.peopleEating}</span>
+            <input
+              className={nutritionStyles.input(theme)}
+              min="1"
+              step="1"
+              type="number"
+              value={peopleEating}
+              onChange={(event) => setPeopleEating(parsePeopleEating(event.target.value))}
+            />
+          </label>
         </section>
 
         {summary?.referenceSource !== null && summary?.referenceSource !== undefined && (
@@ -145,34 +158,74 @@ function NutritionPage({ theme }: NutritionPageProps) {
         ) : summary === null ? (
           <div className={nutritionStyles.emptyState(theme)}>{t.nutrition.noData}</div>
         ) : (
-          <section className={nutritionStyles.grid}>
-            {summary.items.map((item) => (
-              <article className={nutritionStyles.item(theme)} key={item.key}>
-                <div className={nutritionStyles.itemHeader}>
-                  <h2 className={nutritionStyles.itemTitle}>{t.nutrition.items[item.key] ?? item.label}</h2>
-                  <span className={nutritionStyles.itemTotal(theme)}>{formatAmount(item.total, item.unit, t.locale)}</span>
-                </div>
-                <div className={nutritionStyles.progressTrack(theme)}>
-                  <span
-                    className={nutritionStyles.progressFill(theme)}
-                    style={{ width: `${Math.min(item.percentOfRecommended ?? 0, 100)}%` }}
-                  />
-                </div>
-                <span className={nutritionStyles.itemMeta(theme)}>
-                  {formatReference(item, t)}
-                </span>
-                {item.coveragePercent !== null && (
+          <>
+            <section className={nutritionStyles.dailyPanel(theme)}>
+              <div className={nutritionStyles.dailyHeader}>
+                <h2 className={nutritionStyles.dailyTitle}>{t.nutrition.dailyCaloriesTitle}</h2>
+                <span className={nutritionStyles.dailySubtitle(theme)}>{t.nutrition.dailyCaloriesSubtitle(peopleEating)}</span>
+              </div>
+              <div className={nutritionStyles.dailyGrid}>
+                {summary.dailyCalories.map((day) => (
+                  <article className={nutritionStyles.dailyItem(theme)} key={day.date}>
+                    <span className={nutritionStyles.dailyDay}>{formatWeekday(day.date, t.locale)}</span>
+                    <span className={nutritionStyles.dailyCalories(theme)}>
+                      {formatCaloriesForPeople(day.calories, peopleEating, t.locale)}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className={nutritionStyles.grid}>
+              {summary.items.map((item) => (
+                <article className={nutritionStyles.item(theme)} key={item.key}>
+                  <div className={nutritionStyles.itemHeader}>
+                    <h2 className={nutritionStyles.itemTitle}>{t.nutrition.items[item.key] ?? item.label}</h2>
+                    <span className={nutritionStyles.itemTotal(theme)}>{formatAmount(item.total, item.unit, t.locale)}</span>
+                  </div>
+                  <div className={nutritionStyles.progressTrack(theme)}>
+                    <span
+                      className={nutritionStyles.progressFill(theme)}
+                      style={{ width: `${Math.min(item.percentOfRecommended ?? 0, 100)}%` }}
+                    />
+                  </div>
                   <span className={nutritionStyles.itemMeta(theme)}>
-                    {t.nutrition.coverage(item.coveragePercent)} · {t.nutrition.statusLabels[item.status] ?? item.status}
+                    {formatReference(item, t)}
                   </span>
-                )}
-              </article>
-            ))}
-          </section>
+                  {item.coveragePercent !== null && (
+                    <span className={nutritionStyles.itemMeta(theme)}>
+                      {t.nutrition.coverage(item.coveragePercent)} · {t.nutrition.statusLabels[item.status] ?? item.status}
+                    </span>
+                  )}
+                </article>
+              ))}
+            </section>
+          </>
         )}
       </section>
     </main>
   );
+}
+
+function parsePeopleEating(value: string) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 1 ? Math.round(parsed) : DEFAULT_PEOPLE_EATING;
+}
+
+function formatWeekday(value: string, locale: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(locale, {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  });
+}
+
+function formatCaloriesForPeople(value: number | null, peopleEating: number, locale: string) {
+  if (value === null) {
+    return "-";
+  }
+
+  return `${Math.round(value / peopleEating).toLocaleString(locale)} kcal`;
 }
 
 function startOfWeek(date: Date) {

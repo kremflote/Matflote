@@ -345,6 +345,10 @@ export const nb: TranslationDictionary = {
     noData: "Ingen planlagt næringsdata funnet for denne uken.",
     pageIntro: "Se omtrentlige næringstall fra planlagte måltider og sammenlign dem med valgt profil.",
     pageTitle: "Næring",
+    peopleEating: "Personer som spiser",
+    dailyCaloriesTitle: "Kalorier per dag",
+    dailyCaloriesSubtitle: (people) =>
+      people === 1 ? "Omtrentlige planlagte kalorier." : `Omtrentlige planlagte kalorier per person, delt på ${people}.`,
     profile: "Profil",
     referenceNotSet: "Ingen referanseverdi ennå.",
     referenceSource: (provider, importedAt) => `Referanseverdier fra ${provider}, importert ${importedAt}.`,

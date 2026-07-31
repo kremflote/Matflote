@@ -973,7 +973,7 @@ export const nutritionStyles = {
           : "text-neutral-600"
     }`,
   panel: (theme: SiteTheme) =>
-    `grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-end gap-3 rounded-md border p-4 max-sm:grid-cols-1 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+    `grid grid-cols-3 items-end gap-3 rounded-md border p-4 max-md:grid-cols-2 max-sm:grid-cols-1 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
   field: "grid gap-2",
   label: "text-sm font-bold leading-tight",
   input: controlStyles.formField,
@@ -1007,6 +1007,30 @@ export const nutritionStyles = {
   emptyState: (theme: SiteTheme) =>
     `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel(theme)}`,
   grid: "grid grid-cols-3 gap-3 max-[1100px]:grid-cols-2 max-sm:grid-cols-1",
+  dailyPanel: (theme: SiteTheme) =>
+    `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  dailyHeader: "flex flex-wrap items-baseline justify-between gap-2",
+  dailyTitle: "text-base font-bold leading-tight",
+  dailySubtitle: (theme: SiteTheme) =>
+    `text-xs font-semibold leading-tight ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
+  dailyGrid: "grid grid-cols-7 gap-2 max-[1100px]:grid-cols-4 max-sm:grid-cols-2",
+  dailyItem: (theme: SiteTheme) =>
+    `grid gap-1 rounded-md border px-3 py-2 text-sm font-semibold ${
+      theme === "dark"
+        ? "border-white/[0.08] bg-white/[0.05] text-neutral-200"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-[#E5D5BC]/45 text-[#556145]"
+          : "border-neutral-200 bg-neutral-100 text-neutral-800"
+    }`,
+  dailyDay: "text-xs font-bold uppercase opacity-70",
+  dailyCalories: (theme: SiteTheme) =>
+    `text-base font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
   item: (theme: SiteTheme) =>
     `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
   itemHeader: "flex items-start justify-between gap-3",

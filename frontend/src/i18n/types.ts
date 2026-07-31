@@ -248,6 +248,9 @@ export type TranslationDictionary = {
     noData: string;
     pageIntro: string;
     pageTitle: string;
+    peopleEating: string;
+    dailyCaloriesTitle: string;
+    dailyCaloriesSubtitle: (people: number) => string;
     profile: string;
     referenceNotSet: string;
     referenceSource: (provider: string, importedAt: string) => string;

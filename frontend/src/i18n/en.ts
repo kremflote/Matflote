@@ -300,6 +300,10 @@ export const en: TranslationDictionary = {
     pageIntro:
       "See nutrition totals from planned meals and compare micronutrients against the selected profile.",
     pageTitle: "Nutrition",
+    peopleEating: "People eating",
+    dailyCaloriesTitle: "Calories by day",
+    dailyCaloriesSubtitle: (people) =>
+      people === 1 ? "Approximate planned calories." : `Approximate planned calories per person, divided by ${people}.`,
     profile: "Profile",
     referenceNotSet: "No reference target yet.",
     referenceSource: (provider, importedAt) =>
