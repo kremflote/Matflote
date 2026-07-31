@@ -250,34 +250,28 @@ function TagManagementDialog({
           const isCollapsed = collapsedCategoryIds.has(category.id);
 
           return (
-            <section
-              className={recipeBrowserStyles.manageTagCategory(theme, isSelected)}
-              key={category.id}
-              onClick={() => setSelectedCategoryId(category.id)}
-            >
-              <div className={`${recipeBrowserStyles.manageTagCategoryRow(isCollapsed)} ${recipeBrowserStyles.manageTagDivider(theme, "category")}`}>
+            <div className={recipeBrowserStyles.manageTagCategoryShell} key={category.id}>
+              <div className={recipeBrowserStyles.manageTagCategoryControlsRail}>
                 <button
-                  className={recipeBrowserStyles.manageTagIconButton(theme)}
+                  className={recipeBrowserStyles.manageTagCollapseButton(theme)}
                   type="button"
+                  aria-expanded={!isCollapsed}
                   aria-label={isCollapsed ? t.common.expand : t.common.collapse}
                   onClick={(event) => {
                     event.stopPropagation();
                     toggleCategoryCollapse(category.id);
                   }}
                 >
-                  {isCollapsed ? "+" : "-"}
+                  <span className={recipeBrowserStyles.manageTagCollapseIcon(isCollapsed)} aria-hidden="true">
+                    <ManageTagChevron />
+                  </span>
                 </button>
-                <input
-                  className={recipeBrowserStyles.textField(theme)}
-                  readOnly={isSyntheticCategory}
-                  value={managedCategoryNames[category.id] ?? category.name}
-                  onChange={(event) =>
-                    setManagedCategoryNames((currentNames) => ({
-                      ...currentNames,
-                      [category.id]: event.target.value,
-                    }))
-                  }
-                />
+              </div>
+              <section
+                className={recipeBrowserStyles.manageTagCategory(theme, isSelected)}
+                onClick={() => setSelectedCategoryId(category.id)}
+              >
+              <div className={`${recipeBrowserStyles.manageTagCategoryRow(isCollapsed)} ${recipeBrowserStyles.manageTagDivider(theme, "category")}`}>
                 <div className={recipeBrowserStyles.manageTagOrderControls}>
                   <button
                     className={recipeBrowserStyles.manageTagIconButton(theme)}
@@ -304,6 +298,17 @@ function TagManagementDialog({
                     v
                   </button>
                 </div>
+                <input
+                  className={recipeBrowserStyles.manageTagTextField(theme)}
+                  readOnly={isSyntheticCategory}
+                  value={managedCategoryNames[category.id] ?? category.name}
+                  onChange={(event) =>
+                    setManagedCategoryNames((currentNames) => ({
+                      ...currentNames,
+                      [category.id]: event.target.value,
+                    }))
+                  }
+                />
                 <button
                   className={recipeBrowserStyles.manageTagActionButton(theme)}
                   disabled={isManagingTags || isSyntheticCategory}
@@ -333,16 +338,6 @@ function TagManagementDialog({
                     className={`${recipeBrowserStyles.manageTagRow} ${recipeBrowserStyles.manageTagDivider(theme)}`}
                     key={tag.id}
                   >
-                    <input
-                      className={recipeBrowserStyles.textField(theme)}
-                      value={managedTagNames[tag.name] ?? tag.name}
-                      onChange={(event) =>
-                        setManagedTagNames((currentNames) => ({
-                          ...currentNames,
-                          [tag.name]: event.target.value,
-                        }))
-                      }
-                    />
                     <div className={recipeBrowserStyles.manageTagOrderControls}>
                       <button
                         className={recipeBrowserStyles.manageTagIconButton(theme)}
@@ -363,6 +358,16 @@ function TagManagementDialog({
                         v
                       </button>
                     </div>
+                    <input
+                      className={recipeBrowserStyles.manageTagTextField(theme)}
+                      value={managedTagNames[tag.name] ?? tag.name}
+                      onChange={(event) =>
+                        setManagedTagNames((currentNames) => ({
+                          ...currentNames,
+                          [tag.name]: event.target.value,
+                        }))
+                      }
+                    />
                     <button
                       className={recipeBrowserStyles.manageTagActionButton(theme)}
                       disabled={isManagingTags}
@@ -382,7 +387,8 @@ function TagManagementDialog({
                   </div>
                 ))}
               </div>}
-            </section>
+              </section>
+            </div>
           );
         })}
       </div>
@@ -469,3 +475,11 @@ function TagManagementDialog({
 }
 
 export default TagManagementDialog;
+
+function ManageTagChevron() {
+  return (
+    <svg aria-hidden="true" className={recipeBrowserStyles.manageTagCollapseSvg} viewBox="0 0 24 24">
+      <path d="M8.6 4.6 16 12l-7.4 7.4-1.4-1.4 6-6-6-6 1.4-1.4Z" />
+    </svg>
+  );
+}

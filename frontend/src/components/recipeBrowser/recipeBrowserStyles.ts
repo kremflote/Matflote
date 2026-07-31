@@ -607,8 +607,17 @@ export const recipeBrowserStyles = {
   tagCategorySelectRow:
     "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 max-sm:grid-cols-1",
   manageTagsList: "grid gap-3",
+  manageTagCategoryShell: "grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-2 max-sm:grid-cols-12",
+  manageTagCategoryControlsRail: "grid content-start justify-items-center gap-1 max-sm:col-span-2 max-sm:w-full",
+  manageTagCollapseButton: (theme: SiteTheme) =>
+    `mt-4 flex h-5 w-5 items-center justify-center border-0 bg-transparent p-0 transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 max-sm:mt-0 max-sm:h-8 max-sm:w-full ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerCounterAccent}`,
+  manageTagCollapseIcon: (collapsed: boolean) =>
+    `flex h-5 w-5 items-center justify-center transition-transform ${
+      collapsed ? "" : "rotate-90"
+    }`,
+  manageTagCollapseSvg: "h-3.5 w-3.5 fill-current",
   manageTagCategory: (theme: SiteTheme, selected = false) =>
-    `grid cursor-pointer gap-3 rounded-md border p-3 transition-colors ${
+    `grid cursor-pointer gap-3 rounded-md border p-3 transition-colors max-sm:col-span-10 ${
       theme === "dark"
         ? `${selected ? "border-white/[0.24]" : "border-white/[0.10]"} bg-white/[0.04]`
         : theme === "paletteLight"
@@ -628,23 +637,37 @@ export const recipeBrowserStyles = {
           ? "border-neutral-300"
           : "border-neutral-200",
   manageTagCategoryRow: (collapsed = false) =>
-    `grid grid-cols-[2rem_minmax(0,1fr)_4rem_5.75rem_5.75rem] items-center gap-2 max-sm:grid-cols-[2rem_minmax(0,1fr)] max-sm:[&>input]:col-span-1 max-sm:[&>div]:col-span-2 max-sm:[&>button:not(:first-child)]:w-full [&>input]:h-8 ${collapsed ? "" : "border-b pb-3"}`,
+    `grid grid-cols-[4rem_minmax(0,1fr)_5.25rem_5.25rem] items-center gap-2 max-sm:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] max-sm:items-start max-sm:[&>div]:row-span-2 max-sm:[&>div]:grid-cols-1 max-sm:[&>input]:col-span-2 max-sm:[&>input]:col-start-2 max-sm:[&>button]:row-start-2 max-sm:[&>button]:w-full max-sm:[&>button:nth-of-type(1)]:col-start-2 max-sm:[&>button:nth-of-type(2)]:col-start-3 ${collapsed ? "" : "border-b pb-3"}`,
   manageTagList: "grid",
   manageTagRow:
-    "grid grid-cols-[minmax(0,1fr)_4rem_5.75rem_5.75rem] items-center gap-2 border-b py-2 pl-10 last:border-b-0 last:pb-0 max-sm:grid-cols-2 max-sm:pl-6 [&>input]:h-8 [&>input]:max-sm:col-span-2 [&>div]:max-sm:col-span-2 [&>button]:max-sm:w-full",
+    "grid grid-cols-[4rem_minmax(0,1fr)_5.25rem_5.25rem] items-center gap-2 border-b py-2 pl-6 last:border-b-0 last:pb-0 max-sm:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] max-sm:items-start max-sm:gap-y-1.5 max-sm:pl-2 [&>div]:max-sm:row-span-2 [&>div]:max-sm:grid-cols-1 [&>div]:max-sm:self-start [&>input]:max-sm:col-span-2 [&>input]:max-sm:col-start-2 [&>button]:max-sm:row-start-2 [&>button]:max-sm:w-full [&>button:nth-of-type(1)]:max-sm:col-start-2 [&>button:nth-of-type(2)]:max-sm:col-start-3",
   manageTagOrderControls: "grid grid-cols-2 gap-1",
   manageTagIconButton: (theme: SiteTheme) =>
-    `flex h-8 w-full min-w-0 items-center justify-center rounded-md border text-xs font-black transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+    `flex h-8 w-full min-w-0 items-center justify-center rounded-md border text-xs font-black transition-colors disabled:cursor-not-allowed disabled:opacity-40 max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:hover:bg-transparent ${
       theme === "dark"
-        ? "border-white/[0.14] bg-white/[0.06] text-neutral-200 hover:bg-white/[0.11]"
+        ? "border-white/[0.14] bg-white/[0.06] text-neutral-200 hover:bg-white/[0.11] max-sm:text-neutral-50"
         : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]/75"
-          : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100"
+          ? "border-[#7A8864]/35 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]/75 max-sm:text-[#556145]"
+          : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100 max-sm:text-neutral-950"
     }`,
+  manageTagTextField: (theme: SiteTheme) =>
+    `${controlStyles.compactTextField(theme)} w-full text-sm`,
   manageTagActionButton: (theme: SiteTheme) =>
-    `${controlStyles.secondaryButton(theme)} h-8 w-full min-w-0 px-3 text-sm max-sm:h-9 max-sm:px-3`,
+    `inline-flex h-8 w-full min-w-0 items-center justify-center rounded-md border px-2 text-sm font-semibold outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55 ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-transparent text-neutral-200 hover:bg-white/[0.08]"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-transparent text-[#556145] hover:bg-[#E5D5BC]/55"
+          : "border-neutral-300 bg-transparent text-neutral-800 hover:bg-neutral-100"
+    }`,
   manageTagRemoveButton: (theme: SiteTheme) =>
-    `${controlStyles.removeButton(theme)} h-8 w-full min-w-0 px-3 text-sm max-sm:h-9 max-sm:px-3`,
+    `inline-flex h-8 w-full min-w-0 items-center justify-center rounded-md border px-2 text-sm font-semibold outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55 ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-red-950 bg-red-950 text-white hover:bg-red-900"
+        : theme === "paletteLight"
+          ? "border-red-950 bg-red-950 text-[#FAF7F2] hover:bg-red-900"
+          : "border-red-900 bg-red-900 text-white hover:bg-red-800"
+    }`,
   resultsWithFilters: "col-span-10 max-[1100px]:col-span-12",
   recipeGrid: `grid grid-cols-3 gap-3 min-[641px]:max-[1100px]:grid-cols-4 ${sizeClasses.portableBottomNavOffset} max-md:grid-cols-2 max-[380px]:grid-cols-1`,
   ingredientGridPanel: (_theme: SiteTheme) => "",
