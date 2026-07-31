@@ -55,7 +55,7 @@ export function matchesRecipeTags(recipe: EnrichedRecipe, selectedRecipeTags: Re
     return true;
   }
 
-  return recipe.tags.some((tag) => selectedRecipeTags.includes(tag));
+  return selectedRecipeTags.every((selectedTag) => recipeHasTag(recipe, selectedTag));
 }
 
 export function matchesIngredientTags(
@@ -67,4 +67,24 @@ export function matchesIngredientTags(
   }
 
   return ingredient.tags.some((tag) => selectedIngredientTags.includes(tag));
+}
+
+function recipeHasTag(recipe: EnrichedRecipe, selectedTag: RecipeTag) {
+  if (recipe.tags.includes(selectedTag)) {
+    return true;
+  }
+
+  if (
+    recipe.ingredients.some((recipeIngredient) =>
+      recipeIngredient.ingredient.tags.includes(selectedTag),
+    )
+  ) {
+    return true;
+  }
+
+  return recipe.components.some((component) =>
+    component.ingredients?.some((recipeIngredient) =>
+      recipeIngredient.ingredient.tags.includes(selectedTag),
+    ) ?? false,
+  );
 }
