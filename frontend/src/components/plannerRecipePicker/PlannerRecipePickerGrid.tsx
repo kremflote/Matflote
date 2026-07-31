@@ -12,34 +12,43 @@ type PlannerRecipePickerGridProps = {
   browserMode: "recipes" | "ingredients";
   ingredients: IIngredient[];
   recipes: IRecipe[];
-  selectedIngredientIds: number[];
-  selectedRecipeIds: number[];
+  selectedIngredients: SelectedIngredientValue[];
+  selectedRecipes: SelectedRecipeValue[];
   theme: SiteTheme;
-  onAddIngredient: (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => void;
-  onAddRecipe: (recipe: IRecipe, portions: number) => void;
-  onRemoveIngredient: (ingredientId: number) => void;
-  onRemoveRecipe: (recipeId: number) => void;
+  onSelectIngredient: (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => void;
+  onSelectRecipe: (recipe: IRecipe, portions: number) => void;
 };
 
 type ActiveOverlay =
   | { kind: "recipe"; id: number; value: string }
   | { kind: "ingredient"; id: number; value: string; unit: MeasurementUnit };
 
+type SelectedRecipeValue = {
+  recipeId: number;
+  portions: number;
+};
+
+type SelectedIngredientValue = {
+  ingredientId: number;
+  amount: number;
+  unit: MeasurementUnit;
+};
+
 function PlannerRecipePickerGrid({
   browserMode,
   ingredients,
   recipes,
-  selectedIngredientIds,
-  selectedRecipeIds,
+  selectedIngredients,
+  selectedRecipes,
   theme,
-  onAddIngredient,
-  onAddRecipe,
-  onRemoveIngredient,
-  onRemoveRecipe,
+  onSelectIngredient,
+  onSelectRecipe,
 }: PlannerRecipePickerGridProps) {
   const { t } = useLanguage();
   const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay | null>(null);
   const isEmpty = browserMode === "recipes" ? recipes.length === 0 : ingredients.length === 0;
+  const selectedRecipeById = new Map(selectedRecipes.map((selection) => [selection.recipeId, selection]));
+  const selectedIngredientById = new Map(selectedIngredients.map((selection) => [selection.ingredientId, selection]));
 
   if (isEmpty) {
     return (
@@ -53,10 +62,12 @@ function PlannerRecipePickerGrid({
     <div className={browserMode === "recipes" ? plannerPickerStyles.recipeGrid : plannerPickerStyles.ingredientGrid}>
       {browserMode === "recipes"
         ? recipes.map((recipe) => {
-          const selected = selectedRecipeIds.includes(recipe.recipeId);
+          const selectedRecipe = selectedRecipeById.get(recipe.recipeId);
+          const selected = selectedRecipe !== undefined;
           const isActive = activeOverlay?.kind === "recipe" && activeOverlay.id === recipe.recipeId;
           const visuallySelected = selected || isActive;
-          const value = isActive ? activeOverlay.value : recipe.portions.toString();
+          const defaultValue = (selectedRecipe?.portions ?? recipe.portions).toString();
+          const value = isActive ? activeOverlay.value : defaultValue;
 
           return (
             <div className={plannerPickerStyles.pickerCardShell} key={recipe.recipeId}>
@@ -70,13 +81,13 @@ function PlannerRecipePickerGrid({
                 }}
                 interactiveEffect={false}
                 theme={theme}
-                onClick={
-                  isActive
-                    ? undefined
-                    : selected
-                      ? () => onRemoveRecipe(recipe.recipeId)
-                      : () => setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value })
-                }
+                onClick={() => {
+                  const nextPortions = parsePositiveNumber(value) ?? recipe.portions;
+                  if (!selected) {
+                    onSelectRecipe(recipe, nextPortions);
+                  }
+                  setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value: nextPortions.toString() });
+                }}
               />
               {isActive ? (
                 <div className={plannerPickerStyles.pickerFloatingControls}>
@@ -84,14 +95,13 @@ function PlannerRecipePickerGrid({
                     inputLabel={t.cookbook.portions}
                     theme={theme}
                     value={value}
-                    onAdd={() => {
-                      const portions = parsePositiveNumber(value);
+                    onValueChange={(nextValue) => {
+                      setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value: nextValue });
+                      const portions = parsePositiveNumber(nextValue);
                       if (portions !== null) {
-                        onAddRecipe(recipe, portions);
-                        setActiveOverlay(null);
+                        onSelectRecipe(recipe, portions);
                       }
                     }}
-                    onValueChange={(nextValue) => setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value: nextValue })}
                   />
                 </div>
               ) : null}
@@ -99,11 +109,14 @@ function PlannerRecipePickerGrid({
           );
         })
         : ingredients.map((ingredient) => {
-          const selected = selectedIngredientIds.includes(ingredient.ingredientId);
+          const selectedIngredient = selectedIngredientById.get(ingredient.ingredientId);
+          const selected = selectedIngredient !== undefined;
           const isActive = activeOverlay?.kind === "ingredient" && activeOverlay.id === ingredient.ingredientId;
           const visuallySelected = selected || isActive;
-          const value = isActive ? activeOverlay.value : "1";
-          const unit = isActive ? activeOverlay.unit : "Gram";
+          const defaultValue = (selectedIngredient?.amount ?? 1).toString();
+          const defaultUnit = selectedIngredient?.unit ?? "Gram";
+          const value = isActive ? activeOverlay.value : defaultValue;
+          const unit = isActive ? activeOverlay.unit : defaultUnit;
 
           return (
             <div
@@ -114,13 +127,18 @@ function PlannerRecipePickerGrid({
                 className={plannerPickerStyles.pickerIngredientThumbnail}
                 ingredient={ingredient}
                 theme={theme}
-                onClick={
-                  isActive
-                    ? undefined
-                    : selected
-                      ? () => onRemoveIngredient(ingredient.ingredientId)
-                      : () => setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value, unit })
-                }
+                onClick={() => {
+                  const nextAmount = parsePositiveNumber(value) ?? 1;
+                  if (!selected) {
+                    onSelectIngredient(ingredient, nextAmount, unit);
+                  }
+                  setActiveOverlay({
+                    kind: "ingredient",
+                    id: ingredient.ingredientId,
+                    value: nextAmount.toString(),
+                    unit,
+                  });
+                }}
               />
               {isActive ? (
                 <div className={plannerPickerStyles.pickerIngredientControls}>
@@ -129,15 +147,20 @@ function PlannerRecipePickerGrid({
                     theme={theme}
                     unit={unit}
                     value={value}
-                    onAdd={() => {
+                    onUnitChange={(nextUnit) => {
+                      setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value, unit: nextUnit });
                       const amount = parsePositiveNumber(value);
                       if (amount !== null) {
-                        onAddIngredient(ingredient, amount, unit);
-                        setActiveOverlay(null);
+                        onSelectIngredient(ingredient, amount, nextUnit);
                       }
                     }}
-                    onUnitChange={(nextUnit) => setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value, unit: nextUnit })}
-                    onValueChange={(nextValue) => setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value: nextValue, unit })}
+                    onValueChange={(nextValue) => {
+                      setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value: nextValue, unit });
+                      const amount = parsePositiveNumber(nextValue);
+                      if (amount !== null) {
+                        onSelectIngredient(ingredient, amount, unit);
+                      }
+                    }}
                   />
                 </div>
               ) : null}
@@ -153,7 +176,6 @@ type PickerOverlayProps = {
   theme: SiteTheme;
   unit?: MeasurementUnit;
   value: string;
-  onAdd: () => void;
   onUnitChange?: (unit: MeasurementUnit) => void;
   onValueChange: (value: string) => void;
 };
@@ -163,7 +185,6 @@ function PickerInlineControls({
   theme,
   unit,
   value,
-  onAdd,
   onUnitChange,
   onValueChange,
 }: PickerOverlayProps) {
@@ -193,9 +214,6 @@ function PickerInlineControls({
           ))}
         </select>
       )}
-      <button className={plannerPickerStyles.pickerOverlayAddButton(theme)} type="button" onClick={onAdd}>
-        +
-      </button>
     </div>
   );
 }

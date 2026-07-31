@@ -432,7 +432,7 @@ export const headerStyles = {
   icon: "h-8 w-8 fill-current max-[1100px]:h-5 max-[1100px]:w-5",
   navLabel: "text-xs font-semibold leading-none max-sm:text-[11px]",
   settingsButton: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border transition-colors duration-150 max-[1100px]:h-9 max-[1100px]:w-9 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border-0 transition-colors duration-150 max-[1100px]:h-9 max-[1100px]:w-9 ${focusBase} ${siteColorClasses[theme].focus} ${
       selected
         ? siteColorClasses[theme].controlSelected
         : siteColorClasses[theme].control
@@ -1429,14 +1429,6 @@ export const plannerPickerStyles = {
         : theme === "paletteLight"
           ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
           : "border-neutral-300 bg-white text-neutral-900"
-    }`,
-  pickerOverlayAddButton: (theme: SiteTheme) =>
-    `inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-lg font-black ${
-      theme === "dark"
-        ? "border-white/[0.14] bg-white/[0.12] text-white"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#7A8864] text-[#FAF7F2]"
-          : "border-neutral-900 bg-neutral-900 text-white"
     }`,
   footer: "border-t pt-4",
   footerContent: "flex items-center justify-between gap-3 max-sm:grid max-sm:grid-cols-1",

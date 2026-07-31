@@ -130,9 +130,6 @@ function PlannerRecipePickerModal({
     [ingredients],
   );
   const mainRecipeId = mainRecipeSelection?.recipeId ?? null;
-  const supplementaryRecipeIds = supplementaryRecipeSelections.map((selection) => selection.recipeId);
-  const supplementaryIngredientIds = supplementaryIngredientSelections.map((selection) => selection.ingredientId);
-
   const visibleRecipes = useMemo(
     () =>
       recipes
@@ -144,7 +141,6 @@ function PlannerRecipePickerModal({
         .filter((recipe) => matchesSearch(recipe, searchTerm))
         .sort((first, second) => first.name.localeCompare(second.name)),
     [
-      mainRecipeId,
       recipes,
       searchTerm,
       selectedIngredientIds,
@@ -280,9 +276,14 @@ function PlannerRecipePickerModal({
     setMainRecipeSelection(null);
   };
 
-  const toggleMealRecipe = (recipe: IRecipe, portions = recipe.portions) => {
+  const selectOrUpdateMealRecipe = (recipe: IRecipe, portions = recipe.portions) => {
     if (mainRecipeSelection?.recipeId === recipe.recipeId) {
-      setMainRecipeSelection(null);
+      setMainRecipeSelection({ recipeId: recipe.recipeId, portions });
+      return;
+    }
+
+    if (supplementaryRecipeSelections.some((selection) => selection.recipeId === recipe.recipeId)) {
+      updateSupplementaryRecipe(recipe, portions);
       return;
     }
 
@@ -291,12 +292,17 @@ function PlannerRecipePickerModal({
       return;
     }
 
-    toggleSupplementaryRecipe(recipe, portions);
+    updateSupplementaryRecipe(recipe, portions);
   };
 
-  const toggleMealIngredient = (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => {
+  const selectOrUpdateMealIngredient = (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => {
     if (mainIngredientSelection?.ingredientId === ingredient.ingredientId) {
-      setMainIngredientSelection(null);
+      setMainIngredientSelection({ ingredientId: ingredient.ingredientId, amount, unit });
+      return;
+    }
+
+    if (supplementaryIngredientSelections.some((selection) => selection.ingredientId === ingredient.ingredientId)) {
+      updateSupplementaryIngredient(ingredient, amount, unit);
       return;
     }
 
@@ -305,13 +311,15 @@ function PlannerRecipePickerModal({
       return;
     }
 
-    toggleSupplementaryIngredient(ingredient, amount, unit);
+    updateSupplementaryIngredient(ingredient, amount, unit);
   };
 
-  const toggleSupplementaryRecipe = (recipe: IRecipe, portions = recipe.portions) => {
+  const updateSupplementaryRecipe = (recipe: IRecipe, portions = recipe.portions) => {
     setSupplementaryRecipeSelections((currentSelections) => {
       if (currentSelections.some((selection) => selection.recipeId === recipe.recipeId)) {
-        return currentSelections.filter((selection) => selection.recipeId !== recipe.recipeId);
+        return currentSelections.map((selection) =>
+          selection.recipeId === recipe.recipeId ? { recipeId: recipe.recipeId, portions } : selection,
+        );
       }
 
       if (currentSelections.length + supplementaryIngredientSelections.length >= maxSupplementaryItems) {
@@ -322,10 +330,14 @@ function PlannerRecipePickerModal({
     });
   };
 
-  const toggleSupplementaryIngredient = (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => {
+  const updateSupplementaryIngredient = (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => {
     setSupplementaryIngredientSelections((currentSelections) => {
       if (currentSelections.some((selection) => selection.ingredientId === ingredient.ingredientId)) {
-        return currentSelections.filter((selection) => selection.ingredientId !== ingredient.ingredientId);
+        return currentSelections.map((selection) =>
+          selection.ingredientId === ingredient.ingredientId
+            ? { ingredientId: ingredient.ingredientId, amount, unit }
+            : selection,
+        );
       }
 
       if (supplementaryRecipeSelections.length + currentSelections.length >= maxSupplementaryItems) {
@@ -341,24 +353,6 @@ function PlannerRecipePickerModal({
     setMainIngredientSelection(null);
     setSupplementaryRecipeSelections([]);
     setSupplementaryIngredientSelections([]);
-  };
-
-  const removeRecipeSelection = (recipeId: number) => {
-    setMainRecipeSelection((currentSelection) =>
-      currentSelection?.recipeId === recipeId ? null : currentSelection,
-    );
-    setSupplementaryRecipeSelections((currentSelections) =>
-      currentSelections.filter((selection) => selection.recipeId !== recipeId),
-    );
-  };
-
-  const removeIngredientSelection = (ingredientId: number) => {
-    setMainIngredientSelection((currentSelection) =>
-      currentSelection?.ingredientId === ingredientId ? null : currentSelection,
-    );
-    setSupplementaryIngredientSelections((currentSelections) =>
-      currentSelections.filter((selection) => selection.ingredientId !== ingredientId),
-    );
   };
 
   const saveMealSlot = async () => {
@@ -627,23 +621,21 @@ function PlannerRecipePickerModal({
               browserMode={browserMode}
               ingredients={visiblePickerIngredients}
               recipes={visibleRecipes}
-              selectedIngredientIds={[
-                ...(mainIngredientSelection === null ? [] : [mainIngredientSelection.ingredientId]),
-                ...supplementaryIngredientIds,
+              selectedIngredients={[
+                ...(mainIngredientSelection === null ? [] : [mainIngredientSelection]),
+                ...supplementaryIngredientSelections,
               ]}
-              selectedRecipeIds={[
-                ...(mainRecipeSelection === null ? [] : [mainRecipeSelection.recipeId]),
-                ...supplementaryRecipeIds,
+              selectedRecipes={[
+                ...(mainRecipeSelection === null ? [] : [mainRecipeSelection]),
+                ...supplementaryRecipeSelections,
               ]}
               theme={theme}
-              onAddIngredient={(ingredient, amount, unit) =>
-                toggleMealIngredient(ingredient, amount, unit)
+              onSelectIngredient={(ingredient, amount, unit) =>
+                selectOrUpdateMealIngredient(ingredient, amount, unit)
               }
-              onAddRecipe={(recipe, portions) =>
-                toggleMealRecipe(recipe, portions)
+              onSelectRecipe={(recipe, portions) =>
+                selectOrUpdateMealRecipe(recipe, portions)
               }
-              onRemoveIngredient={removeIngredientSelection}
-              onRemoveRecipe={removeRecipeSelection}
             />
           </div>
         </div>
