@@ -23,6 +23,9 @@ export interface INutritionSummaryItem {
   unit: string;
   recommendedWeekly: number | null;
   percentOfRecommended: number | null;
+  coveragePercent: number | null;
+  targetType: string;
+  status: string;
 }
 
 export interface INutritionReferenceSource {

@@ -77,6 +77,7 @@ function NutritionPage({ theme }: NutritionPageProps) {
         <header className={nutritionStyles.header}>
           <h1 className={nutritionStyles.title(theme)}>{t.nutrition.pageTitle}</h1>
           <p className={nutritionStyles.intro(theme)}>{t.nutrition.pageIntro}</p>
+          <p className={nutritionStyles.sourceText(theme)}>{t.nutrition.approximateNotice}</p>
         </header>
 
         <section className={nutritionStyles.panel(theme)}>
@@ -158,10 +159,13 @@ function NutritionPage({ theme }: NutritionPageProps) {
                   />
                 </div>
                 <span className={nutritionStyles.itemMeta(theme)}>
-                  {item.recommendedWeekly === null
-                    ? t.nutrition.referenceNotSet
-                    : t.nutrition.comparedTo(formatAmount(item.recommendedWeekly, item.unit, t.locale), item.percentOfRecommended ?? 0)}
+                  {formatReference(item, t)}
                 </span>
+                {item.coveragePercent !== null && (
+                  <span className={nutritionStyles.itemMeta(theme)}>
+                    {t.nutrition.coverage(item.coveragePercent)} · {t.nutrition.statusLabels[item.status] ?? item.status}
+                  </span>
+                )}
               </article>
             ))}
           </section>
@@ -190,6 +194,22 @@ function toDateInput(date: Date) {
 
 function formatAmount(value: number | null, unit: string, locale: string) {
   return value === null ? "-" : `${value.toLocaleString(locale, { maximumFractionDigits: 1 })} ${unit}`;
+}
+
+function formatReference(item: INutritionSummary["items"][number], t: ReturnType<typeof useLanguage>["t"]) {
+  if (item.targetType.startsWith("energy")) {
+    return item.recommendedWeekly === null
+      ? t.nutrition.referenceNotSet
+      : t.nutrition.energyPercentTarget(item.recommendedWeekly, item.targetType);
+  }
+
+  if (item.targetType === "asLowAsPossible") {
+    return t.nutrition.statusLabels.watch;
+  }
+
+  return item.recommendedWeekly === null
+    ? t.nutrition.referenceNotSet
+    : t.nutrition.comparedTo(formatAmount(item.recommendedWeekly, item.unit, t.locale), item.percentOfRecommended ?? 0);
 }
 
 function formatDateTime(value: string, locale: string) {

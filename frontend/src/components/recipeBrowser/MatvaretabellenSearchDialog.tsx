@@ -178,6 +178,7 @@ function toIngredientNutrition(nutrition: IProductLookupNutrition): INutritionFa
     calories: nutrition.calories,
     carbohydrateGrams: nutrition.carbohydrateGrams,
     proteinGrams: nutrition.proteinGrams,
+    fatGrams: nutrition.fatGrams,
     saltGrams: nutrition.saltGrams,
     dietaryFiberGrams: nutrition.dietaryFiberGrams,
     saturatedFatGrams: nutrition.saturatedFatGrams,
@@ -193,8 +194,6 @@ function toIngredientNutrition(nutrition: IProductLookupNutrition): INutritionFa
     vitaminCMilligrams: nutrition.vitaminCMilligrams,
     vitaminDMicrograms: nutrition.vitaminDMicrograms,
     vitaminEMilligrams: nutrition.vitaminEMilligrams,
-    vitaminKMicrograms: nutrition.vitaminKMicrograms,
-    cholineMilligrams: nutrition.cholineMilligrams,
     vitamins: [],
   };
 }

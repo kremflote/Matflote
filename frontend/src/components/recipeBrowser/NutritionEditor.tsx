@@ -8,6 +8,7 @@ export type NutritionEditorValues = {
   calories: string;
   carbohydrateGrams: string;
   proteinGrams: string;
+  fatGrams: string;
   saltGrams: string;
   dietaryFiberGrams: string;
   saturatedFatGrams: string;
@@ -23,8 +24,6 @@ export type NutritionEditorValues = {
   vitaminCMilligrams: string;
   vitaminDMicrograms: string;
   vitaminEMilligrams: string;
-  vitaminKMicrograms: string;
-  cholineMilligrams: string;
 };
 
 type NutritionEditorProps = {
@@ -81,6 +80,7 @@ function NutritionEditor({
         <NutritionNumberField label={t.cookbook.caloriesPer100g} step="1" subtitle={fieldSubtitles.calories} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="kcal" value={values.calories} onChange={(value) => onChange("calories", value)} />
         <NutritionNumberField label={t.cookbook.carbsPer100g} subtitle={fieldSubtitles.carbohydrateGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.carbohydrateGrams} onChange={(value) => onChange("carbohydrateGrams", value)} />
         <NutritionNumberField label={t.cookbook.proteinPer100g} subtitle={fieldSubtitles.proteinGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.proteinGrams} onChange={(value) => onChange("proteinGrams", value)} />
+        <NutritionNumberField label={t.cookbook.fatsPer100g} subtitle={fieldSubtitles.fatGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.fatGrams} onChange={(value) => onChange("fatGrams", value)} />
       </NutritionEditorSection>
 
       <NutritionEditorSection
@@ -110,7 +110,6 @@ function NutritionEditor({
         <NutritionNumberField label={t.cookbook.vitaminCPer100g} subtitle={fieldSubtitles.vitaminCMilligrams} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="mg" value={values.vitaminCMilligrams} onChange={(value) => onChange("vitaminCMilligrams", value)} />
         <NutritionNumberField label={t.cookbook.vitaminDPer100g} subtitle={fieldSubtitles.vitaminDMicrograms} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="ug" value={values.vitaminDMicrograms} onChange={(value) => onChange("vitaminDMicrograms", value)} />
         <NutritionNumberField label={t.cookbook.vitaminEPer100g} subtitle={fieldSubtitles.vitaminEMilligrams} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="mg" value={values.vitaminEMilligrams} onChange={(value) => onChange("vitaminEMilligrams", value)} />
-        <NutritionNumberField label={t.cookbook.vitaminKPer100g} subtitle={fieldSubtitles.vitaminKMicrograms} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="ug" value={values.vitaminKMicrograms} onChange={(value) => onChange("vitaminKMicrograms", value)} />
       </NutritionEditorSection>
 
       <NutritionEditorSection
@@ -120,7 +119,6 @@ function NutritionEditor({
         onToggle={() => toggleSection("other")}
       >
         <NutritionNumberField label={t.cookbook.fiberPer100g} subtitle={fieldSubtitles.dietaryFiberGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.dietaryFiberGrams} onChange={(value) => onChange("dietaryFiberGrams", value)} />
-        <NutritionNumberField label={t.cookbook.cholinePer100g} subtitle={fieldSubtitles.cholineMilligrams} subtitleClassName={fieldSubtitleClassName} theme={theme} unit="mg" value={values.cholineMilligrams} onChange={(value) => onChange("cholineMilligrams", value)} />
         <NutritionNumberField label={t.cookbook.saltPer100g} step="0.01" subtitle={fieldSubtitles.saltGrams} subtitleClassName={fieldSubtitleClassName} theme={theme} value={values.saltGrams} onChange={(value) => onChange("saltGrams", value)} />
       </NutritionEditorSection>
     </div>
@@ -229,13 +227,6 @@ export function deriveVitaminsFromNutritionValues(values: NutritionEditorValues)
   if (hasValue(values.vitaminEMilligrams)) {
     vitamins.push("VitaminE");
   }
-  if (hasValue(values.vitaminKMicrograms)) {
-    vitamins.push("VitaminK");
-  }
-  if (hasValue(values.cholineMilligrams)) {
-    vitamins.push("Choline");
-  }
-
   return vitamins;
 }
 

@@ -44,6 +44,7 @@ export interface INutritionFacts {
   calories: number | null;
   carbohydrateGrams: number | null;
   proteinGrams: number | null;
+  fatGrams: number | null;
   saltGrams: number | null;
   dietaryFiberGrams: number | null;
   saturatedFatGrams: number | null;
@@ -59,8 +60,6 @@ export interface INutritionFacts {
   vitaminCMilligrams: number | null;
   vitaminDMicrograms: number | null;
   vitaminEMilligrams: number | null;
-  vitaminKMicrograms: number | null;
-  cholineMilligrams: number | null;
   vitamins: Vitamin[];
 }
 
@@ -70,9 +69,7 @@ export type Vitamin =
   | "VitaminB12"
   | "VitaminC"
   | "VitaminD"
-  | "VitaminE"
-  | "VitaminK"
-  | "Choline";
+  | "VitaminE";
 
 export type NutritionDataSource =
   | "None"

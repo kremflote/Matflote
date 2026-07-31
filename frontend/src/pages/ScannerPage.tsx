@@ -93,6 +93,7 @@ const nutritionEditorKeys: (keyof NutritionEditorValues)[] = [
   "calories",
   "carbohydrateGrams",
   "proteinGrams",
+  "fatGrams",
   "saltGrams",
   "dietaryFiberGrams",
   "saturatedFatGrams",
@@ -108,8 +109,6 @@ const nutritionEditorKeys: (keyof NutritionEditorValues)[] = [
   "vitaminCMilligrams",
   "vitaminDMicrograms",
   "vitaminEMilligrams",
-  "vitaminKMicrograms",
-  "cholineMilligrams",
 ];
 
 function ScannerPage({ theme }: ScannerPageProps) {
@@ -1133,6 +1132,7 @@ function mergeNutrition(primary: INutritionFacts | null, supplement: INutritionF
     calories: primary.calories ?? supplement.calories,
     carbohydrateGrams: primary.carbohydrateGrams ?? supplement.carbohydrateGrams,
     proteinGrams: primary.proteinGrams ?? supplement.proteinGrams,
+    fatGrams: primary.fatGrams ?? supplement.fatGrams,
     saltGrams: primary.saltGrams ?? supplement.saltGrams,
     dietaryFiberGrams: primary.dietaryFiberGrams ?? supplement.dietaryFiberGrams,
     saturatedFatGrams: primary.saturatedFatGrams ?? supplement.saturatedFatGrams,
@@ -1148,8 +1148,6 @@ function mergeNutrition(primary: INutritionFacts | null, supplement: INutritionF
     vitaminCMilligrams: primary.vitaminCMilligrams ?? supplement.vitaminCMilligrams,
     vitaminDMicrograms: primary.vitaminDMicrograms ?? supplement.vitaminDMicrograms,
     vitaminEMilligrams: primary.vitaminEMilligrams ?? supplement.vitaminEMilligrams,
-    vitaminKMicrograms: primary.vitaminKMicrograms ?? supplement.vitaminKMicrograms,
-    cholineMilligrams: primary.cholineMilligrams ?? supplement.cholineMilligrams,
     vitamins: primary.vitamins,
   };
 
@@ -1160,6 +1158,7 @@ function hasSupplementFilledMissingValue(primary: INutritionFacts, supplement: I
   return (primary.calories === null && supplement.calories !== null)
     || (primary.carbohydrateGrams === null && supplement.carbohydrateGrams !== null)
     || (primary.proteinGrams === null && supplement.proteinGrams !== null)
+    || (primary.fatGrams === null && supplement.fatGrams !== null)
     || (primary.saltGrams === null && supplement.saltGrams !== null)
     || (primary.dietaryFiberGrams === null && supplement.dietaryFiberGrams !== null)
     || (primary.saturatedFatGrams === null && supplement.saturatedFatGrams !== null)
@@ -1174,9 +1173,7 @@ function hasSupplementFilledMissingValue(primary: INutritionFacts, supplement: I
     || (primary.vitaminB12Micrograms === null && supplement.vitaminB12Micrograms !== null)
     || (primary.vitaminCMilligrams === null && supplement.vitaminCMilligrams !== null)
     || (primary.vitaminDMicrograms === null && supplement.vitaminDMicrograms !== null)
-    || (primary.vitaminEMilligrams === null && supplement.vitaminEMilligrams !== null)
-    || (primary.vitaminKMicrograms === null && supplement.vitaminKMicrograms !== null)
-    || (primary.cholineMilligrams === null && supplement.cholineMilligrams !== null);
+    || (primary.vitaminEMilligrams === null && supplement.vitaminEMilligrams !== null);
 }
 
 function withDerivedVitamins(nutrition: INutritionFacts | null): INutritionFacts | null {
@@ -1453,6 +1450,7 @@ function toIngredientNutrition(nutrition: IProductLookupNutrition | null): INutr
     calories: nutrition.calories,
     carbohydrateGrams: nutrition.carbohydrateGrams,
     proteinGrams: nutrition.proteinGrams,
+    fatGrams: nutrition.fatGrams,
     saltGrams: nutrition.saltGrams,
     dietaryFiberGrams: nutrition.dietaryFiberGrams,
     saturatedFatGrams: nutrition.saturatedFatGrams,
@@ -1468,8 +1466,6 @@ function toIngredientNutrition(nutrition: IProductLookupNutrition | null): INutr
     vitaminCMilligrams: nutrition.vitaminCMilligrams,
     vitaminDMicrograms: nutrition.vitaminDMicrograms,
     vitaminEMilligrams: nutrition.vitaminEMilligrams,
-    vitaminKMicrograms: nutrition.vitaminKMicrograms,
-    cholineMilligrams: nutrition.cholineMilligrams,
     vitamins: [],
   };
 }
@@ -1479,6 +1475,7 @@ function emptyNutritionFacts(): INutritionFacts {
     calories: null,
     carbohydrateGrams: null,
     proteinGrams: null,
+    fatGrams: null,
     saltGrams: null,
     dietaryFiberGrams: null,
     saturatedFatGrams: null,
@@ -1494,8 +1491,6 @@ function emptyNutritionFacts(): INutritionFacts {
     vitaminCMilligrams: null,
     vitaminDMicrograms: null,
     vitaminEMilligrams: null,
-    vitaminKMicrograms: null,
-    cholineMilligrams: null,
     vitamins: [],
   };
 }
@@ -1505,6 +1500,7 @@ function nutritionToEditorValues(nutrition: INutritionFacts | null): NutritionEd
     calories: numberToInputValue(nutrition?.calories),
     carbohydrateGrams: numberToInputValue(nutrition?.carbohydrateGrams),
     proteinGrams: numberToInputValue(nutrition?.proteinGrams),
+    fatGrams: numberToInputValue(nutrition?.fatGrams),
     saltGrams: numberToInputValue(nutrition?.saltGrams),
     dietaryFiberGrams: numberToInputValue(nutrition?.dietaryFiberGrams),
     saturatedFatGrams: numberToInputValue(nutrition?.saturatedFatGrams),
@@ -1520,8 +1516,6 @@ function nutritionToEditorValues(nutrition: INutritionFacts | null): NutritionEd
     vitaminCMilligrams: numberToInputValue(nutrition?.vitaminCMilligrams),
     vitaminDMicrograms: numberToInputValue(nutrition?.vitaminDMicrograms),
     vitaminEMilligrams: numberToInputValue(nutrition?.vitaminEMilligrams),
-    vitaminKMicrograms: numberToInputValue(nutrition?.vitaminKMicrograms),
-    cholineMilligrams: numberToInputValue(nutrition?.cholineMilligrams),
   };
 }
 

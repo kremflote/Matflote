@@ -91,6 +91,7 @@ export const en: TranslationDictionary = {
     description: "Description",
     dietaryInformation: "Dietary information",
     dietaryInformationPer100g: "Dietary information per 100g",
+    fatsPer100g: "Fat per 100g",
     fiber: "Fiber",
     fiberPer100g: "Fiber per 100g",
     fetchingCookbook: "Fetching the cookbook.",
@@ -184,8 +185,6 @@ export const en: TranslationDictionary = {
     vitaminCPer100g: "Vitamin C per 100g",
     vitaminDPer100g: "Vitamin D per 100g",
     vitaminEPer100g: "Vitamin E per 100g",
-    vitaminKPer100g: "Vitamin K per 100g",
-    cholinePer100g: "Choline per 100g",
     notSet: "Not set",
     verticalCrop: "Vertical crop",
     zoom: "Zoom",
@@ -263,22 +262,31 @@ export const en: TranslationDictionary = {
   nutrition: {
     comparedTo: (target, percent) =>
       `${percent.toLocaleString("en", { maximumFractionDigits: 1 })}% of ${target} weekly target`,
+    approximateNotice:
+      "Nutrition is a rough planning guide. Totals depend on what MATFLOTE finds from Kassalapp, Matvaretabellen, and your own edits.",
+    coverage: (percent) => `${percent.toLocaleString("en", { maximumFractionDigits: 0 })}% coverage`,
     couldNotLoad: "Could not load nutrition summary.",
     defaultProfile: "Female 25-50",
+    energyPercentTarget: (percent) =>
+      `${percent.toLocaleString("en", { maximumFractionDigits: 1 })}% energy share`,
     items: {
       calories: "Calories",
       carbohydrate: "Carbohydrate",
       protein: "Protein",
+      fat: "Fat",
       salt: "Salt",
       fiber: "Fiber",
+      saturatedFat: "Saturated fat",
+      transFat: "Trans fat",
+      monounsaturatedFat: "Monounsaturated fat",
+      polyunsaturatedFat: "Polyunsaturated fat",
+      omega3: "Omega-3",
       vitaminA: "Vitamin A",
       vitaminB9: "Vitamin B9",
       vitaminB12: "Vitamin B12",
       vitaminC: "Vitamin C",
       vitaminD: "Vitamin D",
       vitaminE: "Vitamin E",
-      vitaminK: "Vitamin K",
-      choline: "Choline",
     },
     missingNutritionIntro: (count) =>
       `${count} planned ingredient${count === 1 ? " is" : "s are"} missing nutrition data, so totals may be incomplete.`,
@@ -292,6 +300,14 @@ export const en: TranslationDictionary = {
     referenceSource: (provider, importedAt) =>
       `Reference values from ${provider}, imported ${importedAt}.`,
     referenceSourceLink: "View source",
+    statusLabels: {
+      estimate: "Estimate",
+      high: "Likely high",
+      low: "Likely low",
+      lowCoverage: "Low coverage",
+      ok: "Looks okay",
+      watch: "Worth checking",
+    },
     weekStart: "Week starts",
   },
   prices: {

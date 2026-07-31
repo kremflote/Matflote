@@ -138,25 +138,43 @@ public class NutritionSummaryService(DinnerPlannerContext context)
 
             var factor = grams.Value / 100m;
             total.Calories = AddScaled(total.Calories, nutrition.Calories, factor);
+            TrackCoverage(total, "calories", grams.Value, nutrition.Calories);
             total.CarbohydrateGrams = AddScaled(total.CarbohydrateGrams, nutrition.CarbohydrateGrams, factor);
+            TrackCoverage(total, "carbohydrate", grams.Value, nutrition.CarbohydrateGrams);
             total.ProteinGrams = AddScaled(total.ProteinGrams, nutrition.ProteinGrams, factor);
+            TrackCoverage(total, "protein", grams.Value, nutrition.ProteinGrams);
+            total.FatGrams = AddScaled(total.FatGrams, nutrition.FatGrams, factor);
+            TrackCoverage(total, "fat", grams.Value, nutrition.FatGrams);
             total.SaltGrams = AddScaled(total.SaltGrams, nutrition.SaltGrams, factor);
+            TrackCoverage(total, "salt", grams.Value, nutrition.SaltGrams);
             total.DietaryFiberGrams = AddScaled(total.DietaryFiberGrams, nutrition.DietaryFiberGrams, factor);
+            TrackCoverage(total, "fiber", grams.Value, nutrition.DietaryFiberGrams);
             total.SaturatedFatGrams = AddScaled(total.SaturatedFatGrams, nutrition.SaturatedFatGrams, factor);
+            TrackCoverage(total, "saturatedFat", grams.Value, nutrition.SaturatedFatGrams);
             total.TransFatGrams = AddScaled(total.TransFatGrams, nutrition.TransFatGrams, factor);
+            TrackCoverage(total, "transFat", grams.Value, nutrition.TransFatGrams);
             total.MonounsaturatedFatGrams = AddScaled(total.MonounsaturatedFatGrams, nutrition.MonounsaturatedFatGrams, factor);
+            TrackCoverage(total, "monounsaturatedFat", grams.Value, nutrition.MonounsaturatedFatGrams);
             total.PolyunsaturatedFatGrams = AddScaled(total.PolyunsaturatedFatGrams, nutrition.PolyunsaturatedFatGrams, factor);
+            TrackCoverage(total, "polyunsaturatedFat", grams.Value, nutrition.PolyunsaturatedFatGrams);
             total.Omega3Grams = AddScaled(total.Omega3Grams, nutrition.Omega3Grams, factor);
+            TrackCoverage(total, "omega3", grams.Value, nutrition.Omega3Grams);
             total.Omega6Grams = AddScaled(total.Omega6Grams, nutrition.Omega6Grams, factor);
+            TrackCoverage(total, "omega6", grams.Value, nutrition.Omega6Grams);
             total.CholesterolMilligrams = AddScaled(total.CholesterolMilligrams, nutrition.CholesterolMilligrams, factor);
+            TrackCoverage(total, "cholesterol", grams.Value, nutrition.CholesterolMilligrams);
             total.VitaminAMicrograms = AddScaled(total.VitaminAMicrograms, nutrition.VitaminAMicrograms, factor);
+            TrackCoverage(total, "vitaminA", grams.Value, nutrition.VitaminAMicrograms);
             total.VitaminB9Micrograms = AddScaled(total.VitaminB9Micrograms, nutrition.VitaminB9Micrograms, factor);
+            TrackCoverage(total, "vitaminB9", grams.Value, nutrition.VitaminB9Micrograms);
             total.VitaminB12Micrograms = AddScaled(total.VitaminB12Micrograms, nutrition.VitaminB12Micrograms, factor);
+            TrackCoverage(total, "vitaminB12", grams.Value, nutrition.VitaminB12Micrograms);
             total.VitaminCMilligrams = AddScaled(total.VitaminCMilligrams, nutrition.VitaminCMilligrams, factor);
+            TrackCoverage(total, "vitaminC", grams.Value, nutrition.VitaminCMilligrams);
             total.VitaminDMicrograms = AddScaled(total.VitaminDMicrograms, nutrition.VitaminDMicrograms, factor);
+            TrackCoverage(total, "vitaminD", grams.Value, nutrition.VitaminDMicrograms);
             total.VitaminEMilligrams = AddScaled(total.VitaminEMilligrams, nutrition.VitaminEMilligrams, factor);
-            total.VitaminKMicrograms = AddScaled(total.VitaminKMicrograms, nutrition.VitaminKMicrograms, factor);
-            total.CholineMilligrams = AddScaled(total.CholineMilligrams, nutrition.CholineMilligrams, factor);
+            TrackCoverage(total, "vitaminE", grams.Value, nutrition.VitaminEMilligrams);
     }
 
     private static void AddMissingNutrition(
@@ -269,19 +287,23 @@ public class NutritionSummaryService(DinnerPlannerContext context)
 
         return
         [
-        CreateItem("calories", "Calories", total.Calories, "kcal", null),
-        CreateItem("carbohydrate", "Carbohydrate", total.CarbohydrateGrams, "g", null),
-        CreateItem("protein", "Protein", total.ProteinGrams, "g", null),
-        CreateItem("salt", "Salt", total.SaltGrams, "g", null),
-        CreateItem("fiber", "Fiber", total.DietaryFiberGrams, "g", null),
-        CreateItem("vitaminA", "Vitamin A", total.VitaminAMicrograms, "ug", GetWeeklyReference(dailyReferences, "vitaminA")),
-        CreateItem("vitaminB9", "Vitamin B9", total.VitaminB9Micrograms, "ug", GetWeeklyReference(dailyReferences, "vitaminB9")),
-        CreateItem("vitaminB12", "Vitamin B12", total.VitaminB12Micrograms, "ug", GetWeeklyReference(dailyReferences, "vitaminB12")),
-        CreateItem("vitaminC", "Vitamin C", total.VitaminCMilligrams, "mg", GetWeeklyReference(dailyReferences, "vitaminC")),
-        CreateItem("vitaminD", "Vitamin D", total.VitaminDMicrograms, "ug", GetWeeklyReference(dailyReferences, "vitaminD")),
-        CreateItem("vitaminE", "Vitamin E", total.VitaminEMilligrams, "mg", GetWeeklyReference(dailyReferences, "vitaminE")),
-        CreateItem("vitaminK", "Vitamin K", total.VitaminKMicrograms, "ug", GetWeeklyReference(dailyReferences, "vitaminK")),
-        CreateItem("choline", "Choline", total.CholineMilligrams, "mg", GetWeeklyReference(dailyReferences, "choline"))
+        CreateItem("calories", "Calories", total.Calories, "kcal", null, GetCoverage(total, "calories"), "estimate"),
+        CreateEnergyPercentItem("carbohydrate", "Carbohydrate", total.CarbohydrateGrams, total.Calories, "g", 45m, 60m, GetCoverage(total, "carbohydrate")),
+        CreateEnergyPercentItem("protein", "Protein", total.ProteinGrams, total.Calories, "g", 10m, 20m, GetCoverage(total, "protein")),
+        CreateEnergyPercentItem("fat", "Fat", total.FatGrams, total.Calories, "g", 25m, 40m, GetCoverage(total, "fat"), 9m),
+        CreateItem("fiber", "Fiber", total.DietaryFiberGrams, "g", 25m * 7m, GetCoverage(total, "fiber"), "minimum"),
+        CreateItem("salt", "Salt", total.SaltGrams, "g", null, GetCoverage(total, "salt"), "estimate"),
+        CreateEnergyPercentItem("saturatedFat", "Saturated fat", total.SaturatedFatGrams, total.Calories, "g", null, 10m, GetCoverage(total, "saturatedFat"), 9m),
+        CreateItem("transFat", "Trans fat", total.TransFatGrams, "g", null, GetCoverage(total, "transFat"), "asLowAsPossible"),
+        CreateEnergyPercentItem("monounsaturatedFat", "Monounsaturated fat", total.MonounsaturatedFatGrams, total.Calories, "g", 10m, 20m, GetCoverage(total, "monounsaturatedFat"), 9m),
+        CreateEnergyPercentItem("polyunsaturatedFat", "Polyunsaturated fat", total.PolyunsaturatedFatGrams, total.Calories, "g", 5m, 10m, GetCoverage(total, "polyunsaturatedFat"), 9m),
+        CreateEnergyPercentItem("omega3", "Omega-3", total.Omega3Grams, total.Calories, "g", 1m, null, GetCoverage(total, "omega3"), 9m),
+        CreateItem("vitaminA", "Vitamin A", total.VitaminAMicrograms, "ug", GetWeeklyReference(dailyReferences, "vitaminA"), GetCoverage(total, "vitaminA"), "minimum"),
+        CreateItem("vitaminB9", "Vitamin B9", total.VitaminB9Micrograms, "ug", GetWeeklyReference(dailyReferences, "vitaminB9"), GetCoverage(total, "vitaminB9"), "minimum"),
+        CreateItem("vitaminB12", "Vitamin B12", total.VitaminB12Micrograms, "ug", GetWeeklyReference(dailyReferences, "vitaminB12"), GetCoverage(total, "vitaminB12"), "minimum"),
+        CreateItem("vitaminC", "Vitamin C", total.VitaminCMilligrams, "mg", GetWeeklyReference(dailyReferences, "vitaminC"), GetCoverage(total, "vitaminC"), "minimum"),
+        CreateItem("vitaminD", "Vitamin D", total.VitaminDMicrograms, "ug", GetWeeklyReference(dailyReferences, "vitaminD"), GetCoverage(total, "vitaminD"), "minimum"),
+        CreateItem("vitaminE", "Vitamin E", total.VitaminEMilligrams, "mg", GetWeeklyReference(dailyReferences, "vitaminE"), GetCoverage(total, "vitaminE"), "minimum")
         ];
     }
 
@@ -298,7 +320,9 @@ public class NutritionSummaryService(DinnerPlannerContext context)
         string label,
         decimal? total,
         string unit,
-        decimal? recommendedWeekly
+        decimal? recommendedWeekly,
+        decimal? coveragePercent,
+        string targetType
     )
     {
         decimal? percent = total is null || recommendedWeekly is null || recommendedWeekly == 0
@@ -311,8 +335,101 @@ public class NutritionSummaryService(DinnerPlannerContext context)
             total is null ? null : Math.Round(total.Value, 1),
             unit,
             recommendedWeekly,
-            percent
+            percent,
+            coveragePercent,
+            targetType,
+            GetStatus(percent, targetType, coveragePercent)
         );
+    }
+
+    private static NutritionSummaryItemDto CreateEnergyPercentItem(
+        string key,
+        string label,
+        decimal? grams,
+        decimal? calories,
+        string unit,
+        decimal? lowerPercent,
+        decimal? upperPercent,
+        decimal? coveragePercent,
+        decimal caloriesPerGram = 4m
+    )
+    {
+        decimal? energyPercent = grams is null || calories is null || calories <= 0m
+            ? null
+            : Math.Round(grams.Value * caloriesPerGram / calories.Value * 100m, 1);
+        var target = lowerPercent ?? upperPercent;
+        decimal? percent = energyPercent is null || target is null || target == 0m
+            ? null
+            : Math.Round(energyPercent.Value / target.Value * 100m, 1);
+        var targetType = lowerPercent is not null && upperPercent is not null
+            ? $"energyRange:{lowerPercent}-{upperPercent}"
+            : lowerPercent is not null
+                ? $"energyMinimum:{lowerPercent}"
+                : upperPercent is not null
+                    ? $"energyMaximum:{upperPercent}"
+                    : "estimate";
+
+        return new NutritionSummaryItemDto(
+            key,
+            label,
+            grams is null ? null : Math.Round(grams.Value, 1),
+            unit,
+            energyPercent,
+            percent,
+            coveragePercent,
+            targetType,
+            GetEnergyPercentStatus(energyPercent, lowerPercent, upperPercent, coveragePercent)
+        );
+    }
+
+    private static string GetStatus(decimal? percent, string targetType, decimal? coveragePercent)
+    {
+        if (coveragePercent is null or < 50m)
+        {
+            return "lowCoverage";
+        }
+
+        if (percent is null || targetType == "estimate")
+        {
+            return "estimate";
+        }
+
+        if (targetType == "asLowAsPossible")
+        {
+            return percent > 0m ? "watch" : "ok";
+        }
+
+        return percent >= 100m ? "ok" : "low";
+    }
+
+    private static string GetEnergyPercentStatus(
+        decimal? energyPercent,
+        decimal? lowerPercent,
+        decimal? upperPercent,
+        decimal? coveragePercent
+    )
+    {
+        if (coveragePercent is null or < 50m)
+        {
+            return "lowCoverage";
+        }
+
+        if (energyPercent is null)
+        {
+            return "estimate";
+        }
+
+        if (lowerPercent is not null && energyPercent < lowerPercent)
+        {
+            return "low";
+        }
+
+        if (upperPercent is not null && energyPercent > upperPercent)
+        {
+            return "high";
+        }
+
+        return "ok";
     }
 
     private static decimal? ToGramAmount(decimal? amount, MeasurementUnit unit) =>
@@ -357,6 +474,26 @@ public class NutritionSummaryService(DinnerPlannerContext context)
     private static decimal? AddScaled(decimal? total, int? value, decimal factor) =>
         value is null ? total : (total ?? 0m) + value.Value * factor;
 
+    private static void TrackCoverage(NutritionTotals total, string key, decimal grams, object? value)
+    {
+        total.CoverageTotalGrams[key] = total.CoverageTotalGrams.GetValueOrDefault(key) + grams;
+        if (value is not null)
+        {
+            total.CoverageKnownGrams[key] = total.CoverageKnownGrams.GetValueOrDefault(key) + grams;
+        }
+    }
+
+    private static decimal? GetCoverage(NutritionTotals total, string key)
+    {
+        var totalGrams = total.CoverageTotalGrams.GetValueOrDefault(key);
+        if (totalGrams <= 0m)
+        {
+            return null;
+        }
+
+        return Math.Round(total.CoverageKnownGrams.GetValueOrDefault(key) / totalGrams * 100m, 1);
+    }
+
     private static NutritionProfileDto ToDto(NutritionReferenceProfile profile) => new(
         profile.ProfileId,
         profile.Label,
@@ -384,6 +521,7 @@ public class NutritionSummaryService(DinnerPlannerContext context)
         public decimal? Calories { get; set; }
         public decimal? CarbohydrateGrams { get; set; }
         public decimal? ProteinGrams { get; set; }
+        public decimal? FatGrams { get; set; }
         public decimal? SaltGrams { get; set; }
         public decimal? DietaryFiberGrams { get; set; }
         public decimal? SaturatedFatGrams { get; set; }
@@ -399,8 +537,8 @@ public class NutritionSummaryService(DinnerPlannerContext context)
         public decimal? VitaminCMilligrams { get; set; }
         public decimal? VitaminDMicrograms { get; set; }
         public decimal? VitaminEMilligrams { get; set; }
-        public decimal? VitaminKMicrograms { get; set; }
-        public decimal? CholineMilligrams { get; set; }
+        public Dictionary<string, decimal> CoverageTotalGrams { get; } = [];
+        public Dictionary<string, decimal> CoverageKnownGrams { get; } = [];
     }
 
     private class MissingNutritionAccumulator(int ingredientId, string ingredientName, string? brandName)

@@ -57,6 +57,7 @@ export interface IProductLookupNutrition {
   calories: number | null;
   carbohydrateGrams: number | null;
   proteinGrams: number | null;
+  fatGrams: number | null;
   saltGrams: number | null;
   dietaryFiberGrams: number | null;
   saturatedFatGrams: number | null;
@@ -72,6 +73,4 @@ export interface IProductLookupNutrition {
   vitaminCMilligrams: number | null;
   vitaminDMicrograms: number | null;
   vitaminEMilligrams: number | null;
-  vitaminKMicrograms: number | null;
-  cholineMilligrams: number | null;
 }

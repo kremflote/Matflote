@@ -171,6 +171,7 @@ public partial class MatvaretabellenNutritionLookupService(
             food.Calories?.Quantity,
             FindNutrient(constituents, "Karbo"),
             FindNutrient(constituents, "Protein"),
+            FindNutrient(constituents, "Fett"),
             FindNutrient(constituents, "NaCl"),
             FindNutrient(constituents, "Fiber"),
             FindNutrient(constituents, "Mettet"),
@@ -185,9 +186,7 @@ public partial class MatvaretabellenNutritionLookupService(
             FindNutrient(constituents, "Vit B12"),
             FindNutrient(constituents, "Vit C"),
             FindNutrient(constituents, "Vit D"),
-            FindNutrient(constituents, "Vit E"),
-            FindNutrient(constituents, "VITK") ?? FindNutrient(constituents, "VITK1"),
-            FindNutrient(constituents, "CHOLN")
+            FindNutrient(constituents, "Vit E")
         );
     }
 
@@ -203,6 +202,7 @@ public partial class MatvaretabellenNutritionLookupService(
             NutrientSimilarity(source.Calories, target.Calories, 90m, 0.14m),
             NutrientSimilarity(source.CarbohydrateGrams, target.CarbohydrateGrams, 22m, 0.20m),
             NutrientSimilarity(source.ProteinGrams, target.ProteinGrams, 10m, 0.16m),
+            NutrientSimilarity(source.FatGrams, target.FatGrams, 10m, 0.10m),
             NutrientSimilarity(source.DietaryFiberGrams, target.DietaryFiberGrams, 8m, 0.30m),
             NutrientSimilarity(source.SaltGrams, target.SaltGrams, 1.1m, 0.10m),
             NutrientSimilarity(source.SaturatedFatGrams, target.SaturatedFatGrams, 3m, 0.10m)

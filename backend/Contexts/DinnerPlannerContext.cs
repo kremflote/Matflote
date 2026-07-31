@@ -72,6 +72,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             {
                 nutrition.Property(value => value.CarbohydrateGrams).HasPrecision(8, 2);
                 nutrition.Property(value => value.ProteinGrams).HasPrecision(8, 2);
+                nutrition.Property(value => value.FatGrams).HasPrecision(8, 2);
                 nutrition.Property(value => value.SaltGrams).HasPrecision(8, 2);
                 nutrition.Property(value => value.DietaryFiberGrams).HasPrecision(8, 2);
                 nutrition.Property(value => value.SaturatedFatGrams).HasPrecision(8, 2);

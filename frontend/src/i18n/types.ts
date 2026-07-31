@@ -75,6 +75,7 @@ export type TranslationDictionary = {
     calories: string;
     carbsPer100g: string;
     carbs: string;
+    fatsPer100g: string;
     chooseFile: string;
     choosePhoto: string;
     chooseIngredients: string;
@@ -197,8 +198,6 @@ export type TranslationDictionary = {
     vitaminCPer100g: string;
     vitaminDPer100g: string;
     vitaminEPer100g: string;
-    vitaminKPer100g: string;
-    cholinePer100g: string;
     notSet: string;
     verticalCrop: string;
     zoom: string;
@@ -235,8 +234,11 @@ export type TranslationDictionary = {
   };
   nutrition: {
     comparedTo: (target: string, percent: number) => string;
+    approximateNotice: string;
+    coverage: (percent: number) => string;
     couldNotLoad: string;
     defaultProfile: string;
+    energyPercentTarget: (percent: number, targetType: string) => string;
     items: Record<string, string>;
     missingNutritionIntro: (count: number) => string;
     missingNutritionTitle: string;
@@ -247,6 +249,7 @@ export type TranslationDictionary = {
     referenceNotSet: string;
     referenceSource: (provider: string, importedAt: string) => string;
     referenceSourceLink: string;
+    statusLabels: Record<string, string>;
     weekStart: string;
   };
   prices: {

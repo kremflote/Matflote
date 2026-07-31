@@ -24,7 +24,10 @@ public record NutritionSummaryItemDto(
     decimal? Total,
     string Unit,
     decimal? RecommendedWeekly,
-    decimal? PercentOfRecommended
+    decimal? PercentOfRecommended,
+    decimal? CoveragePercent,
+    string TargetType,
+    string Status
 );
 
 public record NutritionReferenceSourceDto(

@@ -130,7 +130,7 @@ export function NutritionGrid({
     nutrition.calories === null || recipeTotalGrams === null || recipeTotalGrams <= 0
       ? null
       : nutrition.calories / recipeTotalGrams * 100;
-  const totalFatGrams = sumFatGrams(nutrition);
+  const totalFatGrams = nutrition.fatGrams ?? sumFatGrams(nutrition);
   const overviewRows: Array<[string, string | null]> =
     variant === "recipe"
       ? [
@@ -173,14 +173,12 @@ export function NutritionGrid({
       ["Vitamin C", formatUnit(nutrition.vitaminCMilligrams, "mg")],
       ["Vitamin D", formatUnit(nutrition.vitaminDMicrograms, "ug")],
       ["Vitamin E", formatUnit(nutrition.vitaminEMilligrams, "mg")],
-      ["Vitamin K", formatUnit(nutrition.vitaminKMicrograms, "ug")],
       ],
     },
     {
       title: t.cookbook.nutritionOther,
       rows: [
       [t.cookbook.fiber, formatGrams(nutrition.dietaryFiberGrams)],
-      ["Choline", formatUnit(nutrition.cholineMilligrams, "mg")],
       [t.cookbook.salt, formatGrams(nutrition.saltGrams)],
       ],
     },

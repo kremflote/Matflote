@@ -204,6 +204,7 @@ public class KassalappProductLookupService(
             primary.Calories ?? supplement.Calories,
             primary.CarbohydrateGrams ?? supplement.CarbohydrateGrams,
             primary.ProteinGrams ?? supplement.ProteinGrams,
+            primary.FatGrams ?? supplement.FatGrams,
             primary.SaltGrams ?? supplement.SaltGrams,
             primary.DietaryFiberGrams ?? supplement.DietaryFiberGrams,
             primary.SaturatedFatGrams ?? supplement.SaturatedFatGrams,
@@ -218,9 +219,7 @@ public class KassalappProductLookupService(
             primary.VitaminB12Micrograms ?? supplement.VitaminB12Micrograms,
             primary.VitaminCMilligrams ?? supplement.VitaminCMilligrams,
             primary.VitaminDMicrograms ?? supplement.VitaminDMicrograms,
-            primary.VitaminEMilligrams ?? supplement.VitaminEMilligrams,
-            primary.VitaminKMicrograms ?? supplement.VitaminKMicrograms,
-            primary.CholineMilligrams ?? supplement.CholineMilligrams
+            primary.VitaminEMilligrams ?? supplement.VitaminEMilligrams
         );
         var usedSupplement = HasMissingValueFilled(primary, supplement);
         return new NutritionMergeResult(merged, usedSupplement);
@@ -230,6 +229,7 @@ public class KassalappProductLookupService(
         (primary.Calories is null && supplement.Calories is not null)
         || (primary.CarbohydrateGrams is null && supplement.CarbohydrateGrams is not null)
         || (primary.ProteinGrams is null && supplement.ProteinGrams is not null)
+        || (primary.FatGrams is null && supplement.FatGrams is not null)
         || (primary.SaltGrams is null && supplement.SaltGrams is not null)
         || (primary.DietaryFiberGrams is null && supplement.DietaryFiberGrams is not null)
         || (primary.SaturatedFatGrams is null && supplement.SaturatedFatGrams is not null)
@@ -244,14 +244,13 @@ public class KassalappProductLookupService(
         || (primary.VitaminB12Micrograms is null && supplement.VitaminB12Micrograms is not null)
         || (primary.VitaminCMilligrams is null && supplement.VitaminCMilligrams is not null)
         || (primary.VitaminDMicrograms is null && supplement.VitaminDMicrograms is not null)
-        || (primary.VitaminEMilligrams is null && supplement.VitaminEMilligrams is not null)
-        || (primary.VitaminKMicrograms is null && supplement.VitaminKMicrograms is not null)
-        || (primary.CholineMilligrams is null && supplement.CholineMilligrams is not null);
+        || (primary.VitaminEMilligrams is null && supplement.VitaminEMilligrams is not null);
 
     private static bool HasMissingValues(ProductLookupNutritionDto nutrition) =>
         nutrition.Calories is null
         || nutrition.CarbohydrateGrams is null
         || nutrition.ProteinGrams is null
+        || nutrition.FatGrams is null
         || nutrition.SaltGrams is null
         || nutrition.DietaryFiberGrams is null
         || nutrition.SaturatedFatGrams is null
@@ -266,9 +265,7 @@ public class KassalappProductLookupService(
         || nutrition.VitaminB12Micrograms is null
         || nutrition.VitaminCMilligrams is null
         || nutrition.VitaminDMicrograms is null
-        || nutrition.VitaminEMilligrams is null
-        || nutrition.VitaminKMicrograms is null
-        || nutrition.CholineMilligrams is null;
+        || nutrition.VitaminEMilligrams is null;
 
     private static string ToKassalappUrl(KassalappProduct product, string fallbackEan)
     {
@@ -293,6 +290,7 @@ public class KassalappProductLookupService(
         var calories = FindNutrient(contents, ["energy-kcal", "energy_kcal", "kcal", "kalori"]);
         var carbs = FindNutrient(contents, ["carbohydrate", "karbohydrat"]);
         var protein = FindNutrient(contents, ["protein"]);
+        var fat = FindNutrient(contents, ["fett_totalt", "fat total", "total fat", "fett"]);
         var salt = FindNutrient(contents, ["salt"]);
         var fiber = FindNutrient(contents, ["fiber", "fibre", "kostfiber"]);
         var saturatedFat = FindNutrient(contents, ["saturated", "mettet", "mettede"]);
@@ -306,6 +304,7 @@ public class KassalappProductLookupService(
         if (calories is null
             && carbs is null
             && protein is null
+            && fat is null
             && salt is null
             && fiber is null
             && saturatedFat is null
@@ -323,6 +322,7 @@ public class KassalappProductLookupService(
             calories,
             carbs,
             protein,
+            fat,
             salt,
             fiber,
             saturatedFat,
@@ -332,8 +332,6 @@ public class KassalappProductLookupService(
             omega3,
             omega6,
             cholesterol,
-            null,
-            null,
             null,
             null,
             null,

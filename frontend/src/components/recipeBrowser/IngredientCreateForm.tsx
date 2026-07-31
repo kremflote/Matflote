@@ -54,6 +54,7 @@ function IngredientCreateForm({
     numberToInputValue(initialIngredient?.nutritionPer100?.carbohydrateGrams),
   );
   const [proteinGrams, setProteinGrams] = useState(numberToInputValue(initialIngredient?.nutritionPer100?.proteinGrams));
+  const [fatGrams, setFatGrams] = useState(numberToInputValue(initialIngredient?.nutritionPer100?.fatGrams));
   const [saltGrams, setSaltGrams] = useState(numberToInputValue(initialIngredient?.nutritionPer100?.saltGrams));
   const [dietaryFiberGrams, setDietaryFiberGrams] = useState(
     numberToInputValue(initialIngredient?.nutritionPer100?.dietaryFiberGrams),
@@ -96,12 +97,6 @@ function IngredientCreateForm({
   );
   const [vitaminEMilligrams, setVitaminEMilligrams] = useState(
     numberToInputValue(initialIngredient?.nutritionPer100?.vitaminEMilligrams),
-  );
-  const [vitaminKMicrograms, setVitaminKMicrograms] = useState(
-    numberToInputValue(initialIngredient?.nutritionPer100?.vitaminKMicrograms),
-  );
-  const [cholineMilligrams, setCholineMilligrams] = useState(
-    numberToInputValue(initialIngredient?.nutritionPer100?.cholineMilligrams),
   );
   const [showNutrition, setShowNutrition] = useState(false);
   const [isMatvareSearchOpen, setIsMatvareSearchOpen] = useState(false);
@@ -181,6 +176,7 @@ function IngredientCreateForm({
           calories: nullableNumber(calories),
           carbohydrateGrams: nullableNumber(carbohydrateGrams),
           proteinGrams: nullableNumber(proteinGrams),
+          fatGrams: nullableNumber(fatGrams),
           saltGrams: nullableNumber(saltGrams),
           dietaryFiberGrams: nullableNumber(dietaryFiberGrams),
           saturatedFatGrams: nullableNumber(saturatedFatGrams),
@@ -196,8 +192,6 @@ function IngredientCreateForm({
           vitaminCMilligrams: nullableNumber(vitaminCMilligrams),
           vitaminDMicrograms: nullableNumber(vitaminDMicrograms),
           vitaminEMilligrams: nullableNumber(vitaminEMilligrams),
-          vitaminKMicrograms: nullableNumber(vitaminKMicrograms),
-          cholineMilligrams: nullableNumber(cholineMilligrams),
           vitamins: deriveVitaminsFromNutritionValues(nutritionValues),
         },
         nutritionSource,
@@ -241,6 +235,7 @@ function IngredientCreateForm({
     calories,
     carbohydrateGrams,
     proteinGrams,
+    fatGrams,
     saltGrams,
     dietaryFiberGrams,
     saturatedFatGrams,
@@ -256,14 +251,13 @@ function IngredientCreateForm({
     vitaminCMilligrams,
     vitaminDMicrograms,
     vitaminEMilligrams,
-    vitaminKMicrograms,
-    cholineMilligrams,
   };
   const updateNutritionValue = (key: keyof NutritionEditorValues, value: string) => {
     const setters: Record<keyof NutritionEditorValues, (value: string) => void> = {
       calories: setCalories,
       carbohydrateGrams: setCarbohydrateGrams,
       proteinGrams: setProteinGrams,
+      fatGrams: setFatGrams,
       saltGrams: setSaltGrams,
       dietaryFiberGrams: setDietaryFiberGrams,
       saturatedFatGrams: setSaturatedFatGrams,
@@ -279,8 +273,6 @@ function IngredientCreateForm({
       vitaminCMilligrams: setVitaminCMilligrams,
       vitaminDMicrograms: setVitaminDMicrograms,
       vitaminEMilligrams: setVitaminEMilligrams,
-      vitaminKMicrograms: setVitaminKMicrograms,
-      cholineMilligrams: setCholineMilligrams,
     };
 
     setters[key](value);
@@ -289,6 +281,7 @@ function IngredientCreateForm({
     setCalories(numberToInputValue(candidate.nutrition.calories));
     setCarbohydrateGrams(numberToInputValue(candidate.nutrition.carbohydrateGrams));
     setProteinGrams(numberToInputValue(candidate.nutrition.proteinGrams));
+    setFatGrams(numberToInputValue(candidate.nutrition.fatGrams));
     setSaltGrams(numberToInputValue(candidate.nutrition.saltGrams));
     setDietaryFiberGrams(numberToInputValue(candidate.nutrition.dietaryFiberGrams));
     setSaturatedFatGrams(numberToInputValue(candidate.nutrition.saturatedFatGrams));
@@ -304,8 +297,6 @@ function IngredientCreateForm({
     setVitaminCMilligrams(numberToInputValue(candidate.nutrition.vitaminCMilligrams));
     setVitaminDMicrograms(numberToInputValue(candidate.nutrition.vitaminDMicrograms));
     setVitaminEMilligrams(numberToInputValue(candidate.nutrition.vitaminEMilligrams));
-    setVitaminKMicrograms(numberToInputValue(candidate.nutrition.vitaminKMicrograms));
-    setCholineMilligrams(numberToInputValue(candidate.nutrition.cholineMilligrams));
     setNutritionSource("Matvaretabellen");
     setNutritionSourceLabel("Matvaretabellen");
     setMatvaretabellenFoodId(candidate.foodId);

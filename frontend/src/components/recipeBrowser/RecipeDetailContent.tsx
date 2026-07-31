@@ -273,6 +273,7 @@ function addRecipeNutrition(
     total.calories = addScaled(total.calories, nutrition.calories, factor);
     total.carbohydrateGrams = addScaled(total.carbohydrateGrams, nutrition.carbohydrateGrams, factor);
     total.proteinGrams = addScaled(total.proteinGrams, nutrition.proteinGrams, factor);
+    total.fatGrams = addScaled(total.fatGrams, nutrition.fatGrams, factor);
     total.saltGrams = addScaled(total.saltGrams, nutrition.saltGrams, factor);
     total.dietaryFiberGrams = addScaled(total.dietaryFiberGrams, nutrition.dietaryFiberGrams, factor);
     total.saturatedFatGrams = addScaled(total.saturatedFatGrams, nutrition.saturatedFatGrams, factor);
@@ -288,8 +289,6 @@ function addRecipeNutrition(
     total.vitaminCMilligrams = addScaled(total.vitaminCMilligrams, nutrition.vitaminCMilligrams, factor);
     total.vitaminDMicrograms = addScaled(total.vitaminDMicrograms, nutrition.vitaminDMicrograms, factor);
     total.vitaminEMilligrams = addScaled(total.vitaminEMilligrams, nutrition.vitaminEMilligrams, factor);
-    total.vitaminKMicrograms = addScaled(total.vitaminKMicrograms, nutrition.vitaminKMicrograms, factor);
-    total.cholineMilligrams = addScaled(total.cholineMilligrams, nutrition.cholineMilligrams, factor);
     total.vitamins = Array.from(new Set([...total.vitamins, ...nutrition.vitamins]));
   });
 
@@ -356,6 +355,7 @@ function createEmptyNutrition(): INutritionFacts {
     calories: null,
     carbohydrateGrams: null,
     proteinGrams: null,
+    fatGrams: null,
     saltGrams: null,
     dietaryFiberGrams: null,
     saturatedFatGrams: null,
@@ -371,8 +371,6 @@ function createEmptyNutrition(): INutritionFacts {
     vitaminCMilligrams: null,
     vitaminDMicrograms: null,
     vitaminEMilligrams: null,
-    vitaminKMicrograms: null,
-    cholineMilligrams: null,
     vitamins: [],
   };
 }

@@ -55,6 +55,7 @@ public record ProductLookupNutritionDto(
     decimal? Calories,
     decimal? CarbohydrateGrams,
     decimal? ProteinGrams,
+    decimal? FatGrams,
     decimal? SaltGrams,
     decimal? DietaryFiberGrams,
     decimal? SaturatedFatGrams,
@@ -69,7 +70,5 @@ public record ProductLookupNutritionDto(
     decimal? VitaminB12Micrograms,
     decimal? VitaminCMilligrams,
     decimal? VitaminDMicrograms,
-    decimal? VitaminEMilligrams,
-    decimal? VitaminKMicrograms,
-    decimal? CholineMilligrams
+    decimal? VitaminEMilligrams
 );

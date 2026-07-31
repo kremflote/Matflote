@@ -5,6 +5,7 @@ public class NutritionFacts
     public int? Calories { get; set; }
     public decimal? CarbohydrateGrams { get; set; }
     public decimal? ProteinGrams { get; set; }
+    public decimal? FatGrams { get; set; }
     public decimal? SaltGrams { get; set; }
     public decimal? DietaryFiberGrams { get; set; }
     public decimal? SaturatedFatGrams { get; set; }
@@ -20,6 +21,7 @@ public class NutritionFacts
     public decimal? VitaminCMilligrams { get; set; }
     public decimal? VitaminDMicrograms { get; set; }
     public decimal? VitaminEMilligrams { get; set; }
+    // Kept for old local data compatibility. MATFLOTE no longer surfaces these until source coverage is reliable.
     public decimal? VitaminKMicrograms { get; set; }
     public decimal? CholineMilligrams { get; set; }
     public List<Vitamin> Vitamins { get; set; } = [];

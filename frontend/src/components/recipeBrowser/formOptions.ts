@@ -264,6 +264,4 @@ export const vitamins: Vitamin[] = [
   "VitaminC",
   "VitaminD",
   "VitaminE",
-  "VitaminK",
-  "Choline",
 ];
