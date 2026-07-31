@@ -23,7 +23,9 @@ import {
   IngredientPickerPopover,
 } from "./plannerRecipePicker/PlannerRecipePickerIngredients";
 import PlannerRecipePickerGrid from "./plannerRecipePicker/PlannerRecipePickerGrid";
-import PlannerRecipePickerSelection from "./plannerRecipePicker/PlannerRecipePickerSelection";
+import PlannerRecipePickerSelection, {
+  type PlannerPickerSelectedItem,
+} from "./plannerRecipePicker/PlannerRecipePickerSelection";
 import Modal from "./Modal";
 import SearchField from "./SearchField";
 
@@ -175,37 +177,27 @@ function PlannerRecipePickerModal({
     mainIngredientSelection === null
       ? null
       : ingredientById.get(mainIngredientSelection.ingredientId) ?? null;
-  const mainSelectionLabel =
-    mainRecipe !== null && mainRecipeSelection !== null
-      ? formatRecipeSelectionLabel(mainRecipe.name, mainRecipeSelection.portions)
-      : mainIngredient !== null && mainIngredientSelection !== null
-        ? formatIngredientSelectionLabel(
-            mainIngredient.ingredientName,
-            mainIngredientSelection.amount,
-            mainIngredientSelection.unit,
-            t.enums.measurementUnits,
-          )
-        : null;
-  const supplementarySelectionLabels = [
+  const selectedPickerItems: PlannerPickerSelectedItem[] = [
+    ...(mainRecipe !== null && mainRecipeSelection !== null
+      ? [toSelectedRecipeItem(mainRecipe, mainRecipeSelection)]
+      : []),
+    ...(mainIngredient !== null && mainIngredientSelection !== null
+      ? [toSelectedIngredientItem(mainIngredient, mainIngredientSelection, t.enums.measurementUnits)]
+      : []),
     ...supplementaryRecipeSelections
       .map((selection) => {
         const recipe = recipeById.get(selection.recipeId);
-        return recipe === undefined ? null : formatRecipeSelectionLabel(recipe.name, selection.portions);
+        return recipe === undefined ? null : toSelectedRecipeItem(recipe, selection);
       })
-      .filter((label): label is string => label !== null),
+      .filter((item): item is PlannerPickerSelectedItem => item !== null),
     ...supplementaryIngredientSelections
       .map((selection) => {
         const ingredient = ingredientById.get(selection.ingredientId);
         return ingredient === undefined
           ? null
-          : formatIngredientSelectionLabel(
-              ingredient.ingredientName,
-              selection.amount,
-              selection.unit,
-              t.enums.measurementUnits,
-            );
+          : toSelectedIngredientItem(ingredient, selection, t.enums.measurementUnits);
       })
-      .filter((label): label is string => label !== null),
+      .filter((item): item is PlannerPickerSelectedItem => item !== null),
   ];
 
   useEffect(() => {
@@ -355,6 +347,33 @@ function PlannerRecipePickerModal({
     setSupplementaryIngredientSelections([]);
   };
 
+  const removeRecipeSelection = (recipeId: number) => {
+    setMainRecipeSelection((currentSelection) =>
+      currentSelection?.recipeId === recipeId ? null : currentSelection,
+    );
+    setSupplementaryRecipeSelections((currentSelections) =>
+      currentSelections.filter((selection) => selection.recipeId !== recipeId),
+    );
+  };
+
+  const removeIngredientSelection = (ingredientId: number) => {
+    setMainIngredientSelection((currentSelection) =>
+      currentSelection?.ingredientId === ingredientId ? null : currentSelection,
+    );
+    setSupplementaryIngredientSelections((currentSelections) =>
+      currentSelections.filter((selection) => selection.ingredientId !== ingredientId),
+    );
+  };
+
+  const removeSelectedPickerItem = (item: PlannerPickerSelectedItem) => {
+    if (item.kind === "recipe") {
+      removeRecipeSelection(item.id);
+      return;
+    }
+
+    removeIngredientSelection(item.id);
+  };
+
   const saveMealSlot = async () => {
     if (mainRecipe === null && mainIngredient === null && entry === undefined) {
       return;
@@ -451,9 +470,9 @@ function PlannerRecipePickerModal({
         <div className={plannerPickerStyles.footerContent}>
           <div className={plannerPickerStyles.footerSelectionRow}>
             <PlannerRecipePickerSelection
-              mainLabel={mainSelectionLabel}
-              supplementaryLabels={supplementarySelectionLabels}
+              items={selectedPickerItems}
               theme={theme}
+              onRemoveItem={removeSelectedPickerItem}
             />
             <button
               className={plannerPickerStyles.footerClearButton(theme)}
@@ -686,17 +705,28 @@ function trapFocus(event: KeyboardEvent, container: HTMLElement | null) {
   }
 }
 
-function formatRecipeSelectionLabel(name: string, portions: number) {
-  return `${name} (${formatNumber(portions)}x)`;
+function toSelectedRecipeItem(recipe: IRecipe, selection: SelectedPlannerRecipe): PlannerPickerSelectedItem {
+  return {
+    id: recipe.recipeId,
+    imageUrl: recipe.imageUrl,
+    kind: "recipe",
+    name: recipe.name,
+    valueLabel: `${formatNumber(selection.portions)}x`,
+  };
 }
 
-function formatIngredientSelectionLabel(
-  name: string,
-  amount: number,
-  unit: MeasurementUnit,
+function toSelectedIngredientItem(
+  ingredient: IIngredient,
+  selection: SelectedPlannerIngredient,
   unitLabels: Record<MeasurementUnit, string>,
-) {
-  return `${name} (${formatNumber(amount)} ${unitLabels[unit]})`;
+): PlannerPickerSelectedItem {
+  return {
+    id: ingredient.ingredientId,
+    imageUrl: ingredient.imageUrl,
+    kind: "ingredient",
+    name: ingredient.ingredientName,
+    valueLabel: `${formatNumber(selection.amount)} ${unitLabels[selection.unit]}`,
+  };
 }
 
 function formatNumber(value: number) {

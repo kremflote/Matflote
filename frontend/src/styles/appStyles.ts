@@ -1381,6 +1381,41 @@ export const plannerPickerStyles = {
           ? "bg-[#E5D5BC]/45 text-[#556145]"
           : "bg-neutral-100 text-neutral-800"
     }`,
+  selectedThumbnailList:
+    "flex min-h-10 min-w-0 flex-1 flex-wrap items-center gap-2",
+  selectedThumbnailButton: (theme: SiteTheme) =>
+    `inline-flex h-12 shrink-0 items-center gap-2 rounded-md border px-1.5 pr-2 ${shadowClasses.subtle} transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-white/[0.10] bg-white/[0.06] hover:bg-white/[0.10]"
+        : theme === "paletteLight"
+          ? "border-[#7A8864]/25 bg-[#E5D5BC]/55 hover:bg-[#E5D5BC]/75"
+          : "border-neutral-200 bg-white hover:bg-neutral-50"
+    }`,
+  selectedThumbnailFrame: (theme: SiteTheme) =>
+    `block h-9 w-9 shrink-0 overflow-hidden rounded-md ${
+      theme === "dark"
+        ? "bg-neutral-800"
+        : theme === "paletteLight"
+          ? "bg-[#E5D5BC]/45"
+          : "bg-neutral-100"
+    }`,
+  selectedThumbnailImage: "h-full w-full object-cover",
+  selectedThumbnailFallback: (theme: SiteTheme) =>
+    `block h-full w-full ${
+      theme === "dark"
+        ? "bg-neutral-800"
+        : theme === "paletteLight"
+          ? "bg-[#E5D5BC]/45"
+          : "bg-neutral-100"
+    }`,
+  selectedThumbnailAmount: (theme: SiteTheme) =>
+    `whitespace-nowrap text-sm font-black leading-none ${
+      theme === "dark"
+        ? "text-neutral-100"
+        : theme === "paletteLight"
+          ? "text-[#556145]"
+          : "text-neutral-900"
+    }`,
   bodyGrid: `mt-4 grid ${sizeClasses.plannerPickerBrowserHeight} overflow-y-auto pr-1`,
   filterRail: (theme: SiteTheme) =>
     `max-h-[52vh] overflow-y-auto rounded-md p-3 max-sm:max-h-[44vh] ${shadowClasses.subtle} ${
