@@ -116,6 +116,10 @@ function Invoke-SmokeSeedCatalogImport {
 
         Invoke-WebRequest -Uri "$baseUrl/api/seed-catalog/export" -OutFile $catalogPath
         $catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json
+        if (-not ($catalog.conversionRules | Where-Object { $_.fromText -eq "1 egg" -and $_.toText -eq "60 g" })) {
+            throw "Seed catalog export did not include conversion rules."
+        }
+
         $exportedCategory = $catalog.tagCategories | Where-Object { $_.name -eq "Smoke Shelf" } | Select-Object -First 1
         if ($null -eq $exportedCategory) {
             throw "Seed catalog export did not include tag categories."
@@ -195,6 +199,7 @@ try {
     Invoke-SmokeEndpoint "/api/ingredients"
     Invoke-SmokeEndpoint "/api/seed-catalog/export"
     Invoke-SmokeEndpoint "/api/seed-catalog/export-package"
+    Invoke-SmokeEndpoint "/api/conversion-rules"
     Invoke-SmokeEndpoint "/api/mealplans?from=2026-01-01&to=2026-01-07"
     Invoke-SmokeEndpoint "/api/grocerylists/preview?from=2026-01-01&to=2026-01-07"
     Invoke-SmokeAppSettings

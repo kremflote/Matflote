@@ -255,7 +255,7 @@ function TagManagementDialog({
               key={category.id}
               onClick={() => setSelectedCategoryId(category.id)}
             >
-              <div className={`${recipeBrowserStyles.manageTagCategoryRow} ${recipeBrowserStyles.manageTagDivider(theme, "category")}`}>
+              <div className={`${recipeBrowserStyles.manageTagCategoryRow(isCollapsed)} ${recipeBrowserStyles.manageTagDivider(theme, "category")}`}>
                 <button
                   className={recipeBrowserStyles.manageTagIconButton(theme)}
                   type="button"

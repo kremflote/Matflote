@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useIngredientTagCategories, useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
-import { imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
+import type { IConversionRule } from "../../interfaces/IConversionRule";
+import { conversionRuleService, imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
 import { getAllCategoryTagNames } from "../../utils/tagCatalog";
 import {
@@ -741,7 +742,68 @@ function RecipeLineModeToggle({ className = "", mode, theme, onChange }: RecipeL
 }
 
 function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const [rules, setRules] = useState<IConversionRule[]>([]);
+  const [fromText, setFromText] = useState("");
+  const [toText, setToText] = useState("");
+  const [isLoadingRules, setIsLoadingRules] = useState(true);
+  const [isSavingRule, setIsSavingRule] = useState(false);
+  const [rulesError, setRulesError] = useState<string | null>(null);
+
+  const loadRules = useCallback(async () => {
+    setIsLoadingRules(true);
+    setRulesError(null);
+
+    try {
+      setRules(await conversionRuleService.getAll());
+    } catch {
+      setRulesError(t.cookbook.couldNotLoadConversionRules);
+    } finally {
+      setIsLoadingRules(false);
+    }
+  }, [t.cookbook.couldNotLoadConversionRules]);
+
+  useEffect(() => {
+    void loadRules();
+  }, [loadRules]);
+
+  async function createRule() {
+    const normalizedFromText = fromText.trim();
+    const normalizedToText = toText.trim();
+    if (normalizedFromText.length === 0 || normalizedToText.length === 0) {
+      setRulesError(t.cookbook.conversionRuleNeedsValues);
+      return;
+    }
+
+    setIsSavingRule(true);
+    setRulesError(null);
+    try {
+      const createdRule = await conversionRuleService.create({
+        fromText: normalizedFromText,
+        toText: normalizedToText,
+      });
+      setRules((currentRules) => [
+        ...currentRules.filter((rule) => rule.conversionRuleId !== createdRule.conversionRuleId),
+        createdRule,
+      ].sort((left, right) => left.sortOrder - right.sortOrder || left.fromText.localeCompare(right.fromText)));
+      setFromText("");
+      setToText("");
+    } catch {
+      setRulesError(t.cookbook.couldNotSaveConversionRule);
+    } finally {
+      setIsSavingRule(false);
+    }
+  }
+
+  async function deleteRule(ruleId: number) {
+    setRulesError(null);
+    try {
+      await conversionRuleService.delete(ruleId);
+      setRules((currentRules) => currentRules.filter((rule) => rule.conversionRuleId !== ruleId));
+    } catch {
+      setRulesError(t.cookbook.couldNotDeleteConversionRule);
+    }
+  }
 
   return (
     <Modal
@@ -776,20 +838,68 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
         </a>
         .
       </p>
-      {t.cookbook.conversionHelperSections.map((section) => (
-        <section className={recipeBrowserStyles.conversionSection(theme)} key={section.title}>
-          <h3 className={recipeBrowserStyles.conversionSectionTitle(theme)}>{section.title}</h3>
+      <section className={recipeBrowserStyles.conversionSection(theme)}>
+        <h3 className={recipeBrowserStyles.conversionSectionTitle(theme)}>{t.cookbook.conversions}</h3>
+        {rulesError !== null && <p className={recipeBrowserStyles.statusError(theme)}>{rulesError}</p>}
+        {isLoadingRules ? (
+          <p className={recipeBrowserStyles.conversionHelperSource(theme)}>{t.common.working}</p>
+        ) : (
           <div className={recipeBrowserStyles.conversionList}>
-            {section.items.map((item) => (
-              <div className={recipeBrowserStyles.conversionRow(theme)} key={`${item.from}-${item.to}`}>
-                <span className={recipeBrowserStyles.conversionSource}>{item.from}</span>
-                <span className={recipeBrowserStyles.conversionArrow(theme)}>=</span>
-                <span className={recipeBrowserStyles.conversionTarget}>{item.to}</span>
-              </div>
-            ))}
+            {rules.map((rule) => {
+              const localizedFromText = language === "nb" ? rule.fromTextNb ?? rule.fromText : rule.fromText;
+              const localizedToText = language === "nb" ? rule.toTextNb ?? rule.toText : rule.toText;
+
+              return (
+                <div className={recipeBrowserStyles.conversionRow(theme)} key={rule.conversionRuleId}>
+                  <span className={recipeBrowserStyles.conversionSource}>{localizedFromText}</span>
+                  <span className={recipeBrowserStyles.conversionArrow(theme)}>=</span>
+                  <span className={recipeBrowserStyles.conversionTarget}>{localizedToText}</span>
+                  <button
+                    className={recipeBrowserStyles.inlineTextButton(theme)}
+                    type="button"
+                    onClick={() => void deleteRule(rule.conversionRuleId)}
+                  >
+                    {t.common.remove}
+                  </button>
+                </div>
+              );
+            })}
           </div>
-        </section>
-      ))}
+        )}
+      </section>
+      <section className={recipeBrowserStyles.conversionSection(theme)}>
+        <h3 className={recipeBrowserStyles.conversionSectionTitle(theme)}>{t.cookbook.addConversionRule}</h3>
+        <div className={recipeBrowserStyles.conversionRuleForm}>
+          <label className={recipeBrowserStyles.field}>
+            <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.conversionFrom}</span>
+            <input
+              className={recipeBrowserStyles.textField(theme)}
+              maxLength={120}
+              placeholder={t.cookbook.conversionFromPlaceholder}
+              value={fromText}
+              onChange={(event) => setFromText(event.target.value)}
+            />
+          </label>
+          <label className={recipeBrowserStyles.field}>
+            <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.conversionTo}</span>
+            <input
+              className={recipeBrowserStyles.textField(theme)}
+              maxLength={120}
+              placeholder={t.cookbook.conversionToPlaceholder}
+              value={toText}
+              onChange={(event) => setToText(event.target.value)}
+            />
+          </label>
+          <button
+            className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+            disabled={isSavingRule}
+            type="button"
+            onClick={() => void createRule()}
+          >
+            {isSavingRule ? t.common.saving : t.common.add}
+          </button>
+        </div>
+      </section>
     </Modal>
   );
 }

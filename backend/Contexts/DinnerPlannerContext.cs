@@ -9,6 +9,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
 {
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
     public DbSet<Brand> Brands => Set<Brand>();
+    public DbSet<ConversionRule> ConversionRules => Set<ConversionRule>();
     public DbSet<DataImportRun> DataImportRuns => Set<DataImportRun>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<IngredientPricePoint> IngredientPricePoints => Set<IngredientPricePoint>();
@@ -152,6 +153,15 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.Property(image => image.ContentType).HasMaxLength(120);
             entity.HasIndex(image => image.PublicUrl).IsUnique();
             entity.HasIndex(image => image.CreatedAt);
+        });
+
+        modelBuilder.Entity<ConversionRule>(entity =>
+        {
+            entity.Property(rule => rule.FromText).HasMaxLength(120);
+            entity.Property(rule => rule.ToText).HasMaxLength(120);
+            entity.Property(rule => rule.FromTextNb).HasMaxLength(120);
+            entity.Property(rule => rule.ToTextNb).HasMaxLength(120);
+            entity.HasIndex(rule => rule.SortOrder);
         });
 
         modelBuilder.Entity<IngredientPricePoint>(entity =>
@@ -356,6 +366,89 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
 
         modelBuilder.Entity<NutritionReferenceProfile>().HasData(CreateNutritionReferenceProfiles());
         modelBuilder.Entity<NutritionReferenceValue>().HasData(CreateNutritionReferenceValues());
+
+        modelBuilder.Entity<ConversionRule>().HasData(
+            new
+            {
+                ConversionRuleId = 1,
+                FromText = "1 tsp",
+                ToText = "5 ml / 5 g",
+                FromTextNb = "1 ts",
+                ToTextNb = "5 ml / 5 g",
+                SortOrder = 100,
+                CreatedAt = new DateTimeOffset(2026, 7, 31, 0, 0, 0, TimeSpan.Zero)
+            },
+            new
+            {
+                ConversionRuleId = 2,
+                FromText = "1 tbsp",
+                ToText = "15 ml / 15 g",
+                FromTextNb = "1 ss",
+                ToTextNb = "15 ml / 15 g",
+                SortOrder = 200,
+                CreatedAt = new DateTimeOffset(2026, 7, 31, 0, 0, 0, TimeSpan.Zero)
+            },
+            new
+            {
+                ConversionRuleId = 3,
+                FromText = "1 cup",
+                ToText = "240 ml / 240 g",
+                FromTextNb = "1 kopp",
+                ToTextNb = "240 ml / 240 g",
+                SortOrder = 300,
+                CreatedAt = new DateTimeOffset(2026, 7, 31, 0, 0, 0, TimeSpan.Zero)
+            },
+            new
+            {
+                ConversionRuleId = 4,
+                FromText = "1 yellow onion",
+                ToText = "170 g",
+                FromTextNb = "1 gul løk",
+                ToTextNb = "170 g",
+                SortOrder = 400,
+                CreatedAt = new DateTimeOffset(2026, 7, 31, 0, 0, 0, TimeSpan.Zero)
+            },
+            new
+            {
+                ConversionRuleId = 5,
+                FromText = "1 garlic clove",
+                ToText = "3 g",
+                FromTextNb = "1 hvitløksfedd",
+                ToTextNb = "3 g",
+                SortOrder = 500,
+                CreatedAt = new DateTimeOffset(2026, 7, 31, 0, 0, 0, TimeSpan.Zero)
+            },
+            new
+            {
+                ConversionRuleId = 6,
+                FromText = "1 carrot",
+                ToText = "70 g",
+                FromTextNb = "1 gulrot",
+                ToTextNb = "70 g",
+                SortOrder = 600,
+                CreatedAt = new DateTimeOffset(2026, 7, 31, 0, 0, 0, TimeSpan.Zero)
+            },
+            new
+            {
+                ConversionRuleId = 7,
+                FromText = "1 egg",
+                ToText = "60 g",
+                FromTextNb = "1 egg",
+                ToTextNb = "60 g",
+                SortOrder = 700,
+                CreatedAt = new DateTimeOffset(2026, 7, 31, 0, 0, 0, TimeSpan.Zero)
+            },
+            new
+            {
+                ConversionRuleId = 8,
+                FromText = "1 broth cube",
+                ToText = "10 g",
+                FromTextNb = "1 kube med buljong",
+                ToTextNb = "10 g",
+                SortOrder = 800,
+                CreatedAt = new DateTimeOffset(2026, 7, 31, 0, 0, 0, TimeSpan.Zero)
+            }
+        );
 
         modelBuilder.Entity<IngredientTagCategory>().HasData(
             new { IngredientTagCategoryId = 1, Name = "Produce", SortOrder = 100 },

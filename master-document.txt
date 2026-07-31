@@ -408,7 +408,7 @@ Keep user-uploaded images separate from generated frontend assets. Runtime image
 
 ### Data storage ownership
 
-Household/shared data belongs in the backend database. This includes ingredients, recipes, recipe ingredients, recipe components, meal plans, tags, tag categories, brands, stores, price points, nutrition data, nutrition reference profile/settings, app integration settings, grocery export rules, import metadata, and image metadata.
+Household/shared data belongs in the backend database. This includes ingredients, recipes, recipe ingredients, recipe components, meal plans, tags, tag categories, brands, stores, price points, nutrition data, nutrition reference profile/settings, conversion helper rules, app integration settings, grocery export rules, import metadata, and image metadata.
 
 Tags are a shared catalog for both ingredients and recipes. Ingredient and recipe tag assignments should be stored by tag definition ID, not copied tag-name strings, so rename/delete operations remain consistent across the app.
 
@@ -496,6 +496,7 @@ Backend startup imports this catalog after EF migrations. The import is additive
 
 - Brands are created when missing
 - Tag categories and tag definitions are created when missing, before ingredients and recipes import
+- Conversion helper rules are created when missing
 - Ingredients are matched by ingredient name plus optional brand name
 - Recipes are matched by recipe name
 - Existing matching records are not overwritten

@@ -1,6 +1,7 @@
 export { ApiError, apiRequest } from "./apiClient";
 export { appSettingsService } from "./appSettingsService";
 export { brandService } from "./brandService";
+export { conversionRuleService } from "./conversionRuleService";
 export { imageUploadService } from "./imageUploadService";
 export { groceryListService } from "./groceryListService";
 export { ingredientPriceService } from "./ingredientPriceService";
@@ -13,6 +14,7 @@ export { productLookupService } from "./productLookupService";
 export { recipeService } from "./recipeService";
 export { storeService } from "./storeService";
 export type { ImageFolder, ImageUploadResponse } from "./imageUploadService";
+export type { ConversionRuleRequest } from "./conversionRuleService";
 export type { IngredientPricePointRequest } from "./ingredientPriceService";
 export type { IngredientRequest } from "./ingredientService";
 export type { LookupRequest } from "./brandService";

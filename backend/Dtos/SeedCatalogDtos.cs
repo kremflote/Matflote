@@ -4,6 +4,7 @@ namespace DinnerPlanner.Api.Dtos;
 
 public record SeedCatalogDto(
     IReadOnlyCollection<SeedTagCategoryDto>? TagCategories,
+    IReadOnlyCollection<SeedConversionRuleDto>? ConversionRules,
     IReadOnlyCollection<SeedBrandDto>? Brands,
     IReadOnlyCollection<SeedIngredientDto>? Ingredients,
     IReadOnlyCollection<SeedRecipeDto>? Recipes
@@ -17,6 +18,14 @@ public record SeedTagCategoryDto(
 
 public record SeedTagDto(
     string Name,
+    int? SortOrder
+);
+
+public record SeedConversionRuleDto(
+    string FromText,
+    string ToText,
+    string? FromTextNb,
+    string? ToTextNb,
     int? SortOrder
 );
 

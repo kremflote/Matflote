@@ -49,6 +49,7 @@ public class SeedCatalogService(
         try
         {
             await UpsertTagCategoriesAsync(catalog.TagCategories, cancellationToken);
+            await UpsertConversionRulesAsync(catalog.ConversionRules, cancellationToken);
             var brandCount = await UpsertBrandsAsync(catalog.Brands, cancellationToken);
             var ingredientCount = await UpsertIngredientsAsync(catalog.Ingredients, cancellationToken);
             var recipeCount = await UpsertRecipesAsync(catalog.Recipes, cancellationToken);
@@ -110,6 +111,19 @@ public class SeedCatalogService(
             .Select(brand => new SeedBrandDto(brand.Name))
             .ToListAsync(cancellationToken);
 
+        var conversionRules = await context.ConversionRules
+            .AsNoTracking()
+            .OrderBy(rule => rule.SortOrder)
+            .ThenBy(rule => rule.FromText)
+            .Select(rule => new SeedConversionRuleDto(
+                rule.FromText,
+                rule.ToText,
+                rule.FromTextNb,
+                rule.ToTextNb,
+                rule.SortOrder
+            ))
+            .ToListAsync(cancellationToken);
+
         var ingredients = await context.Ingredients
             .AsNoTracking()
             .Include(ingredient => ingredient.Brand)
@@ -148,6 +162,7 @@ public class SeedCatalogService(
 
         return new SeedCatalogDto(
             tagCategories,
+            conversionRules,
             brands,
             ingredients,
             recipes.Select(ToSeedRecipe).ToList()
@@ -260,6 +275,54 @@ public class SeedCatalogService(
                     {
                         tag.SortOrder = seedTag.SortOrder.Value;
                     }
+                }
+            }
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task UpsertConversionRulesAsync(
+        IReadOnlyCollection<SeedConversionRuleDto>? rules,
+        CancellationToken cancellationToken)
+    {
+        if (rules is null)
+        {
+            return;
+        }
+
+        foreach (var seedRule in rules)
+        {
+            var fromText = CleanName(seedRule.FromText);
+            var toText = CleanName(seedRule.ToText);
+            if (fromText.Length == 0 || toText.Length == 0)
+            {
+                continue;
+            }
+
+            var existingRule = await context.ConversionRules
+                .FirstOrDefaultAsync(rule =>
+                    rule.FromText.ToLower() == fromText.ToLower() &&
+                    rule.ToText.ToLower() == toText.ToLower(),
+                    cancellationToken);
+            if (existingRule is null)
+            {
+                context.ConversionRules.Add(new ConversionRule
+                {
+                    FromText = fromText,
+                    ToText = toText,
+                    FromTextNb = NullIfWhiteSpace(seedRule.FromTextNb),
+                    ToTextNb = NullIfWhiteSpace(seedRule.ToTextNb),
+                    SortOrder = seedRule.SortOrder ?? await GetNextConversionRuleSortOrderAsync(cancellationToken)
+                });
+            }
+            else
+            {
+                existingRule.FromTextNb = NullIfWhiteSpace(seedRule.FromTextNb);
+                existingRule.ToTextNb = NullIfWhiteSpace(seedRule.ToTextNb);
+                if (seedRule.SortOrder is not null)
+                {
+                    existingRule.SortOrder = seedRule.SortOrder.Value;
                 }
             }
         }
@@ -493,6 +556,14 @@ public class SeedCatalogService(
 
     private static int GetNextTagSortOrder(IngredientTagCategory category) =>
         category.Tags.Count == 0 ? 100 : category.Tags.Max(tag => tag.SortOrder) + 100;
+
+    private async Task<int> GetNextConversionRuleSortOrderAsync(CancellationToken cancellationToken)
+    {
+        var maxSortOrder = await context.ConversionRules
+            .Select(rule => (int?)rule.SortOrder)
+            .MaxAsync(cancellationToken) ?? 0;
+        return maxSortOrder + 100;
+    }
 
     private Task<Ingredient?> FindIngredientAsync(
         string ingredientName,

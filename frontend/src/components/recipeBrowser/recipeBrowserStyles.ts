@@ -392,7 +392,7 @@ export const recipeBrowserStyles = {
     }`,
   conversionList: "grid gap-1.5",
   conversionRow: (theme: SiteTheme) =>
-    `grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold ${
+    `grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold max-sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] max-sm:[&>button]:col-span-3 max-sm:[&>button]:justify-self-end ${
       theme === "dark"
         ? "bg-white/[0.04] text-neutral-200"
         : theme === "paletteLight"
@@ -407,6 +407,15 @@ export const recipeBrowserStyles = {
         ? "text-[#7A8864]"
         : "text-neutral-400",
   conversionTarget: "min-w-0 text-right",
+  conversionRuleForm: "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-3 max-sm:grid-cols-1",
+  inlineTextButton: (theme: SiteTheme) =>
+    `border-0 bg-transparent p-0 text-xs font-bold underline underline-offset-2 transition-colors ${
+      theme === "dark"
+        ? "text-neutral-300 hover:text-white"
+        : theme === "paletteLight"
+          ? "text-[#556145] hover:text-[#3C4A2E]"
+          : "text-neutral-600 hover:text-neutral-950"
+    }`,
   recipeIngredientPickerRow:
     "grid grid-cols-[auto_minmax(0,1fr)_6rem_8rem_10rem] items-center gap-2 max-[1100px]:grid-cols-[auto_minmax(0,1fr)_6rem] max-md:grid-cols-[auto_minmax(0,1fr)] max-sm:gap-y-2",
   recipeIngredientControlGrid:
@@ -601,16 +610,10 @@ export const recipeBrowserStyles = {
   manageTagCategory: (theme: SiteTheme, selected = false) =>
     `grid cursor-pointer gap-3 rounded-md border p-3 transition-colors ${
       theme === "dark"
-        ? selected
-          ? "border-white/[0.24] bg-white/[0.08]"
-          : "border-white/[0.10] bg-white/[0.04]"
+        ? `${selected ? "border-white/[0.24]" : "border-white/[0.10]"} bg-white/[0.04]`
         : theme === "paletteLight"
-          ? selected
-            ? "border-[#7A8864]/65 bg-[#E5D5BC]/55"
-            : "border-[#C8C0B5] bg-[#E5D5BC]/35"
-          : selected
-            ? "border-neutral-400 bg-neutral-100"
-            : "border-neutral-200 bg-neutral-50"
+          ? `${selected ? "border-[#7A8864]/65" : "border-[#C8C0B5]"} bg-[#E5D5BC]/35`
+          : `${selected ? "border-neutral-400" : "border-neutral-200"} bg-neutral-50`
     }`,
   manageTagDivider: (theme: SiteTheme, emphasis: "category" | "item" = "item") =>
     theme === "dark"
@@ -624,11 +627,11 @@ export const recipeBrowserStyles = {
         : emphasis === "category"
           ? "border-neutral-300"
           : "border-neutral-200",
-  manageTagCategoryRow:
-    "grid grid-cols-[2rem_minmax(0,1fr)_4.5rem_7rem_7rem] items-center gap-2 border-b pb-3 max-sm:grid-cols-[2rem_minmax(0,1fr)] max-sm:[&>input]:col-span-1 max-sm:[&>div]:col-span-2 max-sm:[&>button:not(:first-child)]:w-full",
+  manageTagCategoryRow: (collapsed = false) =>
+    `grid grid-cols-[2rem_minmax(0,1fr)_4rem_5.75rem_5.75rem] items-center gap-2 max-sm:grid-cols-[2rem_minmax(0,1fr)] max-sm:[&>input]:col-span-1 max-sm:[&>div]:col-span-2 max-sm:[&>button:not(:first-child)]:w-full [&>input]:h-8 ${collapsed ? "" : "border-b pb-3"}`,
   manageTagList: "grid",
   manageTagRow:
-    "grid grid-cols-[minmax(0,1fr)_4.5rem_7rem_7rem] items-center gap-2 border-b py-2 pl-10 last:border-b-0 last:pb-0 max-sm:grid-cols-2 max-sm:pl-6 [&>input]:max-sm:col-span-2 [&>div]:max-sm:col-span-2 [&>button]:max-sm:w-full",
+    "grid grid-cols-[minmax(0,1fr)_4rem_5.75rem_5.75rem] items-center gap-2 border-b py-2 pl-10 last:border-b-0 last:pb-0 max-sm:grid-cols-2 max-sm:pl-6 [&>input]:h-8 [&>input]:max-sm:col-span-2 [&>div]:max-sm:col-span-2 [&>button]:max-sm:w-full",
   manageTagOrderControls: "grid grid-cols-2 gap-1",
   manageTagIconButton: (theme: SiteTheme) =>
     `flex h-8 w-full min-w-0 items-center justify-center rounded-md border text-xs font-black transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
@@ -639,9 +642,9 @@ export const recipeBrowserStyles = {
           : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100"
     }`,
   manageTagActionButton: (theme: SiteTheme) =>
-    `${controlStyles.secondaryButton(theme)} w-28 min-w-0 px-4 max-sm:h-9 max-sm:w-full max-sm:px-3 max-sm:text-sm`,
+    `${controlStyles.secondaryButton(theme)} h-8 w-full min-w-0 px-3 text-sm max-sm:h-9 max-sm:px-3`,
   manageTagRemoveButton: (theme: SiteTheme) =>
-    `${controlStyles.removeButton(theme)} w-28 min-w-0 px-4 max-sm:h-9 max-sm:w-full max-sm:px-3 max-sm:text-sm`,
+    `${controlStyles.removeButton(theme)} h-8 w-full min-w-0 px-3 text-sm max-sm:h-9 max-sm:px-3`,
   resultsWithFilters: "col-span-10 max-[1100px]:col-span-12",
   recipeGrid: `grid grid-cols-3 gap-3 min-[641px]:max-[1100px]:grid-cols-4 ${sizeClasses.portableBottomNavOffset} max-md:grid-cols-2 max-[380px]:grid-cols-1`,
   ingredientGridPanel: (_theme: SiteTheme) => "",

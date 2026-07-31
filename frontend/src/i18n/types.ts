@@ -85,13 +85,16 @@ export type TranslationDictionary = {
     conversionHelperIntro: string;
     conversionHelperSourceText: string;
     conversionHelperSourceLink: string;
-    conversionHelperSections: ReadonlyArray<{
-      title: string;
-      items: ReadonlyArray<{
-        from: string;
-        to: string;
-      }>;
-    }>;
+    conversions: string;
+    addConversionRule: string;
+    conversionFrom: string;
+    conversionTo: string;
+    conversionFromPlaceholder: string;
+    conversionToPlaceholder: string;
+    conversionRuleNeedsValues: string;
+    couldNotDeleteConversionRule: string;
+    couldNotLoadConversionRules: string;
+    couldNotSaveConversionRule: string;
     cookbookSections: string;
     create: string;
     createIngredient: string;
