@@ -89,6 +89,25 @@ public class AppSettingsService(
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<int> GetNutritionPeopleEatingAsync(CancellationToken cancellationToken)
+    {
+        var storedValue = await GetValueAsync(AppSettingKeys.NutritionPeopleEating, cancellationToken);
+        return int.TryParse(storedValue, out var peopleEating) && peopleEating >= 1
+            ? peopleEating
+            : 1;
+    }
+
+    public async Task SetNutritionPreferenceAsync(
+        string? profileId,
+        int peopleEating,
+        CancellationToken cancellationToken
+    )
+    {
+        await SetValueAsync(AppSettingKeys.NutritionProfileId, profileId, cancellationToken);
+        await SetValueAsync(AppSettingKeys.NutritionPeopleEating, Math.Max(1, peopleEating).ToString(), cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task SetValueAsync(string key, string? value, CancellationToken cancellationToken)
     {
         var setting = await context.AppSettings.FindAsync([key], cancellationToken);
@@ -141,6 +160,7 @@ public static class AppSettingKeys
     public const string VikunjaApiToken = "Vikunja:ApiToken";
     public const string VikunjaProjectId = "Vikunja:ProjectId";
     public const string NutritionProfileId = "Nutrition:ProfileId";
+    public const string NutritionPeopleEating = "Nutrition:PeopleEating";
     public const string GroceryExportDefaultExcludedIngredientTags = "GroceryExport:DefaultExcludedIngredientTags";
 }
 

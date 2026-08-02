@@ -1,4 +1,4 @@
-import type { IngredientTag, KnownIngredientTag, MeasurementUnit, Vitamin } from "../../interfaces/IIngredient";
+import type { IngredientTag, KnownTag, MeasurementUnit, Vitamin } from "../../interfaces/IIngredient";
 import type { IIngredientTagCategory } from "../../interfaces/ILookup";
 import type { IngredientPreparation, RecipeTag } from "../../interfaces/IRecipe";
 import { getCategoryTagNames } from "../../utils/tagCatalog";
@@ -118,7 +118,7 @@ export function formatRecipeTagGroupName(
   return name;
 }
 
-export const ingredientTags: KnownIngredientTag[] = [
+export const ingredientTags: KnownTag[] = [
   "Vegetable",
   "Fruit",
   "Chicken",

@@ -18,7 +18,7 @@ export interface IIngredient {
   color: string | null;
 }
 
-export type KnownIngredientTag =
+export type KnownTag =
   | "Vegetable"
   | "Fruit"
   | "Chicken"
@@ -36,9 +36,30 @@ export type KnownIngredientTag =
   | "Berry"
   | "RootVegetable"
   | "Bread"
-  | "Dip";
+  | "Dip"
+  | "Breakfast"
+  | "Lunch"
+  | "Dinner"
+  | "Dish"
+  | "Side"
+  | "Dessert"
+  | "Bowl"
+  | "Grill"
+  | "Pasta"
+  | "Vegetarian"
+  | "Soup"
+  | "Stew"
+  | "Salad"
+  | "Pizza"
+  | "Sandwich"
+  | "Casserole"
+  | "Porridge"
+  | "Plate"
+  | "SousVide"
+  | "SpiceMix";
 
-export type IngredientTag = KnownIngredientTag | (string & {});
+export type Tag = KnownTag | (string & {});
+export type IngredientTag = Tag;
 
 export interface INutritionFacts {
   calories: number | null;

@@ -36,6 +36,16 @@ export function getLocalDatePreference(key: string, fallback: Date) {
   return Number.isNaN(parsedDate.getTime()) ? fallback : parsedDate;
 }
 
+export function getLocalNumberPreference(key: string, fallback: number) {
+  const storedValue = localStorage.getItem(key);
+  if (storedValue === null) {
+    return fallback;
+  }
+
+  const parsedValue = Number(storedValue);
+  return Number.isFinite(parsedValue) ? parsedValue : fallback;
+}
+
 export function setLocalPreference(key: string, value: string) {
   localStorage.setItem(key, value);
 }

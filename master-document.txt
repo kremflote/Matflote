@@ -1,640 +1,452 @@
-# Ideas
-Spice Manager (not to be implemented now)
+# MATFLOTE Master Document
 
-# Product Identity
+Last verified: 2026-08-02
 
-App name: MATFLOTE
+This is the current source of truth for MATFLOTE. It describes what the code does now, where important design decisions live, and which rough edges should be considered before larger changes.
 
-# Web Design Ruleset
+Future ideas are listed only when they affect current architecture. They should not be treated as implemented behavior.
 
-Single source of truth for designing the webpage in Figma and later implementing it in code.
+## Product Snapshot
 
-## 1. Core design direction
+MATFLOTE is a household meal planner, cookbook, grocery export tool, product scanner, price tracker, and nutrition planning aid.
 
-The design should feel clean, friendly, readable, and structured. Use soft spacing, rounded corners, clear hierarchy, and a consistent 12-column layout.
+Implemented pages:
 
-Avoid random values. Reuse the values defined here unless there is a strong design reason not to.
+- Planner: week/month meal planning, generation, prep helper, and grocery-list export.
+- Cookbook: recipes, ingredients, images, tags, brands, nutrition, prices, conversion helper, and seed import/export.
+- Scanner: EAN/barcode lookup through Kassalapp, nutrition enrichment through Matvaretabellen, and save-as-ingredient flow.
+- Prices: ingredient price history by store.
+- Nutrition: weekly approximate nutrition summary from planned meals.
+- Settings: language, shopping-list provider settings, export rules, and system information.
 
----
+Not implemented:
 
-## 2. Typography
+- Account system or cloud sync.
+- Offline multi-device merge.
+- AnyList export.
+- Precise nutrition coaching or medical-grade nutrient advice.
+- Separate "making food" versus "eating food" inventory/prep tracking.
 
-### Font families
+Findings / follow-up:
 
-```
-defaultFont: Nunito
-heroFont: Segoe Print
-logoFont: Ubuntu Bold 700
-```
+- The app is now broader than the original dinner-planner concept. New features should be checked against the household/server-first scope before adding more planning abstractions.
+- Nutrition is intentionally approximate. UI copy should keep setting that expectation.
 
-### Font usage
+## Architecture
 
-```
-Segoe Print:
-Use only for hero headings or major landing-page statements.
+Frontend:
 
-Ubuntu Bold 700:
-Use only for the MATFLOTE logo/brand mark.
+- React + Vite + TypeScript.
+- Tailwind utility classes, centralized through shared style files.
+- The production frontend is static files served by nginx.
+- In development, Vite normally runs on port 5173 and calls the backend at `http://localhost:5132`.
+- In Docker, frontend API calls are same-origin because nginx proxies backend routes.
 
-Nunito:
-Use for all normal interface text, body text, buttons, labels, cards, forms, navigation, and section headings.
-```
+Backend:
 
-Do not overuse the hero font. It should create contrast, not become the whole visual identity.
+- ASP.NET Core Web API on .NET 9.
+- EF Core + SQLite.
+- Migrations are applied on startup before request handling.
+- `/health` is available for health checks.
+- Backend also serves uploaded images from the configured image storage root.
 
-### Nunito weights
+Docker/server:
 
-```
-Nunito Light 300:
-Use sparingly for subtle supporting text.
+- `frontend` container: nginx serves built Vite files and proxies `/api`, `/images`, and `/health`.
+- `backend` container: .NET API on internal port 8080.
+- `matflote-data` volume stores SQLite data at `/data/dinnerplanner.db`.
+- `matflote-images` volume stores uploaded and seeded image files at `/data/images`.
 
-Nunito Regular 400:
-Default body text.
+Findings / follow-up:
 
-Nunito SemiBold 600:
-Buttons, labels, navigation, small headings.
+- The current Docker model is single-server sync: all devices point to the same MATFLOTE instance. This is compatible with a home Raspberry Pi setup.
+- PostgreSQL is not required while one backend process owns the SQLite database. Revisit database choice only for account/cloud sync.
 
-Nunito Bold 700:
-Card titles, section headings, important UI text.
+## Data Storage
 
-Nunito ExtraBold / Black:
-Use rarely for strong emphasis only.
-```
+Database entities currently include:
 
-### Type scale
+- Ingredients.
+- Recipes.
+- Recipe ingredients.
+- Recipe components, where a recipe can be used as a measured ingredient in another recipe.
+- Meal plans and planned meal items.
+- Shared tag categories and tag definitions.
+- Ingredient and recipe tag assignments.
+- Brands.
+- Stores.
+- Ingredient price points.
+- Nutrition facts per 100 g/ml.
+- Nutrition reference profiles, values, and household nutrition preferences.
+- Nutrition reference import runs.
+- App settings.
+- Grocery export rules.
+- Conversion helper rules.
+- Seed/import metadata.
+- Uploaded image metadata.
 
-```
-Hero heading: 64px / Segoe Print
-H1 page heading: 56px / Nunito Bold
-H2 section heading: 40px / Nunito Bold
-H3 card heading: 24px / Nunito Bold or SemiBold
-Body text: 16px / Nunito Regular
-Large body text: 18px / Nunito Regular
-Small text: 14px / Nunito Regular
-Caption: 12px / Nunito Regular
-```
+Local storage currently includes:
 
-### Line height
+- Theme mode.
+- Language.
+- Last open page.
+- Cookbook view mode.
+- Planner view mode.
+- Planner anchor date.
+- Collapsed planner day sections on mobile/tablet.
 
-```
-Hero heading: 110%
-Headings: 115–120%
-Body text: 150%
-Small text: 140–150%
-```
+Local storage intentionally does not store server data such as recipes, ingredients, prices, tags, or integration secrets.
 
-### Text width
+Findings / follow-up:
 
-```
-Paragraph max-width: 600–720px
-Hero text max-width: 500–640px
-Form max-width: 480–640px
-```
+- The draft storage list mentioned search/filter draft persistence. That is not implemented and was intentionally deferred.
+- Nutrition `peopleEating` used to be per-device local storage. It is now stored as the household backend app setting `Nutrition:PeopleEating`.
+- Uploaded image files are stored on disk, while metadata is stored in SQLite. Plain seed JSON contains image URLs; the export package endpoint includes image files.
 
-Long text should never stretch across the full 12-column grid.
+## Backend Model Notes
 
----
+Ingredient:
 
-## 3. Grid system
+- Max name length is 40.
+- Optional brand, description, image, price, tags, and nutrition data.
+- Nutrition source can be `None`, `Manual`, `Kassalapp`, or `Matvaretabellen`.
+- Color still exists for backward compatibility/fallback display, but current UI relies more on images and themed surfaces.
 
-Use a 12-column grid on desktop.
+Recipe:
 
-### Desktop
+- Max name length is 30.
+- Has a default `portions` value.
+- Has normal ingredients and measured recipe components.
+- Components use the same measurable units as ingredients.
+- Tags are optional in the UI; the API receives a tag collection that may be empty.
 
-```
-Frame width: 1440px
-Content max-width: 1200px
-Left/right margin: 120px
-Columns: 12
-Gutter: 24px
-```
+Measurement units:
 
-### Smaller desktop / laptop
+- `Gram`
+- `Kilogram`
+- `Milliliter`
+- `Liter`
 
-```
-Frame width: 1280px
-Content max-width: 1120px
-Left/right margin: 80px
-Columns: 12
-Gutter: 24px
-```
+Preparation values:
 
-### Mobile
+- `None`, `Quartered`, `Wedged`, `Chopped`, `RoughlyChopped`, `FinelyChopped`, `Diced`, `Cubed`, `Julienned`, `Batons`, `Sliced`, `Minced`, `Grated`, `Shredded`, `Crushed`.
 
-```
-Frame width: 390px
-Columns: 4
-Margin: 16px
-Gutter: 16px
-```
+Meal planning:
 
-### Column usage
+- Meal slots currently exist as `Breakfast`, `Lunch`, `Dinner`, `Snack1`, and `Snack2`.
+- Planned items may point to either a recipe or an ingredient.
+- Recipe planned items store portions.
+- Ingredient planned items store amount and unit.
 
-```
-Full-width content block: 12 columns
-Large text block + image: 6 columns + 6 columns
-Wide feature card: 6 columns
-Normal card in 3-card row: 4 columns
-Small card in 4-card row: 3 columns
-Form container: 5–6 columns
-Text-heavy content: 6–8 columns
-```
+Findings / follow-up:
 
----
+- `MealRecipeRole` still contains `Main`, `Sauce`, `Side`, and `Extra`. This is now mostly a display/export role, not a recipe-type system.
+- Some historical migrations still contain old cuisine, dish type, and legacy vitamin concepts. That is normal migration history, but new code should not reintroduce those abstractions.
+- `NutritionFacts` still has `VitaminKMicrograms` and `CholineMilligrams` for old local data compatibility. The Nutrition page does not surface them because current source coverage is not reliable enough.
 
-## 4. Spacing system
+## Tags
 
-Use an 8px spacing system.
+MATFLOTE now uses one shared tag pool for ingredients and recipes.
 
-```
-4px  = tiny detail spacing
-8px  = small spacing
-12px = compact meal planner grid spacing
-16px = default spacing
-24px = medium spacing
-32px = large spacing
-48px = small section spacing
-64px = normal section spacing
-96px = hero / major section spacing
-```
+Current behavior:
 
-Allowed spacing values:
-
-```
-4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96
-```
+- Tags live under tag categories.
+- Categories and tags have sort order.
+- The Manage Tags window supports create, edit, remove, move up/down, and category collapse.
+- Deleting a category cascades its tags.
+- Tags are used for filtering in browsers and for grocery export rules.
+- Tags are no longer automatically assigned from scanner results.
 
-Do not use values like 13px, 27px, 35px, or 70px unless solving a very specific visual issue.
+Seeded starting categories:
 
-Use 12px only for compact repeated planner grids where 16px feels too loose, such as the meal calendar cell gaps.
+- Produce.
+- Protein.
+- Pantry.
 
----
+Findings / follow-up:
 
-## 5. Page structure
+- The UI should continue avoiding hardcoded tag assumptions except where using a documented default, such as grocery export excluding `Spice`.
 
-### Navbar
+## Recipe Components
 
-```
-Height: 80px
-Content max-width: 1200px
-Horizontal alignment: follow page grid
-```
+Old "sides attached to recipes" has been replaced with a simpler model: recipes can contain other recipes as measured components.
 
-### Hero section
+Example:
 
-```
-Padding top: 96px
-Padding bottom: 96px
-Use Segoe Print for the main hero heading.
-Use Nunito for subtitle and buttons.
-```
+- A tomato sauce recipe can be added to spaghetti as `500 g`.
+- Its underlying ingredients are shown under the parent recipe's ingredient section.
+- Grocery lists and nutrition summaries should recursively account for component ingredients based on the selected amount.
 
-### Normal section
+Design rule:
 
-```
-Padding top: 64px
-Padding bottom: 64px
-```
+- Treat a recipe component like a measured ingredient, not like a side serving.
+- Avoid density/yield conversion beyond the selected unit. The app assumes simple pre-cook measurement.
 
-### Compact section
+Findings / follow-up:
 
-```
-Padding top: 48px
-Padding bottom: 48px
-```
+- This model is intentionally simpler than a true cooked-yield model. It fits the current "planning and shopping approximation" goal.
+- If we later need post-cook yield, batch inventory, or leftovers, that should be a separate design pass.
 
-### Section title spacing
+## Planner
 
-```
-Gap between section heading and content: 32px
-Gap between large content groups: 48px or 64px
-```
+Current behavior:
 
-Do not create section height by forcing fixed heights. Use padding and content.
+- Week and month views.
+- Week view is the primary meal planning surface.
+- Mobile/tablet uses persistent top header and bottom navigation.
+- On mobile/tablet, planner tools are behind a floating icon button.
+- Meal picker can select multiple recipes and ingredients in one flow.
+- Recipe selection asks for portions.
+- Ingredient selection asks for amount and unit.
+- Selected items are shown as compact thumbnails in the picker footer and can be removed from there.
+- Generator is simple and does not select ingredient-only entries.
+- Clear week/month uses the styled confirmation dialog.
+- Prep helper gives a quick weekly prep list.
+- Grocery export opens a preview dialog before sending to Vikunja.
 
----
+Findings / follow-up:
 
-## 6. Components
+- The generator is intentionally primitive. The future idea list includes tag-aware breakfast/lunch/dinner/protein variation, but that is not implemented.
+- Month view is useful for overview but remains less feature-rich than week view.
 
-### Buttons
+## Cookbook
 
-```
-Default height: 48px
-Small height: 36px
-Large height: 56px
-Horizontal padding: 24px
-Border radius: 6px
-Font: Nunito SemiBold 600
-Text size: 16px
-```
+Current behavior:
 
-Use the small 36px height for compact app toolbars and dense control rows, such as the cookbook browser header buttons and the week planner controls. Related controls in the same first row should share this height.
+- Recipes/ingredients toggle.
+- Search.
+- Ingredient filter popover.
+- Category/tag filter modal on portable widths.
+- Floating add button on mobile/tablet.
+- Shared recipe and ingredient browser components.
+- Create/edit/detail flows use shared modal framing.
+- Recipes and ingredients support image upload/crop controls.
+- Ingredient editor supports brands, tags, nutrition, prices, and images.
+- Recipe editor supports portions, tags, details, image, instructions/description, ingredients, and recipe components.
+- Conversion helper is available while editing recipes.
 
-### Input fields
+Findings / follow-up:
 
-```
-Height: 48px
-Horizontal padding: 16px
-Border radius: 6px
-Font: Nunito Regular 400
-Text size: 16px
-Gap between label and input: 8px
-Gap between fields: 16px
-```
+- `recipeBrowserStyles.ts` is large and carries browser, form, modal, tag, image, and picker styling. Future styling cleanup should split this by responsibility while preserving centralized tokens.
+- Most modals use the shared `Modal` component, but modal-specific panel class names still live in several style namespaces. Keep new modal work on the shared frame pattern.
 
-### Textareas
+## Scanner
 
-```
-Height: 120–160px
-Padding: 16px
-Border radius: 6px
-```
+Current behavior:
 
-### Modal form and info windows
+- Desktop shows manual EAN entry first.
+- Mobile/tablet emphasizes camera scanning.
+- Camera access requires a secure origin in normal phone browsers, so production should use HTTPS.
+- Barcode lookup goes through the backend; the frontend never receives the Kassalapp API key.
+- Kassalapp provides product identity, brand, image, price/store, and nutrition when available.
+- Matvaretabellen is used to fill missing nutrition fields when a match is found.
+- Users can manually choose a Matvaretabellen match or search Matvaretabellen from the nutrition editor.
+- Saving uses the normal ingredient API.
 
-```
-Outer modal max height: 88vh
-Inner form/info body max height: 56vh
-Mobile inner body max height: 52vh
-Padding: 24px
-Border radius: 6px
-```
+Findings / follow-up:
 
-Use the outer max height on the modal frame and the inner max height on the scrollable form/info body container in recipe create/edit and recipe/ingredient info windows. Keep destructive, cancel, and confirm/save action rows outside this scroll area so they remain visible. These values live in `sizeClasses.modalOuterMaxHeight`, `sizeClasses.modalFormBodyMaxHeight`, and `sizeClasses.modalFormBodyMobileMaxHeight` in `frontend/src/styles/appStyles.ts`.
+- Scanner matching is useful but not guaranteed. The editor must always let the user correct or blank values before saving.
 
-On phone widths, dense create/edit sections may move into a secondary modal using the same modal height tokens. The parent form should show a compact summary, such as selected ingredient capsules, and keep confirm/save actions visible outside the scroll body.
+## Prices
 
-### Cards
+Current behavior:
 
-Cards should usually have automatic height based on content.
+- Stores are database lookups.
+- Default stores are seeded: Rema 1000, Coop Mega, Coop Prix, Coop Obs, Coop Extra, Meny, Kiwi, Bunnpris, Europris.
+- Ingredient info and edit/create flows can add price points with date, store, price, and optional note.
+- Prices page displays tracked price data.
 
-```
-Padding: 24px
-Border radius: 6px
-Internal gap: 16px
-Image height: 220–260px
-Card title: 20–24px
-Card text: 16px
-Button height: 48px
-```
+Findings / follow-up:
 
-Do not define cards mainly by fixed height. Define width, padding, gap, image height, and typography. Let the content determine the final height.
+- Price tracking is local household data. There is no implemented feature for sending personal price points back to Kassalapp.
+- Future offer tracking would need a separate importer/comparison service.
 
-### Recommended card layout
+## Nutrition
 
-```
-Food/dish cards:
-3 cards per row on desktop
-Each card uses 4 columns
-Image height: 220–260px
-Card padding: 24px
-Gap between cards: 24px
-```
+Current behavior:
 
----
+- Weekly nutrition is calculated from the selected date range's planned meals.
+- Recipe portions and ingredient amounts are included in calculations.
+- "People eating" divides displayed per-person totals and daily calories.
+- Daily calories are shown without goal judgement.
+- Reference-value cards are shown only for nutrients with reference data.
+- Missing nutrition warnings list ingredients with incomplete/absent nutrition data.
+- Profile preference is stored as a backend app setting.
+- Reference values can be imported from Helsedirektoratet HAPI and are stored locally.
+- Kassalapp nutrition is prioritized for scanned products; Matvaretabellen fills only missing fields.
 
-## 7. Border radius
+Displayed nutrients are aligned with what the current sources can realistically provide:
 
-Use only these radius values.
+- Carbohydrates.
+- Protein.
+- Fiber.
+- Saturated fat.
+- Monounsaturated fat.
+- Polyunsaturated fat.
+- Omega-3.
+- Vitamin A.
+- Vitamin B9.
+- Vitamin B12.
+- Vitamin C.
+- Vitamin D.
+- Vitamin E.
 
-```
-Small elements / badges: 6px
-Buttons: 6px
-Inputs: 6px
-Cards: 6px
-Images: 6px
-```
+Tracked but not judged as weekly targets:
 
-Do not mix many different corner radius values.
+- Calories by day.
+- Total fat in ingredient/recipe detail.
+- Salt and other fields in ingredient detail where available.
 
----
+Findings / follow-up:
 
-## 8. Elevation / shadows
+- Nutrition source coverage is uneven. Weekly numbers should always be described as planning estimates.
+- Minerals are intentionally not included.
+- Calories are not compared to a target because energy needs depend on personal factors not modeled in MATFLOTE.
 
-Use shadows sparingly to clarify interactive surfaces and layered UI. Do not invent one-off shadow values in component files; use the centralized shadow classes from `frontend/src/styles/appStyles.ts`.
+## Grocery Export
 
-```
-Subtle shadow:
-Use for compact controls, search fields, filters, thumbnails, and small interactive surfaces.
+Current behavior:
 
-Raised shadow:
-Use for persistent page structure such as the main header.
+- Grocery list preview is built from the current planner range.
+- User can deselect items before export.
+- Export rules can default-disable ingredients with selected tags. `Spice` is the default if no setting exists.
+- Vikunja is the first provider.
+- Export mode supports one task with checklist or separate tasks.
+- Provider settings can be configured on the Settings page.
 
-Overlay shadow:
-Use for popovers, dropdowns, and modal panels.
-```
+Findings / follow-up:
 
-Shadows should support hierarchy without becoming decorative. If a surface already has strong color contrast and does not need depth, do not add a shadow.
+- The exporter is provider-shaped, so another todo provider can be added later without rewriting grocery-list generation.
+- Integration secrets must stay in user-secrets, `.env`, or backend app settings. They must not be committed.
 
----
+## Seed Catalog And Images
 
-## 9. Shared application patterns
+Current behavior:
 
-Use centralized frontend style objects and shared browser components before adding page-local styling.
+- `backend/SeedData/catalog.json` is imported on backend startup after migrations.
+- Import is additive and avoids overwriting existing matching data.
+- Seed export endpoint can export tags, tag categories, conversion rules, brands, ingredients, recipes, and recipe components.
+- Export package endpoint includes image files as well as JSON.
+- Bundled seed images are copied to configured image storage if missing.
 
-```
-Global design/style tokens:
-frontend/src/styles/appStyles.ts
+Findings / follow-up:
 
-Cookbook/browser shared components and filter styles:
-frontend/src/components/recipeBrowser/
+- Plain JSON export does not include binary image files. Use the export package endpoint before risky deploys or migrations on the Pi.
+- The committed seed catalog is currently empty, so production instances mostly contain user-created data unless a curated catalog is added.
 
-Planner picker-specific layout:
-frontend/src/components/plannerRecipePicker/
-```
+## Settings And Integrations
 
-### Mobile layout rules
+Settings currently covers:
 
-Design mobile layouts explicitly for phone widths around 360-430px, then verify tablet and desktop remain intact.
+- Language selection.
+- Current shopping-list provider.
+- Vikunja URL/project/token.
+- Export task mode.
+- Grocery export tag rules.
+- System information such as environment, database provider, and image storage path.
 
-Use the Tailwind `max-md` breakpoint for tablet/phone layout shifts and `max-sm` for phone-specific tightening. Mobile values should live in centralized style helpers before they are used in page components.
+Configuration sources:
 
-Current centralized mobile helpers live in `responsiveClasses` in `frontend/src/styles/appStyles.ts`.
+- Backend appsettings files for non-secret defaults.
+- User-secrets for local secret development.
+- `.env` or server environment for Docker secrets.
+- Database app settings for values edited in the Settings page.
 
-Mobile layout defaults:
+Findings / follow-up:
 
-```
-Page horizontal width: layoutClasses.contentWidth
-Page vertical padding: 32px on mobile, 24px on small phones
-Modal viewport inset: 16px normally, 12px on small phones
-Modal max height: calc(100vh - 24px) on small phones
-Touch targets: at least 40px on small phones where controls are compact
-```
+- Settings does not currently cover every possible environment variable, such as Kassalapp or Helsedirektoratet keys. Those remain server/developer configuration.
 
-Mobile behavior rules:
+## Design System
 
-- Header keeps logo/theme at the top on mobile, while primary navigation moves to a fixed bottom bar
-- Header logo shrinks on small phones, but remains the first visual brand signal
-- Header navigation buttons become bottom tab controls and share available width
-- Bottom navigation uses dedicated `siteColorClasses[theme].bottomNav` and mobile-strength nav button colors; do not rely on transparent header button styling for the fixed mobile bar
-- Mobile pages need enough bottom padding that fixed bottom navigation does not cover final content
-- Toolbars may wrap, but related controls should stay visually grouped
-- Page grids should collapse to one column before causing horizontal scrolling
-- Desktop data grids and calendars may remain horizontally scrollable only when a mobile-specific replacement has not yet been implemented
-- Modals should keep headers and actions reachable, with only their body content scrolling when practical
-- Forms should become single-column on mobile and keep labels close to their fields
-- Avoid mobile-only one-off spacing values in components; add a token or helper first
+Core design direction:
 
-Mobile audit status:
+- Clean, friendly, readable, structured.
+- Reuse centralized values rather than one-off measurements.
+- Prefer compact operational UI over marketing-page layout.
+- Use actual UI surfaces, not decorative hero sections.
 
-- Header/navigation: first responsive pass implemented
-- Shared modal/backdrop helpers: first responsive pass implemented
-- Cookbook: first responsive pass implemented for header actions, search/filter controls, category filter modal, result grids, detail rows, and modals. On mobile, the Add action becomes a round floating action button above the fixed bottom navigation. The create modal keeps its recipe/ingredient mode switch full-width and lowers the scrollable form body height on phone widths so the footer actions remain reachable. Detail modals use the same phone pattern: stable close control, scrollable detail body, and bottom edit/remove actions outside the scroll area.
-- Planner week view: first responsive pass implemented; controls stack and days render as a vertical list on tablet/phone widths
-- Planner top controls use two rows on desktop: the week/month counter row is centered above an action row. Action buttons take the 8-column action area, and the week/month toggle keeps the shared thumbnail control width. On mobile, keep the counter first and replace the desktop action row with two compact buttons below it: one opens a small planner tools dialog for Clear/Generate/Prep/Export, and one cycles Week/Month as a single button.
-- Planner meal picker uses the shared browser pattern: search, Categories button, ingredient filter button, and active filter chips. Category filters open in a modal instead of occupying a permanent side rail.
-- Planner week day sections are collapsible on mobile widths only. Desktop day labels are static; mobile day titles act as toggles and show a chevron-style state symbol beside the title. Mobile day headers also show three compact right-aligned meal preview squares for the day's slots; filled slots use the main dish image and empty slots use the planner empty-slot treatment.
-- Planner month view: first responsive pass keeps the 7-column calendar horizontally scrollable on narrow screens; compact month interaction review remains a later design task
-- Settings: pending mobile panel stacking and form review
+Typography:
 
-Shared browser/filter UI should be reused across Cookbook and Planner when the interaction is the same:
+- Main interface font is Nunito.
+- Logo uses Ubuntu bold 700.
+- `typographyClasses` in `frontend/src/styles/appStyles.ts` is the code source for the current typography classes.
 
-```
-Search fields
-Filter icon buttons
-Ingredient filter popovers
-Active removable filter chips
-Checkbox filter groups
-Disabled/greyed filter options
-```
+Spacing:
 
-Page-specific files may define layout wrappers, but not duplicate the same browser controls.
+- Use the 8 px rhythm wherever possible.
+- Allowed base values: 4, 8, 16, 24, 32, 48, 64, 96.
+- Tailwind classes may express these as `gap-1`, `gap-2`, `gap-3`, `gap-4`, `gap-6`, `gap-8`, `p-4`, etc.
+- One-off pixel values should be reserved for solving a precise responsive/layout issue and should be centralized if reused.
 
-### Production-style local builds
+Radius:
 
-The backend can serve the built frontend from `backend/wwwroot`, but those files are generated output. Refresh them through `scripts/deploy-frontend.ps1` before local production-style testing. Use `scripts/build-app.ps1` when both the frontend deployment and backend Release build should be refreshed together.
+- The active app uses `rounded-md` as the dominant shape for controls, cards, modals, and thumbnails.
+- The theme switch is an intentional exception and remains rounded/pill-like because that is the expected control shape.
 
-Keep user-uploaded images separate from generated frontend assets. Runtime images are served from `/images/*` through the backend image storage configuration, while generated frontend files under `backend/wwwroot` can be replaced by the deployment script.
+Colors and surfaces:
 
-### Data storage ownership
+- Theme colors live in `siteColorClasses`, `surfaceClasses`, and `colorPalette`.
+- Shadows live in `shadowClasses`.
+- Modals should use `surfaceClasses.modal(theme)` and shared modal shell patterns.
+- Selected thumbnail borders use the centralized selected border color.
 
-Household/shared data belongs in the backend database. This includes ingredients, recipes, recipe ingredients, recipe components, meal plans, tags, tag categories, brands, stores, price points, nutrition data, nutrition reference profile/settings, conversion helper rules, app integration settings, grocery export rules, import metadata, and image metadata.
+Responsive rules:
 
-Tags are a shared catalog for both ingredients and recipes. Ingredient and recipe tag assignments should be stored by tag definition ID, not copied tag-name strings, so rename/delete operations remain consistent across the app.
+- Desktop uses normal top navigation and wide page content.
+- Mobile/tablet breakpoint is currently `max-[1100px]`.
+- Mobile/tablet uses fixed header, bottom navigation, floating action buttons, and more modal-driven filter/tool flows.
+- `pageStyles.shell`, `sizeClasses.portableFixedHeaderOffset`, and `sizeClasses.portableBottomNavOffset` handle the fixed header/nav spacing.
 
-User-uploaded image files belong in the configured image storage root, not inside the SQLite database. The database stores image metadata and public paths such as `/images/recipes/...` or `/images/ingredients/...`; the persistent image volume stores the actual files.
+Findings / follow-up:
 
-Settings/maintenance tooling should offer a full export package that includes the seed catalog JSON plus stored images, a seed catalog JSON import action, and an image cleanup report/action for unused uploaded image metadata and untracked files. Cleanup must not remove images still referenced by ingredients or recipes.
+- The original draft said cards use 24 px radius, but the app has intentionally moved to smaller `rounded-md` shapes. Keep the implemented shape language unless a future redesign says otherwise.
+- `appStyles.ts` has become the central design registry and is large. It is still preferable to scattered one-off classes, but future refactors should split by domain without duplicating tokens.
 
-Frontend `localStorage` is only for per-device display preferences: theme, language, last open page, cookbook recipe/ingredient mode, planner week/month mode, last selected planner date, and collapsed mobile planner day sections. Do not store secrets, shared household data, uploaded files, or external integration tokens in `localStorage`.
+## Language
 
-Search text, open modals, and temporary filter drafts should remain in component state unless there is a deliberate product reason to restore them after reload. Persisting too much transient UI state can make the app feel stale when opened later.
+Current behavior:
 
-### Docker deployment assumptions
+- English and Norwegian are supported.
+- Language is stored in local storage.
+- UI copy should go through `frontend/src/i18n`.
+- Domain terms should stay consistent:
+  - Cookbook: "Cookbook" / "Kokeboka".
+  - Planner: "Planner" / "Planlegger".
+  - Scanner: "Scanner" / "Skanner".
+  - Tags stays "Tags" in Norwegian where intentionally chosen.
 
-Docker v1 is a single-household, single-server deployment. Phones, tablets, and computers sync by connecting to the same MATFLOTE server over LAN or a hosted address.
+Findings / follow-up:
 
-The Docker setup uses a separate nginx frontend container and backend API container. nginx provides one browser origin, serves the built frontend, and proxies `/api/*`, `/images/*`, and `/health` to the backend.
+- New UI strings are easy to miss because many features have been added quickly. Treat missing translation coverage as a normal check before finishing a feature.
 
-SQLite is accepted for this mode because one backend process owns the database file. The Docker database and uploaded images live in persistent volumes. PostgreSQL, accounts, households, auth, and offline multi-device sync are deferred future architecture decisions.
+## README And Operational Commands
 
-### Shopping list export assumptions
+README should stay user-facing and practical:
 
-Shopping list export is provider-based. MATFLOTE first builds a neutral grocery list from planner meals, then passes it to the configured exporter. Vikunja is the first exporter, but other todo systems should be implemented as additional exporters rather than by coupling planner logic directly to a third-party API.
+- What MATFLOTE is.
+- How to run locally.
+- How Docker works.
+- How to deploy to the Pi.
+- How to back up and restore.
+- How integrations are configured.
+- How to export/import starter data.
 
-Provider config is server-side. Environment variables and appsettings files seed the first-run configuration, and the Settings page can store runtime overrides in the database. API tokens must not live in frontend code, committed source files, or generated static assets. The Settings UI must never show a saved token value; it may only show whether one is configured and accept a replacement token.
+Master-document should stay design/architecture-facing:
 
-Vikunja export supports two task modes:
+- Current implementation truth.
+- Design rules.
+- Known inconsistencies and follow-up notes.
 
-```
-SingleTask:
-One Vikunja task containing a checklist-style shopping list in the task description.
+## Deferred Ideas
 
-SeparateTasks:
-One Vikunja task per ingredient. Task titles include ingredient name, brand when present, compact amount, and source meal names.
-```
+Ideas that are deliberately not implemented yet:
 
-SingleTask should remain the default to avoid spamming the todo project.
+- Smarter generator using tag rules and variation.
+- Ingredient substitution/similarity system.
+- Offer/price comparison against external store data.
+- Export recipe as PDF.
+- True account-based sync.
+- Leftover/rest-food inventory model.
+- More advanced conversion helper that suggests units from selected ingredients.
 
-The backend exposes a preview endpoint before export so the generated neutral grocery list can be inspected without calling external services. Export endpoints should build from the same neutral list instead of duplicating planner aggregation logic.
-
-The Settings page may expose exporter options such as one checklist task versus separate ingredient tasks, plus a connection test. Connection tests must use the same server-side validation and token handling rules as real exports.
-
-### Product scanner assumptions
-
-The Scanner/Skanner page looks up Norwegian grocery products by EAN/barcode. It supports manual EAN entry plus camera scanning through the ZXing browser scanner library. Both entry modes use the same backend lookup endpoint and return product, price, store, image, and nutrition information when Kassalapp provides it. On phone/tablet widths, lookup results generate compact ingredient suggestions; the user selects one, edits its values, confirms, and saves it through the normal ingredient API.
-
-Kassalapp integration must stay backend-only. The frontend calls MATFLOTE through `/api/product-lookup/*`; it must never call Kassalapp directly or contain the Kassalapp API key. Development secrets should use .NET user-secrets or local environment variables, while Docker/production should receive the key through environment configuration or a Docker secret-like deployment mechanism.
-
-Scanner styling should use the same page, panel, form, button, radius, shadow, and theme helpers as Settings, Cookbook, and Planner. Product result cards and ingredient suggestion editors should remain compact and readable on phone widths, with the image kept as a supporting visual instead of taking over the page. Camera scanning is a progressive enhancement; the manual EAN field must remain available. The scanner library should stay lazy-loaded so Planner/Cookbook startup does not pay for camera scanning code. Desktop widths should present scanner as a phone/tablet workflow instead of rendering camera controls.
-
-Ingredient images use the same image storage model as recipe images: the backend stores an `ImageUrl` on the ingredient record, uploads go through `/api/imageuploads` with the `ingredients` folder, and public URLs stay under `/images/ingredients/*` when locally uploaded. Scanned product images may also seed the ingredient `ImageUrl` when the lookup provider returns an image.
-
-Ingredient display should use the shared `IngredientThumbnail` component instead of rebuilding ingredient capsules in each page. The component supports default and compact modes; default is for browser cards and detail views, compact is for dense pickers, filter popovers, and selected ingredient summaries. It must show image/fallback, ingredient name, and brand when present.
-
-### Nutrition source assumptions
-
-Kassalapp, Matvaretabellen, and Helsedirektoratet serve different nutrition roles in MATFLOTE. Kassalapp is the first nutrition source for scanned packaged products because it is tied to the actual supermarket item. Matvaretabellen is the supplement/fallback source for missing nutrition fields and for manual searches. Helsedirektoratet HAPI is the preferred source for official recommended intake/reference values used by the Nutrition page.
-
-Nutrition is an approximation feature, not a precision or medical tracking feature. UI copy should use soft planning language such as estimate, likely, coverage, and rough guide. Avoid presenting incomplete source data as exact dietary truth.
-
-Ingredient nutrition should mirror fields MATFLOTE can reasonably gather from Kassalapp and Matvaretabellen: calories, carbohydrate, protein, total fat, salt, fiber, saturated fat, trans fat, monounsaturated fat, polyunsaturated fat, omega-3, omega-6, cholesterol, vitamin A, vitamin B9/folate, vitamin B12, vitamin C, vitamin D, and vitamin E. Do not store a generic unsaturated fat field, because Matvaretabellen provides the mono/poly split instead. Do not surface Vitamin K or choline in normal editing, scanning, or weekly comparison until source coverage is reliable.
-
-Helsedirektoratet HAPI must stay backend-only. The frontend must not contain the HAPI subscription key. Development should use .NET user-secrets or local environment variables, while Docker/production should receive `HELSEDIREKTORATET_BASE_URL` and `HELSEDIREKTORATET_SUBSCRIPTION_KEY` through environment configuration. The API key must never be committed.
-
-Weekly nutrition should calculate from local database values, not live external API calls. HAPI import/refresh stores normalized reference profiles and daily nutrient values in the database, including source URL, source updated date when available, import timestamp, and whether values are RI, AI, or fallback values. MATFLOTE should compare only nutrients that both have useful source data and useful reference guidance. Minerals are intentionally out of scope for now. The Nutrition page should show source attribution, import date, approximate status, and coverage for nutrient values so users understand when a number is based on incomplete ingredient data.
-
-Nutrition profile choice is a household-level app preference stored in backend app settings. It should persist across page reloads and devices connected to the same MATFLOTE instance. The Nutrition page should warn when planned meals contain ingredients without nutrition data, because calculated totals may otherwise look more complete than they are.
-
-If HAPI is unavailable, not configured, or its response shape changes, MATFLOTE should keep working from bundled fallback reference values. Parser/import improvements should be tested against captured payload fixtures before replacing fallback values automatically.
-
-### Runtime verification
-
-Use `scripts/smoke-test.ps1` as the first verification pass after backend/frontend integration changes. The smoke script should remain external-service-free. It may check local endpoints, temporary SQLite migration/startup behavior, runtime settings persistence, grocery preview generation, and image upload storage, but it should not require a real Vikunja token.
-
-Use Docker checks for deployment readiness:
-
-```
-docker compose config
-docker compose build
-docker compose up -d --build
-```
-
-Fresh Docker runs should prove that backend startup migrations create or update the SQLite database, runtime settings can be persisted, and images remain in the persistent image volume after container restart.
-
-### Starter data catalog
-
-Starter ingredients and recipes should be shipped through `backend/SeedData/catalog.json`, not by editing a personal SQLite database.
-
-Backend startup imports this catalog after EF migrations. The import is additive and idempotent:
-
-- Brands are created when missing
-- Tag categories and tag definitions are created when missing, before ingredients and recipes import
-- Conversion helper rules are created when missing
-- Ingredients are matched by ingredient name plus optional brand name
-- Recipes are matched by recipe name
-- Existing matching records are not overwritten
-
-The app exposes `GET /api/seed-catalog/export` so curated data can be created through the UI, exported to JSON, reviewed, and then committed as starter data.
-
-The JSON catalog should use stable English enum identifiers for recipe tags, ingredient tags, measurement units, ingredient preparation, and nutrition fields. Recipes are no longer separated by recipe type; labels such as side, sauce, dinner, and format live in the shared tag system.
-
-Tag categories and tags have explicit `SortOrder` values. Manage Tags is the owner of display order, and browsers/filter panels should render categories and tags in backend order rather than creation order or local alphabetical sorting.
-
-### Confirmation dialogs
-
-Use the shared `ConfirmationDialog` component for destructive or bulk actions. Do not use `window.confirm` for app workflows.
-
-Current uses:
-
-```
-Cookbook remove recipe / ingredient / brand
-Planner clear week / month
-Planner generate week / month
-Planner remove meal
-```
-
-Confirmation dialogs should support Escape-to-close, focus the cancel action first, and use the centralized overlay shadow.
-
-### Language support
-
-Use a frontend localization layer for interface text. The active language is provided by `LanguageContext`, persisted in local storage, and selected from the Settings page.
-
-Current supported interface languages:
-
-```
-English
-Norwegian Bokmål
-```
-
-Backend enum values and frontend union keys should remain stable English identifiers. User-facing labels for recipe types, recipe tags, ingredient tags, meal slots, planner view modes, and measurement units should come from `frontend/src/i18n/index.ts`.
-
-Lunch and Dinner remain backend-compatible recipe tag identifiers for older saved recipes, but they are not selectable in the recipe form. Breakfast is the only meal-slot-style recipe tag still exposed in the UI.
-
-User-created content such as recipe names, ingredient names, cuisine names, instructions, and descriptions is not translated automatically.
-
----
-
-## 10. Icons
-
-```
-Small icons: 16px
-Default icons: 24px
-Large icons: 32px
-```
-
-Icons should align visually with text and buttons.
-
-
-# Features
-
-- Weekplanner
-	- 7 day week overview. Each day you can fill in 3 (will be configurable later) slots:
-		- Recipe
-			- can have up to 4 "sides", meaning any recipe that is not a dish
-	- Planner top controls:
-		- Use compact 36px controls, matching Cookbook first-row control height
-		- Year sits above week/month label as a non-layout overlay
-		- Week/month toggle uses the same visual language as Cookbook toggle tabs
-	- Week view meal card:
-		- Recipe image fills the full left half of the meal container
-		- Image has rounded top-left and bottom-left corners
-		- Right half contains main dish title at top-left and side capsules below
-		- Breakfast/lunch/dinner labels are currently hidden
-	- Month view:
-		- Each day shows clickable breakfast, lunch, and dinner rows
-		- Existing meals open the edit flow
-		- Empty rows open the same meal picker to add a meal
-	- Meal picker flow:
-		- Opening a slot always starts on main dish selection
-		- Clicking a main dish highlights it; the user confirms with the bottom-left action before choosing sides
-		- Supplement selection allows up to 6 sides/sauces/dips/spice mixes/salads
-		- Supplement selection excludes Breakfast-tagged recipes, but does not exclude legacy Lunch or Dinner tags
-		- The bottom selected section shows the main dish thumbnail and selected side capsules
-		- Save is disabled while the main dish highlight is unconfirmed
-		- Remove meal is an explicit destructive action in edit mode
-	- Week generator button
-		- Current implementation is intentionally simple: fill empty slots only with a random dish and optional side
-		- Future implementation should generate based on protein, cuisine, tags, repetition, and slot type
-	- Prep helper
-		- Week view includes a compact prep-helper button next to the other planner action buttons
-		- The prep helper opens a modal listing produce-style ingredients needed for the current week
-		- Produce-style ingredients are currently inferred from ingredient tags: Vegetable, Fruit, Herb, and LeafyGreen
-		- Recipe ingredients store preparation as explicit enum data, separate from measurement unit
-		- Measurement unit describes amount, such as gram, piece, or clove
-		- Ingredient preparation describes shape/state, such as quartered, wedged, chopped, roughly chopped, finely chopped, diced, cubed, julienned, batons, sliced, minced, grated, shredded, or crushed
-		- The prep helper uses explicit recipe-ingredient preparation first
-		- If no explicit preparation is stored, prep actions may still be inferred from recipe instructions when they contain words such as chop, roughly chop, cube, dice, julienne, batons, slice, mince, grate, shred, crush, quarter, or wedge
-		- If no prep action can be inferred, the ingredient is omitted from the prep helper
-		- Automatically generate vikunja shopping list
-- Cookbook
-	- Create dishes, desserts, sauces, dips, marinades, spice mixes
-	- Add ingredients
-	- Overview of all recipes and ingredients
-	- Browser filters, ingredient popover, active filter chips, and checkbox filter groups are shared patterns used by Planner as well
-- Settings page
-	- Choose interface language
-	- Configure amount of meals one can plan each day
-	- other settings
-
-# Data Notes
-
-## Ingredient tags
-
-`LeafyGreen` is a shared tag definition in the backend tag catalog and frontend label set.
-
-Future seeded leafy ingredients should normally receive both:
-
-```
-Vegetable
-LeafyGreen
-```
-
-Recipes and ingredients can both use `LeafyGreen` through the shared tag catalog. Planner filters should read tag assignments through tag definitions, not hardcoded category assumptions.
-
-
-# Overview
-
-**Frontend:** React (Vite + TypeScript + TailwindCSS)
-**Backend:** ASP.NET Core Web API in C# (running on .NET 9)
-**Design reference:** 
-
----
-# Architecture
-
-- **REST API endpoints** via controllers
-- **Entity Framework Core** for database access
-- **SQLite** as the database
-- **OpenAPI (Swagger)** for API documentation
-- **CORS enabled** (currently allows all origins)
-
+Any of these should get a fresh plan before implementation.

@@ -30,17 +30,21 @@ public class NutritionController(
     }
 
     [HttpGet("profile-preference")]
-    public async Task<ActionResult<NutritionProfilePreferenceDto>> GetProfilePreference(CancellationToken cancellationToken) =>
-        Ok(new NutritionProfilePreferenceDto(await appSettingsService.GetValueAsync(AppSettingKeys.NutritionProfileId, cancellationToken)));
+    public async Task<ActionResult<NutritionPreferenceDto>> GetProfilePreference(CancellationToken cancellationToken) =>
+        Ok(new NutritionPreferenceDto(
+            await appSettingsService.GetValueAsync(AppSettingKeys.NutritionProfileId, cancellationToken),
+            await appSettingsService.GetNutritionPeopleEatingAsync(cancellationToken)
+        ));
 
     [HttpPut("profile-preference")]
-    public async Task<ActionResult<NutritionProfilePreferenceDto>> UpdateProfilePreference(
-        [FromBody] NutritionProfilePreferenceDto request,
+    public async Task<ActionResult<NutritionPreferenceDto>> UpdateProfilePreference(
+        [FromBody] NutritionPreferenceDto request,
         CancellationToken cancellationToken
     )
     {
-        await appSettingsService.SetNutritionProfileIdAsync(request.ProfileId, cancellationToken);
-        return Ok(new NutritionProfilePreferenceDto(request.ProfileId));
+        var peopleEating = Math.Max(1, request.PeopleEating);
+        await appSettingsService.SetNutritionPreferenceAsync(request.ProfileId, peopleEating, cancellationToken);
+        return Ok(new NutritionPreferenceDto(request.ProfileId, peopleEating));
     }
 
     [HttpPost("reference-values/import")]

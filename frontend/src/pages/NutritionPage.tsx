@@ -30,6 +30,9 @@ function NutritionPage({ theme }: NutritionPageProps) {
         if (!ignore && preference.profileId !== null) {
           setProfileId(preference.profileId);
         }
+        if (!ignore) {
+          setPeopleEating(parsePeopleEating(preference.peopleEating.toString()));
+        }
       } catch {
         // The summary still works when profile preference persistence is unavailable.
       }
@@ -100,7 +103,7 @@ function NutritionPage({ theme }: NutritionPageProps) {
               onChange={(event) => {
                 const nextProfileId = event.target.value;
                 setProfileId(nextProfileId);
-                void nutritionService.updateProfilePreference(nextProfileId);
+                void nutritionService.updateProfilePreference(nextProfileId, peopleEating);
               }}
             >
               {(summary?.profiles ?? []).map((profile) => (
@@ -119,7 +122,11 @@ function NutritionPage({ theme }: NutritionPageProps) {
               step="1"
               type="number"
               value={peopleEating}
-              onChange={(event) => setPeopleEating(parsePeopleEating(event.target.value))}
+              onChange={(event) => {
+                const nextPeopleEating = parsePeopleEating(event.target.value);
+                setPeopleEating(nextPeopleEating);
+                void nutritionService.updateProfilePreference(profileId, nextPeopleEating);
+              }}
             />
           </label>
         </section>

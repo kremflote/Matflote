@@ -1,4 +1,4 @@
-import type { INutritionProfilePreference, INutritionSummary } from "../interfaces/INutrition";
+import type { INutritionPreference, INutritionSummary } from "../interfaces/INutrition";
 import { apiRequest } from "./apiClient";
 
 export const nutritionService = {
@@ -6,10 +6,10 @@ export const nutritionService = {
     apiRequest<INutritionSummary>(
       `/api/nutrition/weekly?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&profileId=${encodeURIComponent(profileId)}`,
     ),
-  getProfilePreference: () => apiRequest<INutritionProfilePreference>("/api/nutrition/profile-preference"),
-  updateProfilePreference: (profileId: string) =>
-    apiRequest<INutritionProfilePreference>("/api/nutrition/profile-preference", {
+  getProfilePreference: () => apiRequest<INutritionPreference>("/api/nutrition/profile-preference"),
+  updateProfilePreference: (profileId: string | null, peopleEating: number) =>
+    apiRequest<INutritionPreference>("/api/nutrition/profile-preference", {
       method: "PUT",
-      body: { profileId },
+      body: { profileId, peopleEating },
     }),
 };

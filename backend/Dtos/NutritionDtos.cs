@@ -51,7 +51,10 @@ public record MissingNutritionIngredientDto(
     IReadOnlyCollection<string> SourceRecipes
 );
 
-public record NutritionProfilePreferenceDto(string? ProfileId);
+public record NutritionPreferenceDto(
+    string? ProfileId,
+    int PeopleEating
+);
 
 public record NutritionReferenceImportResultDto(
     string Status,

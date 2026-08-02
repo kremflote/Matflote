@@ -2,16 +2,21 @@
 
 MATFLOTE is a household meal planning and cookbook app.
 
+For the implementation/design source of truth, see `master-document.txt`.
+
 ## Current App Features
 
-- Cookbook with recipes, ingredients, cuisines, brands, tags, and image uploads.
-- Planner with week/month views, main dish selection, and up to 6 supplements such as sides, sauces, dips, spice mixes, and salads.
-- Recipe ingredients store both measurement unit and preparation, such as chopped, diced, julienned, grated, or crushed.
+- Cookbook with recipes, ingredients, shared tags, tag categories, brands, stores, prices, nutrition, conversion rules, and image uploads.
+- Planner with week/month views, multiple selected meal items, recipe portions, ingredient amounts, generation, prep helper, and grocery-list export.
+- Recipes can contain ingredients and measured recipe components, so one recipe can be used like an ingredient inside another recipe.
+- Recipe ingredients/components store measurable units and preparation, such as chopped, diced, julienned, grated, or crushed.
 - Prep helper for the current week. It lists produce-style ingredients only when an explicit preparation exists or one can be inferred from recipe instructions.
-- Shopping list preview and export through the provider-based grocery-list system. Vikunja is the first supported provider.
-- Scanner/Skanner page for looking up Norwegian grocery products by barcode/EAN through Kassalapp.
+- Shopping-list preview and export through the provider-based grocery-list system. Vikunja is the first supported provider.
+- Scanner/Skanner page for Norwegian grocery lookup by barcode/EAN through Kassalapp, with missing nutrition fields supplemented from Matvaretabellen when possible.
+- Prices page for local household price tracking by ingredient, store, and date.
+- Nutrition page for approximate weekly nutrition summaries from planned meals and locally stored Helsedirektoratet reference values.
 
-Lunch and Dinner are still accepted as backend recipe tag values for older saved recipes, but they are not selectable as new recipe tags. Breakfast remains selectable.
+MATFLOTE no longer has a cuisine or recipe-type system. Recipes and ingredients use the shared tag/category system instead.
 
 ## Docker
 
@@ -245,7 +250,7 @@ To rebuild the Docker images:
 docker compose build
 ```
 
-For a fresh-container check, start MATFLOTE with new volumes or after `docker compose down -v`. The backend applies migrations on startup, including recipe ingredient preparation migrations, creates the SQLite database if needed, and seeds missing bundled images into the configured image storage volume.
+For a fresh-container check, start MATFLOTE with new volumes or after `docker compose down -v`. The backend applies migrations on startup, creates the SQLite database if needed, imports the configured seed catalog, and seeds missing bundled images into the configured image storage volume.
 
 Before committing a feature chunk, run:
 
@@ -325,7 +330,7 @@ GET /api/product-lookup/ean/{ean}
 
 Camera scanning uses ZXing in the browser and is loaded only when the scan button is used. Phone browsers normally require MATFLOTE to be opened from a secure origin such as HTTPS before camera access works.
 
-On phone/tablet widths, scanned product results become suggested ingredients. Choose a suggestion, edit the name, brand, price, tags, or color, then confirm to save it through the normal ingredient API.
+On phone/tablet widths, scanned product results become suggested ingredients. Choose a suggestion, edit the name, brand, image, price, store, tags, or nutrition, then confirm to save it through the normal ingredient API.
 
 ## Nutrition References
 
@@ -358,15 +363,17 @@ POST /api/nutrition/reference-values/import
 
 The frontend must never contain the Helsedirektoratet subscription key. MATFLOTE should also show source attribution for imported nutrition reference values.
 
-MATFLOTE currently tracks vitamins and choline in the Nutrition page. Minerals are intentionally not imported or displayed yet. Ingredient nutrition follows Matvaretabellen's explicit fat fields: saturated fat, trans fat, monounsaturated fat, polyunsaturated fat, omega-3, omega-6, and cholesterol. There is no generic unsaturated fat field. The selected nutrition profile is stored as a household-level backend setting, and the page warns when planned ingredients are missing nutrition data.
+MATFLOTE currently displays weekly reference cards only for nutrients with usable reference data and realistic source coverage: carbohydrates, protein, fiber, saturated fat, monounsaturated fat, polyunsaturated fat, omega-3, and vitamins A, B9, B12, C, D, and E. Calories are shown by day without goal judgement.
+
+Minerals are intentionally not imported or displayed yet. Ingredient nutrition follows Matvaretabellen's explicit fat fields: total fat, saturated fat, trans fat, monounsaturated fat, polyunsaturated fat, omega-3, omega-6, and cholesterol. There is no generic unsaturated fat field. The selected nutrition profile and "people eating" value are stored as household-level backend settings.
 
 ## Starter Data Catalog
 
-Starter ingredients and recipes can be shipped through `backend/SeedData/catalog.json`.
+Starter tags, tag categories, conversion rules, brands, ingredients, and recipes can be shipped through `backend/SeedData/catalog.json`.
 
 On backend startup, after database migrations, MATFLOTE imports that JSON file if it exists. Import is intentionally additive:
 
-- Brands are created when missing.
+- Tag categories, tags, conversion rules, and brands are created when missing.
 - Ingredients are matched by ingredient name plus optional brand name.
 - Recipes are matched by recipe name.
 - Existing matching ingredients and recipes are left alone, so user edits are not overwritten.
@@ -385,10 +392,24 @@ GET /api/seed-catalog/export
 
 The endpoint downloads `matflote-seed-catalog.json`. Review it, remove anything personal or experimental, then copy the curated content into `backend/SeedData/catalog.json`.
 
-The catalog uses string enum values for tags, measurement units, preparation, and nutrition fields. Example:
+The catalog uses string enum values for tags, measurement units, preparation, and nutrition fields. Plain JSON export references image URLs but does not contain binary image files. Use the export package endpoint when you need to back up or move images too:
+
+```text
+GET /api/seed-catalog/export-package
+```
+
+Example JSON shape:
 
 ```json
 {
+  "tagCategories": [
+    {
+      "name": "Produce",
+      "sortOrder": 100,
+      "tags": [{ "name": "Vegetable", "sortOrder": 100 }]
+    }
+  ],
+  "conversionRules": [],
   "brands": [],
   "ingredients": [
     {
@@ -408,6 +429,7 @@ The catalog uses string enum values for tags, measurement units, preparation, an
       "imageUrl": null,
       "description": "Simple crunchy side.",
       "instructions": "Cut carrots into batons.",
+      "portions": 1,
       "ingredients": [
         {
           "ingredientName": "Carrot",
@@ -417,7 +439,8 @@ The catalog uses string enum values for tags, measurement units, preparation, an
           "preparation": "Batons"
         }
       ],
-      "tags": ["Side"]
+      "tags": ["Vegetable"],
+      "components": []
     }
   ]
 }

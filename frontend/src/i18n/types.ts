@@ -1,5 +1,5 @@
 import type {
-  KnownIngredientTag,
+  KnownTag,
   MeasurementUnit,
   NutritionDataSource,
   Vitamin,
@@ -10,7 +10,7 @@ import type { IngredientPreparation } from "../interfaces/IRecipe";
 export type SupportedLanguage = "en" | "nb";
 
 type EnumLabels = {
-  ingredientTags: Record<KnownIngredientTag, string> & Record<string, string | undefined>;
+  ingredientTags: Record<KnownTag, string> & Record<string, string | undefined>;
   ingredientPreparations: Record<IngredientPreparation, string>;
   mealSlots: Record<MealSlot, string>;
   measurementUnits: Record<MeasurementUnit, string>;

@@ -49,6 +49,7 @@ export interface IMissingNutritionIngredient {
   sourceRecipes: string[];
 }
 
-export interface INutritionProfilePreference {
+export interface INutritionPreference {
   profileId: string | null;
+  peopleEating: number;
 }

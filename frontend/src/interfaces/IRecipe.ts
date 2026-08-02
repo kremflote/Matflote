@@ -1,4 +1,4 @@
-import type { IIngredient, MeasurementUnit } from "./IIngredient";
+import type { IIngredient, MeasurementUnit, Tag } from "./IIngredient";
 
 export interface IRecipe {
   recipeId: number;
@@ -48,44 +48,4 @@ export type IngredientPreparation =
   | "Shredded"
   | "Crushed";
 
-export type KnownRecipeTag =
-  | "Vegetable"
-  | "Fruit"
-  | "Chicken"
-  | "Fish"
-  | "Beef"
-  | "Lamb"
-  | "Mince"
-  | "Dairy"
-  | "Grain"
-  | "Spice"
-  | "Herb"
-  | "Sauce"
-  | "Frozen"
-  | "LeafyGreen"
-  | "Berry"
-  | "RootVegetable"
-  | "Bread"
-  | "Dip"
-  | "Breakfast"
-  | "Lunch"
-  | "Dinner"
-  | "Dish"
-  | "Side"
-  | "Dessert"
-  | "Bowl"
-  | "Grill"
-  | "Pasta"
-  | "Vegetarian"
-  | "Soup"
-  | "Stew"
-  | "Salad"
-  | "Pizza"
-  | "Sandwich"
-  | "Casserole"
-  | "Porridge"
-  | "Plate"
-  | "SousVide"
-  | "SpiceMix";
-
-export type RecipeTag = KnownRecipeTag | (string & {});
+export type RecipeTag = Tag;
