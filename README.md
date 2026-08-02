@@ -285,7 +285,7 @@ For development, `VIKUNJA_BASE_URL` can point at a Tailscale-only address as lon
 
 The API token must have permission to create tasks in the configured Vikunja project. Do not commit real tokens to the repository.
 
-The Settings page never shows a saved token value. Leave the token field blank to keep the existing token, or enter a new token to replace it.
+The Settings page never shows a saved token value. Leave the token field blank to keep the existing token, or enter a new token to replace it. The same write-only pattern is used for Kassalapp and Helsedirektoratet keys.
 
 The task mode can be changed from the Settings page:
 
@@ -322,6 +322,8 @@ For Docker/server use, set the key in your private `.env` or server environment:
 KASSALAPP_API_KEY=your-api-key-here
 ```
 
+The Settings page can also store or replace the Kassalapp base URL and API key at runtime. Saved Settings values override the environment/appsettings defaults.
+
 Manual EAN lookup and camera barcode scanning both use the same backend endpoint:
 
 ```text
@@ -348,6 +350,8 @@ For Docker/server use, set the key in your private `.env` or server environment:
 HELSEDIREKTORATET_BASE_URL=https://api.helsedirektoratet.no
 HELSEDIREKTORATET_SUBSCRIPTION_KEY=your-subscription-key-here
 ```
+
+The Settings page can also store or replace the Helsedirektoratet base URL and subscription key at runtime. Saved Settings values override the environment/appsettings defaults.
 
 QA keys from `utvikler-qa.helsedirektoratet.no` must use:
 

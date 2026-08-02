@@ -2,6 +2,7 @@ namespace DinnerPlanner.Api.Dtos;
 
 public record AppSettingsDto(
     ShoppingListExportSettingsDto ShoppingListExport,
+    ExternalIntegrationSettingsDto ExternalIntegrations,
     SystemInfoDto SystemInfo
 );
 
@@ -18,8 +19,24 @@ public record VikunjaSettingsDto(
     bool HasApiToken
 );
 
+public record ExternalIntegrationSettingsDto(
+    KassalappSettingsDto Kassalapp,
+    HelsedirektoratetSettingsDto Helsedirektoratet
+);
+
+public record KassalappSettingsDto(
+    string BaseUrl,
+    bool HasApiKey
+);
+
+public record HelsedirektoratetSettingsDto(
+    string BaseUrl,
+    bool HasSubscriptionKey
+);
+
 public record UpdateAppSettingsRequest(
-    UpdateShoppingListExportSettingsRequest ShoppingListExport
+    UpdateShoppingListExportSettingsRequest ShoppingListExport,
+    UpdateExternalIntegrationSettingsRequest ExternalIntegrations
 );
 
 public record UpdateShoppingListExportSettingsRequest(
@@ -32,6 +49,21 @@ public record UpdateVikunjaSettingsRequest(
     string BaseUrl,
     int? ProjectId,
     string? ApiToken
+);
+
+public record UpdateExternalIntegrationSettingsRequest(
+    UpdateKassalappSettingsRequest Kassalapp,
+    UpdateHelsedirektoratetSettingsRequest Helsedirektoratet
+);
+
+public record UpdateKassalappSettingsRequest(
+    string BaseUrl,
+    string? ApiKey
+);
+
+public record UpdateHelsedirektoratetSettingsRequest(
+    string BaseUrl,
+    string? SubscriptionKey
 );
 
 public record UpdateGroceryExportRulesRequest(

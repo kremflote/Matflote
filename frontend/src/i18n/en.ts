@@ -569,6 +569,10 @@ export const en: TranslationDictionary = {
     exportModeSingleTask: "One task",
     exportModeSingleTaskHelp: "Creates one Vikunja task with a checklist.",
     exportTitle: "Shopping list export",
+    helsedirektoratetBaseUrl: "Helsedirektoratet URL",
+    helsedirektoratetBaseUrlPlaceholder: "https://api.helsedirektoratet.no",
+    helsedirektoratetSubscriptionKey: "Helsedirektoratet subscription key",
+    helsedirektoratetSubscriptionKeyPlaceholder: "Paste a subscription key",
     imageStorage: "Image storage",
     imageCleanupFinished: "Image cleanup finished.",
     imageCleanupSummary: (unusedUploads, untrackedFiles) =>
@@ -576,6 +580,13 @@ export const en: TranslationDictionary = {
     importSeedCatalog: "Import catalog JSON",
     importingSeedCatalog: "Importing...",
     importSeedCatalogFinished: "Seed catalog imported.",
+    integrationsBody:
+      "Configure external services used for shopping lists, product lookup, and nutrition references.",
+    integrationsTitle: "Integrations",
+    kassalappApiKey: "Kassalapp API key",
+    kassalappApiKeyPlaceholder: "Paste an API key",
+    kassalappBaseUrl: "Kassalapp URL",
+    kassalappBaseUrlPlaceholder: "https://kassal.app/api/v1",
     languageBody: "Choose which language the interface should use.",
     languageTitle: "Language",
     maintenanceBody:
@@ -585,12 +596,19 @@ export const en: TranslationDictionary = {
     pageTitle: "Settings",
     projectId: "Project ID",
     provider: "Current todo provider",
+    nutritionIntegrationBody:
+      "Used when importing official nutrition reference values for the Nutrition page.",
+    nutritionIntegrationTitle: "Nutrition references",
     saveSettings: "Save settings",
     saved: "Settings saved.",
     saving: "Saving...",
     systemBody:
       "Read-only server details that are useful when running MATFLOTE on a homeserver.",
     systemTitle: "System",
+    scannerIntegrationBody:
+      "Used by the Scanner page for Norwegian grocery product lookup.",
+    scannerIntegrationTitle: "Product scanner",
+    todoListTitle: "Todo list",
     vikunjaBaseUrl: "Vikunja URL",
     vikunjaBaseUrlPlaceholder: "https://vikunja.example.com/",
     testConnection: "Test connection",

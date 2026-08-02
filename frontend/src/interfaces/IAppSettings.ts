@@ -1,5 +1,6 @@
 export interface IAppSettings {
   shoppingListExport: IShoppingListExportSettings;
+  externalIntegrations: IExternalIntegrationSettings;
   systemInfo: ISystemInfo;
 }
 
@@ -18,6 +19,21 @@ export interface IVikunjaSettings {
   hasApiToken: boolean;
 }
 
+export interface IExternalIntegrationSettings {
+  kassalapp: IKassalappSettings;
+  helsedirektoratet: IHelsedirektoratetSettings;
+}
+
+export interface IKassalappSettings {
+  baseUrl: string;
+  hasApiKey: boolean;
+}
+
+export interface IHelsedirektoratetSettings {
+  baseUrl: string;
+  hasSubscriptionKey: boolean;
+}
+
 export interface IUpdateAppSettingsRequest {
   shoppingListExport: {
     provider: string;
@@ -26,6 +42,16 @@ export interface IUpdateAppSettingsRequest {
       baseUrl: string;
       projectId: number | null;
       apiToken: string | null;
+    };
+  };
+  externalIntegrations: {
+    kassalapp: {
+      baseUrl: string;
+      apiKey: string | null;
+    };
+    helsedirektoratet: {
+      baseUrl: string;
+      subscriptionKey: string | null;
     };
   };
 }

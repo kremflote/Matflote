@@ -4,7 +4,7 @@ namespace DinnerPlanner.Api.Services;
 
 public class HelsedirektoratetContentClient(
     HttpClient httpClient,
-    IConfiguration configuration,
+    AppSettingsService appSettingsService,
     ILogger<HelsedirektoratetContentClient> logger)
 {
     private const string SubscriptionHeader = "Ocp-Apim-Subscription-Key";
@@ -12,13 +12,13 @@ public class HelsedirektoratetContentClient(
 
     public async Task<HelsedirektoratetContentSource?> GetNutritionReferenceSourceAsync(CancellationToken cancellationToken)
     {
-        var subscriptionKey = configuration["Helsedirektoratet:SubscriptionKey"];
+        var subscriptionKey = await appSettingsService.GetValueAsync(AppSettingKeys.HelsedirektoratetSubscriptionKey, cancellationToken);
         if (string.IsNullOrWhiteSpace(subscriptionKey))
         {
             throw new HelsedirektoratetConfigurationException("Helsedirektoratet subscription key is not configured.");
         }
 
-        var baseUrl = configuration["Helsedirektoratet:BaseUrl"]?.Trim();
+        var baseUrl = (await appSettingsService.GetValueAsync(AppSettingKeys.HelsedirektoratetBaseUrl, cancellationToken))?.Trim();
         httpClient.BaseAddress = new Uri(string.IsNullOrWhiteSpace(baseUrl)
             ? "https://api.helsedirektoratet.no/"
             : baseUrl.TrimEnd('/') + "/");

@@ -342,6 +342,8 @@ Settings currently covers:
 - Current shopping-list provider.
 - Vikunja URL/project/token.
 - Export task mode.
+- Kassalapp base URL/API key.
+- Helsedirektoratet base URL/subscription key.
 - Grocery export tag rules.
 - System information such as environment, database provider, and image storage path.
 
@@ -354,7 +356,7 @@ Configuration sources:
 
 Findings / follow-up:
 
-- Settings does not currently cover every possible environment variable, such as Kassalapp or Helsedirektoratet keys. Those remain server/developer configuration.
+- Secrets are write-only in the Settings page. The UI shows whether a key/token is configured, but never displays the saved value.
 
 ## Design System
 

@@ -20,6 +20,12 @@ public class AppSettingsService(
         var projectIdValue = await GetValueAsync(AppSettingKeys.VikunjaProjectId, cancellationToken);
         var apiToken = await GetValueAsync(AppSettingKeys.VikunjaApiToken, cancellationToken);
         var excludedTags = await GetDefaultExcludedIngredientTagsAsync(cancellationToken);
+        var kassalappBaseUrl = await GetValueAsync(AppSettingKeys.KassalappBaseUrl, cancellationToken)
+            ?? "https://kassal.app/api/v1";
+        var kassalappApiKey = await GetValueAsync(AppSettingKeys.KassalappApiKey, cancellationToken);
+        var helsedirektoratetBaseUrl = await GetValueAsync(AppSettingKeys.HelsedirektoratetBaseUrl, cancellationToken)
+            ?? "https://api.helsedirektoratet.no";
+        var helsedirektoratetSubscriptionKey = await GetValueAsync(AppSettingKeys.HelsedirektoratetSubscriptionKey, cancellationToken);
 
         return new AppSettingsDto(
             new ShoppingListExportSettingsDto(
@@ -31,6 +37,16 @@ public class AppSettingsService(
                     !string.IsNullOrWhiteSpace(apiToken)
                 ),
                 excludedTags
+            ),
+            new ExternalIntegrationSettingsDto(
+                new KassalappSettingsDto(
+                    kassalappBaseUrl,
+                    !string.IsNullOrWhiteSpace(kassalappApiKey)
+                ),
+                new HelsedirektoratetSettingsDto(
+                    helsedirektoratetBaseUrl,
+                    !string.IsNullOrWhiteSpace(helsedirektoratetSubscriptionKey)
+                )
             ),
             new SystemInfoDto(
                 environment.EnvironmentName,
@@ -50,6 +66,18 @@ public class AppSettingsService(
         if (request.ShoppingListExport.Vikunja.ApiToken is not null)
         {
             await SetValueAsync(AppSettingKeys.VikunjaApiToken, request.ShoppingListExport.Vikunja.ApiToken.Trim(), cancellationToken);
+        }
+
+        await SetValueAsync(AppSettingKeys.KassalappBaseUrl, request.ExternalIntegrations.Kassalapp.BaseUrl.Trim(), cancellationToken);
+        if (request.ExternalIntegrations.Kassalapp.ApiKey is not null)
+        {
+            await SetValueAsync(AppSettingKeys.KassalappApiKey, request.ExternalIntegrations.Kassalapp.ApiKey.Trim(), cancellationToken);
+        }
+
+        await SetValueAsync(AppSettingKeys.HelsedirektoratetBaseUrl, request.ExternalIntegrations.Helsedirektoratet.BaseUrl.Trim(), cancellationToken);
+        if (request.ExternalIntegrations.Helsedirektoratet.SubscriptionKey is not null)
+        {
+            await SetValueAsync(AppSettingKeys.HelsedirektoratetSubscriptionKey, request.ExternalIntegrations.Helsedirektoratet.SubscriptionKey.Trim(), cancellationToken);
         }
 
         await context.SaveChangesAsync(cancellationToken);
@@ -159,6 +187,10 @@ public static class AppSettingKeys
     public const string VikunjaBaseUrl = "Vikunja:BaseUrl";
     public const string VikunjaApiToken = "Vikunja:ApiToken";
     public const string VikunjaProjectId = "Vikunja:ProjectId";
+    public const string KassalappBaseUrl = "Kassalapp:BaseUrl";
+    public const string KassalappApiKey = "Kassalapp:ApiKey";
+    public const string HelsedirektoratetBaseUrl = "Helsedirektoratet:BaseUrl";
+    public const string HelsedirektoratetSubscriptionKey = "Helsedirektoratet:SubscriptionKey";
     public const string NutritionProfileId = "Nutrition:ProfileId";
     public const string NutritionPeopleEating = "Nutrition:PeopleEating";
     public const string GroceryExportDefaultExcludedIngredientTags = "GroceryExport:DefaultExcludedIngredientTags";

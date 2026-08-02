@@ -497,6 +497,8 @@ export const settingsStyles = {
   languageCode: "text-xs font-extrabold uppercase leading-none",
   form: "grid gap-4",
   formGrid: "grid grid-cols-2 gap-4 max-sm:grid-cols-1",
+  integrationBlock: "grid gap-4 border-b pb-4 last:border-b-0 last:pb-0",
+  subsectionTitle: "text-base font-bold leading-tight",
   fieldGroup: "grid gap-2",
   label: "text-sm font-bold leading-tight",
   buttonGroup: "flex flex-wrap items-center gap-2",

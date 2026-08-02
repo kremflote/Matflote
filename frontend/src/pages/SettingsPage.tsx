@@ -21,6 +21,10 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
   const { t } = useLanguage();
   const [appSettings, setAppSettings] = useState<IAppSettings | null>(null);
   const [exportForm, setExportForm] = useState<ExportSettingsForm>({
+    helsedirektoratetBaseUrl: "https://api.helsedirektoratet.no",
+    helsedirektoratetSubscriptionKey: "",
+    kassalappApiKey: "",
+    kassalappBaseUrl: "https://kassal.app/api/v1",
     provider: "Vikunja",
     taskMode: "SingleTask",
     vikunjaBaseUrl: "",
@@ -53,6 +57,10 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
 
         setAppSettings(nextSettings);
         setExportForm({
+          helsedirektoratetBaseUrl: nextSettings.externalIntegrations.helsedirektoratet.baseUrl,
+          helsedirektoratetSubscriptionKey: "",
+          kassalappApiKey: "",
+          kassalappBaseUrl: nextSettings.externalIntegrations.kassalapp.baseUrl,
           provider: nextSettings.shoppingListExport.provider,
           taskMode: nextSettings.shoppingListExport.taskMode,
           vikunjaBaseUrl: nextSettings.shoppingListExport.vikunja.baseUrl,
@@ -93,11 +101,27 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
             apiToken: exportForm.vikunjaApiToken.trim().length > 0 ? exportForm.vikunjaApiToken : null,
           },
         },
+        externalIntegrations: {
+          kassalapp: {
+            baseUrl: exportForm.kassalappBaseUrl,
+            apiKey: exportForm.kassalappApiKey.trim().length > 0 ? exportForm.kassalappApiKey : null,
+          },
+          helsedirektoratet: {
+            baseUrl: exportForm.helsedirektoratetBaseUrl,
+            subscriptionKey: exportForm.helsedirektoratetSubscriptionKey.trim().length > 0
+              ? exportForm.helsedirektoratetSubscriptionKey
+              : null,
+          },
+        },
       });
 
       setAppSettings(nextSettings);
       setExportForm((currentForm) => ({
         ...currentForm,
+        helsedirektoratetBaseUrl: nextSettings.externalIntegrations.helsedirektoratet.baseUrl,
+        helsedirektoratetSubscriptionKey: "",
+        kassalappApiKey: "",
+        kassalappBaseUrl: nextSettings.externalIntegrations.kassalapp.baseUrl,
         provider: nextSettings.shoppingListExport.provider,
         taskMode: nextSettings.shoppingListExport.taskMode,
         vikunjaBaseUrl: nextSettings.shoppingListExport.vikunja.baseUrl,

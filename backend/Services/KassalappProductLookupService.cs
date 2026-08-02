@@ -9,7 +9,7 @@ namespace DinnerPlanner.Api.Services;
 
 public class KassalappProductLookupService(
     HttpClient httpClient,
-    IConfiguration configuration,
+    AppSettingsService appSettingsService,
     MatvaretabellenNutritionLookupService matvaretabellenNutritionLookup
 )
 {
@@ -17,13 +17,13 @@ public class KassalappProductLookupService(
 
     public async Task<ProductLookupResponseDto> LookupByEanAsync(string ean, CancellationToken cancellationToken)
     {
-        var apiKey = configuration["Kassalapp:ApiKey"];
+        var apiKey = await appSettingsService.GetValueAsync(AppSettingKeys.KassalappApiKey, cancellationToken);
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             throw new ProductLookupConfigurationException("Kassalapp API key is not configured.");
         }
 
-        var baseUrl = configuration["Kassalapp:BaseUrl"]?.Trim();
+        var baseUrl = (await appSettingsService.GetValueAsync(AppSettingKeys.KassalappBaseUrl, cancellationToken))?.Trim();
         httpClient.BaseAddress = new Uri(string.IsNullOrWhiteSpace(baseUrl) ? "https://kassal.app/api/v1/" : EnsureTrailingSlash(baseUrl));
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey.Trim());
         httpClient.DefaultRequestHeaders.Accept.Clear();

@@ -21,12 +21,15 @@ public class AppSettingsController(
         CancellationToken cancellationToken
     )
     {
-        if (request?.ShoppingListExport?.Vikunja is null)
+        if (request?.ShoppingListExport?.Vikunja is null
+            || request.ExternalIntegrations?.Kassalapp is null
+            || request.ExternalIntegrations.Helsedirektoratet is null)
         {
             return BadRequest("Settings payload is required.");
         }
 
         var validationError = ValidateShoppingListExportSettings(request.ShoppingListExport);
+        validationError ??= ValidateExternalIntegrationSettings(request.ExternalIntegrations);
         if (validationError is not null)
         {
             return BadRequest(validationError);
@@ -103,4 +106,19 @@ public class AppSettingsController(
             ? "Vikunja project ID must be a positive number."
             : null;
     }
+
+    private static string? ValidateExternalIntegrationSettings(UpdateExternalIntegrationSettingsRequest request)
+    {
+        if (!IsBlankOrAbsoluteUrl(request.Kassalapp.BaseUrl))
+        {
+            return "Kassalapp base URL must be an absolute URL.";
+        }
+
+        return !IsBlankOrAbsoluteUrl(request.Helsedirektoratet.BaseUrl)
+            ? "Helsedirektoratet base URL must be an absolute URL."
+            : null;
+    }
+
+    private static bool IsBlankOrAbsoluteUrl(string? value) =>
+        string.IsNullOrWhiteSpace(value) || Uri.TryCreate(value, UriKind.Absolute, out _);
 }

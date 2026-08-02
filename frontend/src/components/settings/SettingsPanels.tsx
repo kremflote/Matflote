@@ -6,6 +6,10 @@ import { API_BASE_URL } from "../../services/apiClient";
 import { settingsStyles, type SiteTheme } from "../../styles/appStyles";
 
 export type ExportSettingsForm = {
+  helsedirektoratetBaseUrl: string;
+  helsedirektoratetSubscriptionKey: string;
+  kassalappApiKey: string;
+  kassalappBaseUrl: string;
   provider: string;
   taskMode: "SingleTask" | "SeparateTasks";
   vikunjaBaseUrl: string;
@@ -79,8 +83,8 @@ export function ExportSettingsPanel({
   return (
     <div className={settingsStyles.panel(theme)}>
       <div>
-        <h2 className={settingsStyles.panelTitle}>{t.settings.exportTitle}</h2>
-        <p className={settingsStyles.panelBody(theme)}>{t.settings.exportBody}</p>
+        <h2 className={settingsStyles.panelTitle}>{t.settings.integrationsTitle}</h2>
+        <p className={settingsStyles.panelBody(theme)}>{t.settings.integrationsBody}</p>
       </div>
       <form
         className={settingsStyles.form}
@@ -89,6 +93,11 @@ export function ExportSettingsPanel({
           onSave();
         }}
       >
+        <div className={settingsStyles.integrationBlock}>
+          <div>
+            <h3 className={settingsStyles.subsectionTitle}>{t.settings.todoListTitle}</h3>
+            <p className={settingsStyles.helpText(theme)}>{t.settings.exportBody}</p>
+          </div>
         <div className={settingsStyles.formGrid}>
           <label className={settingsStyles.fieldGroup}>
             <span className={settingsStyles.label}>{t.settings.provider}</span>
@@ -165,6 +174,70 @@ export function ExportSettingsPanel({
           />
           <span className={settingsStyles.helpText(theme)}>{t.settings.apiTokenHelp}</span>
         </label>
+        </div>
+
+        <div className={settingsStyles.integrationBlock}>
+          <div>
+            <h3 className={settingsStyles.subsectionTitle}>{t.settings.scannerIntegrationTitle}</h3>
+            <p className={settingsStyles.helpText(theme)}>{t.settings.scannerIntegrationBody}</p>
+          </div>
+          <label className={settingsStyles.fieldGroup}>
+            <span className={settingsStyles.label}>{t.settings.kassalappBaseUrl}</span>
+            <input
+              className={settingsStyles.textInput(theme)}
+              disabled={controlsDisabled}
+              placeholder={t.settings.kassalappBaseUrlPlaceholder}
+              type="url"
+              value={exportForm.kassalappBaseUrl}
+              onChange={(event) => onChange({ ...exportForm, kassalappBaseUrl: event.target.value })}
+            />
+          </label>
+          <label className={settingsStyles.fieldGroup}>
+            <span className={settingsStyles.label}>{t.settings.kassalappApiKey}</span>
+            <input
+              autoComplete="off"
+              className={settingsStyles.textInput(theme)}
+              disabled={controlsDisabled}
+              placeholder={appSettings?.externalIntegrations.kassalapp.hasApiKey ? t.settings.apiTokenConfigured : t.settings.kassalappApiKeyPlaceholder}
+              type="password"
+              value={exportForm.kassalappApiKey}
+              onChange={(event) => onChange({ ...exportForm, kassalappApiKey: event.target.value })}
+            />
+            <span className={settingsStyles.helpText(theme)}>{t.settings.apiTokenHelp}</span>
+          </label>
+        </div>
+
+        <div className={settingsStyles.integrationBlock}>
+          <div>
+            <h3 className={settingsStyles.subsectionTitle}>{t.settings.nutritionIntegrationTitle}</h3>
+            <p className={settingsStyles.helpText(theme)}>{t.settings.nutritionIntegrationBody}</p>
+          </div>
+          <label className={settingsStyles.fieldGroup}>
+            <span className={settingsStyles.label}>{t.settings.helsedirektoratetBaseUrl}</span>
+            <input
+              className={settingsStyles.textInput(theme)}
+              disabled={controlsDisabled}
+              placeholder={t.settings.helsedirektoratetBaseUrlPlaceholder}
+              type="url"
+              value={exportForm.helsedirektoratetBaseUrl}
+              onChange={(event) => onChange({ ...exportForm, helsedirektoratetBaseUrl: event.target.value })}
+            />
+          </label>
+          <label className={settingsStyles.fieldGroup}>
+            <span className={settingsStyles.label}>{t.settings.helsedirektoratetSubscriptionKey}</span>
+            <input
+              autoComplete="off"
+              className={settingsStyles.textInput(theme)}
+              disabled={controlsDisabled}
+              placeholder={appSettings?.externalIntegrations.helsedirektoratet.hasSubscriptionKey ? t.settings.apiTokenConfigured : t.settings.helsedirektoratetSubscriptionKeyPlaceholder}
+              type="password"
+              value={exportForm.helsedirektoratetSubscriptionKey}
+              onChange={(event) => onChange({ ...exportForm, helsedirektoratetSubscriptionKey: event.target.value })}
+            />
+            <span className={settingsStyles.helpText(theme)}>{t.settings.apiTokenHelp}</span>
+          </label>
+        </div>
+
         <div className={settingsStyles.statusRow}>
           <div>
             {settingsError !== null && (
