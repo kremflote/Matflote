@@ -6,7 +6,7 @@ For the implementation/design source of truth, see `master-document.txt`.
 
 ## Current App Features
 
-- Cookbook with recipes, ingredients, shared tags, tag categories, brands, stores, prices, nutrition, conversion rules, and image uploads.
+- Cookbook with recipes, ingredients, shared tags, tag categories, brands, stores, prices, nutrition, conversion rules, image uploads, and recipe PDF export.
 - Planner with week/month views, multiple selected meal items, recipe portions, ingredient amounts, generation, prep helper, and grocery-list export.
 - Recipes can contain ingredients and measured recipe components, so one recipe can be used like an ingredient inside another recipe.
 - Recipe ingredients/components store measurable units and preparation, such as chopped, diced, julienned, grated, or crushed.

@@ -13,7 +13,7 @@ MATFLOTE is a household meal planner, cookbook, grocery export tool, product sca
 Implemented pages:
 
 - Planner: week/month meal planning, generation, prep helper, and grocery-list export.
-- Cookbook: recipes, ingredients, images, tags, brands, nutrition, prices, conversion helper, and seed import/export.
+- Cookbook: recipes, ingredients, images, tags, brands, nutrition, prices, conversion helper, recipe PDF export, and seed import/export.
 - Scanner: EAN/barcode lookup through Kassalapp, nutrition enrichment through Matvaretabellen, and save-as-ingredient flow.
 - Prices: ingredient price history by store.
 - Nutrition: weekly approximate nutrition summary from planned meals.
@@ -224,6 +224,7 @@ Current behavior:
 - Ingredient editor supports brands, tags, nutrition, prices, and images.
 - Recipe editor supports portions, tags, details, image, instructions/description, ingredients, and recipe components.
 - Conversion helper is available while editing recipes.
+- Recipe detail can export a compact A4 PDF from the backend. The PDF includes MATFLOTE branding, the GitHub repository URL, recipe image, description, ingredients, instructions, and a secondary approximate dietary summary.
 
 Findings / follow-up:
 

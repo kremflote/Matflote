@@ -4,9 +4,12 @@ using DinnerPlanner.Api.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using QuestPDF.Infrastructure;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -45,6 +48,7 @@ builder.Services.AddScoped<ImageMaintenanceService>();
 builder.Services.AddScoped<NutritionReferenceImportService>();
 builder.Services.AddScoped<HelsedirektoratetNutritionReferenceParser>();
 builder.Services.AddScoped<NutritionSummaryService>();
+builder.Services.AddScoped<RecipePdfService>();
 builder.Services.AddScoped<SeedCatalogService>();
 builder.Services.AddScoped<ShoppingListExportService>();
 builder.Services.AddScoped<TagCatalogService>();

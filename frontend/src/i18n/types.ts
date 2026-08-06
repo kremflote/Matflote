@@ -108,10 +108,13 @@ export type TranslationDictionary = {
     description: string;
     dietaryInformation: string;
     dietaryInformationPer100g: string;
+    couldNotExportPdf: string;
     fiberPer100g: string;
     fiber: string;
     fetchingCookbook: string;
     fetchingPantry: string;
+    exportPdf: string;
+    exportingPdf: string;
     hideNutrition: string;
     ingredientFilter: string;
     ingredientAmountMultiplier: string;

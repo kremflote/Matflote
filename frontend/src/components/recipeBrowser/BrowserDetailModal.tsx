@@ -19,7 +19,7 @@ type BrowserDetailModalProps = {
 };
 
 function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const editRecipeImageInputId = useId();
   const editTitleId = useId();
   const detailTitleId = useId();
@@ -30,6 +30,8 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   const [isEditingRecipe, setIsEditingRecipe] = useState(false);
   const [isEditingIngredient, setIsEditingIngredient] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
@@ -39,6 +41,8 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
     setIsEditingRecipe(false);
     setIsEditingIngredient(false);
     setDeleteError(null);
+    setPdfError(null);
+    setIsExportingPdf(false);
     setIsConfirmingDelete(false);
   }, [detail]);
 
@@ -69,6 +73,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
     setIsEditingRecipe(false);
     setIsEditingIngredient(false);
     setDeleteError(null);
+    setPdfError(null);
     setIsConfirmingDelete(false);
   };
 
@@ -84,9 +89,27 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
       setIsEditingRecipe(false);
       setIsEditingIngredient(false);
       setDeleteError(null);
+      setPdfError(null);
       setIsConfirmingDelete(false);
       return currentHistory.slice(0, -1);
     });
+  };
+
+  const handleExportPdf = async () => {
+    if (activeDetail.kind !== "recipe" || isExportingPdf) {
+      return;
+    }
+
+    setIsExportingPdf(true);
+    setPdfError(null);
+
+    try {
+      await recipeService.downloadPdf(activeDetail.recipe.recipeId, language);
+    } catch (caughtError) {
+      setPdfError(caughtError instanceof Error ? caughtError.message : t.cookbook.couldNotExportPdf);
+    } finally {
+      setIsExportingPdf(false);
+    }
   };
 
   const handleRemove = async () => {
@@ -207,6 +230,16 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
               {t.common.back}
             </button>
           )}
+          {activeDetail.kind === "recipe" && (
+            <button
+              className={recipeBrowserStyles.detailHeaderEditButton(theme)}
+              disabled={isExportingPdf || isDeleting}
+              type="button"
+              onClick={() => void handleExportPdf()}
+            >
+              {isExportingPdf ? t.cookbook.exportingPdf : t.cookbook.exportPdf}
+            </button>
+          )}
           <button
             className={recipeBrowserStyles.detailHeaderEditButton(theme)}
             type="button"
@@ -239,6 +272,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
       onClose={onClose}
     >
           {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{deleteError}</p>}
+          {pdfError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{pdfError}</p>}
 
           {activeDetail.kind === "recipe" ? (
             <RecipeDetailContent

@@ -9,7 +9,10 @@ namespace DinnerPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RecipesController(DinnerPlannerContext context, TagCatalogService tagCatalog) : ControllerBase
+public class RecipesController(
+    DinnerPlannerContext context,
+    TagCatalogService tagCatalog,
+    RecipePdfService recipePdfService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RecipeDto>>> GetRecipes()
@@ -28,6 +31,16 @@ public class RecipesController(DinnerPlannerContext context, TagCatalogService t
             .FirstOrDefaultAsync(recipe => recipe.RecipeId == id);
 
         return recipe is null ? NotFound() : Ok(ToDto(recipe));
+    }
+
+    [HttpGet("{id:int}/pdf")]
+    public async Task<IActionResult> ExportRecipePdf(int id, [FromQuery] string? language)
+    {
+        var pdf = await recipePdfService.CreateRecipePdfAsync(id, language, HttpContext.RequestAborted);
+
+        return pdf is null
+            ? NotFound()
+            : File(pdf.Content, "application/pdf", pdf.FileName);
     }
 
     [HttpPost]
