@@ -1,3 +1,6 @@
+// MATFLOTE: Calculates weekly approximate nutrition summaries from planned meals and stored reference profiles.
+// Note: Amounts are divided by the household people-eating setting; missing ingredient nutrition is tracked so totals are presented as estimates.
+
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;

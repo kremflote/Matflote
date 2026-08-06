@@ -1,3 +1,6 @@
+// MATFLOTE: API controller for GroceryLists-related frontend and integration requests.
+// Note: Controllers stay thin where possible and delegate heavier business rules to services or EF model helpers.
+
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;

@@ -1,3 +1,6 @@
+// MATFLOTE: Parses Helsedirektoratet content into MATFLOTE nutrition reference records.
+// Note: The parser is isolated because the external content shape is not the same as our internal reference model.
+
 using System.Text.RegularExpressions;
 
 namespace DinnerPlanner.Api.Services;

@@ -1,3 +1,6 @@
+// MATFLOTE: EF Core database map for MATFLOTE entities, relationships, owned nutrition fields, and seeded defaults.
+// Note: This file is intentionally dense because EF configuration, seed data, and compatibility mappings need to stay in one model snapshot source.
+
 using DinnerPlanner.Api.Models;
 using DinnerPlanner.Api.Services;
 using Microsoft.EntityFrameworkCore;

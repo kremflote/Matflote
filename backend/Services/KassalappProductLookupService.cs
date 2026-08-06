@@ -1,3 +1,6 @@
+// MATFLOTE: Looks up Norwegian grocery products from Kassalapp for the scanner flow.
+// Note: Kassalapp data is treated as a product suggestion that users can review before saving as an ingredient.
+
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;
 using System.Net;

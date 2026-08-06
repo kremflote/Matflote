@@ -1,3 +1,6 @@
+// MATFLOTE: Imports and exports MATFLOTE seed/catalog data, including optional export packages with images.
+// Note: Import is additive by design so bundled starter data does not overwrite a household database.
+
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;

@@ -1,3 +1,6 @@
+// MATFLOTE: Reads and writes household-level app settings such as integrations, export rules, image storage, and nutrition preferences.
+// Note: Secrets are write-only from the UI: saved values can be replaced, but existing tokens are not returned to the browser.
+
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;

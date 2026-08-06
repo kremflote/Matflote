@@ -1,3 +1,6 @@
+// MATFLOTE: Imports nutrition reference values from Helsedirektoratet into local database tables.
+// Note: Runtime nutrition pages use local references after import so normal page loads do not depend on the external API.
+
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;

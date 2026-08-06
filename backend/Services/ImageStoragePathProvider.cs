@@ -1,3 +1,6 @@
+// MATFLOTE: Resolves where uploaded and seeded images live on disk.
+// Note: The default is local wwwroot/images, while Docker can redirect image data into a persistent volume.
+
 namespace DinnerPlanner.Api.Services;
 
 public sealed class ImageStoragePathProvider

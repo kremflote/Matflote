@@ -210,7 +210,7 @@ export const sizeClasses = {
   modalFormBodyMobileMaxHeight: "max-sm:max-h-[52vh]",
   plannerPickerBrowserHeight: "h-[44vh]",
   plannerPickerModalMaxHeight:
-    "max-h-[calc(100vh_-_48px)] max-[1100px]:max-h-[calc(100vh_-_200px)]",
+    "max-h-[calc(100vh_-_48px)] max-[1100px]:max-h-[calc(100vh_-_200px)] max-sm:max-h-[calc(100vh_-_96px)]",
   plannerControlHeight: "h-9",
   thumbnailControlWidth: "w-64",
   dayLabelHeight: "h-auto",
@@ -250,7 +250,7 @@ export const surfaceClasses = {
 } as const;
 
 export const modalLayoutClasses = {
-  centeredBackdrop: `fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
+  centeredBackdrop: `fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
 } as const;
 
 export const thumbnailStyles = {
@@ -1129,7 +1129,7 @@ export const plannerControlsStyles = {
             : "border-neutral-300 bg-neutral-200 text-neutral-950 hover:bg-neutral-300"
     }`,
   mobileActionsBackdrop:
-    "fixed inset-0 z-50 hidden items-center justify-center bg-black/35 p-4 max-[1100px]:flex",
+    "fixed inset-0 z-[100] hidden items-center justify-center bg-black/35 p-4 max-[1100px]:flex",
   mobileActionsPanel: (theme: SiteTheme) =>
     `grid w-full max-w-xs grid-rows-[auto_minmax(0,1fr)] gap-3 ${radiusClasses.figma6} border p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   mobileActionsHeader: "flex items-center justify-between gap-3",
@@ -1368,17 +1368,17 @@ export const mealCalendarStyles = {
 export const plannerPickerStyles = {
   modalBackdrop: modalLayoutClasses.centeredBackdrop,
   modalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.plannerPickerModalMaxHeight} w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${
+    `grid ${sizeClasses.plannerPickerModalMaxHeight} w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 max-sm:gap-3 max-sm:p-4 ${shadowClasses.overlay} ${
       theme === "dark"
         ? "border-white/[0.12] bg-neutral-950 text-neutral-100"
         : theme === "paletteLight"
           ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
           : "border-neutral-200 bg-white text-neutral-900"
     }`,
-  header: "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4",
-  title: "text-2xl font-bold leading-tight",
+  header: "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 max-sm:block",
+  title: "text-2xl font-bold leading-tight max-sm:sr-only",
   subtitle: (theme: SiteTheme) =>
-    `mt-1 text-sm font-semibold leading-[1.45] ${
+    `mt-1 text-sm font-semibold leading-[1.45] max-sm:hidden ${
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
@@ -1386,10 +1386,10 @@ export const plannerPickerStyles = {
           : "text-neutral-500"
     }`,
   closeButton: controlStyles.modalCloseButton,
-  bodyFrame: "grid min-h-0 gap-4",
+  bodyFrame: "grid min-h-0 gap-4 max-sm:gap-2",
   bodyScrollFrame: "grid min-h-0 overflow-y-auto pr-1",
   controls:
-    "mt-2 grid grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] items-start gap-3 max-md:grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] max-sm:grid-cols-[minmax(0,1fr)_auto_auto]",
+    "mt-2 grid grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] items-start gap-3 max-md:grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] max-sm:mt-0 max-sm:grid-cols-[minmax(0,1fr)_auto_auto] max-sm:gap-2",
   searchInput: controlStyles.compactSearchInput,
   categoryButton: (theme: SiteTheme) =>
     `inline-flex h-9 w-auto items-center justify-center rounded-md border px-3 text-xs font-extrabold max-[1100px]:w-9 max-[1100px]:px-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
@@ -1445,7 +1445,7 @@ export const plannerPickerStyles = {
           ? "text-[#556145]"
           : "text-neutral-900"
     }`,
-  bodyGrid: `mt-4 grid ${sizeClasses.plannerPickerBrowserHeight} overflow-y-auto pr-1`,
+  bodyGrid: `mt-4 grid ${sizeClasses.plannerPickerBrowserHeight} overflow-y-auto pr-1 max-sm:mt-2`,
   filterRail: (theme: SiteTheme) =>
     `max-h-[52vh] overflow-y-auto rounded-md p-3 max-sm:max-h-[44vh] ${shadowClasses.subtle} ${
       theme === "dark"
@@ -1615,7 +1615,7 @@ export const groceryExportStyles = {
   actionGroup: "flex flex-wrap items-center justify-end gap-4",
   secondaryButton: controlStyles.secondaryButton,
   primaryButton: controlStyles.primaryButton,
-  rulesBackdrop: "fixed inset-0 z-[80] flex items-center justify-center bg-black/45 px-4 py-6",
+  rulesBackdrop: "fixed inset-0 z-[110] flex items-center justify-center bg-black/45 px-4 py-6",
   rulesPanel: (theme: SiteTheme) =>
     `grid max-h-[min(28rem,calc(100vh_-_48px))] w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   rulesBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",

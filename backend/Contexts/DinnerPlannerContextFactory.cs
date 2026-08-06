@@ -1,3 +1,6 @@
+// MATFLOTE: Design-time EF Core factory used by migration commands when the web app is not running.
+// Note: It duplicates the SQLite connection setup lightly so CLI migration tooling can work without booting Program.cs.
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 

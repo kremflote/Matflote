@@ -1,3 +1,6 @@
+// MATFLOTE: Sends grocery lists to Vikunja using the saved provider settings.
+// Note: It supports both one-task and per-ingredient export modes because households may want either a compact checklist or separate todo items.
+
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;

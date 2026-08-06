@@ -7,7 +7,7 @@ import {
 
 export const confirmationDialogStyles = {
   backdrop:
-    "fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-4",
+    "fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-4",
   panel: (theme: SiteTheme) =>
     `grid w-full max-w-md grid-rows-[auto_minmax(0,1fr)_auto] gap-4 rounded-md border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   header: "flex items-start justify-between gap-4",

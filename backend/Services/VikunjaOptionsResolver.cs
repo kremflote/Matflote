@@ -1,3 +1,6 @@
+// MATFLOTE: Normalizes Vikunja settings from saved app configuration before HTTP export calls.
+// Note: This keeps URL/token/project validation out of the controller and exporter body.
+
 using DinnerPlanner.Api.Dtos;
 
 namespace DinnerPlanner.Api.Services;

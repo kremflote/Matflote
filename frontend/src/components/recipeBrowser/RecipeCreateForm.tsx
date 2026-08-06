@@ -19,8 +19,6 @@ import TagPickerDialog from "./TagPickerDialog";
 import {
   RecipeComponentPickerContent,
   RecipeIngredientPickerContent,
-  SelectedIngredientCapsules,
-  SelectedRecipeComponentCapsules,
 } from "./RecipeIngredientPicker";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import {
@@ -459,20 +457,6 @@ function RecipeCreateForm({
               </button>
               {selectedIngredients.length === 0 && selectedComponents.length === 0 ? (
                 <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noIngredientsSelected}</p>
-              ) : null}
-              {selectedIngredients.length > 0 ? (
-                <SelectedIngredientCapsules
-                  ingredients={ingredients}
-                  selectedIngredients={selectedIngredients}
-                  theme={theme}
-                />
-              ) : null}
-              {selectedComponents.length > 0 ? (
-                <SelectedRecipeComponentCapsules
-                  recipes={recipes}
-                  selectedComponents={selectedComponents}
-                  theme={theme}
-                />
               ) : null}
             </div>
             <div className={recipeBrowserStyles.desktopIngredientPicker}>

@@ -1,3 +1,6 @@
+// MATFLOTE: Searches Matvaretabellen and maps food entries into MATFLOTE nutrition fields.
+// Note: Matching is intentionally heuristic because product names and official food-table names rarely line up perfectly.
+
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;
 using Microsoft.Extensions.Caching.Memory;

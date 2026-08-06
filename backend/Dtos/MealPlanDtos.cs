@@ -1,3 +1,6 @@
+// MATFLOTE: Request/response contracts for MealPlan API calls.
+// Note: DTOs are kept separate from EF entities so the browser sees stable shapes without inheriting database navigation details.
+
 using System.ComponentModel.DataAnnotations;
 using DinnerPlanner.Api.Models;
 

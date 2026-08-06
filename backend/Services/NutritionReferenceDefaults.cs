@@ -1,3 +1,6 @@
+// MATFLOTE: Contains fallback nutrition reference profiles and values seeded with the database model.
+// Note: Defaults keep the Nutrition page useful before a Helsedirektoratet import has been run.
+
 using DinnerPlanner.Api.Models;
 
 namespace DinnerPlanner.Api.Services;

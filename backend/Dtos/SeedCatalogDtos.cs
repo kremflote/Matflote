@@ -1,3 +1,6 @@
+// MATFLOTE: Request/response contracts for SeedCatalog API calls.
+// Note: DTOs are kept separate from EF entities so the browser sees stable shapes without inheriting database navigation details.
+
 using DinnerPlanner.Api.Models;
 
 namespace DinnerPlanner.Api.Dtos;

@@ -88,7 +88,7 @@ export const recipeBrowserStyles = {
           : "text-neutral-500 hover:text-neutral-900"
     }`,
   ingredientPicker: (theme: SiteTheme) =>
-    `fixed z-[70] w-72 max-w-[calc(100vw_-_24px)] rounded-md border p-3 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+    `fixed z-[120] w-72 max-w-[calc(100vw_-_24px)] rounded-md border p-3 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   ingredientPickerSearch: (theme: SiteTheme) =>
     `h-9 w-full rounded-md border px-3 text-sm font-semibold outline-none placeholder:text-neutral-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${surfaceClasses.field(theme)}`,
   ingredientPickerEmpty: (theme: SiteTheme) =>
@@ -105,7 +105,7 @@ export const recipeBrowserStyles = {
   addButton: (theme: SiteTheme) =>
     `inline-flex h-9 w-32 items-center justify-center gap-1 rounded-md border px-3 text-xs font-extrabold ${shadowClasses.subtle} transition-colors max-[1100px]:fixed max-[1100px]:bottom-30 max-[1100px]:right-6 max-[1100px]:z-[55] max-[1100px]:h-11 max-[1100px]:w-11 max-[1100px]:rounded-md max-[1100px]:px-0 max-[1100px]:text-xl max-sm:right-4 max-sm:h-9 max-sm:w-9 max-sm:text-lg ${siteColorClasses[theme].cookbookAddButton}`,
   addButtonLabel: "max-[1100px]:sr-only",
-  modalBackdrop: `fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
+  modalBackdrop: `fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   modalPanel: (theme: SiteTheme) =>
     `grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)] gap-4 overflow-hidden rounded-md border p-6 ${responsiveClasses.mobileModalPanel} ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   modalCloseButton: controlStyles.modalCloseButton,
@@ -489,7 +489,7 @@ export const recipeBrowserStyles = {
     "flex flex-wrap items-center justify-end gap-3 pt-2 max-sm:flex-nowrap",
   formActionButton:
     "max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3 max-sm:text-sm",
-  nestedModalBackdrop: `fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
+  nestedModalBackdrop: `fixed inset-0 z-[110] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   nestedIngredientModalPanel: (theme: SiteTheme) =>
     `grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-md border p-6 max-sm:max-h-[calc(100vh_-_16px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   nestedIngredientModalBody: `${sizeClasses.modalFormBodyMaxHeight} ${sizeClasses.modalFormBodyMobileMaxHeight} grid min-h-0 gap-3 overflow-y-auto pr-1`,
@@ -872,7 +872,7 @@ export const recipeBrowserStyles = {
   customSelectOptionLabel: "min-w-0 truncate",
   colorPickerActions: "flex items-center justify-end gap-3",
   filterIcon: "h-6 w-6",
-  categoryFilterBackdrop: `fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
+  categoryFilterBackdrop: `fixed inset-0 z-[110] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   categoryFilterPanel: (theme: SiteTheme) =>
     `grid max-h-[64vh] w-full max-w-md grid-rows-[auto_minmax(0,1fr)] gap-3 overflow-hidden rounded-md border p-6 max-sm:max-h-[56vh] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   categoryFilterHeader: "flex items-center justify-between gap-3",

@@ -1,3 +1,6 @@
+// MATFLOTE: Builds grocery-list previews from planned meals by expanding recipe ingredients and measured recipe components.
+// Note: Recipe components are recursively flattened because MATFLOTE treats recipes as measurable ingredients inside other recipes.
+
 using System.Globalization;
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;

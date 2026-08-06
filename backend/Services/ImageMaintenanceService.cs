@@ -1,3 +1,6 @@
+// MATFLOTE: Reports and cleans unused uploaded image files from storage.
+// Note: Seed images and referenced image URLs are protected so cleanup does not break bundled or active content.
+
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;

@@ -1,3 +1,6 @@
+// MATFLOTE: Coordinates grocery-list export by building the list and handing it to the configured todo provider exporter.
+// Note: The provider boundary is kept here so Vikunja can be replaced or joined by another exporter later.
+
 using DinnerPlanner.Api.Dtos;
 
 namespace DinnerPlanner.Api.Services;

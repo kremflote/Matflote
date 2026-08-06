@@ -1,3 +1,6 @@
+// MATFLOTE: Builds downloadable recipe PDFs from database recipes, local image storage, and calculated nutrition summaries.
+// Note: The PDF is generated inside MATFLOTE with QuestPDF; no external PDF service is called, and nutrition remains intentionally approximate.
+
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Models;
 using Microsoft.EntityFrameworkCore;

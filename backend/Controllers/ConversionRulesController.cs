@@ -1,3 +1,6 @@
+// MATFLOTE: API controller for ConversionRules-related frontend and integration requests.
+// Note: Controllers stay thin where possible and delegate heavier business rules to services or EF model helpers.
+
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;

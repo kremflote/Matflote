@@ -1,3 +1,6 @@
+// MATFLOTE: Small HTTP client for Helsedirektoratet HAPI content used by nutrition reference imports.
+// Note: The subscription key is resolved server-side so it never appears in frontend code.
+
 using System.Text.Json;
 
 namespace DinnerPlanner.Api.Services;

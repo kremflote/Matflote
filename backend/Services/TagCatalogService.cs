@@ -1,3 +1,6 @@
+// MATFLOTE: Maintains the shared tag/category pool used by both ingredients and recipes.
+// Note: It also removes orphaned assignments because users can delete tag categories and tags at runtime.
+
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Models;
 using Microsoft.EntityFrameworkCore;
