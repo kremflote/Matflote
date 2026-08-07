@@ -28,7 +28,7 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
     }
 
     [HttpPost]
-    public async Task<ActionResult<IngredientTagCategoryDto>> CreateCategory(LookupRequest request)
+    public async Task<ActionResult<IngredientTagCategoryDto>> CreateCategory(TagCategoryRequest request)
     {
         var name = request.Name.Trim();
         var existingCategory = await context.IngredientTagCategories
@@ -56,7 +56,9 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         var category = new IngredientTagCategory
         {
             Name = name,
-            SortOrder = nextSortOrder + 100
+            SortOrder = nextSortOrder + 100,
+            ShowForIngredients = request.ShowForIngredients ?? true,
+            ShowForRecipes = request.ShowForRecipes ?? true
         };
         context.IngredientTagCategories.Add(category);
         await context.SaveChangesAsync();
@@ -162,7 +164,7 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<IngredientTagCategoryDto>> UpdateCategory(int id, LookupRequest request)
+    public async Task<ActionResult<IngredientTagCategoryDto>> UpdateCategory(int id, TagCategoryRequest request)
     {
         var category = await context.IngredientTagCategories
             .Include(value => value.Tags)
@@ -184,6 +186,8 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         }
 
         category.Name = name;
+        category.ShowForIngredients = request.ShowForIngredients ?? category.ShowForIngredients;
+        category.ShowForRecipes = request.ShowForRecipes ?? category.ShowForRecipes;
         await context.SaveChangesAsync();
 
         return Ok(ToDto(category));
@@ -259,6 +263,8 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         category.IngredientTagCategoryId,
         category.Name,
         category.SortOrder,
+        category.ShowForIngredients,
+        category.ShowForRecipes,
         category.Tags
             .OrderBy(tag => tag.SortOrder)
             .ThenBy(tag => tag.Name)

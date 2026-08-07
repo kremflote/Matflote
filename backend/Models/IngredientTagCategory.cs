@@ -11,5 +11,7 @@ public class IngredientTagCategory
     public int IngredientTagCategoryId { get; set; }
     public string Name { get; set; } = string.Empty;
     public int SortOrder { get; set; }
+    public bool ShowForIngredients { get; set; } = true;
+    public bool ShowForRecipes { get; set; } = true;
     public List<IngredientTagDefinition> Tags { get; set; } = [];
 }

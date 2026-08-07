@@ -929,6 +929,65 @@ export const priceStyles = {
     }`,
   emptyState: (theme: SiteTheme) =>
     `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel(theme)}`,
+  summaryGrid: "grid grid-cols-3 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1",
+  summaryCard: (theme: SiteTheme) =>
+    `grid gap-1 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  kicker: (theme: SiteTheme) =>
+    `text-xs font-extrabold uppercase leading-tight ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
+  summaryValue: "text-2xl font-extrabold leading-tight",
+  summaryMeta: (theme: SiteTheme) =>
+    `text-xs font-bold leading-tight ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
+  metricGrid: "grid grid-cols-3 gap-3 max-md:grid-cols-1",
+  select: controlStyles.formField,
+  sectionTitle: "text-base font-extrabold leading-tight",
+  storeComparison: "grid gap-2",
+  chartFrame: (theme: SiteTheme) =>
+    `grid gap-2 rounded-md border p-3 ${
+      theme === "dark"
+        ? "border-white/[0.08] bg-white/[0.04]"
+        : theme === "paletteLight"
+          ? "border-[#C8C0B5] bg-[#E5D5BC]/35"
+          : "border-neutral-200 bg-neutral-50"
+    }`,
+  chartSvg: "h-44 w-full",
+  chartGridLine: (theme: SiteTheme) =>
+    theme === "dark"
+      ? "stroke-white/[0.16]"
+      : theme === "paletteLight"
+        ? "stroke-[#7A8864]/25"
+        : "stroke-neutral-300",
+  chartLine: (theme: SiteTheme) =>
+    theme === "dark"
+      ? "stroke-neutral-100 stroke-[4]"
+      : theme === "paletteLight"
+        ? "stroke-[#556145] stroke-[4]"
+        : "stroke-neutral-900 stroke-[4]",
+  chartPoint: (theme: SiteTheme) =>
+    theme === "dark"
+      ? "fill-neutral-100"
+      : theme === "paletteLight"
+        ? "fill-[#556145]"
+        : "fill-neutral-900",
+  chartCaption: (theme: SiteTheme) =>
+    `text-xs font-bold ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
   grid: "grid gap-3",
   ingredientGroup: (theme: SiteTheme) =>
     `grid gap-3 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,

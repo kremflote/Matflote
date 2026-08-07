@@ -326,6 +326,7 @@ export const en: TranslationDictionary = {
   prices: {
     addPrice: "Add price",
     addPricePoint: "Add price point",
+    average: "Average",
     couldNotLoad: "Could not load prices.",
     couldNotSave: "Could not save price.",
     date: "Date",
@@ -333,6 +334,7 @@ export const en: TranslationDictionary = {
     history: "Price history",
     ingredient: "Ingredient",
     latest: "Latest price",
+    lowest: "Lowest",
     note: "Note",
     notePlaceholder: "offer, package size...",
     pageIntro: "Track ingredient prices over time and compare stores.",
@@ -343,8 +345,12 @@ export const en: TranslationDictionary = {
     pricePlaceholder: "39.90",
     savePrice: "Save price",
     selectStore: "Select store",
+    selectedIngredient: "Selected ingredient",
     store: "Store",
+    storeComparison: "Store comparison",
     storePlaceholder: "Rema 1000",
+    trackedIngredients: "Tracked ingredients",
+    trackedPrices: "Tracked prices",
   },
   scanner: {
     cameraPermissionDenied:

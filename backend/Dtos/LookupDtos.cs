@@ -11,6 +11,14 @@ public record LookupRequest(
     string Name
 );
 
+public record TagCategoryRequest(
+    [Required]
+    [StringLength(120, MinimumLength = 1)]
+    string Name,
+    bool? ShowForIngredients,
+    bool? ShowForRecipes
+);
+
 public record BrandDto(
     int BrandId,
     string Name
@@ -26,6 +34,8 @@ public record IngredientTagCategoryDto(
     int IngredientTagCategoryId,
     string Name,
     int SortOrder,
+    bool ShowForIngredients,
+    bool ShowForRecipes,
     IReadOnlyCollection<IngredientTagDto> Tags
 );
 

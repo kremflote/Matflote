@@ -11,3 +11,11 @@ export function getCategoryTagNames(category: Pick<IIngredientTagCategory, "tags
 export function getAllCategoryTagNames(categories: readonly Pick<IIngredientTagCategory, "tags">[]) {
   return categories.flatMap(getCategoryTagNames);
 }
+
+export function getIngredientVisibleTagCategories(categories: readonly IIngredientTagCategory[]) {
+  return categories.filter((category) => category.showForIngredients !== false);
+}
+
+export function getRecipeVisibleTagCategories(categories: readonly IIngredientTagCategory[]) {
+  return categories.filter((category) => category.showForRecipes !== false);
+}

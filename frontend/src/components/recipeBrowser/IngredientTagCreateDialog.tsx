@@ -42,6 +42,8 @@ function IngredientTagCreateDialog({
       categories={categories.map((category) => ({
         id: category.ingredientTagCategoryId,
         name: category.name,
+        showForIngredients: category.showForIngredients,
+        showForRecipes: category.showForRecipes,
         tags: category.tags.map((tag) => ({
           id: tag.ingredientTagDefinitionId,
           name: tag.name,

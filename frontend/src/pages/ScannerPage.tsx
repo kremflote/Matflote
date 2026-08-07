@@ -12,7 +12,7 @@ import { getApiAssetUrl } from "../services/apiClient";
 import { pageStyles, scannerStyles, type SiteTheme } from "../styles/appStyles";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../constants/validation";
 import { normalizePriceInput, todayInputValue } from "../utils/priceFormatting";
-import { getAllCategoryTagNames } from "../utils/tagCatalog";
+import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../utils/tagCatalog";
 import {
   formatIngredientTagCategoryName,
   getIngredientTagGroupsWithCustomTags,
@@ -524,6 +524,7 @@ function IngredientDraftEditor({
   const [isAutofillInfoOpen, setIsAutofillInfoOpen] = useState(false);
   const [showNutrition, setShowNutrition] = useState(false);
   const imageUrl = getApiAssetUrl(imagePreviewUrl ?? draft.imageUrl);
+  const ingredientVisibleTagCategories = getIngredientVisibleTagCategories(ingredientTagCategories);
   const knownIngredientTags = (ingredientTagCategories.length === 0
     ? ingredientTagGroups.flatMap((group) => group.values)
     : getAllCategoryTagNames(ingredientTagCategories)) as IngredientTag[];
@@ -534,11 +535,11 @@ function IngredientDraftEditor({
     ...existingCustomTags,
     ...draft.tags.filter((tag) => !knownIngredientTags.includes(tag)),
   ]));
-  const groupedTags = getIngredientTagGroupsWithCustomTags(customTags, "pantry", ingredientTagCategories);
-  const groupLabels = ingredientTagCategories.length === 0
+  const groupedTags = getIngredientTagGroupsWithCustomTags(customTags, "pantry", ingredientVisibleTagCategories);
+  const groupLabels = ingredientVisibleTagCategories.length === 0
     ? t.filters.ingredientTagGroups
     : Object.fromEntries(
-        ingredientTagCategories.map((category) => [
+        ingredientVisibleTagCategories.map((category) => [
           category.ingredientTagCategoryId.toString(),
           formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
         ]),
@@ -813,10 +814,19 @@ function IngredientDraftEditor({
           onCreateCategory={async (name) => {
             const category = await ingredientTagCategoryService.create({ name });
             await refreshIngredientTagCategories();
-            return { id: category.ingredientTagCategoryId, name: category.name };
+            return {
+              id: category.ingredientTagCategoryId,
+              name: category.name,
+              showForIngredients: category.showForIngredients,
+              showForRecipes: category.showForRecipes,
+            };
           }}
           onUpdateCategory={async (category) => {
-            await ingredientTagCategoryService.update(category.id, { name: category.name });
+            await ingredientTagCategoryService.update(category.id, {
+              name: category.name,
+              showForIngredients: category.showForIngredients,
+              showForRecipes: category.showForRecipes,
+            });
             await refreshIngredientTagCategories();
           }}
           onDeleteCategory={async (category) => {

@@ -1,4 +1,4 @@
-import type { IIngredientPricePoint } from "../interfaces/IIngredientPrice";
+import type { IIngredientPricePoint, IIngredientPriceSummary } from "../interfaces/IIngredientPrice";
 import { apiRequest } from "./apiClient";
 
 export interface IngredientPricePointRequest {
@@ -10,6 +10,7 @@ export interface IngredientPricePointRequest {
 }
 
 export const ingredientPriceService = {
+  getSummary: () => apiRequest<IIngredientPriceSummary[]>("/api/ingredient-price-points/summary"),
   getAll: () => apiRequest<IIngredientPricePoint[]>("/api/ingredient-price-points"),
   getByIngredient: (ingredientId: number) =>
     apiRequest<IIngredientPricePoint[]>(`/api/ingredient-price-points?ingredientId=${ingredientId}`),

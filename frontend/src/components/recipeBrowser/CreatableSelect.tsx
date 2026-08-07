@@ -7,6 +7,8 @@ import { recipeBrowserStyles } from "./recipeBrowserStyles";
 export type CreatableOption = {
   id: number;
   name: string;
+  showForIngredients?: boolean;
+  showForRecipes?: boolean;
 };
 
 type CreatableSelectProps = {

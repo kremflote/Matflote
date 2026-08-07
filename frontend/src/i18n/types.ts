@@ -265,6 +265,7 @@ export type TranslationDictionary = {
   prices: {
     addPrice: string;
     addPricePoint: string;
+    average: string;
     couldNotLoad: string;
     couldNotSave: string;
     date: string;
@@ -272,6 +273,7 @@ export type TranslationDictionary = {
     history: string;
     ingredient: string;
     latest: string;
+    lowest: string;
     note: string;
     notePlaceholder: string;
     pageIntro: string;
@@ -282,8 +284,12 @@ export type TranslationDictionary = {
     pricePlaceholder: string;
     savePrice: string;
     selectStore: string;
+    selectedIngredient: string;
     store: string;
+    storeComparison: string;
     storePlaceholder: string;
+    trackedIngredients: string;
+    trackedPrices: string;
   };
   scanner: {
     cameraPermissionDenied: string;

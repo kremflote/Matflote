@@ -15,6 +15,8 @@ export type ManagedTag = {
 export type ManagedTagCategory = {
   id: number;
   name: string;
+  showForIngredients: boolean;
+  showForRecipes: boolean;
   tags: ManagedTag[];
 };
 
@@ -147,6 +149,26 @@ function TagManagementDialog({
     }
   }
 
+  async function updateCategoryVisibility(
+    category: ManagedTagCategory,
+    visibility: Pick<ManagedTagCategory, "showForIngredients" | "showForRecipes">,
+  ) {
+    if (category.id <= 0) {
+      return;
+    }
+
+    setIsManagingTags(true);
+    try {
+      await onUpdateCategory({
+        id: category.id,
+        name: category.name,
+        ...visibility,
+      });
+    } finally {
+      setIsManagingTags(false);
+    }
+  }
+
   async function updateManagedTag(tagName: string) {
     const nextName = normalizeCustomTagName(managedTagNames[tagName] ?? tagName);
     if (nextName.length === 0 || nextName === tagName) {
@@ -272,65 +294,99 @@ function TagManagementDialog({
                 onClick={() => setSelectedCategoryId(category.id)}
               >
               <div className={`${recipeBrowserStyles.manageTagCategoryRow(isCollapsed)} ${recipeBrowserStyles.manageTagDivider(theme, "category")}`}>
-                <div className={recipeBrowserStyles.manageTagOrderControls}>
+                <div className={recipeBrowserStyles.manageTagVisibilityGroup(theme)}>
                   <button
-                    className={recipeBrowserStyles.manageTagIconButton(theme)}
+                    className={recipeBrowserStyles.manageTagVisibilityButton(theme, category.showForRecipes)}
                     disabled={isManagingTags || isSyntheticCategory}
                     type="button"
-                    aria-label={t.common.moveUp}
+                    aria-pressed={category.showForRecipes}
                     onClick={(event) => {
                       event.stopPropagation();
-                      void moveCategory(category.id, "Up");
+                      void updateCategoryVisibility(category, {
+                        showForIngredients: category.showForIngredients,
+                        showForRecipes: !category.showForRecipes,
+                      });
                     }}
                   >
-                    ^
+                    {t.cookbook.recipes}
                   </button>
                   <button
-                    className={recipeBrowserStyles.manageTagIconButton(theme)}
+                    className={recipeBrowserStyles.manageTagVisibilityButton(theme, category.showForIngredients)}
                     disabled={isManagingTags || isSyntheticCategory}
                     type="button"
-                    aria-label={t.common.moveDown}
+                    aria-pressed={category.showForIngredients}
                     onClick={(event) => {
                       event.stopPropagation();
-                      void moveCategory(category.id, "Down");
+                      void updateCategoryVisibility(category, {
+                        showForIngredients: !category.showForIngredients,
+                        showForRecipes: category.showForRecipes,
+                      });
                     }}
                   >
-                    v
+                    {t.cookbook.ingredients}
                   </button>
                 </div>
-                <input
-                  className={recipeBrowserStyles.manageTagTextField(theme)}
-                  readOnly={isSyntheticCategory}
-                  value={managedCategoryNames[category.id] ?? category.name}
-                  onChange={(event) =>
-                    setManagedCategoryNames((currentNames) => ({
-                      ...currentNames,
-                      [category.id]: event.target.value,
-                    }))
-                  }
-                />
-                <button
-                  className={recipeBrowserStyles.manageTagActionButton(theme)}
-                  disabled={isManagingTags || isSyntheticCategory}
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    void updateManagedCategory(category);
-                  }}
-                >
-                  {t.common.save}
-                </button>
-                <button
-                  className={recipeBrowserStyles.manageTagRemoveButton(theme)}
-                  disabled={isManagingTags || isSyntheticCategory}
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setCategoryPendingDelete(category);
-                  }}
-                >
-                  {t.common.remove}
-                </button>
+                <div className={recipeBrowserStyles.manageTagCategoryEditRow}>
+                  <div className={recipeBrowserStyles.manageTagOrderControls}>
+                    <button
+                      className={recipeBrowserStyles.manageTagIconButton(theme)}
+                      disabled={isManagingTags || isSyntheticCategory}
+                      type="button"
+                      aria-label={t.common.moveUp}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void moveCategory(category.id, "Up");
+                      }}
+                    >
+                      ^
+                    </button>
+                    <button
+                      className={recipeBrowserStyles.manageTagIconButton(theme)}
+                      disabled={isManagingTags || isSyntheticCategory}
+                      type="button"
+                      aria-label={t.common.moveDown}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void moveCategory(category.id, "Down");
+                      }}
+                    >
+                      v
+                    </button>
+                  </div>
+                  <input
+                    className={recipeBrowserStyles.manageTagTextField(theme)}
+                    readOnly={isSyntheticCategory}
+                    value={managedCategoryNames[category.id] ?? category.name}
+                    onChange={(event) =>
+                      setManagedCategoryNames((currentNames) => ({
+                        ...currentNames,
+                        [category.id]: event.target.value,
+                      }))
+                    }
+                  />
+                  <button
+                    className={recipeBrowserStyles.manageTagActionButton(theme)}
+                    disabled={isManagingTags || isSyntheticCategory}
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void updateManagedCategory(category);
+                    }}
+                  >
+                    {t.common.save}
+                  </button>
+                  <button
+                    className={recipeBrowserStyles.manageTagRemoveButton(theme)}
+                    disabled={isManagingTags || isSyntheticCategory}
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setCategoryPendingDelete(category);
+                    }}
+                  >
+                    {t.common.remove}
+                  </button>
+                </div>
               </div>
               {!isCollapsed && <div className={recipeBrowserStyles.manageTagList}>
                 {category.tags.map((tag) => (

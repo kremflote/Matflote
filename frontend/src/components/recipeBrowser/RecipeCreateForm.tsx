@@ -4,7 +4,7 @@ import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
 import type { IConversionRule } from "../../interfaces/IConversionRule";
 import { conversionRuleService, imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
-import { getAllCategoryTagNames } from "../../utils/tagCatalog";
+import { getAllCategoryTagNames, getRecipeVisibleTagCategories } from "../../utils/tagCatalog";
 import {
   formatRecipeTagGroupName,
   getRecipeTagGroupsWithCustomTags,
@@ -104,6 +104,7 @@ function RecipeCreateForm({
     () => selectedComponents.map((component) => component.recipeId),
     [selectedComponents],
   );
+  const recipeVisibleTagCategories = getRecipeVisibleTagCategories(ingredientTagCategories);
   const knownRecipeTags = (ingredientTagCategories.length === 0
     ? recipeTagGroups.flatMap((group) => group.values)
     : getAllCategoryTagNames(ingredientTagCategories)) as RecipeTag[];
@@ -114,11 +115,11 @@ function RecipeCreateForm({
     ...existingCustomRecipeTags,
     ...selectedTags.filter((tag) => !knownRecipeTags.includes(tag)),
   ]));
-  const groupedRecipeTags = getRecipeTagGroupsWithCustomTags(customRecipeTags, "style", ingredientTagCategories);
-  const recipeTagGroupLabels = ingredientTagCategories.length === 0
+  const groupedRecipeTags = getRecipeTagGroupsWithCustomTags(customRecipeTags, "style", recipeVisibleTagCategories);
+  const recipeTagGroupLabels = recipeVisibleTagCategories.length === 0
     ? t.filters.recipeTagGroups
     : Object.fromEntries(
-        ingredientTagCategories.map((category) => [
+        recipeVisibleTagCategories.map((category) => [
           category.ingredientTagCategoryId.toString(),
           formatRecipeTagGroupName(category.name, t.filters.recipeTagGroups),
         ]),
@@ -661,10 +662,19 @@ function RecipeCreateForm({
           onCreateCategory={async (name) => {
             const category = await ingredientTagCategoryService.create({ name });
             await refreshIngredientTagCategories();
-            return { id: category.ingredientTagCategoryId, name: category.name };
+            return {
+              id: category.ingredientTagCategoryId,
+              name: category.name,
+              showForIngredients: category.showForIngredients,
+              showForRecipes: category.showForRecipes,
+            };
           }}
           onUpdateCategory={async (category) => {
-            await ingredientTagCategoryService.update(category.id, { name: category.name });
+            await ingredientTagCategoryService.update(category.id, {
+              name: category.name,
+              showForIngredients: category.showForIngredients,
+              showForRecipes: category.showForRecipes,
+            });
             await refreshIngredientTagCategories();
           }}
           onDeleteCategory={async (category) => {

@@ -31,3 +31,25 @@ public record IngredientPricePointDto(
     DateOnly Date,
     string? Note
 );
+
+public record StorePriceSummaryDto(
+    int StoreId,
+    string StoreName,
+    decimal LatestPrice,
+    DateOnly LatestDate,
+    int PricePointCount
+);
+
+public record IngredientPriceSummaryDto(
+    int IngredientId,
+    string IngredientName,
+    decimal? LatestPrice,
+    string? LatestStoreName,
+    DateOnly? LatestDate,
+    decimal? LowestPrice,
+    string? LowestStoreName,
+    DateOnly? LowestDate,
+    decimal? AveragePrice,
+    int PricePointCount,
+    IReadOnlyCollection<StorePriceSummaryDto> Stores
+);

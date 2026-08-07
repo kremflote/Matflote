@@ -270,12 +270,12 @@ function PlannerRecipePickerModal({
 
   const selectOrUpdateMealRecipe = (recipe: IRecipe, portions = recipe.portions) => {
     if (mainRecipeSelection?.recipeId === recipe.recipeId) {
-      setMainRecipeSelection({ recipeId: recipe.recipeId, portions });
+      removeRecipeSelection(recipe.recipeId);
       return;
     }
 
     if (supplementaryRecipeSelections.some((selection) => selection.recipeId === recipe.recipeId)) {
-      updateSupplementaryRecipe(recipe, portions);
+      removeRecipeSelection(recipe.recipeId);
       return;
     }
 
@@ -289,12 +289,12 @@ function PlannerRecipePickerModal({
 
   const selectOrUpdateMealIngredient = (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => {
     if (mainIngredientSelection?.ingredientId === ingredient.ingredientId) {
-      setMainIngredientSelection({ ingredientId: ingredient.ingredientId, amount, unit });
+      removeIngredientSelection(ingredient.ingredientId);
       return;
     }
 
     if (supplementaryIngredientSelections.some((selection) => selection.ingredientId === ingredient.ingredientId)) {
-      updateSupplementaryIngredient(ingredient, amount, unit);
+      removeIngredientSelection(ingredient.ingredientId);
       return;
     }
 

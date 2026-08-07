@@ -7,6 +7,7 @@ import { formatIngredientTagCategoryName, formatRecipeTagGroupName, getIngredien
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import { GroupedFilterGroup } from "./BrowserFilterGroups";
 import type { BrowserMode } from "./types";
+import { getIngredientVisibleTagCategories, getRecipeVisibleTagCategories } from "../../utils/tagCatalog";
 
 type BrowserFilterSectionProps = {
   mode: BrowserMode;
@@ -32,20 +33,22 @@ function BrowserFilterSection({
   const className = variant === "rail"
     ? recipeBrowserStyles.filterRail(theme)
     : recipeBrowserStyles.filterPanel(theme);
-  const liveIngredientTagGroups = getIngredientTagGroupsWithCustomTags([], "pantry", ingredientTagCategories);
-  const ingredientTagGroupLabels = ingredientTagCategories.length === 0
+  const ingredientVisibleTagCategories = getIngredientVisibleTagCategories(ingredientTagCategories);
+  const recipeVisibleTagCategories = getRecipeVisibleTagCategories(ingredientTagCategories);
+  const liveIngredientTagGroups = getIngredientTagGroupsWithCustomTags([], "pantry", ingredientVisibleTagCategories);
+  const ingredientTagGroupLabels = ingredientVisibleTagCategories.length === 0
     ? t.filters.ingredientTagGroups
     : Object.fromEntries(
-        ingredientTagCategories.map((category) => [
+        ingredientVisibleTagCategories.map((category) => [
           category.ingredientTagCategoryId.toString(),
           formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
         ]),
       );
-  const liveRecipeTagGroups = getRecipeTagGroupsWithCustomTags([], "style", ingredientTagCategories);
-  const recipeTagGroupLabels = ingredientTagCategories.length === 0
+  const liveRecipeTagGroups = getRecipeTagGroupsWithCustomTags([], "style", recipeVisibleTagCategories);
+  const recipeTagGroupLabels = recipeVisibleTagCategories.length === 0
     ? t.filters.recipeTagGroups
     : Object.fromEntries(
-        ingredientTagCategories.map((category) => [
+        recipeVisibleTagCategories.map((category) => [
           category.ingredientTagCategoryId.toString(),
           formatRecipeTagGroupName(category.name, t.filters.recipeTagGroups),
         ]),

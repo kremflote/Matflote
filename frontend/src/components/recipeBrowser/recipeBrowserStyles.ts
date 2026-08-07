@@ -637,7 +637,31 @@ export const recipeBrowserStyles = {
           ? "border-neutral-300"
           : "border-neutral-200",
   manageTagCategoryRow: (collapsed = false) =>
-    `grid grid-cols-[4rem_minmax(0,1fr)_5.25rem_5.25rem] items-center gap-2 max-sm:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] max-sm:items-start max-sm:[&>div]:row-span-2 max-sm:[&>div]:grid-cols-1 max-sm:[&>input]:col-span-2 max-sm:[&>input]:col-start-2 max-sm:[&>button]:row-start-2 max-sm:[&>button]:w-full max-sm:[&>button:nth-of-type(1)]:col-start-2 max-sm:[&>button:nth-of-type(2)]:col-start-3 ${collapsed ? "" : "border-b pb-3"}`,
+    `grid gap-2 ${collapsed ? "" : "border-b pb-3"}`,
+  manageTagCategoryEditRow:
+    "grid grid-cols-[4rem_minmax(0,1fr)_5.25rem_5.25rem] items-center gap-2 max-sm:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] max-sm:items-start [&>div]:max-sm:row-span-2 [&>div]:max-sm:grid-cols-1 [&>input]:max-sm:col-span-2 [&>input]:max-sm:col-start-2 [&>button]:max-sm:row-start-2 [&>button]:max-sm:w-full [&>button:nth-of-type(1)]:max-sm:col-start-2 [&>button:nth-of-type(2)]:max-sm:col-start-3",
+  manageTagVisibilityGroup: (theme: SiteTheme) =>
+    `grid w-56 max-w-full grid-cols-2 gap-1 justify-self-start rounded-md border p-1 ${
+      theme === "dark"
+        ? "border-white/[0.12] bg-white/[0.05]"
+        : theme === "paletteLight"
+          ? "border-[#7A8864]/35 bg-[#E5D5BC]/45"
+          : "border-neutral-300 bg-neutral-100"
+    }`,
+  manageTagVisibilityButton: (theme: SiteTheme, selected: boolean) =>
+    `inline-flex h-7 items-center justify-center rounded-md border px-2 text-xs font-extrabold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? selected
+          ? "border-white/[0.18] bg-neutral-100 text-neutral-950"
+          : "border-transparent bg-transparent text-neutral-400 hover:text-neutral-100"
+        : theme === "paletteLight"
+          ? selected
+            ? "border-[#7A8864]/45 bg-[#FAF7F2] text-[#556145]"
+            : "border-transparent bg-transparent text-[#7A8864]/70 hover:text-[#556145]"
+          : selected
+            ? "border-neutral-300 bg-white text-neutral-950"
+            : "border-transparent bg-transparent text-neutral-500 hover:text-neutral-800"
+    }`,
   manageTagList: "grid",
   manageTagRow:
     "grid grid-cols-[4rem_minmax(0,1fr)_5.25rem_5.25rem] items-center gap-2 border-b py-2 pl-6 last:border-b-0 last:pb-0 max-sm:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] max-sm:items-start max-sm:gap-y-1.5 max-sm:pl-2 [&>div]:max-sm:row-span-2 [&>div]:max-sm:grid-cols-1 [&>div]:max-sm:self-start [&>input]:max-sm:col-span-2 [&>input]:max-sm:col-start-2 [&>button]:max-sm:row-start-2 [&>button]:max-sm:w-full [&>button:nth-of-type(1)]:max-sm:col-start-2 [&>button:nth-of-type(2)]:max-sm:col-start-3",

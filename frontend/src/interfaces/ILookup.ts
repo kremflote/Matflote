@@ -18,5 +18,7 @@ export interface IIngredientTagCategory {
   ingredientTagCategoryId: number;
   name: string;
   sortOrder: number;
+  showForIngredients: boolean;
+  showForRecipes: boolean;
   tags: IIngredientTagDefinition[];
 }

@@ -127,6 +127,8 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         modelBuilder.Entity<IngredientTagCategory>(entity =>
         {
             entity.Property(category => category.Name).HasMaxLength(120);
+            entity.Property(category => category.ShowForIngredients).HasDefaultValue(true);
+            entity.Property(category => category.ShowForRecipes).HasDefaultValue(true);
             entity.HasIndex(category => category.Name).IsUnique();
             entity.HasMany(category => category.Tags)
                 .WithOne(tag => tag.Category)
@@ -455,9 +457,9 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         );
 
         modelBuilder.Entity<IngredientTagCategory>().HasData(
-            new { IngredientTagCategoryId = 1, Name = "Produce", SortOrder = 100 },
-            new { IngredientTagCategoryId = 2, Name = "Protein", SortOrder = 200 },
-            new { IngredientTagCategoryId = 3, Name = "Pantry", SortOrder = 300 }
+            new { IngredientTagCategoryId = 1, Name = "Produce", SortOrder = 100, ShowForIngredients = true, ShowForRecipes = true },
+            new { IngredientTagCategoryId = 2, Name = "Protein", SortOrder = 200, ShowForIngredients = true, ShowForRecipes = true },
+            new { IngredientTagCategoryId = 3, Name = "Pantry", SortOrder = 300, ShowForIngredients = true, ShowForRecipes = true }
         );
 
         modelBuilder.Entity<IngredientTagDefinition>().HasData(

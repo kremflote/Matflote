@@ -100,6 +100,8 @@ public class SeedCatalogService(
             .Select(category => new SeedTagCategoryDto(
                 category.Name,
                 category.SortOrder,
+                category.ShowForIngredients,
+                category.ShowForRecipes,
                 category.Tags
                     .OrderBy(tag => tag.SortOrder)
                     .ThenBy(tag => tag.Name)
@@ -240,14 +242,22 @@ public class SeedCatalogService(
                 category = new IngredientTagCategory
                 {
                     Name = categoryName,
-                    SortOrder = seedCategory.SortOrder ?? await GetNextCategorySortOrderAsync(cancellationToken)
+                    SortOrder = seedCategory.SortOrder ?? await GetNextCategorySortOrderAsync(cancellationToken),
+                    ShowForIngredients = seedCategory.ShowForIngredients ?? true,
+                    ShowForRecipes = seedCategory.ShowForRecipes ?? true
                 };
                 context.IngredientTagCategories.Add(category);
                 await context.SaveChangesAsync(cancellationToken);
             }
-            else if (seedCategory.SortOrder is not null)
+            else
             {
-                category.SortOrder = seedCategory.SortOrder.Value;
+                if (seedCategory.SortOrder is not null)
+                {
+                    category.SortOrder = seedCategory.SortOrder.Value;
+                }
+
+                category.ShowForIngredients = seedCategory.ShowForIngredients ?? category.ShowForIngredients;
+                category.ShowForRecipes = seedCategory.ShowForRecipes ?? category.ShowForRecipes;
             }
 
             foreach (var seedTag in seedCategory.Tags ?? [])

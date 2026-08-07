@@ -13,6 +13,75 @@ namespace DinnerPlanner.Api.Controllers;
 [Route("api/ingredient-price-points")]
 public class IngredientPricePointsController(DinnerPlannerContext context) : ControllerBase
 {
+    [HttpGet("summary")]
+    public async Task<ActionResult<IEnumerable<IngredientPriceSummaryDto>>> GetPriceSummary()
+    {
+        var pricePoints = await context.IngredientPricePoints
+            .AsNoTracking()
+            .Include(pricePoint => pricePoint.Ingredient)
+            .Include(pricePoint => pricePoint.Store)
+            .OrderBy(pricePoint => pricePoint.Ingredient.IngredientName)
+            .ThenByDescending(pricePoint => pricePoint.Date)
+            .ThenByDescending(pricePoint => pricePoint.IngredientPricePointId)
+            .ToListAsync();
+
+        var summaries = pricePoints
+            .GroupBy(pricePoint => new
+            {
+                pricePoint.IngredientId,
+                pricePoint.Ingredient.IngredientName
+            })
+            .Select(group =>
+            {
+                var orderedPoints = group
+                    .OrderByDescending(pricePoint => pricePoint.Date)
+                    .ThenByDescending(pricePoint => pricePoint.IngredientPricePointId)
+                    .ToList();
+                var latestPoint = orderedPoints.FirstOrDefault();
+                var lowestPoint = group
+                    .OrderBy(pricePoint => pricePoint.Price)
+                    .ThenByDescending(pricePoint => pricePoint.Date)
+                    .FirstOrDefault();
+                var storeSummaries = group
+                    .GroupBy(pricePoint => pricePoint.Store)
+                    .Select(storeGroup =>
+                    {
+                        var latestStorePoint = storeGroup
+                            .OrderByDescending(pricePoint => pricePoint.Date)
+                            .ThenByDescending(pricePoint => pricePoint.IngredientPricePointId)
+                            .First();
+
+                        return new StorePriceSummaryDto(
+                            latestStorePoint.StoreId,
+                            latestStorePoint.Store.Name,
+                            latestStorePoint.Price,
+                            latestStorePoint.Date,
+                            storeGroup.Count()
+                        );
+                    })
+                    .OrderBy(store => store.StoreName)
+                    .ToList();
+
+                return new IngredientPriceSummaryDto(
+                    group.Key.IngredientId,
+                    group.Key.IngredientName,
+                    latestPoint?.Price,
+                    latestPoint?.Store.Name,
+                    latestPoint?.Date,
+                    lowestPoint?.Price,
+                    lowestPoint?.Store.Name,
+                    lowestPoint?.Date,
+                    group.Average(pricePoint => pricePoint.Price),
+                    group.Count(),
+                    storeSummaries
+                );
+            })
+            .OrderBy(summary => summary.IngredientName)
+            .ToList();
+
+        return Ok(summaries);
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<IngredientPricePointDto>>> GetPricePoints(
         [FromQuery] int? ingredientId

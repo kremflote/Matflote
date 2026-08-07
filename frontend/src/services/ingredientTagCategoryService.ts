@@ -2,9 +2,14 @@ import type { IIngredientTagCategory } from "../interfaces/ILookup";
 import { apiRequest } from "./apiClient";
 import type { LookupRequest } from "./brandService";
 
+export type TagCategoryRequest = LookupRequest & {
+  showForIngredients?: boolean;
+  showForRecipes?: boolean;
+};
+
 export const ingredientTagCategoryService = {
   getAll: () => apiRequest<IIngredientTagCategory[]>("/api/ingredient-tag-categories"),
-  create: (category: LookupRequest) =>
+  create: (category: TagCategoryRequest) =>
     apiRequest<IIngredientTagCategory>("/api/ingredient-tag-categories", {
       method: "POST",
       body: category,
@@ -24,7 +29,7 @@ export const ingredientTagCategoryService = {
       method: "POST",
       body: { direction },
     }),
-  update: (id: number, category: LookupRequest) =>
+  update: (id: number, category: TagCategoryRequest) =>
     apiRequest<IIngredientTagCategory>(`/api/ingredient-tag-categories/${id}`, {
       method: "PUT",
       body: category,

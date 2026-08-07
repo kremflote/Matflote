@@ -390,6 +390,7 @@ export const nb: TranslationDictionary = {
   prices: {
     addPrice: "Legg til pris",
     addPricePoint: "Legg til prispunkt",
+    average: "Snitt",
     couldNotLoad: "Kunne ikke laste priser.",
     couldNotSave: "Kunne ikke lagre pris.",
     date: "Dato",
@@ -397,6 +398,7 @@ export const nb: TranslationDictionary = {
     history: "Prishistorikk",
     ingredient: "Ingrediens",
     latest: "Siste pris",
+    lowest: "Lavest",
     note: "Notat",
     notePlaceholder: "tilbud, pakkestørrelse...",
     pageIntro: "Følg ingredienspriser over tid og sammenlign butikker.",
@@ -407,8 +409,12 @@ export const nb: TranslationDictionary = {
     pricePlaceholder: "39.90",
     savePrice: "Lagre pris",
     selectStore: "Velg butikk",
+    selectedIngredient: "Valgt ingrediens",
     store: "Butikk",
+    storeComparison: "Butikksammenligning",
     storePlaceholder: "Rema 1000",
+    trackedIngredients: "Ingredienser fulgt",
+    trackedPrices: "Priser registrert",
   },
   scanner: {
     cameraPermissionDenied:

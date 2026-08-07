@@ -16,6 +16,8 @@ public record SeedCatalogDto(
 public record SeedTagCategoryDto(
     string Name,
     int? SortOrder,
+    bool? ShowForIngredients,
+    bool? ShowForRecipes,
     IReadOnlyCollection<SeedTagDto>? Tags
 );
 
