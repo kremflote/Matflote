@@ -1,23 +1,20 @@
 # MATFLOTE
 
-MATFLOTE is a household meal planning and cookbook app.
+MATFLOTE is a household meal planning and cookbook app. It is my personal tool made to be run on a personal homeserver.
 
-For the implementation/design source of truth, see `master-document.txt`.
+Created with assistance of ChatGPT 5.5.
 
 ## Current App Features
 
-- Cookbook with recipes, ingredients, shared tags, tag categories, brands, stores, prices, nutrition, conversion rules, image uploads, and recipe PDF export.
-- Planner with week/month views, remembered week/month positions, multiple selected meal items, recipe portions, ingredient amounts, tag-aware generation, prep helper, and grocery-list export.
-- Recipes can contain ingredients and measured recipe components, so one recipe can be used like an ingredient inside another recipe.
-- Recipe ingredients/components store measurable units and preparation, such as chopped, diced, julienned, grated, or crushed.
-- Meal generation fills empty slots only, uses Breakfast/Lunch/Dinner tags, can place leftover recipe portions into future suitable slots, and avoids selecting the same dinner recipe twice in a generated range.
-- Prep helper for the current week. It lists produce-style ingredients only when an explicit preparation exists or one can be inferred from recipe instructions.
-- Shopping-list preview and export through the provider-based grocery-list system. Vikunja is the first supported provider.
-- Scanner/Skanner page for Norwegian grocery lookup by barcode/EAN through Kassalapp, with missing nutrition fields supplemented from Matvaretabellen when possible.
+- Cookbook with recipes and ingredients.
+	- Recipes can contain ingredients and measured recipe components, so one recipe can be used like an ingredient inside another recipe.
+	- Recipe ingredients/components store measurable units and preparation, such as chopped, diced, julienned, grated, or crushed.
+- Meal planner
+	- Prep helper for the current week. It lists produce-style ingredients only when an explicit preparation exists or one can be inferred from recipe instructions.
+	- Shopping-list preview and export through the provider-based grocery-list system. Vikunja is the first supported provider.
+- Scanner page for Norwegian grocery lookup by barcode/EAN through Kassalapp, with missing nutrition fields supplemented from Matvaretabellen.
 - Prices page for local household price tracking by ingredient, store, and date.
 - Nutrition page for approximate weekly nutrition summaries from planned meals and locally stored Helsedirektoratet reference values.
-
-MATFLOTE no longer has a cuisine or recipe-type system. Recipes and ingredients use the shared tag/category system instead.
 
 ## Docker
 
@@ -53,53 +50,6 @@ Then open:
 
 ```text
 http://localhost:8095
-```
-
-## LAN Access
-
-On the server, find the local IP.
-
-Windows:
-
-```powershell
-ipconfig
-```
-
-Linux/macOS:
-
-```bash
-hostname -I
-```
-
-Then open from another device on the same network:
-
-```text
-http://<server-ip>:8080
-```
-
-If using a custom port:
-
-```text
-http://<server-ip>:8095
-```
-
-## Stop And Restart
-
-```powershell
-docker compose restart
-```
-
-```powershell
-docker compose down
-docker compose up -d
-```
-
-Data remains because the database and images are stored in Docker volumes.
-
-Do not use this unless you want to delete all app data:
-
-```powershell
-docker compose down -v
 ```
 
 ## Backup
@@ -162,80 +112,11 @@ Start again:
 docker compose up -d
 ```
 
-## Update
-
-```powershell
-git pull
-docker compose up -d --build
-```
-
-## Deploy To A Server
-
-MATFLOTE can run on any server with Docker Compose. A common flow is:
-
-```powershell
-git pull
-docker compose up -d --build
-```
-
-If MATFLOTE is part of a larger homeserver stack, copy the `matflote-backend` and `matflote-frontend` service definitions into that stack's Compose file, attach them to the same Docker network as your reverse proxy, and keep the database/images on persistent storage.
-
-Do not commit server-specific deploy automation, hostnames, private paths, tokens, or reverse-proxy details. Keep those outside this repository or in a private infrastructure repository.
-
-To build a fresh Docker version from local source without starting it:
-
-```powershell
-docker compose build
-```
-
-To rebuild and restart the running app:
-
-```powershell
-docker compose up -d --build
-```
-
-## Verify A Local Build
-
-Before Docker work or before committing backend/frontend integration changes, run the normal frontend and backend builds:
-
-```powershell
-npm run build --prefix frontend
-dotnet build backend -c Release --no-restore
-```
-
-To inspect the Docker configuration without starting containers:
-
-```powershell
-docker compose config
-```
-
-To rebuild the Docker images:
-
-```powershell
-docker compose build
-```
-
-For a fresh-container check, start MATFLOTE with new volumes or after `docker compose down -v`. The backend applies migrations on startup, creates the SQLite database if needed, imports the configured seed catalog, and seeds missing bundled images into the configured image storage volume.
-
-Before committing a feature chunk, run:
-
-```powershell
-npm run build --prefix frontend
-dotnet build backend -c Release --no-restore
-docker compose config
-```
-
-## Sync Model
-
-Docker v1 uses shared-server sync. Phones, tablets, and computers stay in sync by connecting to the same MATFLOTE server.
-
-There are no accounts, users, households, or offline multi-device sync in this milestone. Those would be future architecture decisions.
-
 ## Shopping List Export
 
 MATFLOTE can export generated shopping lists through a provider model. Vikunja is the first supported provider; other todo systems can be added later as separate exporters without changing the grocery-list builder.
 
-Configure Vikunja through environment variables, not committed files. These values seed first-run/server config, and can later be overridden from the MATFLOTE Settings page:
+Configure Vikunja through environment variables. These values seed first-run/server config, and can later be overridden from the MATFLOTE Settings page:
 
 ```env
 SHOPPING_LIST_EXPORT_PROVIDER=Vikunja
@@ -245,11 +126,7 @@ VIKUNJA_PROJECT_ID=3
 VIKUNJA_API_TOKEN=your-token-here
 ```
 
-For development, `VIKUNJA_BASE_URL` can point at a private network/VPN address as long as the machine or container running MATFLOTE can reach it.
-
-The API token must have permission to create tasks in the configured Vikunja project. Do not commit real tokens to the repository.
-
-The Settings page never shows a saved token value. Leave the token field blank to keep the existing token, or enter a new token to replace it. The same write-only pattern is used for Kassalapp and Helsedirektoratet keys.
+The API token must have permission to create tasks in the configured Vikunja project.
 
 The task mode can be changed from the Settings page:
 
@@ -267,8 +144,6 @@ Export the generated list to the configured provider:
 ```text
 POST /api/grocerylists/export?from=YYYY-MM-DD&to=YYYY-MM-DD
 ```
-
-The Settings page also includes a connection test that uses the current form values and the saved token when the token field is left blank.
 
 ## Product Scanner
 
@@ -329,7 +204,6 @@ Refresh local reference values:
 POST /api/nutrition/reference-values/import
 ```
 
-The frontend must never contain the Helsedirektoratet subscription key. MATFLOTE should also show source attribution for imported nutrition reference values.
 
 MATFLOTE currently displays weekly reference cards only for nutrients with usable reference data and realistic source coverage: carbohydrates, protein, fiber, saturated fat, monounsaturated fat, polyunsaturated fat, omega-3, and vitamins A, B9, B12, C, D, and E. Calories are shown by day without goal judgement.
 
