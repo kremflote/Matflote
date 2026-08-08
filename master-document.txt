@@ -59,7 +59,7 @@ Docker/server:
 
 Findings / follow-up:
 
-- The current Docker model is single-server sync: all devices point to the same MATFLOTE instance. This is compatible with a home Raspberry Pi setup.
+- The current Docker model is single-server sync: all devices point to the same MATFLOTE instance. This is compatible with a small home server setup.
 - PostgreSQL is not required while one backend process owns the SQLite database. Revisit database choice only for account/cloud sync.
 
 ## Data Storage
@@ -344,7 +344,7 @@ Current behavior:
 
 Findings / follow-up:
 
-- Plain JSON export does not include binary image files. Use the export package endpoint before risky deploys or migrations on the Pi.
+- Plain JSON export does not include binary image files. Use the export package endpoint before risky deploys or migrations on a server.
 - The committed seed catalog is currently empty, so production instances mostly contain user-created data unless a curated catalog is added.
 
 ## Settings And Integrations
@@ -441,7 +441,7 @@ README should stay user-facing and practical:
 - What MATFLOTE is.
 - How to run locally.
 - How Docker works.
-- How to deploy to the Pi.
+- How to deploy to a server.
 - How to back up and restore.
 - How integrations are configured.
 - How to export/import starter data.

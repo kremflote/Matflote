@@ -65,7 +65,7 @@ Windows:
 ipconfig
 ```
 
-Linux/Raspberry Pi:
+Linux/macOS:
 
 ```bash
 hostname -I
@@ -122,7 +122,7 @@ Back up the image volume:
 docker run --rm -v matflote-images:/images -v ${PWD}/backups:/backup alpine tar czf /backup/matflote-images.tar.gz -C /images .
 ```
 
-On Linux/Raspberry Pi, use shell-style current directory paths:
+On Linux/macOS, use shell-style current directory paths:
 
 ```bash
 docker run --rm -v matflote-data:/data -v "$(pwd)/backups:/backup" alpine tar czf /backup/matflote-data.tar.gz -C /data .
@@ -149,7 +149,7 @@ Restore image volume:
 docker run --rm -v matflote-images:/images -v ${PWD}/backups:/backup alpine sh -c "rm -rf /images/* && tar xzf /backup/matflote-images.tar.gz -C /images"
 ```
 
-On Linux/Raspberry Pi:
+On Linux/macOS:
 
 ```bash
 docker run --rm -v matflote-data:/data -v "$(pwd)/backups:/backup" alpine sh -c "rm -rf /data/* && tar xzf /backup/matflote-data.tar.gz -C /data"
@@ -169,42 +169,18 @@ git pull
 docker compose up -d --build
 ```
 
-## Deploy To Raspberry Pi Infra Stack
+## Deploy To A Server
 
-Normal flow from the development PC:
-
-```powershell
-git add .
-git commit -m "Describe the change"
-git push
-.\scripts\deploy-pi.ps1
-```
-
-The deploy script SSHes to `kremflote@krem-pi`, pulls `~/infra/matflote`, then rebuilds and restarts the MATFLOTE services from `~/infra/docker-compose.yml`.
-
-Deploy only the frontend:
+MATFLOTE can run on any server with Docker Compose. A common flow is:
 
 ```powershell
-.\scripts\deploy-pi.ps1 -Target frontend
+git pull
+docker compose up -d --build
 ```
 
-Deploy only the backend:
+If MATFLOTE is part of a larger homeserver stack, copy the `matflote-backend` and `matflote-frontend` service definitions into that stack's Compose file, attach them to the same Docker network as your reverse proxy, and keep the database/images on persistent storage.
 
-```powershell
-.\scripts\deploy-pi.ps1 -Target backend
-```
-
-Preview what would run without touching the Pi:
-
-```powershell
-.\scripts\deploy-pi.ps1 -DryRun
-```
-
-If the Pi already has the latest code and you only want to restart services without rebuilding:
-
-```powershell
-.\scripts\deploy-pi.ps1 -NoBuild -SkipPull
-```
+Do not commit server-specific deploy automation, hostnames, private paths, tokens, or reverse-proxy details. Keep those outside this repository or in a private infrastructure repository.
 
 To build a fresh Docker version from local source without starting it:
 
@@ -220,24 +196,12 @@ docker compose up -d --build
 
 ## Verify A Local Build
 
-Use the smoke script before Docker work or before committing backend/frontend integration changes:
+Before Docker work or before committing backend/frontend integration changes, run the normal frontend and backend builds:
 
 ```powershell
-.\scripts\smoke-test.ps1
+npm run build --prefix frontend
+dotnet build backend -c Release --no-restore
 ```
-
-The smoke script builds the frontend, builds the backend in Release mode, starts the backend on a temporary port with a temporary SQLite database and image folder, then checks:
-
-- `/health`
-- `/api/recipes`
-- `/api/ingredients`
-- `/api/mealplans`
-- `/api/grocerylists/preview`
-- `/api/app-settings`
-- `/api/seed-catalog/export`
-- image upload storage
-
-It does not call Vikunja, because that would require a real external server and token.
 
 To inspect the Docker configuration without starting containers:
 
@@ -258,7 +222,6 @@ Before committing a feature chunk, run:
 ```powershell
 npm run build --prefix frontend
 dotnet build backend -c Release --no-restore
-.\scripts\smoke-test.ps1
 docker compose config
 ```
 
@@ -282,7 +245,7 @@ VIKUNJA_PROJECT_ID=3
 VIKUNJA_API_TOKEN=your-token-here
 ```
 
-For development, `VIKUNJA_BASE_URL` can point at a Tailscale-only address as long as the machine or container running MATFLOTE can reach it.
+For development, `VIKUNJA_BASE_URL` can point at a private network/VPN address as long as the machine or container running MATFLOTE can reach it.
 
 The API token must have permission to create tasks in the configured Vikunja project. Do not commit real tokens to the repository.
 

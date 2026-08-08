@@ -212,3 +212,6 @@ nCrunchTemp_*
 *.db
 *.db-shm
 *.db-wal
+
+# Local/private automation helpers
+scripts/
