@@ -16,6 +16,28 @@ Created with assistance of ChatGPT 5.5.
 - Prices page for local household price tracking by ingredient, store, and date.
 - Nutrition page for approximate weekly nutrition summaries from planned meals and locally stored Helsedirektoratet reference values.
 
+## Images
+
+### Planner
+
+![MATFLOTE planner light mode](docs/images/plannerlight.png)
+
+![MATFLOTE mobile planner light mode](docs/images/mobileplannerlight.png)
+
+### Cookbook
+
+![MATFLOTE cookbook light mode](docs/images/cookbooklight.png)
+
+![MATFLOTE mobile cookbook light mode](docs/images/mobilecookbooklight.png)
+
+### Nutrition
+
+![MATFLOTE nutrition light mode](docs/images/nutritionlight.png)
+
+### Prices
+
+![MATFLOTE prices light mode](docs/images/priceslight.png)
+
 ## Docker
 
 MATFLOTE runs as two containers:
