@@ -680,7 +680,7 @@ export const recipeBrowserStyles = {
   manageTagTextField: (theme: SiteTheme) =>
     `${controlStyles.compactTextField(theme)} w-full text-sm`,
   manageTagSystemNameField: (theme: SiteTheme) =>
-    `${controlStyles.compactTextField(theme)} grid h-8 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-sm font-semibold max-sm:col-span-2 max-sm:col-start-2 max-sm:h-auto max-sm:min-h-12 max-sm:grid-cols-1 max-sm:items-start max-sm:gap-0.5 max-sm:py-1.5 ${
+    `${controlStyles.compactTextField(theme)} grid h-8 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-sm font-semibold max-sm:col-span-2 max-sm:col-start-2 max-sm:grid-cols-[minmax(0,1fr)_minmax(0,auto)] max-sm:gap-1.5 ${
       theme === "dark"
         ? "text-neutral-300"
         : theme === "paletteLight"
@@ -689,7 +689,7 @@ export const recipeBrowserStyles = {
     }`,
   manageTagSystemName: "min-w-0 truncate",
   manageTagSystemMeta: (theme: SiteTheme) =>
-    `shrink-0 justify-self-end text-xs font-semibold max-sm:justify-self-start ${
+    `min-w-0 max-w-28 truncate justify-self-end text-xs font-semibold max-sm:max-w-24 ${
       theme === "dark"
         ? "text-neutral-500"
         : theme === "paletteLight"

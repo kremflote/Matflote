@@ -5,7 +5,7 @@ import GroceryExportDialog from "../components/GroceryExportDialog";
 import PlannerControls from "../components/PlannerControls";
 import PlannerRecipePickerModal from "../components/PlannerRecipePickerModal";
 import PrepHelperDialog from "../components/PrepHelperDialog";
-import { useIngredients, useLanguage, useMealPlan, useRecipes } from "../contexts";
+import { useIngredientTagCategories, useIngredients, useLanguage, useMealPlan, useRecipes } from "../contexts";
 import type { IGroceryList } from "../interfaces/IGroceryList";
 import type { MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import { groceryListService } from "../services";
@@ -23,6 +23,7 @@ import {
   stripTime,
   toDateInputValue,
 } from "../utils/plannerDate";
+import { generateMealPlanEntries } from "../utils/plannerGenerator";
 import { buildPrepHelperItems } from "../utils/plannerPrepHelper";
 
 type PlannerPageProps = {
@@ -63,6 +64,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   } = useMealPlan();
   const { recipes } = useRecipes();
   const { ingredients } = useIngredients();
+  const { ingredientTagCategories } = useIngredientTagCategories();
 
   const visibleRange = useMemo(
     () => getVisibleRange(anchorDate, viewMode),
@@ -199,9 +201,15 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     const generationDates = getGenerationDates(anchorDate, viewMode);
     const rangeLabel = t.planner.rangeNames[viewMode];
 
-    const mainRecipes = recipes;
+    const entriesToGenerate = generateMealPlanEntries({
+      dates: generationDates,
+      existingEntries: mealPlanEntries,
+      ingredients,
+      recipes,
+      tagCategories: ingredientTagCategories,
+    });
 
-    if (mainRecipes.length === 0) {
+    if (entriesToGenerate.length === 0) {
       setPendingPlannerAction(null);
       setPlannerActionError(t.planner.noMainDishRecipesFound);
       return;
@@ -212,33 +220,8 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     setPlannerActionError(null);
 
     try {
-      for (const date of generationDates) {
-        const dateKey = toDateInputValue(date);
-
-        for (const slot of visibleMealSlots) {
-          if (getEntryForSlot(dateKey, slot) !== undefined) {
-            continue;
-          }
-
-          const mainRecipe = pickRandomItem(mainRecipes);
-
-          await saveMealPlanEntry(null, {
-            date: dateKey,
-            slot,
-            notes: null,
-            recipes: [
-              {
-                recipeId: mainRecipe.recipeId,
-                ingredientId: null,
-                role: "Main",
-                sortOrder: 0,
-                portions: mainRecipe.portions,
-                amount: null,
-                unit: null,
-              },
-            ],
-          });
-        }
+      for (const entryToGenerate of entriesToGenerate) {
+        await saveMealPlanEntry(null, entryToGenerate);
       }
     } catch (error) {
       setPlannerActionError(getPlannerActionError(error, t.planner.couldNotGenerate(rangeLabel)));
@@ -363,10 +346,6 @@ function createEmptyGroceryList(from: string, to: string): IGroceryList {
     generatedAt: new Date().toISOString(),
     sections: [],
   };
-}
-
-function pickRandomItem<TItem>(items: TItem[]) {
-  return items[Math.floor(Math.random() * items.length)];
 }
 
 function getPlannerActionError(_error: unknown, fallbackMessage: string) {
