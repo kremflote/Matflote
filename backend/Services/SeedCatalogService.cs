@@ -46,7 +46,10 @@ public class SeedCatalogService(
         await ImportCatalogAsync(catalog, cancellationToken);
     }
 
-    public async Task ImportCatalogAsync(SeedCatalogDto catalog, CancellationToken cancellationToken = default)
+    public async Task ImportCatalogAsync(
+        SeedCatalogDto catalog,
+        CancellationToken cancellationToken = default,
+        bool synchronizeTagCategories = false)
     {
         var startedAt = DateTimeOffset.UtcNow;
         try
@@ -56,6 +59,10 @@ public class SeedCatalogService(
             var brandCount = await UpsertBrandsAsync(catalog.Brands, cancellationToken);
             var ingredientCount = await UpsertIngredientsAsync(catalog.Ingredients, cancellationToken);
             var recipeCount = await UpsertRecipesAsync(catalog.Recipes, cancellationToken);
+            if (synchronizeTagCategories)
+            {
+                await SynchronizeTagCatalogAsync(catalog.TagCategories, cancellationToken);
+            }
 
             if (brandCount + ingredientCount + recipeCount > 0)
             {
@@ -192,6 +199,24 @@ public class SeedCatalogService(
         await ImportCatalogAsync(catalog, cancellationToken);
     }
 
+    public async Task ImportCatalogPackageStreamAsync(Stream stream, CancellationToken cancellationToken = default)
+    {
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+        var catalogEntry = archive.GetEntry("seed-catalog.json")
+            ?? throw new InvalidOperationException("Seed catalog package did not contain seed-catalog.json.");
+
+        await ExtractPackageImagesAsync(archive, cancellationToken);
+
+        await using var catalogStream = catalogEntry.Open();
+        var catalog = await JsonSerializer.DeserializeAsync<SeedCatalogDto>(catalogStream, jsonOptions, cancellationToken);
+        if (catalog is null)
+        {
+            throw new InvalidOperationException("Seed catalog file was empty or invalid.");
+        }
+
+        await ImportCatalogAsync(catalog, cancellationToken, synchronizeTagCategories: true);
+    }
+
     public async Task<byte[]> BuildExportPackageAsync(CancellationToken cancellationToken = default)
     {
         var catalog = await ExportCatalogAsync(cancellationToken);
@@ -220,6 +245,35 @@ public class SeedCatalogService(
         }
 
         return packageStream.ToArray();
+    }
+
+    private async Task ExtractPackageImagesAsync(ZipArchive archive, CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(imageStorage.RootPath);
+        var storageRoot = Path.GetFullPath(imageStorage.RootPath);
+
+        foreach (var entry in archive.Entries)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!entry.FullName.StartsWith("images/", StringComparison.OrdinalIgnoreCase) || entry.FullName.EndsWith('/'))
+            {
+                continue;
+            }
+
+            var relativeImagePath = entry.FullName["images/".Length..].Replace('/', Path.DirectorySeparatorChar);
+            var destinationPath = Path.GetFullPath(Path.Combine(storageRoot, relativeImagePath));
+
+            if (!destinationPath.StartsWith(storageRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogWarning("Skipped unsafe image path in seed catalog package: {EntryName}.", entry.FullName);
+                continue;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+            await using var entryStream = entry.Open();
+            await using var outputStream = File.Create(destinationPath);
+            await entryStream.CopyToAsync(outputStream, cancellationToken);
+        }
     }
 
     private async Task UpsertTagCategoriesAsync(
@@ -349,6 +403,55 @@ public class SeedCatalogService(
             }
         }
 
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task SynchronizeTagCatalogAsync(
+        IReadOnlyCollection<SeedTagCategoryDto>? categories,
+        CancellationToken cancellationToken)
+    {
+        if (categories is null)
+        {
+            return;
+        }
+
+        var catalogCategoryNames = categories
+            .Select(category => CleanName(category.Name))
+            .Where(name => name.Length > 0)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (catalogCategoryNames.Count == 0)
+        {
+            return;
+        }
+
+        var catalogTagNames = categories
+            .SelectMany(category => category.Tags ?? [])
+            .Select(tag => CleanName(tag.Name))
+            .Where(name => name.Length > 0)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (catalogTagNames.Count > 0)
+        {
+            var tagsToRemove = await context.IngredientTagDefinitions
+                .Where(tag => !catalogTagNames.Contains(tag.Name))
+                .ToListAsync(cancellationToken);
+            if (tagsToRemove.Count > 0)
+            {
+                context.IngredientTagDefinitions.RemoveRange(tagsToRemove);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        var categoriesToRemove = await context.IngredientTagCategories
+            .Include(category => category.Tags)
+            .Where(category => !catalogCategoryNames.Contains(category.Name))
+            .ToListAsync(cancellationToken);
+        if (categoriesToRemove.Count == 0)
+        {
+            return;
+        }
+
+        context.IngredientTagCategories.RemoveRange(categoriesToRemove);
         await context.SaveChangesAsync(cancellationToken);
     }
 
@@ -555,8 +658,7 @@ public class SeedCatalogService(
             return (null, false);
         }
 
-        var existing = await context.Brands
-            .FirstOrDefaultAsync(brand => brand.Name.ToLower() == cleanName.ToLower(), cancellationToken);
+        var existing = FindTrackedBrand(cleanName) ?? await FindStoredBrandAsync(cleanName, cancellationToken);
         if (existing is not null)
         {
             return (existing, false);
@@ -564,8 +666,32 @@ public class SeedCatalogService(
 
         var brand = new Brand { Name = cleanName };
         context.Brands.Add(brand);
-        await context.SaveChangesAsync(cancellationToken);
-        return (brand, true);
+        try
+        {
+            await context.SaveChangesAsync(cancellationToken);
+            return (brand, true);
+        }
+        catch (DbUpdateException)
+        {
+            context.Entry(brand).State = EntityState.Detached;
+            existing = FindTrackedBrand(cleanName) ?? await FindStoredBrandAsync(cleanName, cancellationToken);
+
+            if (existing is not null)
+            {
+                return (existing, false);
+            }
+
+            throw;
+        }
+    }
+
+    private Brand? FindTrackedBrand(string name) =>
+        context.Brands.Local.FirstOrDefault(brand => string.Equals(brand.Name, name, StringComparison.OrdinalIgnoreCase));
+
+    private async Task<Brand?> FindStoredBrandAsync(string name, CancellationToken cancellationToken)
+    {
+        var brands = await context.Brands.ToListAsync(cancellationToken);
+        return brands.FirstOrDefault(brand => string.Equals(brand.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task<int> GetNextCategorySortOrderAsync(CancellationToken cancellationToken)
@@ -593,7 +719,7 @@ public class SeedCatalogService(
         return maxSortOrder + 100;
     }
 
-    private Task<Ingredient?> FindIngredientAsync(
+    private async Task<Ingredient?> FindIngredientAsync(
         string ingredientName,
         string? brandName,
         CancellationToken cancellationToken)
@@ -601,15 +727,32 @@ public class SeedCatalogService(
         var cleanName = CleanName(ingredientName);
         var cleanBrand = CleanName(brandName);
 
-        return context.Ingredients
+        var exactMatch = await context.Ingredients
             .Include(ingredient => ingredient.Brand)
             .FirstOrDefaultAsync(
                 ingredient =>
-                    ingredient.IngredientName.ToLower() == cleanName.ToLower() &&
+                    ingredient.IngredientName == cleanName &&
                     (cleanBrand.Length == 0
                         ? ingredient.BrandId == null
-                        : ingredient.Brand != null && ingredient.Brand.Name.ToLower() == cleanBrand.ToLower()),
+                        : ingredient.Brand != null && ingredient.Brand.Name == cleanBrand),
                 cancellationToken);
+
+        if (exactMatch is not null)
+        {
+            return exactMatch;
+        }
+
+        var candidates = await context.Ingredients
+            .Include(ingredient => ingredient.Brand)
+            .Where(ingredient => ingredient.IngredientName == cleanName)
+            .ToListAsync(cancellationToken);
+
+        return candidates.FirstOrDefault(ingredient =>
+            string.Equals(ingredient.IngredientName, cleanName, StringComparison.OrdinalIgnoreCase) &&
+            (cleanBrand.Length == 0
+                ? ingredient.BrandId == null
+                : ingredient.Brand is not null &&
+                  string.Equals(ingredient.Brand.Name, cleanBrand, StringComparison.OrdinalIgnoreCase)));
     }
 
     private Task<bool> RecipeExistsAsync(string name, CancellationToken cancellationToken) =>

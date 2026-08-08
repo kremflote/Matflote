@@ -16,7 +16,6 @@ import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../ut
 import {
   formatIngredientTagCategoryName,
   getIngredientTagGroupsWithCustomTags,
-  ingredientTagGroups,
 } from "../components/recipeBrowser/formOptions";
 import { GroupedCheckboxPanel } from "../components/recipeBrowser/BrowserFilterGroups";
 import { recipeBrowserStyles } from "../components/recipeBrowser/recipeBrowserStyles";
@@ -525,9 +524,7 @@ function IngredientDraftEditor({
   const [showNutrition, setShowNutrition] = useState(false);
   const imageUrl = getApiAssetUrl(imagePreviewUrl ?? draft.imageUrl);
   const ingredientVisibleTagCategories = getIngredientVisibleTagCategories(ingredientTagCategories);
-  const knownIngredientTags = (ingredientTagCategories.length === 0
-    ? ingredientTagGroups.flatMap((group) => group.values)
-    : getAllCategoryTagNames(ingredientTagCategories)) as IngredientTag[];
+  const knownIngredientTags = getAllCategoryTagNames(ingredientTagCategories) as IngredientTag[];
   const existingCustomTags = ingredients
     .flatMap((ingredient) => ingredient.tags)
     .filter((tag) => !knownIngredientTags.includes(tag));
@@ -536,14 +533,12 @@ function IngredientDraftEditor({
     ...draft.tags.filter((tag) => !knownIngredientTags.includes(tag)),
   ]));
   const groupedTags = getIngredientTagGroupsWithCustomTags(customTags, "pantry", ingredientVisibleTagCategories);
-  const groupLabels = ingredientVisibleTagCategories.length === 0
-    ? t.filters.ingredientTagGroups
-    : Object.fromEntries(
-        ingredientVisibleTagCategories.map((category) => [
-          category.ingredientTagCategoryId.toString(),
-          formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
-        ]),
-      );
+  const groupLabels = Object.fromEntries(
+    ingredientVisibleTagCategories.map((category) => [
+      category.ingredientTagCategoryId.toString(),
+      formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
+    ]),
+  );
   const nutritionValues = nutritionToEditorValues(draft.nutritionPer100);
   const nutritionSource = getNutritionSource(
     draft,

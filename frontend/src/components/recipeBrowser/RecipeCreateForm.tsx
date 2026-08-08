@@ -8,7 +8,6 @@ import { getAllCategoryTagNames, getRecipeVisibleTagCategories } from "../../uti
 import {
   formatRecipeTagGroupName,
   getRecipeTagGroupsWithCustomTags,
-  recipeTagGroups,
 } from "./formOptions";
 import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import ImageCropPicker from "./ImageCropPicker";
@@ -105,9 +104,7 @@ function RecipeCreateForm({
     [selectedComponents],
   );
   const recipeVisibleTagCategories = getRecipeVisibleTagCategories(ingredientTagCategories);
-  const knownRecipeTags = (ingredientTagCategories.length === 0
-    ? recipeTagGroups.flatMap((group) => group.values)
-    : getAllCategoryTagNames(ingredientTagCategories)) as RecipeTag[];
+  const knownRecipeTags = getAllCategoryTagNames(ingredientTagCategories) as RecipeTag[];
   const existingCustomRecipeTags = recipes
     .flatMap((recipe) => recipe.tags)
     .filter((tag) => !knownRecipeTags.includes(tag));
@@ -116,14 +113,12 @@ function RecipeCreateForm({
     ...selectedTags.filter((tag) => !knownRecipeTags.includes(tag)),
   ]));
   const groupedRecipeTags = getRecipeTagGroupsWithCustomTags(customRecipeTags, "style", recipeVisibleTagCategories);
-  const recipeTagGroupLabels = recipeVisibleTagCategories.length === 0
-    ? t.filters.recipeTagGroups
-    : Object.fromEntries(
-        recipeVisibleTagCategories.map((category) => [
-          category.ingredientTagCategoryId.toString(),
-          formatRecipeTagGroupName(category.name, t.filters.recipeTagGroups),
-        ]),
-      );
+  const recipeTagGroupLabels = Object.fromEntries(
+    recipeVisibleTagCategories.map((category) => [
+      category.ingredientTagCategoryId.toString(),
+      formatRecipeTagGroupName(category.name, t.filters.recipeTagGroups),
+    ]),
+  );
 
   const visibleIngredients = useMemo(() => {
     const normalizedSearch = ingredientSearch.trim().toLowerCase();

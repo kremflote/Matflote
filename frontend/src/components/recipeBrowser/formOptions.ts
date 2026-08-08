@@ -70,15 +70,15 @@ export function getRecipeTagGroupsWithCustomTags(
   categories: readonly IIngredientTagCategory[] = [],
 ) {
   const baseGroups = categories.length === 0
-    ? recipeTagGroups
+    ? []
     : categories.map((category) => ({
         key: category.ingredientTagCategoryId.toString(),
         values: getCategoryTagNames(category) as RecipeTag[],
       }));
   const styleCategory = categories.find((category) => category.name.trim().toLowerCase() === "style");
-  const fallbackKey = categories.length === 0
-    ? fallbackGroup
-    : styleCategory?.ingredientTagCategoryId.toString() ?? categories[0]?.ingredientTagCategoryId.toString() ?? fallbackGroup;
+  const fallbackKey = styleCategory?.ingredientTagCategoryId.toString()
+    ?? categories[0]?.ingredientTagCategoryId.toString()
+    ?? fallbackGroup;
   const knownTags = new Set(baseGroups.flatMap((group) => group.values));
   const normalizedCustomTags = customTags
     .map((tag) => tag.trim())
@@ -165,15 +165,15 @@ export function getIngredientTagGroupsWithCustomTags(
   categories: readonly IIngredientTagCategory[] = [],
 ) {
   const baseGroups = categories.length === 0
-    ? ingredientTagGroups
+    ? []
     : categories.map((category) => ({
         key: category.ingredientTagCategoryId.toString(),
         values: getCategoryTagNames(category) as IngredientTag[],
       }));
   const pantryCategory = categories.find((category) => category.name.trim().toLowerCase() === "pantry");
-  const fallbackKey = categories.length === 0
-    ? fallbackGroup
-    : pantryCategory?.ingredientTagCategoryId.toString() ?? categories[0]?.ingredientTagCategoryId.toString() ?? fallbackGroup;
+  const fallbackKey = pantryCategory?.ingredientTagCategoryId.toString()
+    ?? categories[0]?.ingredientTagCategoryId.toString()
+    ?? fallbackGroup;
   const knownTags = new Set(baseGroups.flatMap((group) => group.values));
   const normalizedCustomTags = customTags
     .map((tag) => tag.trim())

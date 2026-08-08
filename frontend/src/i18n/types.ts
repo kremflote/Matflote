@@ -402,6 +402,14 @@ export type TranslationDictionary = {
     generateCurrent: (range: string) => string;
     generateMealPlan: string;
     generateRangeBody: (range: string) => string;
+    generationIssues: {
+      missingSystemTag: (slot: string) => string;
+      noAvailableDinnerRecipes: string;
+      noEmptySlots: string;
+      noRecipeWithEnoughPortions: (slot: string, tag: string, peopleEating: number) => string;
+      noTaggedRecipes: (slot: string, tag: string) => string;
+      noToppingIngredients: (tag: string) => string;
+    };
     generating: string;
     peopleEatingThisWeek: string;
     mealCalendar: string;

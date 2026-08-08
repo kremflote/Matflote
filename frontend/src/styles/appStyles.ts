@@ -89,13 +89,14 @@ export const siteColorClasses = {
     controlSelected:
       "border-white/[0.18] bg-white/[0.18] text-neutral-50 max-[1100px]:border-white/[0.24] max-[1100px]:bg-neutral-700",
     plannerControl: `border-white/[0.12] bg-white/[0.06] text-white ${plannerControlHoverClasses.dark}`,
+    plannerTooltip: "border-white/[0.18] bg-neutral-950 text-white",
     cookbookFilterButton:
       "border-white/[0.12] bg-neutral-400 text-neutral-950 hover:bg-neutral-300",
     cookbookAddButton:
       "border-neutral-700 bg-neutral-950 text-white hover:bg-neutral-900",
     ingredientThumbnailInteractive: plannerControlHoverClasses.dark,
-    selectedThumbnailBorder: "border-[#7A8864]",
-    selectedThumbnailRing: "after:ring-[#7A8864]",
+    selectedThumbnailBorder: "border-[#B8F07A]",
+    selectedThumbnailRing: "after:ring-[#B8F07A]",
     plannerDateItem: "bg-white/[0.12]",
     plannerCounter: "border-white/[0.10] bg-white/[0.06] text-white",
     plannerCounterMuted: "text-neutral-300",
@@ -120,13 +121,14 @@ export const siteColorClasses = {
       "text-neutral-600 hover:border-neutral-300 hover:bg-neutral-200 hover:text-neutral-900",
     controlSelected: "border-neutral-300 bg-neutral-200 text-neutral-900",
     plannerControl: `border-neutral-300 bg-white text-neutral-900 ${plannerControlHoverClasses.light}`,
+    plannerTooltip: "border-neutral-300 bg-white text-neutral-900",
     cookbookFilterButton:
       "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-100",
     cookbookAddButton:
       "border-[#EEC642] bg-[#FFD64F] text-neutral-950 hover:bg-[#EEC642]",
     ingredientThumbnailInteractive: plannerControlHoverClasses.light,
-    selectedThumbnailBorder: "border-[#7A8864]",
-    selectedThumbnailRing: "after:ring-[#7A8864]",
+    selectedThumbnailBorder: "border-[#9BCB4F]",
+    selectedThumbnailRing: "after:ring-[#9BCB4F]",
     plannerDateItem: "bg-neutral-200",
     plannerCounter: "border-neutral-200 bg-neutral-100 text-neutral-900",
     plannerCounterMuted: "text-neutral-500",
@@ -151,13 +153,14 @@ export const siteColorClasses = {
       "text-[#FAF7F2] hover:border-[#FAF7F2]/45 hover:bg-[#FAF7F2]/15 hover:text-[#FAF7F2]",
     controlSelected: "border-[#FAF7F2]/70 bg-[#FAF7F2] text-[#7A8864]",
     plannerControl: `border-[#7A8864]/35 bg-[#FAF7F2]/35 text-[#556145] ${plannerControlHoverClasses.paletteLight}`,
+    plannerTooltip: "border-[#7A8864] bg-[#FAF7F2] text-[#556145]",
     cookbookFilterButton:
       "border-[#7A8864]/35 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]",
     cookbookAddButton:
       "border-[#7A8864] bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]",
     ingredientThumbnailInteractive: plannerControlHoverClasses.paletteLight,
-    selectedThumbnailBorder: "border-[#7A8864]",
-    selectedThumbnailRing: "after:ring-[#7A8864]",
+    selectedThumbnailBorder: "border-[#9BCB4F]",
+    selectedThumbnailRing: "after:ring-[#9BCB4F]",
     plannerDateItem: "bg-[#C8C0B5]/70",
     plannerCounter: "border-[#C8C0B5] bg-[#E5D5BC]/60 text-[#556145]",
     plannerCounterMuted: "text-[#7A8864]",
@@ -1164,13 +1167,13 @@ export const plannerControlsStyles = {
   actionSlotCenter: "min-w-0",
   actionSlotRight: "min-w-0",
   iconOnlyButton: (theme: SiteTheme) =>
-    `${sizeClasses.plannerControlHeight} group relative inline-flex w-full min-w-0 items-center justify-center gap-2 ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+    `${sizeClasses.plannerControlHeight} group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-2 ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
   iconButton: (theme: SiteTheme) =>
     `${sizeClasses.plannerControlHeight} inline-flex aspect-square items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
   buttonIcon: "h-4 w-4 shrink-0 fill-current",
   actionButtonLabel: "min-w-0 truncate leading-none",
   tooltip: (theme: SiteTheme) =>
-    `pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold opacity-0 ${shadowClasses.subtle} transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${siteColorClasses[theme].plannerControl}`,
+    `pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold opacity-0 ${shadowClasses.subtle} transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${siteColorClasses[theme].plannerTooltip}`,
   viewToggle: (theme: SiteTheme) =>
     segmentedToggleStyles.shell(theme, sizeClasses.thumbnailControlWidth),
   viewToggleOption: (theme: SiteTheme, selected: boolean) =>
@@ -1219,7 +1222,7 @@ export const prepHelperStyles = {
           ? "text-[#7A8864]"
           : "text-neutral-500"
     }`,
-  closeButton: controlStyles.modalCloseButton,
+  closeButton: (theme: SiteTheme) => `${controlStyles.modalCloseButton(theme)} max-sm:hidden`,
   bodyFrame: "grid min-h-0 gap-3",
   list: "grid max-h-[48vh] gap-3 overflow-y-auto pr-1",
   item: (theme: SiteTheme) =>
@@ -1444,7 +1447,7 @@ export const plannerPickerStyles = {
           ? "text-[#7A8864]"
           : "text-neutral-500"
     }`,
-  closeButton: controlStyles.modalCloseButton,
+  closeButton: (theme: SiteTheme) => `${controlStyles.modalCloseButton(theme)} max-sm:hidden`,
   bodyFrame: "grid min-h-0 gap-4 max-sm:gap-2",
   bodyScrollFrame: "grid min-h-0 overflow-y-auto pr-1",
   controls:
@@ -1455,7 +1458,7 @@ export const plannerPickerStyles = {
   filterButton: (theme: SiteTheme) =>
     `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 text-xs font-extrabold ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
   browserModeSwitch: (theme: SiteTheme) =>
-    `${segmentedToggleStyles.shell(theme)} col-start-5 h-9 w-full justify-self-end max-sm:col-span-3 max-sm:col-start-auto`,
+    `${segmentedToggleStyles.shell(theme)} col-start-5 h-9 w-full justify-self-end max-sm:order-first max-sm:col-span-3 max-sm:col-start-auto`,
   browserModeOption: (theme: SiteTheme, selected: boolean) =>
     segmentedToggleStyles.option(theme, selected),
   categoryButtonLabel: "max-[1100px]:sr-only",
@@ -1567,6 +1570,8 @@ export const plannerPickerStyles = {
   footerActions:
     "flex shrink-0 flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap max-sm:[&>button]:min-w-0 max-sm:[&>button]:flex-1 max-sm:[&>button]:px-3 max-sm:[&>button]:text-sm",
   secondaryButton: controlStyles.secondaryButton,
+  mobileCancelButton: (theme: SiteTheme) =>
+    `hidden max-sm:inline-flex ${controlStyles.secondaryButton(theme)}`,
   primaryButton: controlStyles.primaryButton,
   removeButton: controlStyles.removeButton,
   emptyState: (theme: SiteTheme) =>

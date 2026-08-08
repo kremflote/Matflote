@@ -22,13 +22,9 @@ Created with assistance of ChatGPT 5.5.
 
 ![MATFLOTE planner light mode](docs/images/plannerlight.png)
 
-![MATFLOTE mobile planner light mode](docs/images/mobileplannerlight.png)
-
 ### Cookbook
 
 ![MATFLOTE cookbook light mode](docs/images/cookbooklight.png)
-
-![MATFLOTE mobile cookbook light mode](docs/images/mobilecookbooklight.png)
 
 ### Nutrition
 
@@ -37,6 +33,12 @@ Created with assistance of ChatGPT 5.5.
 ### Prices
 
 ![MATFLOTE prices light mode](docs/images/priceslight.png)
+
+### Mobile 
+
+![MATFLOTE mobile planner light mode](docs/images/mobileplannerlight.png)
+
+![MATFLOTE mobile cookbook light mode](docs/images/mobilecookbooklight.png)
 
 ## Docker
 
@@ -74,7 +76,45 @@ Then open:
 http://localhost:8095
 ```
 
-## Backup
+## First Setup Checklist
+
+1. Copy `.env.example` to `.env`.
+2. Set `MATFLOTE_PORT` if the default `8080` is already used.
+3. Add private keys or tokens for integrations you plan to use:
+   - `VIKUNJA_API_TOKEN` for shopping-list export.
+   - `KASSALAPP_API_KEY` for product scanning.
+   - `HELSEDIREKTORATET_SUBSCRIPTION_KEY` for refreshing nutrition references.
+4. Start MATFLOTE.
+5. Open Settings and confirm language, integrations, and grocery export mode.
+6. Create your first backup after adding real household data.
+
+
+## Backup And Restore MATFLOTE Data
+
+MATFLOTE household data is made of two parts:
+
+- Database data: ingredients, recipes, tags, tag categories, brands, stores, price points, meal plans, nutrition references/settings, grocery export rules, integration settings, conversion rules, and image metadata.
+- Image files: uploaded ingredient/recipe images and seeded placeholder images.
+
+For an app-level portable backup, use:
+
+```text
+GET /api/seed-catalog/export-package
+```
+
+That downloads a zip containing catalog JSON plus image files. It is the easiest way to move recipes, ingredients, tags, brands, conversion rules, and images between MATFLOTE instances.
+
+Import that package into another MATFLOTE instance:
+
+```powershell
+curl.exe -i -X POST `
+  -F "file=@C:\path\to\matflote-export-package.zip" `
+  "http://localhost:8080/api/seed-catalog/import-package"
+```
+
+The import is additive. Matching ingredients and recipes are left alone, so it is useful for seeding or moving curated data, not for replacing a whole household database.
+
+For a complete server backup, back up both Docker volumes.
 
 Create a backup folder first:
 
@@ -99,39 +139,6 @@ On Linux/macOS, use shell-style current directory paths:
 ```bash
 docker run --rm -v matflote-data:/data -v "$(pwd)/backups:/backup" alpine tar czf /backup/matflote-data.tar.gz -C /data .
 docker run --rm -v matflote-images:/images -v "$(pwd)/backups:/backup" alpine tar czf /backup/matflote-images.tar.gz -C /images .
-```
-
-## Restore
-
-Stop MATFLOTE first:
-
-```powershell
-docker compose down
-```
-
-Restore database volume:
-
-```powershell
-docker run --rm -v matflote-data:/data -v ${PWD}/backups:/backup alpine sh -c "rm -rf /data/* && tar xzf /backup/matflote-data.tar.gz -C /data"
-```
-
-Restore image volume:
-
-```powershell
-docker run --rm -v matflote-images:/images -v ${PWD}/backups:/backup alpine sh -c "rm -rf /images/* && tar xzf /backup/matflote-images.tar.gz -C /images"
-```
-
-On Linux/macOS:
-
-```bash
-docker run --rm -v matflote-data:/data -v "$(pwd)/backups:/backup" alpine sh -c "rm -rf /data/* && tar xzf /backup/matflote-data.tar.gz -C /data"
-docker run --rm -v matflote-images:/images -v "$(pwd)/backups:/backup" alpine sh -c "rm -rf /images/* && tar xzf /backup/matflote-images.tar.gz -C /images"
-```
-
-Start again:
-
-```powershell
-docker compose up -d
 ```
 
 ## Shopping List Export
@@ -169,7 +176,7 @@ POST /api/grocerylists/export?from=YYYY-MM-DD&to=YYYY-MM-DD
 
 ## Product Scanner
 
-The Scanner/Skanner page uses Kassalapp through the backend. The frontend never receives the Kassalapp API key.
+The Scanner page uses Kassalapp through the backend.
 
 For local development, store the key with .NET user-secrets:
 
@@ -180,6 +187,7 @@ dotnet user-secrets set "Kassalapp:ApiKey" "your-api-key-here" --project backend
 For Docker/server use, set the key in your private `.env` or server environment:
 
 ```env
+KASSALAPP_BASE_URL=https://kassal.app/api/v1
 KASSALAPP_API_KEY=your-api-key-here
 ```
 

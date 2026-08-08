@@ -9,7 +9,6 @@ import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../..
 import {
   formatIngredientTagCategoryName,
   getIngredientTagGroupsWithCustomTags,
-  ingredientTagGroups,
 } from "./formOptions";
 import { GroupedCheckboxPanel } from "./BrowserFilterGroups";
 import CreatableSelect from "./CreatableSelect";
@@ -113,9 +112,7 @@ function IngredientCreateForm({
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const ingredientVisibleTagCategories = getIngredientVisibleTagCategories(ingredientTagCategories);
-  const knownIngredientTags = (ingredientTagCategories.length === 0
-    ? ingredientTagGroups.flatMap((group) => group.values)
-    : getAllCategoryTagNames(ingredientTagCategories)) as IngredientTag[];
+  const knownIngredientTags = getAllCategoryTagNames(ingredientTagCategories) as IngredientTag[];
   const existingCustomTags = ingredients
     .flatMap((ingredient) => ingredient.tags)
     .filter((tag) => !knownIngredientTags.includes(tag));
@@ -124,14 +121,12 @@ function IngredientCreateForm({
     ...selectedTags.filter((tag) => !knownIngredientTags.includes(tag)),
   ]));
   const groupedTags = getIngredientTagGroupsWithCustomTags(customTags, "pantry", ingredientVisibleTagCategories);
-  const groupLabels = ingredientVisibleTagCategories.length === 0
-    ? t.filters.ingredientTagGroups
-    : Object.fromEntries(
-        ingredientVisibleTagCategories.map((category) => [
-          category.ingredientTagCategoryId.toString(),
-          formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
-        ]),
-      );
+  const groupLabels = Object.fromEntries(
+    ingredientVisibleTagCategories.map((category) => [
+      category.ingredientTagCategoryId.toString(),
+      formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
+    ]),
+  );
   const handleCroppedFileChange = useCallback((file: File | null) => {
     setCroppedImageFile(file);
   }, []);

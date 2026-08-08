@@ -35,6 +35,39 @@ type GenerateMealPlanEntriesArgs = {
   tagCategories: IIngredientTagCategory[];
 };
 
+export type MealPlanGenerationIssue =
+  | {
+      code: "MissingSystemTag";
+      slot: MealSlot;
+      systemKey: string;
+    }
+  | {
+      code: "NoTaggedRecipes";
+      slot: MealSlot;
+      tagName: string;
+    }
+  | {
+      code: "NoRecipeWithEnoughPortions";
+      slot: MealSlot;
+      tagName: string;
+      peopleEating: number;
+    }
+  | {
+      code: "NoAvailableDinnerRecipes";
+    }
+  | {
+      code: "NoEmptySlots";
+    }
+  | {
+      code: "NoToppingIngredients";
+      tagName: string;
+    };
+
+export type MealPlanGenerationResult = {
+  entries: MealPlanEntryRequest[];
+  issues: MealPlanGenerationIssue[];
+};
+
 export function generateMealPlanEntries({
   dates,
   existingEntries,
@@ -43,6 +76,24 @@ export function generateMealPlanEntries({
   recipes,
   tagCategories,
 }: GenerateMealPlanEntriesArgs): MealPlanEntryRequest[] {
+  return generateMealPlanEntriesWithIssues({
+    dates,
+    existingEntries,
+    ingredients,
+    peopleEating,
+    recipes,
+    tagCategories,
+  }).entries;
+}
+
+export function generateMealPlanEntriesWithIssues({
+  dates,
+  existingEntries,
+  ingredients,
+  peopleEating,
+  recipes,
+  tagCategories,
+}: GenerateMealPlanEntriesArgs): MealPlanGenerationResult {
   const systemTags = buildSystemTagLookup(tagCategories);
   const filledSlots = new Set(existingEntries.map((entry) => getEntryKey(entry.date, entry.slot)));
   const selectedDinnerRecipeIds = getExistingDinnerRecipeIds(existingEntries);
@@ -59,9 +110,17 @@ export function generateMealPlanEntries({
     return generatedMealSlots
       .filter((slot) => !filledSlots.has(getEntryKey(dateKey, slot)))
       .map((slot) => ({ date, dateKey, slot }));
-  });
+    });
 
   const availableTargetKeys = new Set(targets.map((target) => getEntryKey(target.dateKey, target.slot)));
+  const issues = buildGenerationIssues(
+    targets,
+    recipes,
+    ingredients,
+    systemTags,
+    selectedDinnerRecipeIds,
+    peopleEating,
+  );
 
   for (let targetIndex = 0; targetIndex < targets.length; targetIndex += 1) {
     const target = targets[targetIndex];
@@ -126,7 +185,10 @@ export function generateMealPlanEntries({
     }
   }
 
-  return generatedEntries;
+  return {
+    entries: generatedEntries,
+    issues,
+  };
 }
 
 type GenerationTarget = {
@@ -202,6 +264,72 @@ function getRecipeCandidatesForSlot(
     (slot !== "Dinner" || !selectedDinnerRecipeIds.has(recipe.recipeId)) &&
     itemHasSystemTag(recipe.tags, systemTags, systemKey),
   );
+}
+
+function buildGenerationIssues(
+  targets: GenerationTarget[],
+  recipes: IRecipe[],
+  ingredients: IIngredient[],
+  systemTags: SystemTagLookup,
+  selectedDinnerRecipeIds: Set<number>,
+  peopleEating: number,
+) {
+  const issues: MealPlanGenerationIssue[] = [];
+  const targetSlots = new Set(targets.map((target) => target.slot));
+
+  if (targets.length === 0) {
+    issues.push({ code: "NoEmptySlots" });
+  }
+
+  for (const slot of generatedMealSlots) {
+    if (!targetSlots.has(slot)) {
+      continue;
+    }
+
+    const systemKey = slotSystemTags[slot];
+    if (systemKey === null) {
+      continue;
+    }
+
+    const tagName = systemTags.get(systemKey);
+    if (tagName === undefined) {
+      issues.push({ code: "MissingSystemTag", slot, systemKey });
+      continue;
+    }
+
+    const taggedRecipes = recipes.filter((recipe) => itemHasSystemTag(recipe.tags, systemTags, systemKey));
+    if (taggedRecipes.length === 0) {
+      issues.push({ code: "NoTaggedRecipes", slot, tagName });
+      continue;
+    }
+
+    const portionReadyRecipes = taggedRecipes.filter((recipe) => recipe.portions >= peopleEating);
+    if (portionReadyRecipes.length === 0) {
+      issues.push({ code: "NoRecipeWithEnoughPortions", slot, tagName, peopleEating });
+      continue;
+    }
+
+    if (slot === "Dinner" && portionReadyRecipes.every((recipe) => selectedDinnerRecipeIds.has(recipe.recipeId))) {
+      issues.push({ code: "NoAvailableDinnerRecipes" });
+    }
+  }
+
+  const breadTagName = systemTags.get("Format.Bread");
+  const toppingTagName = systemTags.get("FoodRole.Topping");
+  const hasBreakfastBread = recipes.some((recipe) =>
+    breadTagName !== undefined &&
+    recipe.tags.includes(breadTagName) &&
+    itemHasSystemTag(recipe.tags, systemTags, "Meal.Breakfast"),
+  );
+  const hasToppings = ingredients.some((ingredient) =>
+    toppingTagName !== undefined && ingredient.tags.includes(toppingTagName),
+  );
+
+  if (hasBreakfastBread && toppingTagName !== undefined && !hasToppings) {
+    issues.push({ code: "NoToppingIngredients", tagName: toppingTagName });
+  }
+
+  return dedupeIssues(issues);
 }
 
 function createGeneratedMealItems(
@@ -404,4 +532,17 @@ function pickRandomItem<TItem>(items: TItem[]) {
 
 function shuffle<TItem>(items: TItem[]) {
   return [...items].sort(() => Math.random() - 0.5);
+}
+
+function dedupeIssues(issues: MealPlanGenerationIssue[]) {
+  const seen = new Set<string>();
+  return issues.filter((issue) => {
+    const key = JSON.stringify(issue);
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
 }

@@ -491,6 +491,19 @@ export const en: TranslationDictionary = {
     generateMealPlan: "Generate meal plan",
     generateRangeBody: (range) =>
       `This will generate meals for empty slots in the current ${range}. Existing meals will stay unchanged.`,
+    generationIssues: {
+      missingSystemTag: (slot) =>
+        `Generation needs an app tag for ${slot}, but that tag is missing.`,
+      noAvailableDinnerRecipes:
+        "All suitable dinner recipes are already used in this range.",
+      noEmptySlots: "There are no empty meal slots to generate.",
+      noRecipeWithEnoughPortions: (slot, tag, peopleEating) =>
+        `No ${slot.toLowerCase()} recipes tagged ${tag} have at least ${peopleEating} portions.`,
+      noTaggedRecipes: (slot, tag) =>
+        `No ${slot.toLowerCase()} recipes are tagged ${tag}.`,
+      noToppingIngredients: (tag) =>
+        `Bread breakfasts can be generated, but no ingredients are tagged ${tag} for toppings.`,
+    },
     generating: "Generating...",
     peopleEatingThisWeek: "People eating this week",
     mealCalendar: "Meal calendar",

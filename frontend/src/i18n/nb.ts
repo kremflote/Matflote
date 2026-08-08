@@ -558,6 +558,19 @@ export const nb: TranslationDictionary = {
     generateMealPlan: "Generer måltidsplan",
     generateRangeBody: (range) =>
       `Dette genererer måltider for tomme plasser i gjeldende ${range}. Eksisterende måltider beholdes.`,
+    generationIssues: {
+      missingSystemTag: (slot) =>
+        `Generering trenger en app-tag for ${slot}, men den taggen mangler.`,
+      noAvailableDinnerRecipes:
+        "Alle passende middagsoppskrifter er allerede brukt i denne perioden.",
+      noEmptySlots: "Det finnes ingen tomme måltidsplasser å generere.",
+      noRecipeWithEnoughPortions: (slot, tag, peopleEating) =>
+        `Ingen oppskrifter for ${slot.toLowerCase()} med taggen ${tag} har minst ${peopleEating} porsjoner.`,
+      noTaggedRecipes: (slot, tag) =>
+        `Ingen oppskrifter for ${slot.toLowerCase()} har taggen ${tag}.`,
+      noToppingIngredients: (tag) =>
+        `Brødfrokoster kan genereres, men ingen ingredienser har taggen ${tag} for pålegg.`,
+    },
     generating: "Genererer...",
     peopleEatingThisWeek: "Personer som spiser denne uken",
     mealCalendar: "Måltidskalender",

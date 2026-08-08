@@ -15,6 +15,7 @@ services:
       Vikunja__BaseUrl: ${VIKUNJA_BASE_URL:-}
       Vikunja__ApiToken: ${VIKUNJA_API_TOKEN:-}
       Vikunja__ProjectId: ${VIKUNJA_PROJECT_ID:-}
+      Kassalapp__BaseUrl: ${KASSALAPP_BASE_URL:-https://kassal.app/api/v1}
       Kassalapp__ApiKey: ${KASSALAPP_API_KEY:-}
       Helsedirektoratet__BaseUrl: ${HELSEDIREKTORATET_BASE_URL:-https://api.helsedirektoratet.no}
       Helsedirektoratet__SubscriptionKey: ${HELSEDIREKTORATET_SUBSCRIPTION_KEY:-}

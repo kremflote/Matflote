@@ -17,6 +17,8 @@ type PlannerRecipePickerGridProps = {
   theme: SiteTheme;
   onSelectIngredient: (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => void;
   onSelectRecipe: (recipe: IRecipe, portions: number) => void;
+  onUpdateIngredient: (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => void;
+  onUpdateRecipe: (recipe: IRecipe, portions: number) => void;
 };
 
 type ActiveOverlay =
@@ -43,6 +45,8 @@ function PlannerRecipePickerGrid({
   theme,
   onSelectIngredient,
   onSelectRecipe,
+  onUpdateIngredient,
+  onUpdateRecipe,
 }: PlannerRecipePickerGridProps) {
   const { t } = useLanguage();
   const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay | null>(null);
@@ -83,9 +87,13 @@ function PlannerRecipePickerGrid({
                 theme={theme}
                 onClick={() => {
                   const nextPortions = parsePositiveNumber(value) ?? recipe.portions;
-                  if (!selected) {
+                  if (selected) {
                     onSelectRecipe(recipe, nextPortions);
+                    setActiveOverlay(null);
+                    return;
                   }
+
+                  onSelectRecipe(recipe, nextPortions);
                   setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value: nextPortions.toString() });
                 }}
               />
@@ -99,7 +107,7 @@ function PlannerRecipePickerGrid({
                       setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value: nextValue });
                       const portions = parsePositiveNumber(nextValue);
                       if (portions !== null) {
-                        onSelectRecipe(recipe, portions);
+                        onUpdateRecipe(recipe, portions);
                       }
                     }}
                   />
@@ -129,9 +137,13 @@ function PlannerRecipePickerGrid({
                 theme={theme}
                 onClick={() => {
                   const nextAmount = parsePositiveNumber(value) ?? 1;
-                  if (!selected) {
+                  if (selected) {
                     onSelectIngredient(ingredient, nextAmount, unit);
+                    setActiveOverlay(null);
+                    return;
                   }
+
+                  onSelectIngredient(ingredient, nextAmount, unit);
                   setActiveOverlay({
                     kind: "ingredient",
                     id: ingredient.ingredientId,
@@ -151,14 +163,14 @@ function PlannerRecipePickerGrid({
                       setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value, unit: nextUnit });
                       const amount = parsePositiveNumber(value);
                       if (amount !== null) {
-                        onSelectIngredient(ingredient, amount, nextUnit);
+                        onUpdateIngredient(ingredient, amount, nextUnit);
                       }
                     }}
                     onValueChange={(nextValue) => {
                       setActiveOverlay({ kind: "ingredient", id: ingredient.ingredientId, value: nextValue, unit });
                       const amount = parsePositiveNumber(nextValue);
                       if (amount !== null) {
-                        onSelectIngredient(ingredient, amount, unit);
+                        onUpdateIngredient(ingredient, amount, unit);
                       }
                     }}
                   />

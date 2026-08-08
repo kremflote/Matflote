@@ -322,6 +322,17 @@ function PlannerRecipePickerModal({
     });
   };
 
+  const updateMealRecipePortions = (recipe: IRecipe, portions = recipe.portions) => {
+    setMainRecipeSelection((currentSelection) =>
+      currentSelection?.recipeId === recipe.recipeId ? { recipeId: recipe.recipeId, portions } : currentSelection,
+    );
+    setSupplementaryRecipeSelections((currentSelections) =>
+      currentSelections.map((selection) =>
+        selection.recipeId === recipe.recipeId ? { recipeId: recipe.recipeId, portions } : selection,
+      ),
+    );
+  };
+
   const updateSupplementaryIngredient = (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => {
     setSupplementaryIngredientSelections((currentSelections) => {
       if (currentSelections.some((selection) => selection.ingredientId === ingredient.ingredientId)) {
@@ -338,6 +349,21 @@ function PlannerRecipePickerModal({
 
       return [...currentSelections, { ingredientId: ingredient.ingredientId, amount, unit }];
     });
+  };
+
+  const updateMealIngredientAmount = (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => {
+    setMainIngredientSelection((currentSelection) =>
+      currentSelection?.ingredientId === ingredient.ingredientId
+        ? { ingredientId: ingredient.ingredientId, amount, unit }
+        : currentSelection,
+    );
+    setSupplementaryIngredientSelections((currentSelections) =>
+      currentSelections.map((selection) =>
+        selection.ingredientId === ingredient.ingredientId
+          ? { ingredientId: ingredient.ingredientId, amount, unit }
+          : selection,
+      ),
+    );
   };
 
   const clearMealSelection = () => {
@@ -489,6 +515,14 @@ function PlannerRecipePickerModal({
             </button>
           </div>
           <div className={plannerPickerStyles.footerActions}>
+            <button
+              className={plannerPickerStyles.mobileCancelButton(theme)}
+              disabled={isSaving}
+              type="button"
+              onClick={onClose}
+            >
+              {t.common.cancel}
+            </button>
             <button
               className={plannerPickerStyles.primaryButton(theme)}
               disabled={(mainRecipe === null && mainIngredient === null && entry === undefined) || isSaving}
@@ -654,6 +688,12 @@ function PlannerRecipePickerModal({
               }
               onSelectRecipe={(recipe, portions) =>
                 selectOrUpdateMealRecipe(recipe, portions)
+              }
+              onUpdateIngredient={(ingredient, amount, unit) =>
+                updateMealIngredientAmount(ingredient, amount, unit)
+              }
+              onUpdateRecipe={(recipe, portions) =>
+                updateMealRecipePortions(recipe, portions)
               }
             />
           </div>

@@ -52,4 +52,24 @@ public class SeedCatalogController(SeedCatalogService seedCatalogService) : Cont
         await seedCatalogService.ImportCatalogStreamAsync(stream, cancellationToken);
         return NoContent();
     }
+
+    [HttpPost("import-package")]
+    [RequestSizeLimit(250 * 1024 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 250 * 1024 * 1024)]
+    public async Task<IActionResult> ImportPackage(IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file.Length == 0)
+        {
+            return BadRequest("No seed catalog package was uploaded.");
+        }
+
+        if (!Path.GetExtension(file.FileName).Equals(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("Only .zip seed catalog packages are supported.");
+        }
+
+        await using var stream = file.OpenReadStream();
+        await seedCatalogService.ImportCatalogPackageStreamAsync(stream, cancellationToken);
+        return NoContent();
+    }
 }

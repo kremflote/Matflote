@@ -30,7 +30,10 @@ import {
   stripTime,
   toDateInputValue,
 } from "../utils/plannerDate";
-import { generateMealPlanEntries } from "../utils/plannerGenerator";
+import {
+  generateMealPlanEntriesWithIssues,
+  type MealPlanGenerationIssue,
+} from "../utils/plannerGenerator";
 import { buildPrepHelperItems } from "../utils/plannerPrepHelper";
 
 type PlannerPageProps = {
@@ -236,7 +239,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     const generationDates = getGenerationDates(anchorDate, viewMode);
     const rangeLabel = t.planner.rangeNames[viewMode];
 
-    const entriesToGenerate = generateMealPlanEntries({
+    const generationResult = generateMealPlanEntriesWithIssues({
       dates: generationDates,
       existingEntries: mealPlanEntries,
       ingredients,
@@ -244,10 +247,12 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
       recipes,
       tagCategories: ingredientTagCategories,
     });
+    const entriesToGenerate = generationResult.entries;
+    const generationIssueMessage = formatGenerationIssues(generationResult.issues, t);
 
     if (entriesToGenerate.length === 0) {
       setPendingPlannerAction(null);
-      setPlannerActionError(t.planner.noMainDishRecipesFound);
+      setPlannerActionError(generationIssueMessage ?? t.planner.noMainDishRecipesFound);
       return;
     }
 
@@ -260,6 +265,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
       for (const entryToGenerate of entriesToGenerate) {
         await saveMealPlanEntry(null, entryToGenerate);
       }
+      setPlannerActionError(generationIssueMessage);
     } catch (error) {
       setPlannerActionError(getPlannerActionError(error, t.planner.couldNotGenerate(rangeLabel)));
     } finally {
@@ -416,6 +422,38 @@ function normalizePeopleEating(value: number) {
 
 function getPlannerActionError(_error: unknown, fallbackMessage: string) {
   return fallbackMessage;
+}
+
+function formatGenerationIssues(
+  issues: MealPlanGenerationIssue[],
+  t: ReturnType<typeof useLanguage>["t"],
+) {
+  if (issues.length === 0) {
+    return null;
+  }
+
+  return issues
+    .map((issue) => {
+      switch (issue.code) {
+        case "MissingSystemTag":
+          return t.planner.generationIssues.missingSystemTag(t.enums.mealSlots[issue.slot]);
+        case "NoTaggedRecipes":
+          return t.planner.generationIssues.noTaggedRecipes(t.enums.mealSlots[issue.slot], issue.tagName);
+        case "NoRecipeWithEnoughPortions":
+          return t.planner.generationIssues.noRecipeWithEnoughPortions(
+            t.enums.mealSlots[issue.slot],
+            issue.tagName,
+            issue.peopleEating,
+          );
+        case "NoAvailableDinnerRecipes":
+          return t.planner.generationIssues.noAvailableDinnerRecipes;
+        case "NoEmptySlots":
+          return t.planner.generationIssues.noEmptySlots;
+        case "NoToppingIngredients":
+          return t.planner.generationIssues.noToppingIngredients(issue.tagName);
+      }
+    })
+    .join(" ");
 }
 
 export default PlannerPage;

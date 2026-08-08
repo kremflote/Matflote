@@ -3,7 +3,7 @@ import { useIngredientTagCategories, useLanguage } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { RecipeTag } from "../../interfaces/IRecipe";
 import type { SiteTheme } from "../../styles/appStyles";
-import { formatIngredientTagCategoryName, formatRecipeTagGroupName, getIngredientTagGroupsWithCustomTags, getRecipeTagGroupsWithCustomTags, ingredientTagGroups, recipeTagGroups } from "./formOptions";
+import { formatIngredientTagCategoryName, formatRecipeTagGroupName, getIngredientTagGroupsWithCustomTags, getRecipeTagGroupsWithCustomTags } from "./formOptions";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import { GroupedFilterGroup } from "./BrowserFilterGroups";
 import type { BrowserMode } from "./types";
@@ -36,23 +36,19 @@ function BrowserFilterSection({
   const ingredientVisibleTagCategories = getIngredientVisibleTagCategories(ingredientTagCategories);
   const recipeVisibleTagCategories = getRecipeVisibleTagCategories(ingredientTagCategories);
   const liveIngredientTagGroups = getIngredientTagGroupsWithCustomTags([], "pantry", ingredientVisibleTagCategories);
-  const ingredientTagGroupLabels = ingredientVisibleTagCategories.length === 0
-    ? t.filters.ingredientTagGroups
-    : Object.fromEntries(
-        ingredientVisibleTagCategories.map((category) => [
-          category.ingredientTagCategoryId.toString(),
-          formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
-        ]),
-      );
+  const ingredientTagGroupLabels = Object.fromEntries(
+    ingredientVisibleTagCategories.map((category) => [
+      category.ingredientTagCategoryId.toString(),
+      formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
+    ]),
+  );
   const liveRecipeTagGroups = getRecipeTagGroupsWithCustomTags([], "style", recipeVisibleTagCategories);
-  const recipeTagGroupLabels = recipeVisibleTagCategories.length === 0
-    ? t.filters.recipeTagGroups
-    : Object.fromEntries(
-        recipeVisibleTagCategories.map((category) => [
-          category.ingredientTagCategoryId.toString(),
-          formatRecipeTagGroupName(category.name, t.filters.recipeTagGroups),
-        ]),
-      );
+  const recipeTagGroupLabels = Object.fromEntries(
+    recipeVisibleTagCategories.map((category) => [
+      category.ingredientTagCategoryId.toString(),
+      formatRecipeTagGroupName(category.name, t.filters.recipeTagGroups),
+    ]),
+  );
 
   return (
     <aside className={className} aria-label={t.filters.recipeFilters}>
@@ -60,7 +56,7 @@ function BrowserFilterSection({
         <GroupedFilterGroup
           formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
           groupLabels={ingredientTagGroupLabels}
-          groups={ingredientTagCategories.length === 0 ? ingredientTagGroups : liveIngredientTagGroups}
+          groups={liveIngredientTagGroups}
           selectedValues={selectedIngredientTags}
           theme={theme}
           title={t.filters.ingredientTags}
@@ -70,7 +66,7 @@ function BrowserFilterSection({
         <GroupedFilterGroup
           formatValue={(value) => t.enums.recipeTags[value] ?? t.enums.ingredientTags[value] ?? formatLabel(value)}
           groupLabels={recipeTagGroupLabels}
-          groups={ingredientTagCategories.length === 0 ? recipeTagGroups : liveRecipeTagGroups}
+          groups={liveRecipeTagGroups}
           selectedValues={selectedRecipeTags}
           theme={theme}
           title={t.filters.tags}
