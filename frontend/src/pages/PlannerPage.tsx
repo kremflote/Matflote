@@ -10,7 +10,14 @@ import type { IGroceryList } from "../interfaces/IGroceryList";
 import type { MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import { groceryListService } from "../services";
 import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
-import { getLocalDatePreference, getLocalPreference, localPreferenceKeys, setLocalPreference } from "../utils/localPreferences";
+import { confirmationDialogStyles } from "../styles/confirmationDialogStyles";
+import {
+  getLocalDatePreference,
+  getLocalNumberPreference,
+  getLocalPreference,
+  localPreferenceKeys,
+  setLocalPreference,
+} from "../utils/localPreferences";
 import {
   addCalendarRange,
   getAnchorLabel,
@@ -32,6 +39,7 @@ type PlannerPageProps = {
 
 const visibleMealSlots: MealSlot[] = ["Breakfast", "Lunch", "Dinner"];
 const plannerViewModes: PlannerViewMode[] = ["week", "month"];
+const defaultPeopleEating = 2;
 
 type SelectedPlannerSlot = {
   date: string;
@@ -49,6 +57,9 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const [selectedSlot, setSelectedSlot] = useState<SelectedPlannerSlot | null>(null);
   const [plannerAction, setPlannerAction] = useState<"clear" | "generate" | null>(null);
   const [pendingPlannerAction, setPendingPlannerAction] = useState<"clear" | "generate" | null>(null);
+  const [generatePeopleEating, setGeneratePeopleEating] = useState(() =>
+    normalizePeopleEating(getLocalNumberPreference(localPreferenceKeys.plannerPeopleEating, defaultPeopleEating)),
+  );
   const [plannerActionError, setPlannerActionError] = useState<string | null>(null);
   const [groceryListPreview, setGroceryListPreview] = useState<IGroceryList | null>(null);
   const [isGroceryListLoading, setIsGroceryListLoading] = useState(false);
@@ -205,6 +216,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
       dates: generationDates,
       existingEntries: mealPlanEntries,
       ingredients,
+      peopleEating: generatePeopleEating,
       recipes,
       tagCategories: ingredientTagCategories,
     });
@@ -218,6 +230,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     setPlannerAction("generate");
     setPendingPlannerAction(null);
     setPlannerActionError(null);
+    setLocalPreference(localPreferenceKeys.plannerPeopleEating, generatePeopleEating.toString());
 
     try {
       for (const entryToGenerate of entriesToGenerate) {
@@ -309,7 +322,28 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           body={
             pendingPlannerAction === "clear"
               ? t.planner.clearRangeBody(t.planner.rangeNames[viewMode])
-              : t.planner.generateRangeBody(t.planner.rangeNames[viewMode])
+              : (
+                  <>
+                    <p>{t.planner.generateRangeBody(t.planner.rangeNames[viewMode])}</p>
+                    <div className={confirmationDialogStyles.settingsGroup}>
+                      <label className={confirmationDialogStyles.fieldLabel}>
+                        <span className={confirmationDialogStyles.fieldTitle(theme)}>
+                          {t.planner.peopleEatingThisWeek}
+                        </span>
+                        <input
+                          className={confirmationDialogStyles.numberInput(theme)}
+                          min={1}
+                          step={1}
+                          type="number"
+                          value={generatePeopleEating}
+                          onChange={(event) =>
+                            setGeneratePeopleEating(normalizePeopleEating(Number(event.currentTarget.value)))
+                          }
+                        />
+                      </label>
+                    </div>
+                  </>
+                )
           }
           confirmLabel={pendingPlannerAction === "clear" ? t.common.clear : t.planner.generateMealPlan}
           isBusy={plannerAction !== null}
@@ -346,6 +380,14 @@ function createEmptyGroceryList(from: string, to: string): IGroceryList {
     generatedAt: new Date().toISOString(),
     sections: [],
   };
+}
+
+function normalizePeopleEating(value: number) {
+  if (!Number.isFinite(value)) {
+    return defaultPeopleEating;
+  }
+
+  return Math.max(1, Math.min(24, Math.round(value)));
 }
 
 function getPlannerActionError(_error: unknown, fallbackMessage: string) {

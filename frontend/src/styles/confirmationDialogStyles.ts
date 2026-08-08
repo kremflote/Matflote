@@ -22,6 +22,26 @@ export const confirmationDialogStyles = {
           ? "text-[#556145]"
           : "text-neutral-700"
     }`,
+  settingsGroup: "mt-4 grid gap-3",
+  fieldLabel: "grid gap-2",
+  fieldTitle: (theme: SiteTheme) =>
+    `text-xs font-extrabold uppercase leading-tight ${
+      theme === "dark"
+        ? "text-neutral-300"
+        : theme === "paletteLight"
+          ? "text-[#556145]"
+          : "text-neutral-700"
+    }`,
+  numberInput: (theme: SiteTheme) =>
+    `${controlStyles.formField(theme)} max-w-28`,
+  fieldHelp: (theme: SiteTheme) =>
+    `text-xs font-semibold leading-[1.4] ${
+      theme === "dark"
+        ? "text-neutral-400"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]"
+          : "text-neutral-500"
+    }`,
   actions: "flex flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap",
   actionButton:
     "max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3 max-sm:text-sm",

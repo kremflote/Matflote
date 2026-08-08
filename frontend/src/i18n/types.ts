@@ -403,6 +403,7 @@ export type TranslationDictionary = {
     generateMealPlan: string;
     generateRangeBody: (range: string) => string;
     generating: string;
+    peopleEatingThisWeek: string;
     mealCalendar: string;
     mealPickerSearchPlaceholder: string;
     noMatchingRecipesFound: string;

@@ -30,6 +30,7 @@ type GenerateMealPlanEntriesArgs = {
   dates: Date[];
   existingEntries: IMealPlanEntry[];
   ingredients: IIngredient[];
+  peopleEating: number;
   recipes: IRecipe[];
   tagCategories: IIngredientTagCategory[];
 };
@@ -38,18 +39,14 @@ export function generateMealPlanEntries({
   dates,
   existingEntries,
   ingredients,
+  peopleEating,
   recipes,
   tagCategories,
 }: GenerateMealPlanEntriesArgs): MealPlanEntryRequest[] {
   const systemTags = buildSystemTagLookup(tagCategories);
   const filledSlots = new Set(existingEntries.map((entry) => getEntryKey(entry.date, entry.slot)));
-  const usedRecipeIds = new Set(
-    existingEntries.flatMap((entry) =>
-      entry.recipes
-        .map((plannedRecipe) => plannedRecipe.recipeId)
-        .filter((recipeId): recipeId is number => recipeId !== null),
-    ),
-  );
+  const selectedDinnerRecipeIds = getExistingDinnerRecipeIds(existingEntries);
+  const dinnerProteinCounts = getExistingDinnerProteinCounts(existingEntries, recipes, systemTags);
   const toppingIngredients = ingredients.filter((ingredient) =>
     itemHasSystemTag(ingredient.tags, systemTags, "FoodRole.Topping"),
   );
@@ -64,132 +61,123 @@ export function generateMealPlanEntries({
       .map((slot) => ({ date, dateKey, slot }));
   });
 
-  const dinnerTargets = targets.filter((target) => target.slot === "Dinner");
-  const dinnerSelections = chooseDinnerRecipes(
-    dinnerTargets.length,
-    recipes,
-    systemTags,
-    usedRecipeIds,
-  );
-  for (const recipe of dinnerSelections) {
-    usedRecipeIds.add(recipe.recipeId);
-  }
-  let dinnerSelectionIndex = 0;
+  const availableTargetKeys = new Set(targets.map((target) => getEntryKey(target.dateKey, target.slot)));
 
-  for (const target of targets) {
-    const recipe =
-      target.slot === "Dinner"
-        ? dinnerSelections[dinnerSelectionIndex++]
-        : pickRandomRecipe(
-            getRecipeCandidatesForSlot(recipes, target.slot, systemTags, usedRecipeIds),
-          );
+  for (let targetIndex = 0; targetIndex < targets.length; targetIndex += 1) {
+    const target = targets[targetIndex];
+    const targetKey = getEntryKey(target.dateKey, target.slot);
+
+    if (!availableTargetKeys.has(targetKey)) {
+      continue;
+    }
+
+    const recipe = pickRecipeForSlot(
+      recipes,
+      target.slot,
+      systemTags,
+      selectedDinnerRecipeIds,
+      dinnerProteinCounts,
+      peopleEating,
+    );
 
     if (recipe === undefined) {
       continue;
     }
 
-    usedRecipeIds.add(recipe.recipeId);
-    const plannedItems: MealPlanRecipeRequest[] = [
-      {
-        recipeId: recipe.recipeId,
-        ingredientId: null,
-        role: "Main" as const,
-        sortOrder: 0,
-        portions: recipe.portions,
-        amount: null,
-        unit: null,
-      },
-    ];
-
-    if (target.slot === "Breakfast" && itemHasSystemTag(recipe.tags, systemTags, "Format.Bread")) {
-      const topping = pickToppingIngredient(target.date, toppingIngredients, toppingIdsByWeek);
-
-      if (topping !== undefined) {
-        plannedItems.push({
-          recipeId: null,
-          ingredientId: topping.ingredientId,
-          role: "Side" as const,
-          sortOrder: plannedItems.length,
-          portions: null,
-          amount: toppingAmountGrams,
-          unit: "Gram" as MeasurementUnit,
-        });
-      }
+    if (target.slot === "Dinner") {
+      selectedDinnerRecipeIds.add(recipe.recipeId);
+      const proteinKey = getDinnerProteinKey(recipe, systemTags);
+      dinnerProteinCounts.set(proteinKey, (dinnerProteinCounts.get(proteinKey) ?? 0) + 1);
     }
 
-    generatedEntries.push({
-      date: target.dateKey,
-      slot: target.slot,
-      notes: null,
-      recipes: plannedItems,
-    });
+    const placementCount = Math.floor(recipe.portions / peopleEating);
+    const compatibleSlots = getCompatiblePlacementSlots(target.slot);
+    let placedCount = 0;
+
+    for (let placementIndex = targetIndex; placementIndex < targets.length; placementIndex += 1) {
+      const placementTarget = targets[placementIndex];
+      const placementKey = getEntryKey(placementTarget.dateKey, placementTarget.slot);
+
+      if (!availableTargetKeys.has(placementKey) || !compatibleSlots.includes(placementTarget.slot)) {
+        continue;
+      }
+
+      const plannedItems = createGeneratedMealItems(
+        recipe,
+        peopleEating,
+        placementTarget,
+        toppingIngredients,
+        toppingIdsByWeek,
+        systemTags,
+      );
+
+      generatedEntries.push({
+        date: placementTarget.dateKey,
+        slot: placementTarget.slot,
+        notes: null,
+        recipes: plannedItems,
+      });
+      availableTargetKeys.delete(placementKey);
+      placedCount += 1;
+
+      if (placedCount >= placementCount) {
+        break;
+      }
+    }
   }
 
   return generatedEntries;
 }
 
-function chooseDinnerRecipes(
-  count: number,
+type GenerationTarget = {
+  date: Date;
+  dateKey: string;
+  slot: MealSlot;
+};
+
+function pickRecipeForSlot(
   recipes: IRecipe[],
+  slot: MealSlot,
   systemTags: SystemTagLookup,
-  usedRecipeIds: Set<number>,
+  selectedDinnerRecipeIds: Set<number>,
+  dinnerProteinCounts: Map<string, number>,
+  peopleEating: number,
 ) {
-  const selectedRecipes: IRecipe[] = [];
-  const localUsedRecipeIds = new Set(usedRecipeIds);
-  const dinnerCandidates = getRecipeCandidatesForSlot(recipes, "Dinner", systemTags, localUsedRecipeIds);
+  const candidates = getRecipeCandidatesForSlot(
+    recipes,
+    slot,
+    systemTags,
+    selectedDinnerRecipeIds,
+    peopleEating,
+  );
+
+  if (slot !== "Dinner") {
+    return pickRandomItem(candidates);
+  }
 
   for (const proteinTag of Object.keys(dinnerMinimums) as (typeof dinnerProteinSystemTags)[number][]) {
     const targetCount = dinnerMinimums[proteinTag] ?? 0;
+    if ((dinnerProteinCounts.get(proteinTag) ?? 0) >= targetCount) {
+      continue;
+    }
 
-    while (
-      selectedRecipes.filter((recipe) => itemHasSystemTag(recipe.tags, systemTags, proteinTag)).length < targetCount &&
-      selectedRecipes.length < count
-    ) {
-      const recipe = pickRandomRecipe(
-        dinnerCandidates.filter((candidate) =>
-          !localUsedRecipeIds.has(candidate.recipeId) &&
-          itemHasSystemTag(candidate.tags, systemTags, proteinTag),
-        ),
-      );
-
-      if (recipe === undefined) {
-        break;
-      }
-
-      selectedRecipes.push(recipe);
-      localUsedRecipeIds.add(recipe.recipeId);
+    const recipe = pickRandomItem(candidates.filter((candidate) =>
+      itemHasSystemTag(candidate.tags, systemTags, proteinTag),
+    ));
+    if (recipe !== undefined) {
+      return recipe;
     }
   }
 
-  const proteinCounts = new Map<string, number>();
-  for (const recipe of selectedRecipes) {
-    const proteinKey = getDinnerProteinKey(recipe, systemTags);
-    proteinCounts.set(proteinKey, (proteinCounts.get(proteinKey) ?? 0) + 1);
-  }
-
-  while (selectedRecipes.length < count) {
-    const recipe = pickDinnerVarietyRecipe(dinnerCandidates, systemTags, localUsedRecipeIds, proteinCounts);
-
-    if (recipe === undefined) {
-      break;
-    }
-
-    selectedRecipes.push(recipe);
-    localUsedRecipeIds.add(recipe.recipeId);
-    const proteinKey = getDinnerProteinKey(recipe, systemTags);
-    proteinCounts.set(proteinKey, (proteinCounts.get(proteinKey) ?? 0) + 1);
-  }
-
-  return selectedRecipes;
+  return pickDinnerVarietyRecipe(candidates, systemTags, dinnerProteinCounts);
 }
 
 function pickDinnerVarietyRecipe(
   candidates: IRecipe[],
   systemTags: SystemTagLookup,
-  usedRecipeIds: Set<number>,
   proteinCounts: Map<string, number>,
 ) {
-  return shuffle(candidates.filter((candidate) => !usedRecipeIds.has(candidate.recipeId)))
+  return shuffle(candidates)
     .sort((first, second) =>
       (proteinCounts.get(getDinnerProteinKey(first, systemTags)) ?? 0) -
       (proteinCounts.get(getDinnerProteinKey(second, systemTags)) ?? 0),
@@ -200,7 +188,8 @@ function getRecipeCandidatesForSlot(
   recipes: IRecipe[],
   slot: MealSlot,
   systemTags: SystemTagLookup,
-  usedRecipeIds: Set<number>,
+  selectedDinnerRecipeIds: Set<number>,
+  peopleEating: number,
 ) {
   const systemKey = slotSystemTags[slot];
 
@@ -209,9 +198,57 @@ function getRecipeCandidatesForSlot(
   }
 
   return recipes.filter((recipe) =>
-    !usedRecipeIds.has(recipe.recipeId) &&
+    recipe.portions >= peopleEating &&
+    (slot !== "Dinner" || !selectedDinnerRecipeIds.has(recipe.recipeId)) &&
     itemHasSystemTag(recipe.tags, systemTags, systemKey),
   );
+}
+
+function createGeneratedMealItems(
+  recipe: IRecipe,
+  peopleEating: number,
+  target: GenerationTarget,
+  toppingIngredients: IIngredient[],
+  toppingIdsByWeek: Map<string, Set<number>>,
+  systemTags: SystemTagLookup,
+) {
+  const plannedItems: MealPlanRecipeRequest[] = [
+    {
+      recipeId: recipe.recipeId,
+      ingredientId: null,
+      role: "Main" as const,
+      sortOrder: 0,
+      portions: peopleEating,
+      amount: null,
+      unit: null,
+    },
+  ];
+
+  if (target.slot === "Breakfast" && itemHasSystemTag(recipe.tags, systemTags, "Format.Bread")) {
+    const topping = pickToppingIngredient(target.date, toppingIngredients, toppingIdsByWeek);
+
+    if (topping !== undefined) {
+      plannedItems.push({
+        recipeId: null,
+        ingredientId: topping.ingredientId,
+        role: "Side" as const,
+        sortOrder: plannedItems.length,
+        portions: null,
+        amount: toppingAmountGrams,
+        unit: "Gram" as MeasurementUnit,
+      });
+    }
+  }
+
+  return plannedItems;
+}
+
+function getCompatiblePlacementSlots(slot: MealSlot): MealSlot[] {
+  if (slot === "Dinner") {
+    return ["Lunch", "Dinner"];
+  }
+
+  return [slot];
 }
 
 function getDinnerProteinKey(recipe: IRecipe, systemTags: SystemTagLookup) {
@@ -236,15 +273,15 @@ function pickToppingIngredient(
       weekToppingIds.has(ingredient.ingredientId),
     );
 
-    return pickRandomRecipe(existingToppings);
+    return pickRandomItem(existingToppings);
   }
 
-  const newTopping = pickRandomRecipe(
+  const newTopping = pickRandomItem(
     toppingIngredients.filter((ingredient) => !weekToppingIds.has(ingredient.ingredientId)),
   );
 
   if (newTopping === undefined) {
-    return pickRandomRecipe(toppingIngredients);
+    return pickRandomItem(toppingIngredients);
   }
 
   weekToppingIds.add(newTopping.ingredientId);
@@ -279,6 +316,51 @@ function buildExistingToppingIdsByWeek(
   }
 
   return toppingIdsByWeek;
+}
+
+function getExistingDinnerRecipeIds(existingEntries: IMealPlanEntry[]) {
+  return new Set(
+    existingEntries
+      .filter((entry) => entry.slot === "Dinner")
+      .flatMap((entry) =>
+        entry.recipes
+          .filter((plannedRecipe) => plannedRecipe.role === "Main")
+          .map((plannedRecipe) => plannedRecipe.recipeId)
+          .filter((recipeId): recipeId is number => recipeId !== null),
+      ),
+  );
+}
+
+function getExistingDinnerProteinCounts(
+  existingEntries: IMealPlanEntry[],
+  recipes: IRecipe[],
+  systemTags: SystemTagLookup,
+) {
+  const recipeById = new Map(recipes.map((recipe) => [recipe.recipeId, recipe]));
+  const proteinCounts = new Map<string, number>();
+
+  for (const entry of existingEntries) {
+    if (entry.slot !== "Dinner") {
+      continue;
+    }
+
+    const mainRecipe = entry.recipes.find((plannedRecipe) =>
+      plannedRecipe.role === "Main" && plannedRecipe.recipeId !== null,
+    );
+    if (mainRecipe?.recipeId === undefined || mainRecipe.recipeId === null) {
+      continue;
+    }
+
+    const recipe = recipeById.get(mainRecipe.recipeId);
+    if (recipe === undefined) {
+      continue;
+    }
+
+    const proteinKey = getDinnerProteinKey(recipe, systemTags);
+    proteinCounts.set(proteinKey, (proteinCounts.get(proteinKey) ?? 0) + 1);
+  }
+
+  return proteinCounts;
 }
 
 type SystemTagLookup = Map<string, string>;
@@ -316,7 +398,7 @@ function getEntryKey(date: string, slot: MealSlot) {
   return `${date}::${slot}`;
 }
 
-function pickRandomRecipe<TItem>(items: TItem[]) {
+function pickRandomItem<TItem>(items: TItem[]) {
   return items[Math.floor(Math.random() * items.length)];
 }
 

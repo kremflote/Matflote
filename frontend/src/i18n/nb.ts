@@ -559,6 +559,7 @@ export const nb: TranslationDictionary = {
     generateRangeBody: (range) =>
       `Dette genererer måltider for tomme plasser i gjeldende ${range}. Eksisterende måltider beholdes.`,
     generating: "Genererer...",
+    peopleEatingThisWeek: "Personer som spiser denne uken",
     mealCalendar: "Måltidskalender",
     mealPickerSearchPlaceholder: "søk i oppskrifter...",
     noMatchingRecipesFound: "Ingen oppskrifter funnet.",

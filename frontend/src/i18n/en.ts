@@ -492,6 +492,7 @@ export const en: TranslationDictionary = {
     generateRangeBody: (range) =>
       `This will generate meals for empty slots in the current ${range}. Existing meals will stay unchanged.`,
     generating: "Generating...",
+    peopleEatingThisWeek: "People eating this week",
     mealCalendar: "Meal calendar",
     mealPickerSearchPlaceholder: "search recipes...",
     noMatchingRecipesFound: "No matching recipes found.",

@@ -6,6 +6,7 @@ export const localPreferenceKeys = {
   language: `${keyPrefix}:language`,
   plannerCollapsedDateKeys: `${keyPrefix}:planner-collapsed-date-keys`,
   plannerAnchorDate: `${keyPrefix}:planner-anchor-date`,
+  plannerPeopleEating: `${keyPrefix}:planner-people-eating`,
   plannerViewMode: `${keyPrefix}:planner-view-mode`,
   theme: `${keyPrefix}:theme`,
 } as const;
