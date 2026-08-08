@@ -51,8 +51,17 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const [viewMode, setViewMode] = useState<PlannerViewMode>(() =>
     getLocalPreference(localPreferenceKeys.plannerViewMode, plannerViewModes, "week"),
   );
-  const [anchorDate, setAnchorDate] = useState(() =>
-    stripTime(getLocalDatePreference(localPreferenceKeys.plannerAnchorDate, new Date())),
+  const [weekAnchorDate, setWeekAnchorDate] = useState(() =>
+    stripTime(getLocalDatePreference(
+      localPreferenceKeys.plannerWeekAnchorDate,
+      getLocalDatePreference(localPreferenceKeys.plannerAnchorDate, new Date()),
+    )),
+  );
+  const [monthAnchorDate, setMonthAnchorDate] = useState(() =>
+    stripTime(getLocalDatePreference(
+      localPreferenceKeys.plannerMonthAnchorDate,
+      getLocalDatePreference(localPreferenceKeys.plannerAnchorDate, new Date()),
+    )),
   );
   const [selectedSlot, setSelectedSlot] = useState<SelectedPlannerSlot | null>(null);
   const [plannerAction, setPlannerAction] = useState<"clear" | "generate" | null>(null);
@@ -76,6 +85,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const { recipes } = useRecipes();
   const { ingredients } = useIngredients();
   const { ingredientTagCategories } = useIngredientTagCategories();
+  const anchorDate = viewMode === "week" ? weekAnchorDate : monthAnchorDate;
 
   const visibleRange = useMemo(
     () => getVisibleRange(anchorDate, viewMode),
@@ -130,20 +140,34 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   }, [viewMode]);
 
   useEffect(() => {
-    setLocalPreference(localPreferenceKeys.plannerAnchorDate, toDateInputValue(anchorDate));
-  }, [anchorDate]);
+    setLocalPreference(localPreferenceKeys.plannerWeekAnchorDate, toDateInputValue(weekAnchorDate));
+  }, [weekAnchorDate]);
+
+  useEffect(() => {
+    setLocalPreference(localPreferenceKeys.plannerMonthAnchorDate, toDateInputValue(monthAnchorDate));
+  }, [monthAnchorDate]);
 
   const getEntryForSlot = (date: string, slot: MealSlot) =>
     entriesByDateSlot.get(getMealPlanEntryKey(date, slot));
 
   const moveToPreviousRange = () => {
     setPlannerActionError(null);
-    setAnchorDate((currentDate) => addCalendarRange(currentDate, viewMode, -1));
+    if (viewMode === "week") {
+      setWeekAnchorDate((currentDate) => addCalendarRange(currentDate, viewMode, -1));
+      return;
+    }
+
+    setMonthAnchorDate((currentDate) => addCalendarRange(currentDate, viewMode, -1));
   };
 
   const moveToNextRange = () => {
     setPlannerActionError(null);
-    setAnchorDate((currentDate) => addCalendarRange(currentDate, viewMode, 1));
+    if (viewMode === "week") {
+      setWeekAnchorDate((currentDate) => addCalendarRange(currentDate, viewMode, 1));
+      return;
+    }
+
+    setMonthAnchorDate((currentDate) => addCalendarRange(currentDate, viewMode, 1));
   };
 
   const changeViewMode = (nextViewMode: PlannerViewMode) => {

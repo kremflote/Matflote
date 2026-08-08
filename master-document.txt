@@ -1,6 +1,6 @@
 # MATFLOTE Master Document
 
-Last verified: 2026-08-02
+Last verified: 2026-08-08
 
 This is the current source of truth for MATFLOTE. It describes what the code does now, where important design decisions live, and which rough edges should be considered before larger changes.
 
@@ -92,7 +92,8 @@ Local storage currently includes:
 - Last open page.
 - Cookbook view mode.
 - Planner view mode.
-- Planner anchor date.
+- Separate planner week and month anchor dates.
+- Planner generation people-eating value.
 - Collapsed planner day sections on mobile/tablet.
 
 Local storage intentionally does not store server data such as recipes, ingredients, prices, tags, or integration secrets.
@@ -137,6 +138,7 @@ Meal planning:
 - Planned items may point to either a recipe or an ingredient.
 - Recipe planned items store portions.
 - Ingredient planned items store amount and unit.
+- Planner week and month views keep separate anchor dates so switching view modes does not move the user's remembered week.
 
 Findings / follow-up:
 
@@ -199,14 +201,24 @@ Current behavior:
 - Recipe selection asks for portions.
 - Ingredient selection asks for amount and unit.
 - Selected items are shown as compact thumbnails in the picker footer and can be removed from there.
-- Generator is simple and does not select ingredient-only entries.
+- Generate asks how many people are eating this week. That value defaults to 2 and is stored per device.
+- Generator only fills empty slots and does not select ingredient-only entries.
+- Generator uses system tags for breakfast, lunch, dinner, bread, topping/`Pålegg`, fish, and chicken rules.
+- Breakfast slots use Breakfast-tagged recipes. Lunch slots use Lunch-tagged recipes. Dinner slots use Dinner-tagged recipes.
+- Dinner recipe selection avoids selecting the same dinner recipe more than once in a generated range, while allowing leftover placements from that selected recipe.
+- Breakfast and lunch recipes may repeat across the week.
+- A generated meal slot uses the people-eating value as its planned portions. If the selected recipe's default portions can cover more compatible future slots, the leftover portions are placed into those future empty slots. Leftovers that cannot feed the selected number of people are discarded.
+- Dinner leftovers may be placed into future lunch or dinner slots. Breakfast/lunch leftovers stay in matching slots.
+- Bread breakfasts can add a `Pålegg` ingredient side, with a maximum of two distinct `Pålegg` ingredients per week.
+- Dinner generation tries to include at least one fish dinner and two chicken dinners when matching recipes exist, then favors protein variation.
 - Clear week/month uses the styled confirmation dialog.
 - Prep helper gives a quick weekly prep list.
 - Grocery export opens a preview dialog before sending to Vikunja.
 
 Findings / follow-up:
 
-- The generator is intentionally primitive. The future idea list includes tag-aware breakfast/lunch/dinner/protein variation, but that is not implemented.
+- The generator depends on system tags being present and assigned meaningfully. Recipes without the relevant meal tags will not be generated for those slots.
+- The people-eating value used by the generator is per-device local storage, while the Nutrition page's people-eating setting is a household backend setting. They currently serve different workflows and are intentionally separate.
 - Month view is useful for overview but remains less feature-rich than week view.
 
 ## Cookbook
@@ -444,7 +456,6 @@ Master-document should stay design/architecture-facing:
 
 Ideas that are deliberately not implemented yet:
 
-- Smarter generator using tag rules and variation.
 - Ingredient substitution/similarity system.
 - Offer/price comparison against external store data.
 - Export recipe as PDF.

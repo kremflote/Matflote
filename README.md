@@ -7,9 +7,10 @@ For the implementation/design source of truth, see `master-document.txt`.
 ## Current App Features
 
 - Cookbook with recipes, ingredients, shared tags, tag categories, brands, stores, prices, nutrition, conversion rules, image uploads, and recipe PDF export.
-- Planner with week/month views, multiple selected meal items, recipe portions, ingredient amounts, generation, prep helper, and grocery-list export.
+- Planner with week/month views, remembered week/month positions, multiple selected meal items, recipe portions, ingredient amounts, tag-aware generation, prep helper, and grocery-list export.
 - Recipes can contain ingredients and measured recipe components, so one recipe can be used like an ingredient inside another recipe.
 - Recipe ingredients/components store measurable units and preparation, such as chopped, diced, julienned, grated, or crushed.
+- Meal generation fills empty slots only, uses Breakfast/Lunch/Dinner tags, can place leftover recipe portions into future suitable slots, and avoids selecting the same dinner recipe twice in a generated range.
 - Prep helper for the current week. It lists produce-style ingredients only when an explicit preparation exists or one can be inferred from recipe instructions.
 - Shopping-list preview and export through the provider-based grocery-list system. Vikunja is the first supported provider.
 - Scanner/Skanner page for Norwegian grocery lookup by barcode/EAN through Kassalapp, with missing nutrition fields supplemented from Matvaretabellen when possible.

@@ -6,8 +6,10 @@ export const localPreferenceKeys = {
   language: `${keyPrefix}:language`,
   plannerCollapsedDateKeys: `${keyPrefix}:planner-collapsed-date-keys`,
   plannerAnchorDate: `${keyPrefix}:planner-anchor-date`,
+  plannerMonthAnchorDate: `${keyPrefix}:planner-month-anchor-date`,
   plannerPeopleEating: `${keyPrefix}:planner-people-eating`,
   plannerViewMode: `${keyPrefix}:planner-view-mode`,
+  plannerWeekAnchorDate: `${keyPrefix}:planner-week-anchor-date`,
   theme: `${keyPrefix}:theme`,
 } as const;
 
