@@ -34,6 +34,7 @@ export const en: TranslationDictionary = {
     save: "Save",
     saving: "Saving...",
     search: "search...",
+    systemTagMeta: "Unmodifiable",
     working: "Working...",
   },
   browser: {

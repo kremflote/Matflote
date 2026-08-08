@@ -139,7 +139,10 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         modelBuilder.Entity<IngredientTagDefinition>(entity =>
         {
             entity.Property(tag => tag.Name).HasMaxLength(64);
+            entity.Property(tag => tag.IsSystemTag).HasDefaultValue(false);
+            entity.Property(tag => tag.SystemKey).HasMaxLength(96);
             entity.HasIndex(tag => tag.Name).IsUnique();
+            entity.HasIndex(tag => tag.SystemKey).IsUnique();
         });
 
         modelBuilder.Entity<Store>(entity =>

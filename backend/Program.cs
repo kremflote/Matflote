@@ -52,6 +52,7 @@ builder.Services.AddScoped<NutritionSummaryService>();
 builder.Services.AddScoped<RecipePdfService>();
 builder.Services.AddScoped<SeedCatalogService>();
 builder.Services.AddScoped<ShoppingListExportService>();
+builder.Services.AddScoped<SystemTagService>();
 builder.Services.AddScoped<TagCatalogService>();
 builder.Services.AddHttpClient<MatvaretabellenNutritionLookupService>();
 builder.Services.AddHttpClient<HelsedirektoratetContentClient>();
@@ -126,6 +127,9 @@ static async Task PrepareDatabaseAsync(WebApplication app)
 
     var seedCatalogService = scope.ServiceProvider.GetRequiredService<SeedCatalogService>();
     await seedCatalogService.ImportConfiguredCatalogAsync();
+
+    var systemTagService = scope.ServiceProvider.GetRequiredService<SystemTagService>();
+    await systemTagService.EnsureRequiredTagsAsync();
 }
 
 static void EnsureSqliteDirectory(string connectionString, string contentRootPath)

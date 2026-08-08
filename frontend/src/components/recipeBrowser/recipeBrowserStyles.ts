@@ -638,10 +638,12 @@ export const recipeBrowserStyles = {
           : "border-neutral-200",
   manageTagCategoryRow: (collapsed = false) =>
     `grid gap-2 ${collapsed ? "" : "border-b pb-3"}`,
+  manageTagVisibilityRow:
+    "grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-2 max-sm:grid-cols-[2rem_minmax(0,1fr)] max-sm:items-start",
   manageTagCategoryEditRow:
     "grid grid-cols-[4rem_minmax(0,1fr)_5.25rem_5.25rem] items-center gap-2 max-sm:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] max-sm:items-start [&>div]:max-sm:row-span-2 [&>div]:max-sm:grid-cols-1 [&>input]:max-sm:col-span-2 [&>input]:max-sm:col-start-2 [&>button]:max-sm:row-start-2 [&>button]:max-sm:w-full [&>button:nth-of-type(1)]:max-sm:col-start-2 [&>button:nth-of-type(2)]:max-sm:col-start-3",
   manageTagVisibilityGroup: (theme: SiteTheme) =>
-    `grid w-56 max-w-full grid-cols-2 gap-1 justify-self-start rounded-md border p-1 ${
+    `col-start-2 grid w-56 max-w-full grid-cols-2 gap-1 justify-self-end rounded-md border p-1 max-sm:justify-self-start ${
       theme === "dark"
         ? "border-white/[0.12] bg-white/[0.05]"
         : theme === "paletteLight"
@@ -663,8 +665,9 @@ export const recipeBrowserStyles = {
             : "border-transparent bg-transparent text-neutral-500 hover:text-neutral-800"
     }`,
   manageTagList: "grid",
+  manageTagAddRow: "px-3 py-2 pl-6 max-sm:pl-2",
   manageTagRow:
-    "grid grid-cols-[4rem_minmax(0,1fr)_5.25rem_5.25rem] items-center gap-2 border-b py-2 pl-6 last:border-b-0 last:pb-0 max-sm:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] max-sm:items-start max-sm:gap-y-1.5 max-sm:pl-2 [&>div]:max-sm:row-span-2 [&>div]:max-sm:grid-cols-1 [&>div]:max-sm:self-start [&>input]:max-sm:col-span-2 [&>input]:max-sm:col-start-2 [&>button]:max-sm:row-start-2 [&>button]:max-sm:w-full [&>button:nth-of-type(1)]:max-sm:col-start-2 [&>button:nth-of-type(2)]:max-sm:col-start-3",
+    "grid grid-cols-[4rem_minmax(0,1fr)_5.25rem_5.25rem] items-center gap-2 border-b py-2 pl-6 last:border-b-0 last:pb-0 max-sm:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] max-sm:items-start max-sm:gap-y-1.5 max-sm:pl-2 [&>div:first-child]:max-sm:row-span-2 [&>div:first-child]:max-sm:grid-cols-1 [&>div:first-child]:max-sm:self-start [&>input]:max-sm:col-span-2 [&>input]:max-sm:col-start-2 [&>button]:max-sm:row-start-2 [&>button]:max-sm:w-full [&>button:nth-of-type(1)]:max-sm:col-start-2 [&>button:nth-of-type(2)]:max-sm:col-start-3",
   manageTagOrderControls: "grid grid-cols-2 gap-1",
   manageTagIconButton: (theme: SiteTheme) =>
     `flex h-8 w-full min-w-0 items-center justify-center rounded-md border text-xs font-black transition-colors disabled:cursor-not-allowed disabled:opacity-40 max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:hover:bg-transparent ${
@@ -676,6 +679,23 @@ export const recipeBrowserStyles = {
     }`,
   manageTagTextField: (theme: SiteTheme) =>
     `${controlStyles.compactTextField(theme)} w-full text-sm`,
+  manageTagSystemNameField: (theme: SiteTheme) =>
+    `${controlStyles.compactTextField(theme)} grid h-8 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-sm font-semibold max-sm:col-span-2 max-sm:col-start-2 max-sm:h-auto max-sm:min-h-12 max-sm:grid-cols-1 max-sm:items-start max-sm:gap-0.5 max-sm:py-1.5 ${
+      theme === "dark"
+        ? "text-neutral-300"
+        : theme === "paletteLight"
+          ? "text-[#556145]"
+          : "text-neutral-700"
+    }`,
+  manageTagSystemName: "min-w-0 truncate",
+  manageTagSystemMeta: (theme: SiteTheme) =>
+    `shrink-0 justify-self-end text-xs font-semibold max-sm:justify-self-start ${
+      theme === "dark"
+        ? "text-neutral-500"
+        : theme === "paletteLight"
+          ? "text-[#7A8864]/65"
+          : "text-neutral-400"
+    }`,
   manageTagActionButton: (theme: SiteTheme) =>
     `inline-flex h-8 w-full min-w-0 items-center justify-center rounded-md border px-2 text-sm font-semibold outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55 ${siteColorClasses[theme].focus} ${
       theme === "dark"
@@ -684,13 +704,22 @@ export const recipeBrowserStyles = {
           ? "border-[#C8C0B5] bg-transparent text-[#556145] hover:bg-[#E5D5BC]/55"
           : "border-neutral-300 bg-transparent text-neutral-800 hover:bg-neutral-100"
     }`,
-  manageTagRemoveButton: (theme: SiteTheme) =>
+  manageTagRemoveButton: (theme: SiteTheme, transparent = false) =>
+    transparent
+      ? `inline-flex h-8 w-full min-w-0 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold opacity-35 outline-none transition-colors disabled:cursor-not-allowed ${siteColorClasses[theme].focus} ${
+          theme === "dark"
+            ? "text-neutral-400"
+            : theme === "paletteLight"
+              ? "text-[#7A8864]"
+              : "text-neutral-500"
+        }`
+      :
     `inline-flex h-8 w-full min-w-0 items-center justify-center rounded-md border px-2 text-sm font-semibold outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55 ${siteColorClasses[theme].focus} ${
       theme === "dark"
         ? "border-red-950 bg-red-950 text-white hover:bg-red-900"
         : theme === "paletteLight"
           ? "border-red-950 bg-red-950 text-[#FAF7F2] hover:bg-red-900"
-          : "border-red-900 bg-red-900 text-white hover:bg-red-800"
+        : "border-red-900 bg-red-900 text-white hover:bg-red-800"
     }`,
   resultsWithFilters: "col-span-10 max-[1100px]:col-span-12",
   recipeGrid: `grid grid-cols-3 gap-3 min-[641px]:max-[1100px]:grid-cols-4 ${sizeClasses.portableBottomNavOffset} max-md:grid-cols-2 max-[380px]:grid-cols-1`,

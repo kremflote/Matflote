@@ -27,7 +27,9 @@ public record BrandDto(
 public record IngredientTagDto(
     int IngredientTagDefinitionId,
     string Name,
-    int SortOrder
+    int SortOrder,
+    bool IsSystemTag,
+    string? SystemKey
 );
 
 public record IngredientTagCategoryDto(

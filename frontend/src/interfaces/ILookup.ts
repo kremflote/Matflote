@@ -12,6 +12,8 @@ export interface IIngredientTagDefinition {
   ingredientTagDefinitionId: number;
   name: string;
   sortOrder: number;
+  isSystemTag: boolean;
+  systemKey: string | null;
 }
 
 export interface IIngredientTagCategory {

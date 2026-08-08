@@ -23,7 +23,9 @@ public record SeedTagCategoryDto(
 
 public record SeedTagDto(
     string Name,
-    int? SortOrder
+    int? SortOrder,
+    bool? IsSystemTag,
+    string? SystemKey
 );
 
 public record SeedConversionRuleDto(

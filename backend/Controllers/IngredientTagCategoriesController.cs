@@ -136,6 +136,10 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         {
             return NotFound();
         }
+        if (tag.IsSystemTag)
+        {
+            return Conflict("System tags cannot be moved.");
+        }
 
         var category = await context.IngredientTagCategories
             .Include(value => value.Tags)
@@ -235,6 +239,10 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         {
             return NotFound();
         }
+        if (tags.Any(tag => tag.IsSystemTag))
+        {
+            return Conflict("System tags cannot be deleted.");
+        }
 
         context.IngredientTagDefinitions.RemoveRange(tags);
         await context.SaveChangesAsync();
@@ -250,6 +258,10 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         if (category is null)
         {
             return NotFound();
+        }
+        if (category.Tags.Any(tag => tag.IsSystemTag))
+        {
+            return Conflict("Categories containing system tags cannot be deleted.");
         }
 
         var tagNames = category.Tags.Select(tag => tag.Name).ToList();
@@ -268,7 +280,13 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         category.Tags
             .OrderBy(tag => tag.SortOrder)
             .ThenBy(tag => tag.Name)
-            .Select(tag => new IngredientTagDto(tag.IngredientTagDefinitionId, tag.Name, tag.SortOrder))
+            .Select(tag => new IngredientTagDto(
+                tag.IngredientTagDefinitionId,
+                tag.Name,
+                tag.SortOrder,
+                tag.IsSystemTag,
+                tag.SystemKey
+            ))
             .ToList()
     );
 

@@ -47,6 +47,8 @@ function IngredientTagCreateDialog({
         tags: category.tags.map((tag) => ({
           id: tag.ingredientTagDefinitionId,
           name: tag.name,
+          isSystemTag: tag.isSystemTag,
+          systemKey: tag.systemKey,
         })),
       }))}
       existingTags={existingTags}

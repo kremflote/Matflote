@@ -33,6 +33,7 @@ export const nb: TranslationDictionary = {
     save: "Lagre",
     saving: "Lagrer...",
     search: "søk...",
+    systemTagMeta: "Kan ikke endres",
     working: "Jobber...",
   },
   browser: {

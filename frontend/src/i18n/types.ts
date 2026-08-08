@@ -52,6 +52,7 @@ export type TranslationDictionary = {
     save: string;
     saving: string;
     search: string;
+    systemTagMeta: string;
     working: string;
   };
   browser: {

@@ -105,7 +105,12 @@ public class SeedCatalogService(
                 category.Tags
                     .OrderBy(tag => tag.SortOrder)
                     .ThenBy(tag => tag.Name)
-                    .Select(tag => new SeedTagDto(tag.Name, tag.SortOrder))
+                    .Select(tag => new SeedTagDto(
+                        tag.Name,
+                        tag.SortOrder,
+                        tag.IsSystemTag,
+                        tag.SystemKey
+                    ))
                     .ToList()
             ))
             .ToListAsync(cancellationToken);
@@ -276,7 +281,9 @@ public class SeedCatalogService(
                     {
                         Name = tagName,
                         IngredientTagCategoryId = category.IngredientTagCategoryId,
-                        SortOrder = seedTag.SortOrder ?? GetNextTagSortOrder(category)
+                        SortOrder = seedTag.SortOrder ?? GetNextTagSortOrder(category),
+                        IsSystemTag = seedTag.IsSystemTag ?? false,
+                        SystemKey = CleanSystemKey(seedTag.SystemKey)
                     };
                     context.IngredientTagDefinitions.Add(tag);
                     category.Tags.Add(tag);
@@ -288,6 +295,8 @@ public class SeedCatalogService(
                     {
                         tag.SortOrder = seedTag.SortOrder.Value;
                     }
+                    tag.IsSystemTag = seedTag.IsSystemTag ?? tag.IsSystemTag;
+                    tag.SystemKey = CleanSystemKey(seedTag.SystemKey) ?? tag.SystemKey;
                 }
             }
         }
@@ -569,6 +578,12 @@ public class SeedCatalogService(
 
     private static int GetNextTagSortOrder(IngredientTagCategory category) =>
         category.Tags.Count == 0 ? 100 : category.Tags.Max(tag => tag.SortOrder) + 100;
+
+    private static string? CleanSystemKey(string? value)
+    {
+        var cleanValue = value?.Trim();
+        return string.IsNullOrWhiteSpace(cleanValue) ? null : cleanValue;
+    }
 
     private async Task<int> GetNextConversionRuleSortOrderAsync(CancellationToken cancellationToken)
     {
