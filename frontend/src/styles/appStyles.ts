@@ -505,6 +505,7 @@ export const settingsStyles = {
   fieldGroup: "grid gap-2",
   label: "text-sm font-bold leading-tight",
   buttonGroup: "flex flex-wrap items-center gap-2",
+  inlineActionRow: "flex flex-wrap items-center justify-start gap-3 max-sm:justify-center",
   textInput: controlStyles.formField,
   selectInput: controlStyles.formField,
   helpText: (theme: SiteTheme) =>

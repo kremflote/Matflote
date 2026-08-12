@@ -174,6 +174,16 @@ export function ExportSettingsPanel({
           />
           <span className={settingsStyles.helpText(theme)}>{t.settings.apiTokenHelp}</span>
         </label>
+        <div className={settingsStyles.inlineActionRow}>
+          <button
+            className={settingsStyles.secondaryButton(theme)}
+            disabled={controlsDisabled}
+            type="button"
+            onClick={onTestConnection}
+          >
+            {isTesting ? t.settings.testingConnection : t.settings.testConnection}
+          </button>
+        </div>
         </div>
 
         <div className={settingsStyles.integrationBlock}>
@@ -247,14 +257,6 @@ export function ExportSettingsPanel({
               <p className={settingsStyles.statusText(theme, "success")}>{settingsSuccess}</p>
             )}
           </div>
-          <button
-            className={settingsStyles.secondaryButton(theme)}
-            disabled={controlsDisabled}
-            type="button"
-            onClick={onTestConnection}
-          >
-            {isTesting ? t.settings.testingConnection : t.settings.testConnection}
-          </button>
           <button
             className={settingsStyles.saveButton(theme)}
             disabled={controlsDisabled}
