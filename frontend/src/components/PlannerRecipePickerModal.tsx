@@ -111,7 +111,8 @@ function PlannerRecipePickerModal({
   const [supplementaryIngredientSelections, setSupplementaryIngredientSelections] =
     useState<SelectedPlannerIngredient[]>(initialSupplementaryIngredients);
   const [selectedIngredientTags, setSelectedIngredientTags] = useState<IngredientTag[]>([]);
-  const [selectedMainRecipeTags, setSelectedMainRecipeTags] = useState<RecipeTag[]>([]);
+  const [selectedMainRecipeTags, setSelectedMainRecipeTags] =
+    useState<RecipeTag[]>(() => getInitialRecipeTagFilters(slot));
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
   const [ingredientPickerSearch, setIngredientPickerSearch] = useState("");
   const [ingredientPickerPosition, setIngredientPickerPosition] = useState<{ x: number; y: number } | null>(null);
@@ -775,6 +776,18 @@ function formatNumber(value: number) {
 
 function recipeByIdFallback(recipes: IRecipe[], recipeId: number | null) {
   return recipeId === null ? undefined : recipes.find((recipe) => recipe.recipeId === recipeId);
+}
+
+function getInitialRecipeTagFilters(slot: MealSlot): RecipeTag[] {
+  if (slot === "Breakfast") {
+    return ["Breakfast"];
+  }
+
+  if (slot === "Lunch") {
+    return ["Lunch", "Dinner"];
+  }
+
+  return slot === "Dinner" ? ["Dinner"] : [];
 }
 
 function CategoryIcon() {
