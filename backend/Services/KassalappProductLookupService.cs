@@ -18,6 +18,45 @@ public class KassalappProductLookupService(
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
+    public async Task<TestConnectionResultDto> TestConnectionAsync(
+        UpdateKassalappSettingsRequest request,
+        CancellationToken cancellationToken
+    )
+    {
+        var apiKey = string.IsNullOrWhiteSpace(request.ApiKey)
+            ? await appSettingsService.GetValueAsync(AppSettingKeys.KassalappApiKey, cancellationToken)
+            : request.ApiKey;
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            throw new ProductLookupConfigurationException("Kassalapp API key is not configured.");
+        }
+
+        var storedBaseUrl = await appSettingsService.GetValueAsync(AppSettingKeys.KassalappBaseUrl, cancellationToken);
+        var baseUrl = string.IsNullOrWhiteSpace(request.BaseUrl) ? storedBaseUrl : request.BaseUrl;
+        httpClient.BaseAddress = new Uri(string.IsNullOrWhiteSpace(baseUrl) ? "https://kassal.app/api/v1/" : EnsureTrailingSlash(baseUrl));
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey.Trim());
+        httpClient.DefaultRequestHeaders.Accept.Clear();
+        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        using var response = await httpClient.GetAsync("products/ean/7039281545910", cancellationToken);
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            throw new ProductLookupConfigurationException("Kassalapp API key was rejected.");
+        }
+
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            throw new ProductLookupRateLimitException("Kassalapp rate limit was reached.");
+        }
+
+        if (!response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.NotFound)
+        {
+            throw new HttpRequestException($"Kassalapp returned {(int)response.StatusCode} {response.ReasonPhrase}.");
+        }
+
+        return new TestConnectionResultDto("Kassalapp", true, "Kassalapp responded successfully.");
+    }
+
     public async Task<ProductLookupResponseDto> LookupByEanAsync(string ean, CancellationToken cancellationToken)
     {
         var apiKey = await appSettingsService.GetValueAsync(AppSettingKeys.KassalappApiKey, cancellationToken);

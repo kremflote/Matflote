@@ -459,6 +459,7 @@ export type TranslationDictionary = {
     couldNotImportSeedCatalog: string;
     couldNotLoad: string;
     couldNotSave: string;
+    couldNotUpdateReferenceValues: string;
     currentProvider: string;
     currentProviderMode: string;
     databaseProvider: string;
@@ -494,8 +495,11 @@ export type TranslationDictionary = {
     pageTitle: string;
     projectId: string;
     provider: string;
+    kassalappConnectionFailed: string;
+    kassalappConnectionSucceeded: string;
     nutritionIntegrationBody: string;
     nutritionIntegrationTitle: string;
+    referenceValuesUpdated: (profilesImported: number) => string;
     saveSettings: string;
     saved: string;
     saving: string;
@@ -510,6 +514,8 @@ export type TranslationDictionary = {
     testingConnection: string;
     testConnectionSucceeded: string;
     testConnectionFailed: string;
+    updateReferenceValues: string;
+    updatingReferenceValues: string;
   };
   theme: {
     switchToDark: string;

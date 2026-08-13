@@ -1,4 +1,8 @@
-import type { INutritionPreference, INutritionSummary } from "../interfaces/INutrition";
+import type {
+  INutritionPreference,
+  INutritionReferenceImportResult,
+  INutritionSummary,
+} from "../interfaces/INutrition";
 import { apiRequest } from "./apiClient";
 
 export const nutritionService = {
@@ -11,5 +15,9 @@ export const nutritionService = {
     apiRequest<INutritionPreference>("/api/nutrition/profile-preference", {
       method: "PUT",
       body: { profileId, peopleEating },
+    }),
+  importReferenceValues: () =>
+    apiRequest<INutritionReferenceImportResult>("/api/nutrition/reference-values/import", {
+      method: "POST",
     }),
 };

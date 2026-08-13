@@ -55,13 +55,17 @@ type ExportSettingsPanelProps = {
   exportForm: ExportSettingsForm;
   isLoading: boolean;
   isSaving: boolean;
-  isTesting: boolean;
+  isTestingKassalapp: boolean;
+  isTestingVikunja: boolean;
+  isUpdatingNutritionReferences: boolean;
   settingsError: string | null;
   settingsSuccess: string | null;
   theme: SiteTheme;
   onChange: (nextForm: ExportSettingsForm) => void;
   onSave: () => void;
-  onTestConnection: () => void;
+  onTestKassalappConnection: () => void;
+  onTestVikunjaConnection: () => void;
+  onUpdateNutritionReferences: () => void;
 };
 
 export function ExportSettingsPanel({
@@ -69,16 +73,20 @@ export function ExportSettingsPanel({
   exportForm,
   isLoading,
   isSaving,
-  isTesting,
+  isTestingKassalapp,
+  isTestingVikunja,
+  isUpdatingNutritionReferences,
   settingsError,
   settingsSuccess,
   theme,
   onChange,
   onSave,
-  onTestConnection,
+  onTestKassalappConnection,
+  onTestVikunjaConnection,
+  onUpdateNutritionReferences,
 }: ExportSettingsPanelProps) {
   const { t } = useLanguage();
-  const controlsDisabled = isLoading || isSaving || isTesting;
+  const controlsDisabled = isLoading || isSaving || isTestingVikunja || isTestingKassalapp || isUpdatingNutritionReferences;
 
   return (
     <div className={settingsStyles.panel(theme)}>
@@ -179,9 +187,9 @@ export function ExportSettingsPanel({
             className={settingsStyles.secondaryButton(theme)}
             disabled={controlsDisabled}
             type="button"
-            onClick={onTestConnection}
+            onClick={onTestVikunjaConnection}
           >
-            {isTesting ? t.settings.testingConnection : t.settings.testConnection}
+            {isTestingVikunja ? t.settings.testingConnection : t.settings.testConnection}
           </button>
         </div>
         </div>
@@ -215,6 +223,16 @@ export function ExportSettingsPanel({
             />
             <span className={settingsStyles.helpText(theme)}>{t.settings.apiTokenHelp}</span>
           </label>
+          <div className={settingsStyles.inlineActionRow}>
+            <button
+              className={settingsStyles.secondaryButton(theme)}
+              disabled={controlsDisabled}
+              type="button"
+              onClick={onTestKassalappConnection}
+            >
+              {isTestingKassalapp ? t.settings.testingConnection : t.settings.testConnection}
+            </button>
+          </div>
         </div>
 
         <div className={settingsStyles.integrationBlock}>
@@ -246,6 +264,16 @@ export function ExportSettingsPanel({
             />
             <span className={settingsStyles.helpText(theme)}>{t.settings.apiTokenHelp}</span>
           </label>
+          <div className={settingsStyles.inlineActionRow}>
+            <button
+              className={settingsStyles.secondaryButton(theme)}
+              disabled={controlsDisabled}
+              type="button"
+              onClick={onUpdateNutritionReferences}
+            >
+              {isUpdatingNutritionReferences ? t.settings.updatingReferenceValues : t.settings.updateReferenceValues}
+            </button>
+          </div>
         </div>
 
         <div className={settingsStyles.statusRow}>
@@ -292,29 +320,6 @@ function ProviderSummaryItem({ label, theme, value }: { label: string; theme: Si
     <div className={settingsStyles.currentProviderItem(theme)}>
       <div className={settingsStyles.currentProviderLabel}>{label}</div>
       <div className={settingsStyles.currentProviderValue}>{value}</div>
-    </div>
-  );
-}
-
-type SystemInfoPanelProps = {
-  appSettings: IAppSettings;
-  theme: SiteTheme;
-};
-
-export function SystemInfoPanel({ appSettings, theme }: SystemInfoPanelProps) {
-  const { t } = useLanguage();
-
-  return (
-    <div className={settingsStyles.panel(theme)}>
-      <div>
-        <h2 className={settingsStyles.panelTitle}>{t.settings.systemTitle}</h2>
-        <p className={settingsStyles.panelBody(theme)}>{t.settings.systemBody}</p>
-      </div>
-      <div className={settingsStyles.systemGrid}>
-        <InfoRow label={t.settings.environment} theme={theme} value={appSettings.systemInfo.environmentName} />
-        <InfoRow label={t.settings.databaseProvider} theme={theme} value={appSettings.systemInfo.databaseProvider} />
-        <InfoRow label={t.settings.imageStorage} theme={theme} value={appSettings.systemInfo.imageStorageRootPath} />
-      </div>
     </div>
   );
 }
@@ -399,15 +404,6 @@ export function MaintenancePanel({
           )}
         </p>
       )}
-    </div>
-  );
-}
-
-function InfoRow({ label, theme, value }: { label: string; theme: SiteTheme; value: string }) {
-  return (
-    <div className={settingsStyles.systemRow(theme)}>
-      <span className={settingsStyles.systemLabel}>{label}</span>
-      <span className={settingsStyles.systemValue}>{value}</span>
     </div>
   );
 }

@@ -53,3 +53,10 @@ export interface INutritionPreference {
   profileId: string | null;
   peopleEating: number;
 }
+
+export interface INutritionReferenceImportResult {
+  status: string;
+  message: string;
+  profilesImported: number;
+  importedAt: string;
+}

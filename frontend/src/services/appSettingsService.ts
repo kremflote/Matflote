@@ -13,6 +13,11 @@ export const appSettingsService = {
       method: "POST",
       body: settings,
     }),
+  testKassalapp: (settings: IUpdateAppSettingsRequest["externalIntegrations"]["kassalapp"]) =>
+    apiRequest<ITestConnectionResult>("/api/app-settings/test-kassalapp", {
+      method: "POST",
+      body: settings,
+    }),
   updateGroceryExportRules: (defaultExcludedIngredientTags: string[]) =>
     apiRequest<IAppSettings>("/api/app-settings/grocery-export-rules", {
       method: "PUT",

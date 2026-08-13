@@ -582,6 +582,7 @@ export const en: TranslationDictionary = {
     couldNotImportSeedCatalog: "Could not import seed catalog.",
     couldNotLoad: "Could not load settings.",
     couldNotSave: "Could not save settings.",
+    couldNotUpdateReferenceValues: "Could not update nutrition reference values.",
     currentProvider: "Current todo provider",
     currentProviderMode: "Mode",
     databaseProvider: "Database",
@@ -620,9 +621,13 @@ export const en: TranslationDictionary = {
     pageTitle: "Settings",
     projectId: "Project ID",
     provider: "Current todo provider",
+    kassalappConnectionFailed: "Kassalapp connection test failed.",
+    kassalappConnectionSucceeded: "Kassalapp connection succeeded.",
     nutritionIntegrationBody:
       "Used when importing official nutrition reference values for the Nutrition page.",
     nutritionIntegrationTitle: "Nutrition references",
+    referenceValuesUpdated: (profilesImported) =>
+      `Nutrition reference values updated for ${profilesImported} profile(s).`,
     saveSettings: "Save settings",
     saved: "Settings saved.",
     saving: "Saving...",
@@ -639,6 +644,8 @@ export const en: TranslationDictionary = {
     testingConnection: "Testing...",
     testConnectionSucceeded: "Connection succeeded.",
     testConnectionFailed: "Connection test failed.",
+    updateReferenceValues: "Update reference values",
+    updatingReferenceValues: "Updating...",
   },
   theme: {
     switchToDark: "Switch to dark mode",

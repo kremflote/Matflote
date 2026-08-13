@@ -11,6 +11,7 @@ namespace DinnerPlanner.Api.Controllers;
 [Route("api/app-settings")]
 public class AppSettingsController(
     AppSettingsService appSettingsService,
+    KassalappProductLookupService kassalappProductLookup,
     VikunjaShoppingListExporter vikunjaExporter
 ) : ControllerBase
 {
@@ -65,6 +66,40 @@ public class AppSettingsController(
         catch (ShoppingListExportConfigurationException exception)
         {
             return BadRequest(exception.Message);
+        }
+        catch (HttpRequestException exception)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, exception.Message);
+        }
+    }
+
+    [HttpPost("test-kassalapp")]
+    public async Task<ActionResult<TestConnectionResultDto>> TestKassalapp(
+        [FromBody] UpdateKassalappSettingsRequest? request,
+        CancellationToken cancellationToken
+    )
+    {
+        if (request is null)
+        {
+            return BadRequest("Settings payload is required.");
+        }
+
+        if (!IsBlankOrAbsoluteUrl(request.BaseUrl))
+        {
+            return BadRequest("Kassalapp base URL must be an absolute URL.");
+        }
+
+        try
+        {
+            return Ok(await kassalappProductLookup.TestConnectionAsync(request, cancellationToken));
+        }
+        catch (ProductLookupConfigurationException exception)
+        {
+            return BadRequest(exception.Message);
+        }
+        catch (ProductLookupRateLimitException exception)
+        {
+            return StatusCode(StatusCodes.Status429TooManyRequests, exception.Message);
         }
         catch (HttpRequestException exception)
         {

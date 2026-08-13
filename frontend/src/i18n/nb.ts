@@ -649,6 +649,7 @@ export const nb: TranslationDictionary = {
     couldNotImportSeedCatalog: "Kunne ikke importere startkatalog.",
     couldNotLoad: "Kunne ikke laste innstillinger.",
     couldNotSave: "Kunne ikke lagre innstillinger.",
+    couldNotUpdateReferenceValues: "Kunne ikke oppdatere næringsreferanser.",
     currentProvider: "Gjeldende todo-tilbyder",
     currentProviderMode: "Modus",
     databaseProvider: "Database",
@@ -687,9 +688,13 @@ export const nb: TranslationDictionary = {
     pageTitle: "Innstillinger",
     projectId: "Prosjekt-ID",
     provider: "Todo-tilbyder",
+    kassalappConnectionFailed: "Kassalapp-tilkoblingstest feilet.",
+    kassalappConnectionSucceeded: "Kassalapp-tilkoblingen fungerer.",
     nutritionIntegrationBody:
       "Brukes når MATFLOTE importerer offisielle næringsreferanser til Næring-siden.",
     nutritionIntegrationTitle: "Næringsreferanser",
+    referenceValuesUpdated: (profilesImported) =>
+      `Næringsreferanser oppdatert for ${profilesImported} profil(er).`,
     saveSettings: "Lagre innstillinger",
     saved: "Innstillinger lagret.",
     saving: "Lagrer...",
@@ -706,6 +711,8 @@ export const nb: TranslationDictionary = {
     testingConnection: "Tester...",
     testConnectionSucceeded: "Tilkoblingen fungerer.",
     testConnectionFailed: "Tilkoblingstest feilet.",
+    updateReferenceValues: "Oppdater referanseverdier",
+    updatingReferenceValues: "Oppdaterer...",
   },
   theme: {
     switchToDark: "Bytt til mørk modus",

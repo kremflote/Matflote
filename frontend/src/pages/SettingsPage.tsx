@@ -4,13 +4,12 @@ import {
   CurrentProviderSummary,
   LanguageSettingsPanel,
   MaintenancePanel,
-  SystemInfoPanel,
   type ExportSettingsForm,
 } from "../components/settings/SettingsPanels";
 import { useLanguage } from "../contexts";
 import type { IAppSettings } from "../interfaces/IAppSettings";
 import type { IImageCleanupReport } from "../interfaces/IMaintenance";
-import { ApiError, appSettingsService, maintenanceService } from "../services";
+import { ApiError, appSettingsService, maintenanceService, nutritionService } from "../services";
 import { pageStyles, settingsStyles, type SiteTheme } from "../styles/appStyles";
 
 type SettingsPageProps = {
@@ -33,7 +32,9 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
   });
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
-  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [isTestingVikunja, setIsTestingVikunja] = useState(false);
+  const [isTestingKassalapp, setIsTestingKassalapp] = useState(false);
+  const [isUpdatingNutritionReferences, setIsUpdatingNutritionReferences] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [settingsSuccess, setSettingsSuccess] = useState<string | null>(null);
   const [imageCleanupReport, setImageCleanupReport] = useState<IImageCleanupReport | null>(null);
@@ -137,7 +138,7 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
   };
 
   const testExportConnection = async () => {
-    setIsTestingConnection(true);
+    setIsTestingVikunja(true);
     setSettingsError(null);
     setSettingsSuccess(null);
 
@@ -156,7 +157,41 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
     } catch (error) {
       setSettingsError(getSettingsError(error, t.settings.testConnectionFailed));
     } finally {
-      setIsTestingConnection(false);
+      setIsTestingVikunja(false);
+    }
+  };
+
+  const testKassalappConnection = async () => {
+    setIsTestingKassalapp(true);
+    setSettingsError(null);
+    setSettingsSuccess(null);
+
+    try {
+      await appSettingsService.testKassalapp({
+        baseUrl: exportForm.kassalappBaseUrl,
+        apiKey: exportForm.kassalappApiKey.trim().length > 0 ? exportForm.kassalappApiKey : null,
+      });
+
+      setSettingsSuccess(t.settings.kassalappConnectionSucceeded);
+    } catch (error) {
+      setSettingsError(getSettingsError(error, t.settings.kassalappConnectionFailed));
+    } finally {
+      setIsTestingKassalapp(false);
+    }
+  };
+
+  const updateNutritionReferenceValues = async () => {
+    setIsUpdatingNutritionReferences(true);
+    setSettingsError(null);
+    setSettingsSuccess(null);
+
+    try {
+      const result = await nutritionService.importReferenceValues();
+      setSettingsSuccess(t.settings.referenceValuesUpdated(result.profilesImported));
+    } catch (error) {
+      setSettingsError(getSettingsError(error, t.settings.couldNotUpdateReferenceValues));
+    } finally {
+      setIsUpdatingNutritionReferences(false);
     }
   };
 
@@ -219,17 +254,18 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
           exportForm={exportForm}
           isLoading={isLoadingSettings}
           isSaving={isSavingSettings}
-          isTesting={isTestingConnection}
+          isTestingKassalapp={isTestingKassalapp}
+          isTestingVikunja={isTestingVikunja}
+          isUpdatingNutritionReferences={isUpdatingNutritionReferences}
           settingsError={settingsError}
           settingsSuccess={settingsSuccess}
           theme={theme}
           onChange={setExportForm}
           onSave={() => void saveExportSettings()}
-          onTestConnection={() => void testExportConnection()}
+          onTestKassalappConnection={() => void testKassalappConnection()}
+          onTestVikunjaConnection={() => void testExportConnection()}
+          onUpdateNutritionReferences={() => void updateNutritionReferenceValues()}
         />
-        {appSettings !== null && (
-          <SystemInfoPanel appSettings={appSettings} theme={theme} />
-        )}
         <MaintenancePanel
           imageCleanupReport={imageCleanupReport}
           isCleaningImages={isCleaningImages}
