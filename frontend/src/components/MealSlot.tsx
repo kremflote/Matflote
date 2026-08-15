@@ -48,6 +48,8 @@ function MealSlot({
       })) ?? [];
   const mainItem = plannedItems.find((plannedRecipe) => plannedRecipe.role === "Main") ?? plannedItems[0];
   const supplementaryItems = plannedItems.filter((plannedRecipe) => plannedRecipe !== mainItem);
+  const visibleSupplementaryItems = supplementaryItems.slice(0, 3);
+  const hiddenSupplementaryCount = Math.max(supplementaryItems.length - visibleSupplementaryItems.length, 0);
   const mainName = mainItem?.recipe?.name ?? mainItem?.ingredient?.ingredientName;
   const mainImageUrl = mainItem?.recipe?.imageUrl ?? mainItem?.ingredient?.imageUrl ?? null;
   const hasMeal = plannedItems.length > 0;
@@ -126,7 +128,7 @@ function MealSlot({
                     </span>
                   )}
                   <div className={mealCalendarStyles.mealSlotRecipeList}>
-                    {supplementaryItems.map((plannedRecipe) => {
+                    {visibleSupplementaryItems.map((plannedRecipe) => {
                       const name = plannedRecipe.recipe?.name ?? plannedRecipe.ingredient?.ingredientName ?? t.planner.recipeFallback(plannedRecipe.recipeId ?? plannedRecipe.ingredientId ?? 0);
 
                       return (
@@ -139,6 +141,17 @@ function MealSlot({
                         </div>
                       );
                     })}
+                    {hiddenSupplementaryCount > 0 && (
+                      <div
+                        className={mealCalendarStyles.mealSlotRecipe(theme)}
+                        title={supplementaryItems
+                          .slice(visibleSupplementaryItems.length)
+                          .map((plannedRecipe) => plannedRecipe.recipe?.name ?? plannedRecipe.ingredient?.ingredientName ?? t.planner.recipeFallback(plannedRecipe.recipeId ?? plannedRecipe.ingredientId ?? 0))
+                          .join(", ")}
+                      >
+                        +{hiddenSupplementaryCount}
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

@@ -1322,7 +1322,7 @@ export const mealCalendarStyles = {
   mealSlotButton: "flex h-full w-full cursor-pointer items-center justify-center text-left",
   mealSlotDraggableButton: "min-[1101px]:cursor-grab min-[1101px]:active:cursor-grabbing",
   mealSlotDeleteButton: (theme: SiteTheme) =>
-    `pointer-events-none absolute right-2 top-2 z-10 hidden h-8 w-8 items-center justify-center rounded-md border opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100 max-[1100px]:hidden ${focusBase} ${siteColorClasses[theme].focus} ${
+    `pointer-events-none absolute bottom-2 right-2 z-10 hidden h-8 w-8 items-center justify-center rounded-md border opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100 max-[1100px]:hidden ${focusBase} ${siteColorClasses[theme].focus} ${
       theme === "dark"
         ? "border-red-400/35 bg-red-950 text-red-100 hover:bg-red-900"
         : theme === "paletteLight"
@@ -1380,16 +1380,16 @@ export const mealCalendarStyles = {
           : "bg-neutral-200"
     }`,
   mealSlotDetails:
-    "relative grid min-w-0 content-start gap-2 px-3 pb-3 pt-2 max-sm:px-2 max-sm:pb-2 max-sm:pt-1.5",
+    "relative grid min-h-0 min-w-0 content-start gap-1.5 overflow-hidden px-3 pb-7 pt-2 max-sm:px-2 max-sm:pb-6 max-sm:pt-1.5",
   mealSlotTitle: (theme: SiteTheme) =>
-    `min-w-0 whitespace-normal break-words text-left text-base font-bold leading-tight max-sm:text-sm ${
+    `min-w-0 overflow-hidden break-words text-left text-base font-bold leading-tight [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] max-sm:text-sm ${
       theme === "dark"
         ? "text-neutral-100"
         : theme === "paletteLight"
           ? "text-[#556145]"
           : "text-neutral-900"
     }`,
-  mealSlotRecipeList: "flex min-w-0 flex-wrap items-start gap-1.5",
+  mealSlotRecipeList: "flex min-w-0 flex-wrap items-start gap-1.5 overflow-hidden",
   mealSlotPortions: (theme: SiteTheme) =>
     `absolute bottom-2 right-3 text-xs font-black max-sm:right-2 max-sm:text-[11px] ${
       theme === "dark"

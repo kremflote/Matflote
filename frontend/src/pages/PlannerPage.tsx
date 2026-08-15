@@ -97,6 +97,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     mealPlanEntries,
     mealPlanIsLoading,
     initError,
+    loadedRange,
     clearMealPlanRange,
     deleteMealPlanEntry,
     loadMealPlan,
@@ -106,6 +107,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const { ingredients } = useIngredients();
   const { ingredientTagCategories } = useIngredientTagCategories();
   const anchorDate = viewMode === "week" ? weekAnchorDate : monthAnchorDate;
+  const shouldShowMealSlotLoading = mealPlanIsLoading || (loadedRange === null && initError === null);
 
   const visibleRange = useMemo(
     () => getVisibleRange(anchorDate, viewMode),
@@ -426,7 +428,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           anchorDate={anchorDate}
           dates={visibleDates}
           getEntryForSlot={getEntryForSlot}
-          isLoading={mealPlanIsLoading}
+          isLoading={shouldShowMealSlotLoading}
           ingredientsById={ingredientsById}
           loadError={initError === null ? null : t.planner.couldNotLoadMealPlan}
           mealSlots={visibleMealSlots}
