@@ -103,11 +103,15 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     loadMealPlan,
     saveMealPlanEntry,
   } = useMealPlan();
-  const { recipes } = useRecipes();
-  const { ingredients } = useIngredients();
+  const { recipes, recipeIsLoading } = useRecipes();
+  const { ingredients, ingredientIsLoading } = useIngredients();
   const { ingredientTagCategories } = useIngredientTagCategories();
   const anchorDate = viewMode === "week" ? weekAnchorDate : monthAnchorDate;
-  const shouldShowMealSlotLoading = mealPlanIsLoading || (loadedRange === null && initError === null);
+  const shouldShowMealSlotLoading =
+    mealPlanIsLoading ||
+    recipeIsLoading ||
+    ingredientIsLoading ||
+    (loadedRange === null && initError === null);
 
   const visibleRange = useMemo(
     () => getVisibleRange(anchorDate, viewMode),
