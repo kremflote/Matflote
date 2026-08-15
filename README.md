@@ -16,6 +16,14 @@ Created with assistance of ChatGPT 5.5.
 - Prices page for local household price tracking by ingredient, store, and date.
 - Nutrition page for approximate weekly nutrition summaries from planned meals and locally stored Helsedirektoratet reference values.
 
+## Project Structure
+
+- `frontend/`: React/Vite browser app.
+- `backend/`: ASP.NET Core API, SQLite migrations, seed catalog import/export, image handling, and PDF generation.
+- `backend/SeedImages/`: committed starter images and placeholders that are copied into image storage on startup.
+- `docs/images/`: screenshots used by this README.
+- `docker-compose.yml`: two-container MATFLOTE stack for self-hosted use.
+
 ## Images
 
 ### Planner
@@ -242,6 +250,10 @@ Minerals are intentionally not imported or displayed yet. Ingredient nutrition f
 ## Starter Data Catalog
 
 Starter tags, tag categories, conversion rules, brands, ingredients, and recipes can be shipped through `backend/SeedData/catalog.json`.
+
+Starter images and placeholders are shipped through `backend/SeedImages/`. On startup, MATFLOTE copies missing files from `backend/SeedImages/` into the configured image storage folder and serves them through `/images/...`.
+
+Do not commit generated runtime image storage from `backend/wwwroot/images/`. In local development that folder is the default image storage location; in Docker the same role is handled by the persistent `matflote-images` volume.
 
 On backend startup, after database migrations, MATFLOTE imports that JSON file if it exists. Import is intentionally additive:
 

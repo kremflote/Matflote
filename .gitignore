@@ -148,6 +148,7 @@ vite.config.ts.timestamp-*
 [Ll]ogs/
 
 # Visual Studio files
+.vscode/
 .vs/
 *.user
 *.suo
@@ -174,11 +175,8 @@ wwwroot/lib/
 staticwebassets/
 backend/wwwroot/assets/
 backend/wwwroot/images/*
-!backend/wwwroot/images/recipes/
-backend/wwwroot/images/recipes/*
-!backend/wwwroot/images/recipes/chicken-rice-bowl.png
-!backend/wwwroot/images/recipes/garlic-yogurt-sauce.png
 backend/wwwroot/index.html
+backend/wwwroot/icon.png
 backend/wwwroot/favicon.svg
 backend/wwwroot/icons.svg
 
