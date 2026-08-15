@@ -414,6 +414,11 @@ export type TranslationDictionary = {
     peopleEatingThisWeek: string;
     mealCalendar: string;
     mealPickerSearchPlaceholder: string;
+    moveMealAmountLabel: (unit: string) => string;
+    moveMealBody: (label: string) => string;
+    moveMealConfirm: string;
+    moveMealPortionsLabel: string;
+    moveMealTitle: string;
     noMatchingRecipesFound: string;
     noMainDishRecipesFound: string;
     openPlannerActions: string;
@@ -435,6 +440,7 @@ export type TranslationDictionary = {
     removeMealBody: string;
     removeMealTitle: string;
     couldNotRemoveMeal: string;
+    couldNotMoveMeal: string;
     couldNotSaveMeal: string;
     removing: string;
     saveMeal: string;

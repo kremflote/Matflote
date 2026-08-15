@@ -10,6 +10,7 @@ import { measurementUnits } from "../recipeBrowser/formOptions";
 
 type PlannerRecipePickerGridProps = {
   browserMode: "recipes" | "ingredients";
+  defaultToppingTagName: string;
   ingredients: IIngredient[];
   recipes: IRecipe[];
   selectedIngredients: SelectedIngredientValue[];
@@ -38,6 +39,7 @@ type SelectedIngredientValue = {
 
 function PlannerRecipePickerGrid({
   browserMode,
+  defaultToppingTagName,
   ingredients,
   recipes,
   selectedIngredients,
@@ -121,7 +123,8 @@ function PlannerRecipePickerGrid({
           const selected = selectedIngredient !== undefined;
           const isActive = activeOverlay?.kind === "ingredient" && activeOverlay.id === ingredient.ingredientId;
           const visuallySelected = selected || isActive;
-          const defaultValue = (selectedIngredient?.amount ?? 1).toString();
+          const defaultAmount = getDefaultIngredientAmount(ingredient, defaultToppingTagName);
+          const defaultValue = (selectedIngredient?.amount ?? defaultAmount).toString();
           const defaultUnit = selectedIngredient?.unit ?? "Gram";
           const value = isActive ? activeOverlay.value : defaultValue;
           const unit = isActive ? activeOverlay.unit : defaultUnit;
@@ -136,7 +139,7 @@ function PlannerRecipePickerGrid({
                 ingredient={ingredient}
                 theme={theme}
                 onClick={() => {
-                  const nextAmount = parsePositiveNumber(value) ?? 1;
+                  const nextAmount = parsePositiveNumber(value) ?? defaultAmount;
                   if (selected) {
                     onSelectIngredient(ingredient, nextAmount, unit);
                     setActiveOverlay(null);
@@ -233,6 +236,10 @@ function PickerInlineControls({
 function parsePositiveNumber(value: string) {
   const parsed = Number(value.replace(",", "."));
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function getDefaultIngredientAmount(ingredient: IIngredient, defaultToppingTagName: string) {
+  return ingredient.tags.includes(defaultToppingTagName) ? 20 : 1;
 }
 
 export default PlannerRecipePickerGrid;

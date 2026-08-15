@@ -20,6 +20,10 @@ type MealCalendarProps = {
   ingredientsById: Map<number, IIngredient>;
   loadError: string | null;
   mealSlots: MealSlotId[];
+  onDeleteSlot: (date: string, slot: MealSlotId) => void;
+  onDragEnd: () => void;
+  onDragStart: (date: string, slot: MealSlotId) => void;
+  onDropOnSlot: (date: string, slot: MealSlotId) => void;
   onSlotClick: (date: string, slot: MealSlotId) => void;
   recipesById: Map<number, IRecipe>;
   theme?: SiteTheme;
@@ -34,6 +38,10 @@ function MealCalendar({
   ingredientsById,
   loadError,
   mealSlots,
+  onDeleteSlot,
+  onDragEnd,
+  onDragStart,
+  onDropOnSlot,
   onSlotClick,
   recipesById,
   theme = "dark",
@@ -44,6 +52,7 @@ function MealCalendar({
     () => new Set(getLocalStringListPreference(localPreferenceKeys.plannerCollapsedDateKeys)),
   );
   const [canCollapseDays, setCanCollapseDays] = useState(false);
+  const [canUseDesktopInteractions, setCanUseDesktopInteractions] = useState(false);
   const weekDayLabels = t.calendar.weekdaysShort;
 
   useEffect(() => {
@@ -54,6 +63,16 @@ function MealCalendar({
     mediaQuery.addEventListener("change", updateCanCollapseDays);
 
     return () => mediaQuery.removeEventListener("change", updateCanCollapseDays);
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1101px)");
+    const updateCanUseDesktopInteractions = () => setCanUseDesktopInteractions(mediaQuery.matches);
+
+    updateCanUseDesktopInteractions();
+    mediaQuery.addEventListener("change", updateCanUseDesktopInteractions);
+
+    return () => mediaQuery.removeEventListener("change", updateCanUseDesktopInteractions);
   }, []);
 
   useEffect(() => {
@@ -187,11 +206,18 @@ function MealCalendar({
               <div className={mealCalendarStyles.dayMealGrid(isCollapsed)}>
                 {mealSlots.map((meal) => (
                   <MealSlot
+                    canUseDesktopInteractions={canUseDesktopInteractions}
+                    date={dateKey}
                     entry={getEntryForSlot(dateKey, meal)}
                     ingredientsById={ingredientsById}
                     key={`${dateKey}-${meal}`}
+                    onDeleteRequest={onDeleteSlot}
+                    onDragEnd={onDragEnd}
+                    onDragStart={onDragStart}
+                    onDropOnSlot={onDropOnSlot}
                     onClick={() => onSlotClick(dateKey, meal)}
                     recipesById={recipesById}
+                    slot={meal}
                     theme={theme}
                   />
                 ))}
@@ -261,15 +287,17 @@ type MonthMealSummaryProps = {
 
 function MonthMealSummary({ entry, ingredientsById, onClick, recipesById, slot, theme, t }: MonthMealSummaryProps) {
   const plannedRecipes = entry?.recipes ?? [];
-  const firstRecipe = plannedRecipes
+  const sortedPlannedRecipes = plannedRecipes
     .slice()
-    .sort((first, second) => first.sortOrder - second.sortOrder)[0];
-  const recipe = firstRecipe?.recipeId === null || firstRecipe === undefined ? undefined : recipesById.get(firstRecipe.recipeId);
-  const ingredient = firstRecipe?.ingredientId === null || firstRecipe === undefined ? undefined : ingredientsById.get(firstRecipe.ingredientId);
+    .sort((first, second) => first.sortOrder - second.sortOrder);
+  const mainRecipe =
+    sortedPlannedRecipes.find((plannedRecipe) => plannedRecipe.role === "Main") ?? sortedPlannedRecipes[0];
+  const recipe = mainRecipe?.recipeId === null || mainRecipe === undefined ? undefined : recipesById.get(mainRecipe.recipeId);
+  const ingredient = mainRecipe?.ingredientId === null || mainRecipe === undefined ? undefined : ingredientsById.get(mainRecipe.ingredientId);
   const extraCount = Math.max(plannedRecipes.length - 1, 0);
   const empty = entry === undefined;
   const slotLabel = t.enums.mealSlots[slot];
-  const label = recipe?.name ?? ingredient?.ingredientName ?? (firstRecipe ? t.planner.recipeFallback(firstRecipe.recipeId ?? firstRecipe.ingredientId ?? 0) : t.planner.addMealLower(slotLabel));
+  const label = recipe?.name ?? ingredient?.ingredientName ?? (mainRecipe ? t.planner.recipeFallback(mainRecipe.recipeId ?? mainRecipe.ingredientId ?? 0) : t.planner.addMealLower(slotLabel));
   const title = entry === undefined ? t.planner.addMeal(slotLabel) : t.planner.editMeal(slotLabel, label);
   const buttonLabel = empty ? t.planner.addMealLower(slotLabel) : label;
 

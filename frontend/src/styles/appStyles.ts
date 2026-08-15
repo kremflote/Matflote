@@ -1310,14 +1310,26 @@ export const mealCalendarStyles = {
   dayMealGrid: (collapsed: boolean) =>
     `${mealCalendarStyles.grid} ${collapsed ? "hidden" : ""}`,
   mealSlot: (theme: SiteTheme) =>
-    `col-span-4 flex ${sizeClasses.mealCalendarCellHeight} items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 max-[1100px]:col-span-1 max-[1100px]:h-32 max-sm:h-28 ${
+    `group/meal-slot relative col-span-4 flex ${sizeClasses.mealCalendarCellHeight} items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 max-[1100px]:col-span-1 max-[1100px]:h-32 max-sm:h-28 ${
       theme === "dark"
         ? "border-white/[0.08] bg-white/[0.035] hover:bg-white/[0.06]"
         : theme === "paletteLight"
           ? "border-[#C8C0B5] bg-[#FAF7F2]/70 hover:bg-[#E5D5BC]/45"
           : "border-neutral-200 bg-white hover:bg-neutral-50"
     }`,
-  mealSlotButton: "w-full cursor-pointer text-left",
+  mealSlotDropTarget: (theme: SiteTheme) =>
+    `${theme === "dark" ? "data-[drag-active=true]:border-emerald-300/70" : theme === "paletteLight" ? "data-[drag-active=true]:border-[#7A8864]" : "data-[drag-active=true]:border-emerald-700"} data-[drag-active=true]:border-2`,
+  mealSlotButton: "flex h-full w-full cursor-pointer items-center justify-center text-left",
+  mealSlotDraggableButton: "min-[1101px]:cursor-grab min-[1101px]:active:cursor-grabbing",
+  mealSlotDeleteButton: (theme: SiteTheme) =>
+    `pointer-events-none absolute right-2 top-2 z-10 hidden h-8 w-8 items-center justify-center rounded-md border opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100 max-[1100px]:hidden ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-red-400/35 bg-red-950 text-red-100 hover:bg-red-900"
+        : theme === "paletteLight"
+          ? "border-red-900/30 bg-red-900 text-[#FAF7F2] hover:bg-red-800"
+          : "border-red-800/30 bg-red-700 text-white hover:bg-red-800"
+    }`,
+  mealSlotDeleteIcon: "h-4 w-4",
   mealSlotInner: (theme: SiteTheme) =>
     `${sizeClasses.mealSlotPlaceholder} ${radiusClasses.figma6} border border-dashed ${
       theme === "dark"

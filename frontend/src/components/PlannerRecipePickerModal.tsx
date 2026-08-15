@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { useIngredients, useLanguage } from "../contexts";
+import { useIngredientTagCategories, useIngredients, useLanguage } from "../contexts";
 import type { IIngredient, IngredientTag, MeasurementUnit } from "../interfaces/IIngredient";
+import type { IIngredientTagCategory } from "../interfaces/ILookup";
 import type { IMealPlanEntry, MealSlot } from "../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
@@ -64,33 +65,33 @@ function PlannerRecipePickerModal({
   const { t } = useLanguage();
   const titleId = useId();
   const { ingredients } = useIngredients();
-  const initialMainRecipe = entry?.recipes
-    .slice()
-    .sort((first, second) => first.sortOrder - second.sortOrder)
-    .find((plannedRecipe) => plannedRecipe.role === "Main" && plannedRecipe.recipeId !== null);
-  const initialMainIngredient = entry?.recipes
-    .slice()
-    .sort((first, second) => first.sortOrder - second.sortOrder)
-    .find((plannedRecipe) => plannedRecipe.role === "Main" && plannedRecipe.ingredientId !== null);
+  const { ingredientTagCategories } = useIngredientTagCategories();
+  const sortedInitialItems =
+    entry?.recipes.slice().sort((first, second) => first.sortOrder - second.sortOrder) ?? [];
+  const initialMainItem =
+    sortedInitialItems.find((plannedRecipe) => plannedRecipe.role === "Main") ?? sortedInitialItems[0];
+  const initialSupplementaryItems = sortedInitialItems.filter(
+    (plannedRecipe) => plannedRecipe !== initialMainItem,
+  );
+  const initialMainRecipe =
+    initialMainItem?.recipeId !== null && initialMainItem?.recipeId !== undefined ? initialMainItem : undefined;
+  const initialMainIngredient =
+    initialMainItem?.ingredientId !== null && initialMainItem?.ingredientId !== undefined ? initialMainItem : undefined;
   const initialSupplementaryRecipes =
-    entry?.recipes
-      .slice()
-      .sort((first, second) => first.sortOrder - second.sortOrder)
-      .filter((plannedRecipe) => plannedRecipe.role !== "Main" && plannedRecipe.recipeId !== null)
+    initialSupplementaryItems
+      .filter((plannedRecipe) => plannedRecipe.recipeId !== null)
       .map((plannedRecipe) => ({
         recipeId: plannedRecipe.recipeId!,
         portions: plannedRecipe.portions ?? recipeByIdFallback(recipes, plannedRecipe.recipeId)?.portions ?? 1,
-      })) ?? [];
+      }));
   const initialSupplementaryIngredients =
-    entry?.recipes
-      .slice()
-      .sort((first, second) => first.sortOrder - second.sortOrder)
-      .filter((plannedRecipe) => plannedRecipe.role !== "Main" && plannedRecipe.ingredientId !== null)
+    initialSupplementaryItems
+      .filter((plannedRecipe) => plannedRecipe.ingredientId !== null)
       .map((plannedRecipe) => ({
         ingredientId: plannedRecipe.ingredientId!,
         amount: plannedRecipe.amount ?? 1,
-      unit: plannedRecipe.unit ?? ("Gram" as MeasurementUnit),
-      })) ?? [];
+        unit: plannedRecipe.unit ?? ("Gram" as MeasurementUnit),
+      }));
   const [browserMode, setBrowserMode] = useState<PickerBrowserMode>("recipes");
   const [searchTerm, setSearchTerm] = useState("");
   const [mainRecipeSelection, setMainRecipeSelection] = useState<SelectedPlannerRecipe | null>(
@@ -123,6 +124,7 @@ function PlannerRecipePickerModal({
   const ingredientFilterButtonRef = useRef<HTMLButtonElement | null>(null);
   const ingredientPickerRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const hasAppliedBreakfastBreadIngredientFilterRef = useRef(false);
 
   const recipeById = useMemo(
     () => new Map(recipes.map((recipe) => [recipe.recipeId, recipe])),
@@ -132,6 +134,12 @@ function PlannerRecipePickerModal({
     () => new Map(ingredients.map((ingredient) => [ingredient.ingredientId, ingredient])),
     [ingredients],
   );
+  const systemTagNames = useMemo(
+    () => buildSystemTagNameLookup(ingredientTagCategories),
+    [ingredientTagCategories],
+  );
+  const breadTagName = systemTagNames.get("Format.Bread") ?? "Bread";
+  const toppingTagName = systemTagNames.get("FoodRole.Topping") ?? "Pålegg";
   const mainRecipeId = mainRecipeSelection?.recipeId ?? null;
   const visibleRecipes = useMemo(
     () =>
@@ -200,6 +208,12 @@ function PlannerRecipePickerModal({
       })
       .filter((item): item is PlannerPickerSelectedItem => item !== null),
   ];
+  const hasSelectedBreakfastBreadRecipe =
+    slot === "Breakfast" &&
+    [
+      ...(mainRecipeSelection === null ? [] : [mainRecipeSelection]),
+      ...supplementaryRecipeSelections,
+    ].some((selection) => recipeById.get(selection.recipeId)?.tags.includes(breadTagName) === true);
 
   useEffect(() => {
     const previouslyFocusedElement =
@@ -401,6 +415,22 @@ function PlannerRecipePickerModal({
     removeIngredientSelection(item.id);
   };
 
+  const switchToIngredientBrowser = () => {
+    if (
+      browserMode === "recipes" &&
+      hasSelectedBreakfastBreadRecipe &&
+      !hasAppliedBreakfastBreadIngredientFilterRef.current &&
+      selectedIngredientTags.length === 0 &&
+      ingredients.some((ingredient) => ingredient.tags.includes(toppingTagName))
+    ) {
+      setSelectedIngredientTags([toppingTagName]);
+      hasAppliedBreakfastBreadIngredientFilterRef.current = true;
+    }
+
+    setBrowserMode("ingredients");
+    setIngredientPickerPosition(null);
+  };
+
   const saveMealSlot = async () => {
     if (mainRecipe === null && mainIngredient === null && entry === undefined) {
       return;
@@ -597,10 +627,7 @@ function PlannerRecipePickerModal({
             <button
               className={plannerPickerStyles.browserModeOption(theme, browserMode === "ingredients")}
               type="button"
-              onClick={() => {
-                setBrowserMode("ingredients");
-                setIngredientPickerPosition(null);
-              }}
+              onClick={switchToIngredientBrowser}
             >
               {t.cookbook.ingredients}
             </button>
@@ -673,6 +700,7 @@ function PlannerRecipePickerModal({
           <div className={plannerPickerStyles.bodyGrid}>
             <PlannerRecipePickerGrid
               browserMode={browserMode}
+              defaultToppingTagName={toppingTagName}
               ingredients={visiblePickerIngredients}
               recipes={visibleRecipes}
               selectedIngredients={[
@@ -788,6 +816,20 @@ function getInitialRecipeTagFilters(slot: MealSlot): RecipeTag[] {
   }
 
   return slot === "Dinner" ? ["Dinner"] : [];
+}
+
+function buildSystemTagNameLookup(categories: IIngredientTagCategory[]) {
+  const systemTagNames = new Map<string, string>();
+
+  for (const category of categories) {
+    for (const tag of category.tags) {
+      if (tag.systemKey !== null) {
+        systemTagNames.set(tag.systemKey, tag.name);
+      }
+    }
+  }
+
+  return systemTagNames;
 }
 
 function CategoryIcon() {

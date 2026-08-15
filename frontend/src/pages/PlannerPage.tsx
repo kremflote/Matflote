@@ -7,8 +7,10 @@ import PlannerRecipePickerModal from "../components/PlannerRecipePickerModal";
 import PrepHelperDialog from "../components/PrepHelperDialog";
 import { useIngredientTagCategories, useIngredients, useLanguage, useMealPlan, useRecipes } from "../contexts";
 import type { IGroceryList } from "../interfaces/IGroceryList";
-import type { MealSlot, PlannerViewMode } from "../interfaces/IMeal";
+import type { MeasurementUnit } from "../interfaces/IIngredient";
+import type { IMealPlanEntry, IMealPlanRecipe, MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import { groceryListService } from "../services";
+import type { MealPlanEntryRequest, MealPlanRecipeRequest } from "../services/mealPlanService";
 import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
 import { confirmationDialogStyles } from "../styles/confirmationDialogStyles";
 import {
@@ -49,6 +51,17 @@ type SelectedPlannerSlot = {
   slot: MealSlot;
 };
 
+type PendingMealMove = {
+  amountKind: "amount" | "none" | "portions";
+  label: string;
+  maxValue: number;
+  source: SelectedPlannerSlot;
+  sourceEntry: IMealPlanEntry;
+  target: SelectedPlannerSlot;
+  unit: MeasurementUnit | null;
+  value: number;
+};
+
 const PlannerPage = ({ theme }: PlannerPageProps) => {
   const { locale, t } = useLanguage();
   const [viewMode, setViewMode] = useState<PlannerViewMode>(() =>
@@ -67,6 +80,9 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     )),
   );
   const [selectedSlot, setSelectedSlot] = useState<SelectedPlannerSlot | null>(null);
+  const [draggedSlot, setDraggedSlot] = useState<SelectedPlannerSlot | null>(null);
+  const [pendingMealMove, setPendingMealMove] = useState<PendingMealMove | null>(null);
+  const [pendingMealDelete, setPendingMealDelete] = useState<SelectedPlannerSlot | null>(null);
   const [plannerAction, setPlannerAction] = useState<"clear" | "generate" | null>(null);
   const [pendingPlannerAction, setPendingPlannerAction] = useState<"clear" | "generate" | null>(null);
   const [generatePeopleEating, setGeneratePeopleEating] = useState(() =>
@@ -82,6 +98,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     mealPlanIsLoading,
     initError,
     clearMealPlanRange,
+    deleteMealPlanEntry,
     loadMealPlan,
     saveMealPlanEntry,
   } = useMealPlan();
@@ -152,6 +169,107 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
 
   const getEntryForSlot = (date: string, slot: MealSlot) =>
     entriesByDateSlot.get(getMealPlanEntryKey(date, slot));
+
+  const handleMealDrop = (targetDate: string, targetSlot: MealSlot) => {
+    if (viewMode !== "week" || draggedSlot === null) {
+      return;
+    }
+
+    if (draggedSlot.date === targetDate && draggedSlot.slot === targetSlot) {
+      setDraggedSlot(null);
+      return;
+    }
+
+    const sourceEntry = getEntryForSlot(draggedSlot.date, draggedSlot.slot);
+    if (sourceEntry === undefined || sourceEntry.recipes.length === 0) {
+      setDraggedSlot(null);
+      return;
+    }
+
+    const targetEntry = getEntryForSlot(targetDate, targetSlot);
+    setDraggedSlot(null);
+
+    if (targetEntry !== undefined && targetEntry.recipes.length > 0) {
+      void swapMealSlots(sourceEntry, targetEntry);
+      return;
+    }
+
+    setPendingMealMove(createPendingMealMove({
+      source: draggedSlot,
+      sourceEntry,
+      target: { date: targetDate, slot: targetSlot },
+      label: getMealEntryLabel(sourceEntry, recipesById, ingredientsById, t),
+    }));
+  };
+
+  const swapMealSlots = async (sourceEntry: IMealPlanEntry, targetEntry: IMealPlanEntry) => {
+    setPlannerActionError(null);
+
+    try {
+      await saveMealPlanEntry(sourceEntry.mealPlanEntryId, toMealPlanRequest(targetEntry, sourceEntry.date, sourceEntry.slot));
+      await saveMealPlanEntry(targetEntry.mealPlanEntryId, toMealPlanRequest(sourceEntry, targetEntry.date, targetEntry.slot));
+    } catch (error) {
+      setPlannerActionError(getPlannerActionError(error, t.planner.couldNotMoveMeal));
+    }
+  };
+
+  const moveMealToEmptySlot = async () => {
+    if (pendingMealMove === null) {
+      return;
+    }
+
+    const selectedValue = normalizeMoveValue(pendingMealMove.value, pendingMealMove.maxValue);
+    const ratio = pendingMealMove.amountKind === "none" ? 1 : selectedValue / pendingMealMove.maxValue;
+    const targetRecipes = scaleMealPlanRecipes(pendingMealMove.sourceEntry.recipes, ratio);
+    const remainingRecipes = scaleMealPlanRecipes(pendingMealMove.sourceEntry.recipes, 1 - ratio);
+
+    setPlannerActionError(null);
+
+    try {
+      await saveMealPlanEntry(null, {
+        date: pendingMealMove.target.date,
+        slot: pendingMealMove.target.slot,
+        notes: pendingMealMove.sourceEntry.notes,
+        recipes: targetRecipes,
+      });
+
+      if (remainingRecipes.length === 0) {
+        await deleteMealPlanEntry(pendingMealMove.sourceEntry.mealPlanEntryId);
+      } else {
+        await saveMealPlanEntry(pendingMealMove.sourceEntry.mealPlanEntryId, {
+          date: pendingMealMove.source.date,
+          slot: pendingMealMove.source.slot,
+          notes: pendingMealMove.sourceEntry.notes,
+          recipes: remainingRecipes,
+        });
+      }
+
+      setPendingMealMove(null);
+    } catch (error) {
+      setPlannerActionError(getPlannerActionError(error, t.planner.couldNotMoveMeal));
+    }
+  };
+
+  const removeMealSlot = async () => {
+    if (pendingMealDelete === null) {
+      return;
+    }
+
+    const entry = getEntryForSlot(pendingMealDelete.date, pendingMealDelete.slot);
+    if (entry === undefined) {
+      setPendingMealDelete(null);
+      return;
+    }
+
+    setPlannerActionError(null);
+
+    try {
+      await deleteMealPlanEntry(entry.mealPlanEntryId);
+      setPendingMealDelete(null);
+    } catch (error) {
+      setPlannerActionError(getPlannerActionError(error, t.planner.couldNotRemoveMeal));
+    }
+  };
 
   const moveToPreviousRange = () => {
     setPlannerActionError(null);
@@ -312,6 +430,10 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           ingredientsById={ingredientsById}
           loadError={initError === null ? null : t.planner.couldNotLoadMealPlan}
           mealSlots={visibleMealSlots}
+          onDeleteSlot={(date, slot) => setPendingMealDelete({ date, slot })}
+          onDragEnd={() => setDraggedSlot(null)}
+          onDragStart={(date, slot) => setDraggedSlot({ date, slot })}
+          onDropOnSlot={handleMealDrop}
           onSlotClick={(date, slot) => setSelectedSlot({ date, slot })}
           recipesById={recipesById}
           theme={theme}
@@ -395,12 +517,195 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           }}
         />
       )}
+      {pendingMealMove !== null && (
+        <ConfirmationDialog
+          body={
+            <>
+              <p>{t.planner.moveMealBody(pendingMealMove.label)}</p>
+              {pendingMealMove.amountKind !== "none" && (
+                <div className={confirmationDialogStyles.settingsGroup}>
+                  <label className={confirmationDialogStyles.fieldLabel}>
+                    <span className={confirmationDialogStyles.fieldTitle(theme)}>
+                      {pendingMealMove.amountKind === "portions"
+                        ? t.planner.moveMealPortionsLabel
+                        : t.planner.moveMealAmountLabel(pendingMealMove.unit ?? "")}
+                    </span>
+                    <input
+                      className={confirmationDialogStyles.numberInput(theme)}
+                      max={pendingMealMove.maxValue}
+                      min={1}
+                      step={1}
+                      type="number"
+                      value={pendingMealMove.value}
+                      onChange={(event) =>
+                        setPendingMealMove((currentMove) =>
+                          currentMove === null
+                            ? null
+                            : {
+                                ...currentMove,
+                                value: normalizeMoveValue(Number(event.currentTarget.value), currentMove.maxValue),
+                              },
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              )}
+            </>
+          }
+          confirmLabel={t.planner.moveMealConfirm}
+          isBusy={mealPlanIsLoading}
+          theme={theme}
+          title={t.planner.moveMealTitle}
+          onCancel={() => setPendingMealMove(null)}
+          onConfirm={() => void moveMealToEmptySlot()}
+        />
+      )}
+      {pendingMealDelete !== null && (
+        <ConfirmationDialog
+          body={t.planner.removeMealBody}
+          confirmLabel={t.common.remove}
+          isBusy={mealPlanIsLoading}
+          theme={theme}
+          title={t.planner.removeMealTitle}
+          tone="danger"
+          onCancel={() => setPendingMealDelete(null)}
+          onConfirm={() => void removeMealSlot()}
+        />
+      )}
     </main>
   );
 };
 
 function getMealPlanEntryKey(date: string, slot: MealSlot) {
   return `${date}::${slot}`;
+}
+
+function getMainMealItem(entry: IMealPlanEntry) {
+  const sortedItems = entry.recipes.slice().sort((first, second) => first.sortOrder - second.sortOrder);
+
+  return sortedItems.find((plannedRecipe) => plannedRecipe.role === "Main") ?? sortedItems[0];
+}
+
+function getMealEntryLabel(
+  entry: IMealPlanEntry,
+  recipesById: ReadonlyMap<number, { name: string }>,
+  ingredientsById: ReadonlyMap<number, { ingredientName: string }>,
+  t: ReturnType<typeof useLanguage>["t"],
+) {
+  const mainItem = getMainMealItem(entry);
+  const recipe = mainItem?.recipeId === null || mainItem === undefined ? undefined : recipesById.get(mainItem.recipeId);
+  const ingredient = mainItem?.ingredientId === null || mainItem === undefined ? undefined : ingredientsById.get(mainItem.ingredientId);
+
+  return recipe?.name ?? ingredient?.ingredientName ?? t.planner.recipeFallback(mainItem?.recipeId ?? mainItem?.ingredientId ?? 0);
+}
+
+function createPendingMealMove({
+  label,
+  source,
+  sourceEntry,
+  target,
+}: {
+  label: string;
+  source: SelectedPlannerSlot;
+  sourceEntry: IMealPlanEntry;
+  target: SelectedPlannerSlot;
+}): PendingMealMove {
+  const mainItem = getMainMealItem(sourceEntry);
+
+  if (mainItem?.recipeId !== null && mainItem?.recipeId !== undefined && mainItem.portions !== null && mainItem.portions > 0) {
+    return {
+      amountKind: "portions",
+      label,
+      maxValue: mainItem.portions,
+      source,
+      sourceEntry,
+      target,
+      unit: null,
+      value: mainItem.portions,
+    };
+  }
+
+  if (mainItem?.ingredientId !== null && mainItem?.ingredientId !== undefined && mainItem.amount !== null && mainItem.amount > 0) {
+    return {
+      amountKind: "amount",
+      label,
+      maxValue: mainItem.amount,
+      source,
+      sourceEntry,
+      target,
+      unit: mainItem.unit,
+      value: mainItem.amount,
+    };
+  }
+
+  return {
+    amountKind: "none",
+    label,
+    maxValue: 1,
+    source,
+    sourceEntry,
+    target,
+    unit: null,
+    value: 1,
+  };
+}
+
+function toMealPlanRequest(entry: IMealPlanEntry, date: string, slot: MealSlot): MealPlanEntryRequest {
+  return {
+    date,
+    slot,
+    notes: entry.notes,
+    recipes: toMealPlanRecipeRequests(entry.recipes),
+  };
+}
+
+function toMealPlanRecipeRequests(recipes: IMealPlanRecipe[]): MealPlanRecipeRequest[] {
+  return recipes
+    .slice()
+    .sort((first, second) => first.sortOrder - second.sortOrder)
+    .map((recipe, index) => ({
+      recipeId: recipe.recipeId,
+      ingredientId: recipe.ingredientId,
+      role: index === 0 ? "Main" : recipe.role,
+      sortOrder: index,
+      portions: recipe.portions,
+      amount: recipe.amount,
+      unit: recipe.unit,
+    }));
+}
+
+function scaleMealPlanRecipes(recipes: IMealPlanRecipe[], ratio: number): MealPlanRecipeRequest[] {
+  if (ratio <= 0) {
+    return [];
+  }
+
+  return recipes
+    .slice()
+    .sort((first, second) => first.sortOrder - second.sortOrder)
+    .map((recipe, index) => ({
+      recipeId: recipe.recipeId,
+      ingredientId: recipe.ingredientId,
+      role: index === 0 ? "Main" : recipe.role,
+      sortOrder: index,
+      portions: recipe.portions === null ? null : roundPlannerQuantity(recipe.portions * ratio),
+      amount: recipe.amount === null ? null : roundPlannerQuantity(recipe.amount * ratio),
+      unit: recipe.unit,
+    }))
+    .filter((recipe) => recipe.portions === null || recipe.portions > 0)
+    .filter((recipe) => recipe.amount === null || recipe.amount > 0);
+}
+
+function roundPlannerQuantity(value: number) {
+  return Math.round(value * 10) / 10;
+}
+
+function normalizeMoveValue(value: number, maxValue: number) {
+  if (!Number.isFinite(value)) {
+    return maxValue;
+  }
+
+  return Math.max(1, Math.min(maxValue, Math.round(value)));
 }
 
 function createEmptyGroceryList(from: string, to: string): IGroceryList {
