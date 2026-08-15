@@ -423,7 +423,7 @@ export const headerStyles = {
   inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-[1100px]:min-h-0 max-[1100px]:grid-cols-[1fr_auto] max-[1100px]:gap-x-4 max-[1100px]:py-3 max-sm:py-3`,
   logo: (theme: SiteTheme) =>
     `justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses[theme].headerForeground}`,
-  actions: "flex items-center justify-end gap-2",
+  actions: "flex items-center justify-end gap-2 min-[1401px]:translate-x-[8.5rem]",
   nav: (theme: SiteTheme) =>
     `flex items-center justify-center gap-2 max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:bottom-0 max-[1100px]:z-50 max-[1100px]:border-t max-[1100px]:px-6 max-[1100px]:pt-2 max-[1100px]:[padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))] max-sm:px-4 ${siteColorClasses[theme].header} ${siteColorClasses[theme].bottomNav}`,
   navButton: (theme: SiteTheme, selected: boolean) =>
@@ -1350,6 +1350,35 @@ export const mealCalendarStyles = {
   mealSlotImage: "h-full w-full object-cover",
   mealSlotImageFallback: (theme: SiteTheme) =>
     `h-full w-full ${theme === "dark" ? "bg-neutral-800" : theme === "paletteLight" ? "bg-[#E5D5BC]/45" : "bg-neutral-100"}`,
+  mealSlotSkeletonImage: (theme: SiteTheme) =>
+    `h-full w-full animate-pulse rounded-l-md ${
+      theme === "dark"
+        ? "bg-white/[0.08]"
+        : theme === "paletteLight"
+          ? "bg-[#C8C0B5]/65"
+          : "bg-neutral-200"
+    }`,
+  mealSlotSkeletonDetails:
+    "grid min-w-0 content-start gap-2 px-3 pb-3 pt-2 max-sm:px-2 max-sm:pb-2 max-sm:pt-1.5",
+  mealSlotSkeletonLine: (theme: SiteTheme, width: "short" | "title") =>
+    `block h-3 animate-pulse rounded-full ${
+      width === "title" ? "w-4/5" : "w-1/2"
+    } ${
+      theme === "dark"
+        ? "bg-white/[0.10]"
+        : theme === "paletteLight"
+          ? "bg-[#7A8864]/28"
+          : "bg-neutral-300"
+    }`,
+  mealSlotSkeletonChips: "mt-1 flex flex-wrap gap-1.5",
+  mealSlotSkeletonChip: (theme: SiteTheme) =>
+    `block h-5 w-14 animate-pulse rounded-md ${
+      theme === "dark"
+        ? "bg-white/[0.08]"
+        : theme === "paletteLight"
+          ? "bg-[#E5D5BC]"
+          : "bg-neutral-200"
+    }`,
   mealSlotDetails:
     "relative grid min-w-0 content-start gap-2 px-3 pb-3 pt-2 max-sm:px-2 max-sm:pb-2 max-sm:pt-1.5",
   mealSlotTitle: (theme: SiteTheme) =>

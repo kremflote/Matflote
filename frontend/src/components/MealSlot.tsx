@@ -10,6 +10,7 @@ type MealSlotProps = {
   date: string;
   entry?: IMealPlanEntry;
   ingredientsById: Map<number, IIngredient>;
+  isLoading: boolean;
   onClick: () => void;
   onDeleteRequest: (date: string, slot: MealSlotId) => void;
   onDragEnd: () => void;
@@ -25,6 +26,7 @@ function MealSlot({
   date,
   entry,
   ingredientsById,
+  isLoading,
   onClick,
   onDeleteRequest,
   onDragEnd,
@@ -49,6 +51,7 @@ function MealSlot({
   const mainName = mainItem?.recipe?.name ?? mainItem?.ingredient?.ingredientName;
   const mainImageUrl = mainItem?.recipe?.imageUrl ?? mainItem?.ingredient?.imageUrl ?? null;
   const hasMeal = plannedItems.length > 0;
+  const canDragMeal = canUseDesktopInteractions && hasMeal && !isLoading;
 
   return (
     <div
@@ -77,14 +80,16 @@ function MealSlot({
       <button
         aria-label={t.planner.openMealSlot}
         className={`${mealCalendarStyles.mealSlotButton} ${
-          canUseDesktopInteractions && hasMeal ? mealCalendarStyles.mealSlotDraggableButton : ""
+          canDragMeal ? mealCalendarStyles.mealSlotDraggableButton : ""
         }`}
-        draggable={canUseDesktopInteractions && hasMeal}
+        aria-busy={isLoading}
+        disabled={isLoading}
+        draggable={canDragMeal}
         type="button"
         onClick={onClick}
         onDragEnd={onDragEnd}
         onDragStart={(event) => {
-          if (!canUseDesktopInteractions || !hasMeal) {
+          if (!canDragMeal) {
             event.preventDefault();
             return;
           }
@@ -94,7 +99,9 @@ function MealSlot({
           onDragStart(date, slot);
         }}
       >
-        {hasMeal ? (
+        {isLoading ? (
+          <MealSlotSkeleton theme={theme} />
+        ) : hasMeal ? (
           <div className={mealCalendarStyles.mealSlotContent}>
             {mainName !== undefined ? (
               <>
@@ -143,7 +150,7 @@ function MealSlot({
           <div className={mealCalendarStyles.mealSlotInner(theme)} />
         )}
       </button>
-      {canUseDesktopInteractions && hasMeal && (
+      {canDragMeal && (
         <button
           aria-label={t.planner.removeMeal}
           className={mealCalendarStyles.mealSlotDeleteButton(theme)}
@@ -154,6 +161,22 @@ function MealSlot({
           <TrashIcon />
         </button>
       )}
+    </div>
+  );
+}
+
+function MealSlotSkeleton({ theme }: { theme: SiteTheme }) {
+  return (
+    <div className={mealCalendarStyles.mealSlotContent} aria-hidden="true">
+      <div className={mealCalendarStyles.mealSlotSkeletonImage(theme)} />
+      <div className={mealCalendarStyles.mealSlotSkeletonDetails}>
+        <span className={mealCalendarStyles.mealSlotSkeletonLine(theme, "title")} />
+        <span className={mealCalendarStyles.mealSlotSkeletonLine(theme, "short")} />
+        <div className={mealCalendarStyles.mealSlotSkeletonChips}>
+          <span className={mealCalendarStyles.mealSlotSkeletonChip(theme)} />
+          <span className={mealCalendarStyles.mealSlotSkeletonChip(theme)} />
+        </div>
+      </div>
     </div>
   );
 }

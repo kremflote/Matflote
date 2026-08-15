@@ -210,6 +210,7 @@ function MealCalendar({
                     date={dateKey}
                     entry={getEntryForSlot(dateKey, meal)}
                     ingredientsById={ingredientsById}
+                    isLoading={isLoading}
                     key={`${dateKey}-${meal}`}
                     onDeleteRequest={onDeleteSlot}
                     onDragEnd={onDragEnd}
