@@ -606,6 +606,7 @@ export const recipeBrowserStyles = {
     }`,
   tagCategorySelectRow:
     "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 max-sm:grid-cols-1",
+  manageTagModeRow: "flex justify-end max-sm:justify-start",
   manageTagsList: "grid gap-3",
   manageTagCategoryShell: "grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-2 max-sm:grid-cols-12",
   manageTagCategoryControlsRail: "grid content-start justify-items-center gap-1 max-sm:col-span-2 max-sm:w-full",

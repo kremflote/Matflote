@@ -798,6 +798,7 @@ function IngredientDraftEditor({
         <IngredientTagCreateDialog
           categories={ingredientTagCategories}
           existingTags={[...knownIngredientTags, ...customTags]}
+          initialMode="ingredients"
           theme={theme}
           onCancel={() => setIsTagCreateOpen(false)}
           onCreate={async (tag, categoryId) => {
@@ -806,8 +807,12 @@ function IngredientDraftEditor({
             onChange(clearAutofillSource({ ...draft, tags: draft.tags.includes(tag) ? draft.tags : [...draft.tags, tag] }, "tags"));
             setIsTagCreateOpen(false);
           }}
-          onCreateCategory={async (name) => {
-            const category = await ingredientTagCategoryService.create({ name });
+          onCreateCategory={async (name, mode) => {
+            const category = await ingredientTagCategoryService.create({
+              name,
+              showForIngredients: mode === "ingredients",
+              showForRecipes: mode === "recipes",
+            });
             await refreshIngredientTagCategories();
             return {
               id: category.ingredientTagCategoryId,

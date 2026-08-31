@@ -646,6 +646,7 @@ function RecipeCreateForm({
         <IngredientTagCreateDialog
           categories={ingredientTagCategories}
           existingTags={[...knownRecipeTags, ...customRecipeTags]}
+          initialMode="recipes"
           theme={theme}
           onCancel={() => setIsTagCreateOpen(false)}
           onCreate={async (tag, categoryId) => {
@@ -654,8 +655,12 @@ function RecipeCreateForm({
             setSelectedTags((currentTags) => currentTags.includes(tag) ? currentTags : [...currentTags, tag]);
             setIsTagCreateOpen(false);
           }}
-          onCreateCategory={async (name) => {
-            const category = await ingredientTagCategoryService.create({ name });
+          onCreateCategory={async (name, mode) => {
+            const category = await ingredientTagCategoryService.create({
+              name,
+              showForIngredients: mode === "ingredients",
+              showForRecipes: mode === "recipes",
+            });
             await refreshIngredientTagCategories();
             return {
               id: category.ingredientTagCategoryId,

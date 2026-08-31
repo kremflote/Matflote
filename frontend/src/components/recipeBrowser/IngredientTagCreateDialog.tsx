@@ -9,10 +9,11 @@ import TagManagementDialog from "./TagManagementDialog";
 type IngredientTagCreateDialogProps = {
   categories: readonly IIngredientTagCategory[];
   existingTags: readonly IngredientTag[];
+  initialMode?: "ingredients" | "recipes";
   theme: SiteTheme;
   onCancel: () => void;
   onCreate: (tag: IngredientTag, categoryId: number) => Promise<void>;
-  onCreateCategory: (name: string) => Promise<CreatableOption>;
+  onCreateCategory: (name: string, mode: "ingredients" | "recipes") => Promise<CreatableOption>;
   onUpdateCategory: (category: CreatableOption) => Promise<void>;
   onDeleteCategory: (category: CreatableOption) => Promise<void>;
   onUpdateTag: (tagName: string, nextName: string) => Promise<void>;
@@ -24,6 +25,7 @@ type IngredientTagCreateDialogProps = {
 function IngredientTagCreateDialog({
   categories,
   existingTags,
+  initialMode = "ingredients",
   theme,
   onCancel,
   onCreate,
@@ -55,6 +57,7 @@ function IngredientTagCreateDialog({
       formatCategoryName={(name) =>
         formatIngredientTagCategoryName(name, t.filters.ingredientTagGroups)
       }
+      initialMode={initialMode}
       theme={theme}
       onCancel={onCancel}
       onCreate={(tag, categoryId) => onCreate(tag as IngredientTag, categoryId)}

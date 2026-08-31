@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useLanguage } from "../../contexts";
 import type { SiteTheme } from "../../styles/appStyles";
 import ConfirmationDialog from "../ConfirmationDialog";
@@ -26,10 +26,11 @@ type TagManagementDialogProps = {
   categories: readonly ManagedTagCategory[];
   existingTags: readonly string[];
   formatCategoryName: (name: string) => string;
+  initialMode: TagManagementMode;
   theme: SiteTheme;
   onCancel: () => void;
   onCreate: (tag: string, categoryId: number) => Promise<void>;
-  onCreateCategory: (name: string) => Promise<CreatableOption>;
+  onCreateCategory: (name: string, mode: TagManagementMode) => Promise<CreatableOption>;
   onUpdateCategory: (category: CreatableOption) => Promise<void>;
   onDeleteCategory: (category: CreatableOption) => Promise<void>;
   onUpdateTag: (tagName: string, nextName: string) => Promise<void>;
@@ -39,11 +40,13 @@ type TagManagementDialogProps = {
 };
 
 type NameDialogMode = "tag" | "category";
+type TagManagementMode = "ingredients" | "recipes";
 
 function TagManagementDialog({
   categories,
   existingTags,
   formatCategoryName,
+  initialMode,
   theme,
   onCancel,
   onCreate,
@@ -69,8 +72,23 @@ function TagManagementDialog({
   const [managedCategoryNames, setManagedCategoryNames] = useState<Record<number, string>>({});
   const [managedTagNames, setManagedTagNames] = useState<Record<string, string>>({});
   const [collapsedCategoryIds, setCollapsedCategoryIds] = useState<Set<number>>(() => new Set());
-  const selectedCategory = categories.find((category) => category.id === selectedCategoryId) ?? null;
+  const [activeMode, setActiveMode] = useState<TagManagementMode>(initialMode);
+  const visibleCategories = categories.filter((category) =>
+    activeMode === "ingredients" ? category.showForIngredients !== false : category.showForRecipes !== false,
+  );
+  const selectedCategory = visibleCategories.find((category) => category.id === selectedCategoryId) ?? null;
   const canCreateTagInSelectedCategory = selectedCategory !== null && selectedCategory.id > 0;
+
+  useEffect(() => {
+    if (visibleCategories.length === 0) {
+      setSelectedCategoryId(null);
+      return;
+    }
+
+    if (!visibleCategories.some((category) => category.id === selectedCategoryId)) {
+      setSelectedCategoryId(visibleCategories[0].id);
+    }
+  }, [selectedCategoryId, visibleCategories]);
 
   async function saveNewName() {
     const normalizedName = normalizeCustomTagName(newName);
@@ -97,7 +115,7 @@ function TagManagementDialog({
 
     try {
       if (nameDialogMode === "category") {
-        const category = await onCreateCategory(normalizedName);
+        const category = await onCreateCategory(normalizedName, activeMode);
         setSelectedCategoryId(category.id);
       } else if (nameDialogMode === "tag" && canCreateTagInSelectedCategory && selectedCategoryId !== null) {
         await onCreate(normalizedName, selectedCategoryId);
@@ -145,26 +163,6 @@ function TagManagementDialog({
       setManagedCategoryNames((currentNames) => {
         const { [category.id]: _removed, ...remainingNames } = currentNames;
         return remainingNames;
-      });
-    } finally {
-      setIsManagingTags(false);
-    }
-  }
-
-  async function updateCategoryVisibility(
-    category: ManagedTagCategory,
-    visibility: Pick<ManagedTagCategory, "showForIngredients" | "showForRecipes">,
-  ) {
-    if (category.id <= 0) {
-      return;
-    }
-
-    setIsManagingTags(true);
-    try {
-      await onUpdateCategory({
-        id: category.id,
-        name: category.name,
-        ...visibility,
       });
     } finally {
       setIsManagingTags(false);
@@ -257,8 +255,28 @@ function TagManagementDialog({
       titleId={titleId}
       onClose={onCancel}
     >
+      <div className={recipeBrowserStyles.manageTagModeRow}>
+        <div className={recipeBrowserStyles.manageTagVisibilityGroup(theme)}>
+          <button
+            aria-pressed={activeMode === "recipes"}
+            className={recipeBrowserStyles.manageTagVisibilityButton(theme, activeMode === "recipes")}
+            type="button"
+            onClick={() => setActiveMode("recipes")}
+          >
+            {t.cookbook.recipes}
+          </button>
+          <button
+            aria-pressed={activeMode === "ingredients"}
+            className={recipeBrowserStyles.manageTagVisibilityButton(theme, activeMode === "ingredients")}
+            type="button"
+            onClick={() => setActiveMode("ingredients")}
+          >
+            {t.cookbook.ingredients}
+          </button>
+        </div>
+      </div>
       <div className={recipeBrowserStyles.manageTagsList}>
-        {categories.map((category) => {
+        {visibleCategories.map((category) => {
           const isSelected = selectedCategoryId === category.id;
           const isSyntheticCategory = category.id <= 0;
           const hasSystemTags = category.tags.some((tag) => tag.isSystemTag);
@@ -287,40 +305,6 @@ function TagManagementDialog({
                 onClick={() => setSelectedCategoryId(category.id)}
               >
               <div className={`${recipeBrowserStyles.manageTagCategoryRow(isCollapsed)} ${recipeBrowserStyles.manageTagDivider(theme, "category")}`}>
-                <div className={recipeBrowserStyles.manageTagVisibilityRow}>
-                  <div className={recipeBrowserStyles.manageTagVisibilityGroup(theme)}>
-                    <button
-                      className={recipeBrowserStyles.manageTagVisibilityButton(theme, category.showForRecipes)}
-                      disabled={isManagingTags || isSyntheticCategory}
-                      type="button"
-                      aria-pressed={category.showForRecipes}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void updateCategoryVisibility(category, {
-                          showForIngredients: category.showForIngredients,
-                          showForRecipes: !category.showForRecipes,
-                        });
-                      }}
-                    >
-                      {t.cookbook.recipes}
-                    </button>
-                    <button
-                      className={recipeBrowserStyles.manageTagVisibilityButton(theme, category.showForIngredients)}
-                      disabled={isManagingTags || isSyntheticCategory}
-                      type="button"
-                      aria-pressed={category.showForIngredients}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void updateCategoryVisibility(category, {
-                          showForIngredients: !category.showForIngredients,
-                          showForRecipes: category.showForRecipes,
-                        });
-                      }}
-                    >
-                      {t.cookbook.ingredients}
-                    </button>
-                  </div>
-                </div>
                 <div className={recipeBrowserStyles.manageTagCategoryEditRow}>
                   <div className={recipeBrowserStyles.manageTagOrderControls}>
                     <button
@@ -519,7 +503,7 @@ function TagManagementDialog({
                   onChange={(event) => setSelectedCategoryId(event.target.value.length === 0 ? null : Number(event.target.value))}
                 >
                   <option value="">{t.filters.selectCategory}</option>
-                  {categories.filter((category) => category.id > 0).map((category) => (
+                  {visibleCategories.filter((category) => category.id > 0).map((category) => (
                     <option key={category.id} value={category.id}>
                       {formatCategoryName(category.name)}
                     </option>
