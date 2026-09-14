@@ -586,6 +586,7 @@ export const nb: TranslationDictionary = {
     nextRange: (range) => `Neste ${range}`,
     openPlannerActions: "Åpne planleggerverktøy",
     openMealSlot: "Åpne måltidsplass",
+    openRecipe: "Åpne oppskrift",
     plannerControls: "Planleggerkontroller",
     plannerTools: "Verktøy",
     plannerView: "Planleggervisning",

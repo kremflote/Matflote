@@ -16,6 +16,7 @@ type MealSlotProps = {
   onDragEnd: () => void;
   onDragStart: (date: string, slot: MealSlotId) => void;
   onDropOnSlot: (date: string, slot: MealSlotId) => void;
+  onOpenRecipe: (recipe: IRecipe) => void;
   slot: MealSlotId;
   recipesById: Map<number, IRecipe>;
   theme?: SiteTheme;
@@ -32,6 +33,7 @@ function MealSlot({
   onDragEnd,
   onDragStart,
   onDropOnSlot,
+  onOpenRecipe,
   recipesById,
   slot,
   theme = "dark",
@@ -52,6 +54,7 @@ function MealSlot({
   const hiddenSupplementaryCount = Math.max(supplementaryItems.length - visibleSupplementaryItems.length, 0);
   const mainName = mainItem?.recipe?.name ?? mainItem?.ingredient?.ingredientName;
   const mainImageUrl = mainItem?.recipe?.imageUrl ?? mainItem?.ingredient?.imageUrl ?? null;
+  const mainRecipe = mainItem?.recipe;
   const hasMeal = plannedItems.length > 0;
   const canDragMeal = canUseDesktopInteractions && hasMeal && !isLoading;
 
@@ -163,6 +166,17 @@ function MealSlot({
           <div className={mealCalendarStyles.mealSlotInner(theme)} />
         )}
       </button>
+      {canUseDesktopInteractions && !isLoading && mainRecipe !== undefined && (
+        <button
+          aria-label={t.planner.openRecipe}
+          className={mealCalendarStyles.mealSlotOpenRecipeButton(theme)}
+          title={t.planner.openRecipe}
+          type="button"
+          onClick={() => onOpenRecipe(mainRecipe)}
+        >
+          {t.planner.openRecipe}
+        </button>
+      )}
       {canDragMeal && (
         <button
           aria-label={t.planner.removeMeal}

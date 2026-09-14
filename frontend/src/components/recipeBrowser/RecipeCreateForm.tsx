@@ -372,6 +372,31 @@ function RecipeCreateForm({
             </button>
           )}
 
+          {showRecipeDetails && (
+            <div className={recipeBrowserStyles.detailsPanel(theme)}>
+              <div className={recipeBrowserStyles.formGrid}>
+                <label className={recipeBrowserStyles.field}>
+                  <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.description}</span>
+                  <textarea
+                    className={recipeBrowserStyles.textArea(theme)}
+                    maxLength={600}
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                  />
+                </label>
+
+                <label className={recipeBrowserStyles.field}>
+                  <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.instructions}</span>
+                  <textarea
+                    className={recipeBrowserStyles.textArea(theme)}
+                    value={instructions}
+                    onChange={(event) => setInstructions(event.target.value)}
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+
           <section className={`${recipeBrowserStyles.field} ${recipeBrowserStyles.desktopTagSection}`}>
             <span className={recipeBrowserStyles.label(theme)}>
               {t.cookbook.tags}
@@ -399,31 +424,6 @@ function RecipeCreateForm({
               {t.cookbook.tags}
             </button>
           </div>
-
-          {showRecipeDetails && (
-            <div className={recipeBrowserStyles.detailsPanel(theme)}>
-              <div className={recipeBrowserStyles.formGrid}>
-                <label className={recipeBrowserStyles.field}>
-                  <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.description}</span>
-                  <textarea
-                    className={recipeBrowserStyles.textArea(theme)}
-                    maxLength={600}
-                    value={description}
-                    onChange={(event) => setDescription(event.target.value)}
-                  />
-                </label>
-
-                <label className={recipeBrowserStyles.field}>
-                  <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.instructions}</span>
-                  <textarea
-                    className={recipeBrowserStyles.textArea(theme)}
-                    value={instructions}
-                    onChange={(event) => setInstructions(event.target.value)}
-                  />
-                </label>
-              </div>
-            </div>
-          )}
 
           <section className={recipeBrowserStyles.field}>
             <div className={recipeBrowserStyles.fieldHeaderRow}>

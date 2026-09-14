@@ -45,8 +45,15 @@ export function matchesSelectedIngredients(recipe: EnrichedRecipe, selectedIngre
     return true;
   }
 
-  return recipe.ingredients.some((recipeIngredient) =>
-    selectedIngredientIds.includes(recipeIngredient.ingredient.ingredientId),
+  return selectedIngredientIds.every((ingredientId) =>
+    recipe.ingredients.some((recipeIngredient) =>
+      recipeIngredient.ingredient.ingredientId === ingredientId,
+    ) ||
+    recipe.components.some((component) =>
+      component.ingredients?.some((recipeIngredient) =>
+        recipeIngredient.ingredient.ingredientId === ingredientId,
+      ) ?? false,
+    ),
   );
 }
 
@@ -66,7 +73,7 @@ export function matchesIngredientTags(
     return true;
   }
 
-  return ingredient.tags.some((tag) => selectedIngredientTags.includes(tag));
+  return selectedIngredientTags.every((selectedTag) => ingredient.tags.includes(selectedTag));
 }
 
 function recipeHasTag(recipe: EnrichedRecipe, selectedTag: RecipeTag) {

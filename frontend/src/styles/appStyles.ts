@@ -1329,6 +1329,14 @@ export const mealCalendarStyles = {
           ? "border-red-900/30 bg-red-900 text-[#FAF7F2] hover:bg-red-800"
           : "border-red-800/30 bg-red-700 text-white hover:bg-red-800"
     }`,
+  mealSlotOpenRecipeButton: (theme: SiteTheme) =>
+    `pointer-events-none absolute bottom-2 left-2 z-10 hidden h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold opacity-0 shadow-sm transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100 max-[1100px]:hidden ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-white/[0.16] bg-neutral-950 text-neutral-100 hover:bg-neutral-900"
+        : theme === "paletteLight"
+          ? "border-[#7A8864]/45 bg-[#FAF7F2] text-[#556145] hover:bg-[#EFE6D8]"
+          : "border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50"
+    }`,
   mealSlotDeleteIcon: "h-4 w-4",
   mealSlotInner: (theme: SiteTheme) =>
     `${sizeClasses.mealSlotPlaceholder} ${radiusClasses.figma6} border border-dashed ${
@@ -1506,6 +1514,22 @@ export const plannerPickerStyles = {
   categoryButtonLabel: "max-[1100px]:sr-only",
   ingredientFilterChips:
     "col-span-full flex flex-wrap items-start gap-2 max-sm:col-span-3",
+  quickFilterRow:
+    "col-span-full flex flex-wrap items-center gap-2 max-sm:col-span-3",
+  quickFilterChip: (theme: SiteTheme, selected: boolean) =>
+    `inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+      selected
+        ? theme === "dark"
+          ? "border-emerald-300/70 bg-emerald-300 text-neutral-950"
+          : theme === "paletteLight"
+            ? "border-[#556145] bg-[#556145] text-[#FAF7F2]"
+            : "border-emerald-700 bg-emerald-700 text-white"
+        : theme === "dark"
+          ? "border-white/[0.14] bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
+          : theme === "paletteLight"
+            ? "border-[#7A8864]/30 bg-[#FAF7F2] text-[#556145] hover:bg-[#EFE6D8]"
+            : "border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50"
+    }`,
   selectedSummary: (theme: SiteTheme) =>
     `flex min-h-9 min-w-0 items-center rounded-md px-3 py-2 text-sm font-bold leading-tight ${
       theme === "dark"

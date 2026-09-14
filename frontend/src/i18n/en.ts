@@ -519,6 +519,7 @@ export const en: TranslationDictionary = {
     nextRange: (range) => `Next ${range}`,
     openPlannerActions: "Open planner tools",
     openMealSlot: "Open meal slot",
+    openRecipe: "Open recipe",
     plannerControls: "Planner controls",
     plannerTools: "Tools",
     plannerView: "Planner view",

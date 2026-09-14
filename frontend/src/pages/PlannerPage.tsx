@@ -5,10 +5,12 @@ import GroceryExportDialog from "../components/GroceryExportDialog";
 import PlannerControls from "../components/PlannerControls";
 import PlannerRecipePickerModal from "../components/PlannerRecipePickerModal";
 import PrepHelperDialog from "../components/PrepHelperDialog";
+import BrowserDetailModal from "../components/recipeBrowser/BrowserDetailModal";
 import { useIngredientTagCategories, useIngredients, useLanguage, useMealPlan, useRecipes } from "../contexts";
 import type { IGroceryList } from "../interfaces/IGroceryList";
 import type { MeasurementUnit } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, IMealPlanRecipe, MealSlot, PlannerViewMode } from "../interfaces/IMeal";
+import type { IRecipe } from "../interfaces/IRecipe";
 import { groceryListService } from "../services";
 import type { MealPlanEntryRequest, MealPlanRecipeRequest } from "../services/mealPlanService";
 import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
@@ -80,6 +82,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     )),
   );
   const [selectedSlot, setSelectedSlot] = useState<SelectedPlannerSlot | null>(null);
+  const [activeRecipeDetail, setActiveRecipeDetail] = useState<IRecipe | null>(null);
   const [draggedSlot, setDraggedSlot] = useState<SelectedPlannerSlot | null>(null);
   const [pendingMealMove, setPendingMealMove] = useState<PendingMealMove | null>(null);
   const [pendingMealDelete, setPendingMealDelete] = useState<SelectedPlannerSlot | null>(null);
@@ -440,6 +443,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           onDragEnd={() => setDraggedSlot(null)}
           onDragStart={(date, slot) => setDraggedSlot({ date, slot })}
           onDropOnSlot={handleMealDrop}
+          onOpenRecipe={setActiveRecipeDetail}
           onSlotClick={(date, slot) => setSelectedSlot({ date, slot })}
           recipesById={recipesById}
           theme={theme}
@@ -473,6 +477,13 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           theme={theme}
           to={prepRange.to}
           onClose={() => setIsPrepHelperOpen(false)}
+        />
+      )}
+      {activeRecipeDetail !== null && (
+        <BrowserDetailModal
+          detail={{ kind: "recipe", recipe: activeRecipeDetail }}
+          theme={theme}
+          onClose={() => setActiveRecipeDetail(null)}
         />
       )}
       {pendingPlannerAction !== null && (

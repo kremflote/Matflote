@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { useIngredientTagCategories, useIngredients, useLanguage } from "../contexts";
 import type { IIngredient, IngredientTag, MeasurementUnit } from "../interfaces/IIngredient";
 import type { IIngredientTagCategory } from "../interfaces/ILookup";
@@ -138,8 +139,33 @@ function PlannerRecipePickerModal({
     () => buildSystemTagNameLookup(ingredientTagCategories),
     [ingredientTagCategories],
   );
+  const availableTagNames = useMemo(
+    () => buildAvailableTagNames(ingredientTagCategories, recipes, ingredients),
+    [ingredientTagCategories, recipes, ingredients],
+  );
   const breadTagName = systemTagNames.get("Format.Bread") ?? "Bread";
   const toppingTagName = systemTagNames.get("FoodRole.Topping") ?? "Pålegg";
+  const quickRecipeFilters = useMemo(
+    () =>
+      [
+        systemTagNames.get("Protein.Chicken") ?? "Chicken",
+        systemTagNames.get("Protein.Beef") ?? "Beef",
+        systemTagNames.get("Protein.Fish") ?? "Fish",
+      ]
+        .filter((tagName) => availableTagNames.has(tagName))
+        .map((tagName) => tagName as RecipeTag),
+    [availableTagNames, systemTagNames],
+  );
+  const quickIngredientFilters = useMemo(
+    () =>
+      uniqueValues([
+        systemTagNames.get("FoodRole.Topping") ?? "Pålegg",
+        findAvailableTagName(availableTagNames, ["Condiments", "Condiment", "Sauce"]),
+      ])
+        .filter((tagName) => availableTagNames.has(tagName))
+        .map((tagName) => tagName as IngredientTag),
+    [availableTagNames, systemTagNames],
+  );
   const mainRecipeId = mainRecipeSelection?.recipeId ?? null;
   const visibleRecipes = useMemo(
     () =>
@@ -659,6 +685,29 @@ function PlannerRecipePickerModal({
               )
             }
           />
+          <div className={plannerPickerStyles.quickFilterRow} aria-label={t.filters.categories}>
+            {browserMode === "recipes"
+              ? quickRecipeFilters.map((tag) => (
+                  <button
+                    className={plannerPickerStyles.quickFilterChip(theme, selectedMainRecipeTags.includes(tag))}
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTagFilter(tag, setSelectedMainRecipeTags)}
+                  >
+                    {t.enums.recipeTags[tag] ?? t.enums.ingredientTags[tag] ?? tag}
+                  </button>
+                ))
+              : quickIngredientFilters.map((tag) => (
+                  <button
+                    className={plannerPickerStyles.quickFilterChip(theme, selectedIngredientTags.includes(tag))}
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTagFilter(tag, setSelectedIngredientTags)}
+                  >
+                    {t.enums.ingredientTags[tag] ?? tag}
+                  </button>
+                ))}
+          </div>
         </div>
         {isCategoryFilterOpen && (
           <Modal
@@ -830,6 +879,53 @@ function buildSystemTagNameLookup(categories: IIngredientTagCategory[]) {
   }
 
   return systemTagNames;
+}
+
+function buildAvailableTagNames(
+  categories: IIngredientTagCategory[],
+  recipes: IRecipe[],
+  ingredients: IIngredient[],
+) {
+  const tagNames = new Set<string>();
+
+  for (const category of categories) {
+    for (const tag of category.tags) {
+      tagNames.add(tag.name);
+    }
+  }
+
+  for (const recipe of recipes) {
+    for (const tag of recipe.tags) {
+      tagNames.add(tag);
+    }
+  }
+
+  for (const ingredient of ingredients) {
+    for (const tag of ingredient.tags) {
+      tagNames.add(tag);
+    }
+  }
+
+  return tagNames;
+}
+
+function findAvailableTagName(tagNames: ReadonlySet<string>, candidates: string[]) {
+  return candidates.find((candidate) => tagNames.has(candidate));
+}
+
+function uniqueValues<TValue>(values: Array<TValue | undefined>) {
+  return Array.from(new Set(values.filter((value): value is TValue => value !== undefined)));
+}
+
+function toggleTagFilter<TTag extends string>(
+  tag: TTag,
+  setTags: Dispatch<SetStateAction<TTag[]>>,
+) {
+  setTags((currentTags) =>
+    currentTags.includes(tag)
+      ? currentTags.filter((currentTag) => currentTag !== tag)
+      : [...currentTags, tag],
+  );
 }
 
 function CategoryIcon() {

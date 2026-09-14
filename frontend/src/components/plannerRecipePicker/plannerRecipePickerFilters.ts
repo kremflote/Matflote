@@ -35,8 +35,15 @@ export function matchesSelectedIngredients(recipe: IRecipe, selectedIngredientId
     return true;
   }
 
-  return recipe.ingredients.some((recipeIngredient) =>
-    selectedIngredientIds.includes(recipeIngredient.ingredient.ingredientId),
+  return selectedIngredientIds.every((ingredientId) =>
+    recipe.ingredients.some((recipeIngredient) =>
+      recipeIngredient.ingredient.ingredientId === ingredientId,
+    ) ||
+    recipe.components.some((component) =>
+      component.ingredients?.some((recipeIngredient) =>
+        recipeIngredient.ingredient.ingredientId === ingredientId,
+      ) ?? false,
+    ),
   );
 }
 
@@ -45,7 +52,7 @@ export function matchesSelectedIngredientTags(recipe: IRecipe, selectedIngredien
     return true;
   }
 
-  return selectedIngredientTags.some((ingredientTag) => recipeHasIngredientTag(recipe, ingredientTag));
+  return selectedIngredientTags.every((ingredientTag) => recipeHasIngredientTag(recipe, ingredientTag));
 }
 
 export function matchesSelectedRecipeTags(recipe: IRecipe, selectedRecipeTags: RecipeTag[]) {
@@ -53,7 +60,7 @@ export function matchesSelectedRecipeTags(recipe: IRecipe, selectedRecipeTags: R
     return true;
   }
 
-  return recipe.tags.some((recipeTag) => selectedRecipeTags.includes(recipeTag));
+  return selectedRecipeTags.every((recipeTag) => recipe.tags.includes(recipeTag));
 }
 
 export function matchesSearch(recipe: IRecipe, searchTerm: string) {
@@ -90,9 +97,15 @@ export function matchesIngredientSearch(ingredient: IIngredient, searchTerm: str
 }
 
 export function recipeHasIngredientTag(recipe: IRecipe, ingredientTag: IngredientTag) {
-  return recipe.ingredients.some((recipeIngredient) =>
-    recipeIngredient.ingredient.tags
-      .includes(ingredientTag),
+  return (
+    recipe.ingredients.some((recipeIngredient) =>
+      recipeIngredient.ingredient.tags.includes(ingredientTag),
+    ) ||
+    recipe.components.some((component) =>
+      component.ingredients?.some((recipeIngredient) =>
+        recipeIngredient.ingredient.tags.includes(ingredientTag),
+      ) ?? false,
+    )
   );
 }
 

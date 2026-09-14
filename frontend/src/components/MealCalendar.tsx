@@ -24,6 +24,7 @@ type MealCalendarProps = {
   onDragEnd: () => void;
   onDragStart: (date: string, slot: MealSlotId) => void;
   onDropOnSlot: (date: string, slot: MealSlotId) => void;
+  onOpenRecipe: (recipe: IRecipe) => void;
   onSlotClick: (date: string, slot: MealSlotId) => void;
   recipesById: Map<number, IRecipe>;
   theme?: SiteTheme;
@@ -42,6 +43,7 @@ function MealCalendar({
   onDragEnd,
   onDragStart,
   onDropOnSlot,
+  onOpenRecipe,
   onSlotClick,
   recipesById,
   theme = "dark",
@@ -228,6 +230,7 @@ function MealCalendar({
                     onDragEnd={onDragEnd}
                     onDragStart={onDragStart}
                     onDropOnSlot={onDropOnSlot}
+                    onOpenRecipe={onOpenRecipe}
                     onClick={() => onSlotClick(dateKey, meal)}
                     recipesById={recipesById}
                     slot={meal}

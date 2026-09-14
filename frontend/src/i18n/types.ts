@@ -434,6 +434,7 @@ export type TranslationDictionary = {
     previousRange: (range: string) => string;
     nextRange: (range: string) => string;
     openMealSlot: string;
+    openRecipe: string;
     rangeNames: Record<PlannerViewMode, string>;
     recipeFallback: (id: number) => string;
     removeMeal: string;
