@@ -100,7 +100,7 @@ public class MealPlansController(DinnerPlannerContext context) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateMealPlanEntry(int id, MealPlanEntryRequest request)
+    public async Task<ActionResult<MealPlanEntryDto>> UpdateMealPlanEntry(int id, MealPlanEntryRequest request)
     {
         if (!Enum.IsDefined(request.Slot))
         {
@@ -152,7 +152,9 @@ public class MealPlansController(DinnerPlannerContext context) : ControllerBase
         entry.Recipes = ToModels(request.Recipes);
 
         await context.SaveChangesAsync();
-        return NoContent();
+
+        var updated = await LoadEntry(entry.MealPlanEntryId);
+        return Ok(ToDto(updated!));
     }
 
     [HttpDelete("{id:int}")]

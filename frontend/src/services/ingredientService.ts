@@ -25,7 +25,7 @@ export const ingredientService = {
       body: ingredient,
     }),
   update: (id: number, ingredient: IngredientRequest) =>
-    apiRequest<void>(`/api/ingredients/${id}`, {
+    apiRequest<IIngredient>(`/api/ingredients/${id}`, {
       method: "PUT",
       body: ingredient,
     }),

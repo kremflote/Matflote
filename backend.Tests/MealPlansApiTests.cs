@@ -34,7 +34,10 @@ public class MealPlansApiTests(MatfloteFactory factory) : IClassFixture<Matflote
         var replace = await client.PutJson(
             $"/api/mealplans/{created.MealPlanEntryId}",
             MealEntry(monday, "Dinner", PlannedRecipe(second.RecipeId, 3), PlannedRecipe(first.RecipeId, 1, "Side", 1)));
-        await replace.EnsureStatus(HttpStatusCode.NoContent);
+        await replace.EnsureStatus(HttpStatusCode.OK);
+        var replaced = await replace.Read<MealPlanEntryDto>();
+        Assert.Equal(created.MealPlanEntryId, replaced.MealPlanEntryId);
+        Assert.Equal([second.RecipeId, first.RecipeId], replaced.Recipes.Select(item => item.RecipeId));
 
         var week = await Week(monday);
         var entry = Assert.Single(week);

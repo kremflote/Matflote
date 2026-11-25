@@ -81,7 +81,7 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateIngredient(int id, IngredientRequest request)
+    public async Task<ActionResult<IngredientDto>> UpdateIngredient(int id, IngredientRequest request)
     {
         var ingredient = await context.Ingredients
             .Include(ingredient => ingredient.Tags)
@@ -118,7 +118,9 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
         ingredient.Color = request.Color;
 
         await context.SaveChangesAsync();
-        return NoContent();
+
+        var updated = await LoadIngredient(ingredient.IngredientId);
+        return Ok(ToDto(updated!));
     }
 
     [HttpDelete("{id:int}")]

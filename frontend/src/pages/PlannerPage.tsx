@@ -99,6 +99,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const {
     mealPlanEntries,
     mealPlanIsLoading,
+    mealPlanIsSaving,
     initError,
     loadedRange,
     clearMealPlanRange,
@@ -110,11 +111,13 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const { ingredients, ingredientIsLoading } = useIngredients();
   const { ingredientTagCategories } = useIngredientTagCategories();
   const anchorDate = viewMode === "week" ? weekAnchorDate : monthAnchorDate;
+  // Skeletons only while the visible range has nothing to show yet; a save or a refresh keeps the slots on screen.
   const shouldShowMealSlotLoading =
-    mealPlanIsLoading ||
+    (mealPlanIsLoading && initError === null) ||
     recipeIsLoading ||
     ingredientIsLoading ||
     (loadedRange === null && initError === null);
+  const isMealPlanBusy = mealPlanIsLoading || mealPlanIsSaving;
 
   const visibleRange = useMemo(
     () => getVisibleRange(anchorDate, viewMode),
@@ -306,7 +309,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   };
 
   const requestClearCurrentRange = () => {
-    if (plannerAction !== null || mealPlanIsLoading) {
+    if (plannerAction !== null || isMealPlanBusy) {
       return;
     }
 
@@ -331,7 +334,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   };
 
   const requestGenerateCurrentRange = () => {
-    if (plannerAction !== null || mealPlanIsLoading) {
+    if (plannerAction !== null || isMealPlanBusy) {
       return;
     }
 
@@ -339,7 +342,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   };
 
   const openGroceryExportDialog = async () => {
-    if (plannerAction !== null || mealPlanIsLoading || isGroceryListLoading) {
+    if (plannerAction !== null || isMealPlanBusy || isGroceryListLoading) {
       return;
     }
 
@@ -417,7 +420,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           isExportRangeRunning={isGroceryListLoading}
           isGenerateRangeRunning={plannerAction === "generate"}
           isMobileToolsHidden={selectedSlot !== null}
-          isRangeBusy={mealPlanIsLoading}
+          isRangeBusy={isMealPlanBusy}
           theme={theme}
           viewMode={viewMode}
           onClearRange={requestClearCurrentRange}
@@ -571,7 +574,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
             </>
           }
           confirmLabel={t.planner.moveMealConfirm}
-          isBusy={mealPlanIsLoading}
+          isBusy={mealPlanIsSaving}
           theme={theme}
           title={t.planner.moveMealTitle}
           onCancel={() => setPendingMealMove(null)}
@@ -582,7 +585,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
         <ConfirmationDialog
           body={t.planner.removeMealBody}
           confirmLabel={t.common.remove}
-          isBusy={mealPlanIsLoading}
+          isBusy={mealPlanIsSaving}
           theme={theme}
           title={t.planner.removeMealTitle}
           tone="danger"

@@ -39,7 +39,11 @@ public class RecipesApiTests(MatfloteFactory factory) : IClassFixture<MatfloteFa
             [Line(pasta.IngredientId, 300), Line(basil.IngredientId, 10)],
             [],
             ["Dinner", "Lunch"]));
-        await update.EnsureStatus(HttpStatusCode.NoContent);
+        await update.EnsureStatus(HttpStatusCode.OK);
+        var returned = await update.Read<RecipeDto>();
+        Assert.Equal("RT pasta supper", returned.Name);
+        Assert.Equal(2, returned.Ingredients.Count);
+        Assert.Empty(returned.Components);
 
         var updated = await client.GetJson<RecipeDto>($"/api/recipes/{created.RecipeId}");
         Assert.Equal("RT pasta supper", updated.Name);

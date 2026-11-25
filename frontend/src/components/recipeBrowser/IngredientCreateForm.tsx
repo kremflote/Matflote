@@ -34,7 +34,7 @@ function IngredientCreateForm({
   const isEditing = initialIngredient !== null;
   const { t } = useLanguage();
   const { brands, refreshBrands } = useBrands();
-  const { ingredients, refreshIngredients } = useIngredients();
+  const { ingredients, refreshIngredients, upsertIngredient } = useIngredients();
   const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
   const { refreshRecipes } = useRecipes();
   const imageInputId = useId();
@@ -181,14 +181,15 @@ function IngredientCreateForm({
         color: initialIngredient?.color ?? null,
       };
 
-      if (isEditing) {
-        await ingredientService.update(initialIngredient.ingredientId, request);
-      } else {
-        await ingredientService.create(request);
-      }
+      const saved = isEditing
+        ? await ingredientService.update(initialIngredient.ingredientId, request)
+        : await ingredientService.create(request);
 
-      await refreshIngredients();
-      await refreshRecipes();
+      upsertIngredient(saved);
+      // Recipes show an ingredient's name, brand, image, tags and colour; a new ingredient is in no recipe yet.
+      if (isEditing) {
+        void refreshRecipes();
+      }
       onCreated(trimmedName);
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : t.cookbook.couldNotSaveIngredient);

@@ -82,7 +82,7 @@ public class RecipesController(
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateRecipe(int id, RecipeRequest request)
+    public async Task<ActionResult<RecipeDto>> UpdateRecipe(int id, RecipeRequest request)
     {
         var recipe = await RecipeDetails()
             .FirstOrDefaultAsync(recipe => recipe.RecipeId == id);
@@ -133,7 +133,9 @@ public class RecipesController(
         recipe.Components = ToRecipeComponents(requestedComponents, recipe.RecipeId);
 
         await context.SaveChangesAsync();
-        return NoContent();
+
+        var updated = await LoadRecipe(recipe.RecipeId);
+        return Ok(ToDto(updated!));
     }
 
     [HttpDelete("{id:int}")]

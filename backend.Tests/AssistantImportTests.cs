@@ -179,7 +179,7 @@ public class AssistantImportTests(MatfloteFactory factory) : IClassFixture<Matfl
             tags = regular.Tags,
             components = Array.Empty<object>(),
         });
-        await put.EnsureStatus(HttpStatusCode.NoContent);
+        await put.EnsureStatus(HttpStatusCode.OK);
 
         var document = await Document(id);
         var update = await client.Import(new

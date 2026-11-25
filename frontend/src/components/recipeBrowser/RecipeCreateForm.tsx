@@ -54,7 +54,7 @@ function RecipeCreateForm({
   const isEditing = initialRecipe !== null;
   const { t } = useLanguage();
   const { ingredients } = useIngredients();
-  const { recipes, refreshRecipes } = useRecipes();
+  const { recipes, refreshRecipes, upsertRecipe } = useRecipes();
   const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
   const [name, setName] = useState(initialRecipe?.name ?? "");
   const [portions, setPortions] = useState((initialRecipe?.portions ?? 1).toString());
@@ -290,13 +290,16 @@ function RecipeCreateForm({
         })),
       };
 
-      if (isEditing) {
-        await recipeService.update(initialRecipe.recipeId, request);
-      } else {
-        await recipeService.create(request);
-      }
+      const saved = isEditing
+        ? await recipeService.update(initialRecipe.recipeId, request)
+        : await recipeService.create(request);
 
-      await refreshRecipes();
+      upsertRecipe(saved);
+      // Other recipes repeat a component's name; refresh them in the background only when that can have changed.
+      if (isEditing && saved.name !== initialRecipe.name && recipes.some((recipe) =>
+        recipe.components.some((component) => component.recipeId === saved.recipeId))) {
+        void refreshRecipes();
+      }
       onCreated();
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : t.cookbook.couldNotCreateRecipe);
@@ -744,22 +747,33 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
   const [isSavingRule, setIsSavingRule] = useState(false);
   const [rulesError, setRulesError] = useState<string | null>(null);
 
-  const loadRules = useCallback(async () => {
-    setIsLoadingRules(true);
-    setRulesError(null);
-
-    try {
-      setRules(await conversionRuleService.getAll());
-    } catch {
-      setRulesError(t.cookbook.couldNotLoadConversionRules);
-    } finally {
-      setIsLoadingRules(false);
-    }
-  }, [t.cookbook.couldNotLoadConversionRules]);
+  const loadErrorMessage = t.cookbook.couldNotLoadConversionRules;
 
   useEffect(() => {
-    void loadRules();
-  }, [loadRules]);
+    let ignore = false;
+
+    conversionRuleService
+      .getAll()
+      .then((loadedRules) => {
+        if (!ignore) {
+          setRules(loadedRules);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setRulesError(loadErrorMessage);
+        }
+      })
+      .finally(() => {
+        if (!ignore) {
+          setIsLoadingRules(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [loadErrorMessage]);
 
   async function createRule() {
     const normalizedFromText = fromText.trim();

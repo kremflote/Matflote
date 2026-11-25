@@ -31,7 +31,7 @@ export const mealPlanService = {
       body: entry,
     }),
   update: (id: number, entry: MealPlanEntryRequest) =>
-    apiRequest<void>(`/api/mealplans/${id}`, {
+    apiRequest<IMealPlanEntry>(`/api/mealplans/${id}`, {
       method: "PUT",
       body: entry,
     }),

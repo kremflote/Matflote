@@ -55,7 +55,6 @@ function MealCalendar({
   );
   const [canCollapseDays, setCanCollapseDays] = useState(false);
   const [canUseDesktopInteractions, setCanUseDesktopInteractions] = useState(false);
-  const [showLoadingSlots, setShowLoadingSlots] = useState(isLoading);
   const weekDayLabels = t.calendar.weekdaysShort;
 
   useEffect(() => {
@@ -81,17 +80,6 @@ function MealCalendar({
   useEffect(() => {
     setLocalStringListPreference(localPreferenceKeys.plannerCollapsedDateKeys, collapsedDateKeys);
   }, [collapsedDateKeys]);
-
-  useEffect(() => {
-    if (isLoading) {
-      setShowLoadingSlots(true);
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => setShowLoadingSlots(false), 450);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [isLoading]);
 
   const toggleDay = (dateKey: string) => {
     setCollapsedDateKeys((currentDateKeys) => {
@@ -224,7 +212,7 @@ function MealCalendar({
                     date={dateKey}
                     entry={getEntryForSlot(dateKey, meal)}
                     ingredientsById={ingredientsById}
-                    isLoading={showLoadingSlots}
+                    isLoading={isLoading}
                     key={`${dateKey}-${meal}`}
                     onDeleteRequest={onDeleteSlot}
                     onDragEnd={onDragEnd}
