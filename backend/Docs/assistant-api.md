@@ -40,6 +40,11 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
   "serverDate": "2026-11-25",
   "weekStart": "2026-11-23",
   "historyDays": 56,
+  "planningPreferences": {
+    "peopleEating": 2, "minFishDinnersPerWeek": 1, "minChickenDinnersPerWeek": 2,
+    "avoidTags": ["Lamb"], "avoidIngredients": ["Coriander"], "repeatAfterWeeks": 3,
+    "notes": "Quick dinners on weekdays."
+  },
   "vocabulary": {
     "units": ["g", "kg", "ml", "l"],
     "unitAliases": { "cl": "10 ml", "dl": "100 ml", "tsp / ts": "5 ml", "tbsp / ss": "15 ml" },
@@ -62,6 +67,8 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
   ]
 }
 ```
+
+`planningPreferences` is what the household set under Settings → Planning preferences: how many people eat (use it as the `portions` of planned dinners), the minimum fish and chicken dinners per week (recipes tagged `Fish` / `Chicken`), tags and ingredients to avoid, how many weeks must pass before a dinner is planned again (`0` = no rule) and free-text notes. Follow them unless the person asks for something else.
 
 `serverDate` is the server's clock and may be in UTC. `lastPlanned` is the most recent date on or before `serverDate`; it is omitted for recipes that were never planned. Week plans run Monday to Sunday.
 

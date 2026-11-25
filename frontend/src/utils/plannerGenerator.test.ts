@@ -206,6 +206,49 @@ describe("generateMealPlanEntriesWithIssues", () => {
     }
   });
 
+  it("takes the minimums from the planning preferences", () => {
+    const recipes = sample;
+    const fish = new Set([recipes.salmon.recipeId, recipes.cod.recipeId]);
+    const chicken = new Set([recipes.chickenCurry.recipeId, recipes.chickenWok.recipeId, recipes.roastChicken.recipeId]);
+
+    for (let seed = 1; seed <= 50; seed += 1) {
+      const dinners = generate({ random: seeded(seed), dinnerMinimums: { fish: 2, chicken: 3 } }).entries
+        .filter((entry) => entry.slot === "Dinner")
+        .map((entry) => mainRecipeId(entry)!);
+
+      expect(dinners.filter((id) => fish.has(id)).length).toBe(2);
+      expect(dinners.filter((id) => chicken.has(id)).length).toBe(3);
+    }
+  });
+
+  it("applies the minimums to each week of a month", () => {
+    const fishA = recipe("Fish A", 2, tag("Meal.Dinner"), tag("Protein.Fish"));
+    const fishB = recipe("Fish B", 2, tag("Meal.Dinner"), tag("Protein.Fish"));
+    const fishC = recipe("Fish C", 2, tag("Meal.Dinner"), tag("Protein.Fish"));
+    const fishD = recipe("Fish D", 2, tag("Meal.Dinner"), tag("Protein.Fish"));
+    const fishE = recipe("Fish E", 2, tag("Meal.Dinner"), tag("Protein.Fish"));
+    const fishF = recipe("Fish F", 2, tag("Meal.Dinner"), tag("Protein.Fish"));
+    const others = Array.from({ length: 30 }, (_, index) => recipe(`Other ${index}`, 2, tag("Meal.Dinner")));
+    // Two full ISO weeks: Monday 30 November to Sunday 13 December 2026.
+    const twoWeeks = [...getGenerationDates(new Date(2026, 10, 30), "week"), ...getGenerationDates(new Date(2026, 11, 7), "week")];
+    const fish = new Set([fishA, fishB, fishC, fishD, fishE, fishF].map((item) => item.recipeId));
+
+    for (let seed = 1; seed <= 20; seed += 1) {
+      const dinners = generate({
+        dates: twoWeeks,
+        recipes: [fishA, fishB, fishC, fishD, fishE, fishF, ...others],
+        dinnerMinimums: { fish: 2, chicken: 0 },
+        random: seeded(seed),
+      }).entries.filter((entry) => entry.slot === "Dinner");
+
+      for (const weekStart of ["2026-11-30", "2026-12-07"]) {
+        const weekEnd = weekStart === "2026-11-30" ? "2026-12-06" : "2026-12-13";
+        const weekFish = dinners.filter((entry) => entry.date >= weekStart && entry.date <= weekEnd && fish.has(mainRecipeId(entry)!));
+        expect(weekFish.length).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+
   it("counts dinners already planned towards the minimums and leaves their slots alone", () => {
     const recipes = sample;
     const existingEntries = [

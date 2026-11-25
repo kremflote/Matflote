@@ -12,6 +12,7 @@ public record AssistantContextDto(
     DateOnly ServerDate,
     DateOnly WeekStart,
     int HistoryDays,
+    PlanningPreferencesDto PlanningPreferences,
     AssistantVocabularyDto Vocabulary,
     IReadOnlyCollection<AssistantTagCategoryDto> TagCategories,
     IReadOnlyCollection<AssistantConversionRuleDto> ConversionRules,

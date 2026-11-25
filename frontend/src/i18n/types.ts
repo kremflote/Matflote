@@ -512,6 +512,32 @@ export type TranslationDictionary = {
     updateReferenceValues: string;
     updatingReferenceValues: string;
   };
+  planningPreferences: {
+    title: string;
+    body: string;
+    peopleEating: string;
+    peopleEatingHelp: string;
+    minFishDinners: string;
+    minChickenDinners: string;
+    minimumsHelp: string;
+    repeatAfterWeeks: string;
+    repeatAfterWeeksHelp: string;
+    avoidTags: string;
+    avoidTagsHelp: string;
+    avoidIngredients: string;
+    avoidIngredientsHelp: string;
+    chooseIngredient: string;
+    addIngredient: string;
+    removeIngredient: (name: string) => string;
+    noIngredientsAvoided: string;
+    notes: string;
+    notesPlaceholder: string;
+    save: string;
+    saving: string;
+    saved: string;
+    couldNotLoad: string;
+    couldNotSave: string;
+  };
   theme: {
     switchToDark: string;
     switchToLight: string;

@@ -6,6 +6,7 @@ import {
   MaintenancePanel,
   type ExportSettingsForm,
 } from "../components/settings/SettingsPanels";
+import PlanningPreferencesPanel from "../components/settings/PlanningPreferencesPanel";
 import { useLanguage } from "../contexts";
 import type { IAppSettings } from "../interfaces/IAppSettings";
 import type { IImageCleanupReport } from "../interfaces/IMaintenance";
@@ -249,6 +250,7 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
             <CurrentProviderSummary appSettings={appSettings} theme={theme} />
           )}
         </div>
+        <PlanningPreferencesPanel theme={theme} />
         <ExportSettingsPanel
           appSettings={appSettings}
           exportForm={exportForm}

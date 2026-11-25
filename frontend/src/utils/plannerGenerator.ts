@@ -20,10 +20,23 @@ const dinnerProteinSystemTags = [
   "Protein.Lamb",
   "Protein.Mince",
 ] as const;
-const dinnerMinimums: Partial<Record<(typeof dinnerProteinSystemTags)[number], number>> = {
-  "Protein.Fish": 1,
-  "Protein.Chicken": 2,
+/** How many fish and chicken dinners each week should have; the household sets these under Settings. */
+export type DinnerMinimums = {
+  fish: number;
+  chicken: number;
 };
+
+/** Used when the planning preferences could not be loaded. The same as the server's defaults. */
+export const defaultDinnerMinimums: DinnerMinimums = { fish: 1, chicken: 2 };
+
+type ProteinSystemTag = (typeof dinnerProteinSystemTags)[number];
+
+function toMinimumsByTag(minimums: DinnerMinimums): [ProteinSystemTag, number][] {
+  return [
+    ["Protein.Fish", minimums.fish],
+    ["Protein.Chicken", minimums.chicken],
+  ];
+}
 const toppingAmountGrams = 50;
 
 /** Returns a number in [0, 1), like Math.random. */
@@ -36,6 +49,8 @@ type GenerateMealPlanEntriesArgs = {
   peopleEating: number;
   recipes: IRecipe[];
   tagCategories: IIngredientTagCategory[];
+  /** Minimum fish and chicken dinners per ISO week. Defaults to defaultDinnerMinimums. */
+  dinnerMinimums?: DinnerMinimums;
   /** Defaults to Math.random. Pass a seeded source to get repeatable plans. */
   random?: RandomSource;
 };
@@ -80,6 +95,7 @@ export function generateMealPlanEntries({
   peopleEating,
   recipes,
   tagCategories,
+  dinnerMinimums,
   random,
 }: GenerateMealPlanEntriesArgs): MealPlanEntryRequest[] {
   return generateMealPlanEntriesWithIssues({
@@ -89,6 +105,7 @@ export function generateMealPlanEntries({
     peopleEating,
     recipes,
     tagCategories,
+    dinnerMinimums,
     random,
   }).entries;
 }
@@ -100,12 +117,14 @@ export function generateMealPlanEntriesWithIssues({
   peopleEating,
   recipes,
   tagCategories,
+  dinnerMinimums = defaultDinnerMinimums,
   random = Math.random,
 }: GenerateMealPlanEntriesArgs): MealPlanGenerationResult {
   const systemTags = buildSystemTagLookup(tagCategories);
+  const minimumsByTag = toMinimumsByTag(dinnerMinimums);
   const filledSlots = new Set(existingEntries.map((entry) => getEntryKey(entry.date, entry.slot)));
   const selectedDinnerRecipeIds = getExistingDinnerRecipeIds(existingEntries);
-  const dinnerProteinCounts = getExistingDinnerProteinCounts(existingEntries, recipes, systemTags);
+  const dinnerProteinCountsByWeek = getExistingDinnerProteinCounts(existingEntries, recipes, systemTags);
   const toppingIngredients = ingredients.filter((ingredient) =>
     itemHasSystemTag(ingredient.tags, systemTags, "FoodRole.Topping"),
   );
@@ -138,12 +157,16 @@ export function generateMealPlanEntriesWithIssues({
       continue;
     }
 
+    const weekKey = getIsoWeekKey(target.date);
+    const dinnerProteinCounts = dinnerProteinCountsByWeek.get(weekKey) ?? new Map<string, number>();
+    dinnerProteinCountsByWeek.set(weekKey, dinnerProteinCounts);
     const recipe = pickRecipeForSlot(
       recipes,
       target.slot,
       systemTags,
       selectedDinnerRecipeIds,
       dinnerProteinCounts,
+      minimumsByTag,
       peopleEating,
       random,
     );
@@ -213,6 +236,7 @@ function pickRecipeForSlot(
   systemTags: SystemTagLookup,
   selectedDinnerRecipeIds: Set<number>,
   dinnerProteinCounts: Map<string, number>,
+  minimumsByTag: [ProteinSystemTag, number][],
   peopleEating: number,
   random: RandomSource,
 ) {
@@ -228,8 +252,7 @@ function pickRecipeForSlot(
     return pickRandomItem(candidates, random);
   }
 
-  for (const proteinTag of Object.keys(dinnerMinimums) as (typeof dinnerProteinSystemTags)[number][]) {
-    const targetCount = dinnerMinimums[proteinTag] ?? 0;
+  for (const [proteinTag, targetCount] of minimumsByTag) {
     if ((dinnerProteinCounts.get(proteinTag) ?? 0) >= targetCount) {
       continue;
     }
@@ -480,7 +503,7 @@ function getExistingDinnerProteinCounts(
   systemTags: SystemTagLookup,
 ) {
   const recipeById = new Map(recipes.map((recipe) => [recipe.recipeId, recipe]));
-  const proteinCounts = new Map<string, number>();
+  const proteinCountsByWeek = new Map<string, Map<string, number>>();
 
   for (const entry of existingEntries) {
     if (entry.slot !== "Dinner") {
@@ -499,11 +522,14 @@ function getExistingDinnerProteinCounts(
       continue;
     }
 
+    const weekKey = getIsoWeekKey(new Date(`${entry.date}T00:00:00`));
+    const proteinCounts = proteinCountsByWeek.get(weekKey) ?? new Map<string, number>();
+    proteinCountsByWeek.set(weekKey, proteinCounts);
     const proteinKey = getDinnerProteinKey(recipe, systemTags);
     proteinCounts.set(proteinKey, (proteinCounts.get(proteinKey) ?? 0) + 1);
   }
 
-  return proteinCounts;
+  return proteinCountsByWeek;
 }
 
 type SystemTagLookup = Map<string, string>;

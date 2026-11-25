@@ -200,6 +200,7 @@ public static class AppSettingKeys
     public const string NutritionProfileId = "Nutrition:ProfileId";
     public const string NutritionPeopleEating = "Nutrition:PeopleEating";
     public const string GroceryExportDefaultExcludedIngredientTags = "GroceryExport:DefaultExcludedIngredientTags";
+    public const string PlanningPreferences = "Planning:Preferences";
 }
 
 public static class ExportTaskModes

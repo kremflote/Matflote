@@ -1,4 +1,5 @@
 import type { IAppSettings, ITestConnectionResult, IUpdateAppSettingsRequest } from "../interfaces/IAppSettings";
+import type { IPlanningPreferences } from "../interfaces/IPlanningPreferences";
 import { apiRequest } from "./apiClient";
 
 export const appSettingsService = {
@@ -17,6 +18,12 @@ export const appSettingsService = {
     apiRequest<ITestConnectionResult>("/api/app-settings/test-kassalapp", {
       method: "POST",
       body: settings,
+    }),
+  getPlanningPreferences: () => apiRequest<IPlanningPreferences>("/api/app-settings/planning-preferences"),
+  updatePlanningPreferences: (preferences: IPlanningPreferences) =>
+    apiRequest<IPlanningPreferences>("/api/app-settings/planning-preferences", {
+      method: "PUT",
+      body: preferences,
     }),
   updateGroceryExportRules: (defaultExcludedIngredientTags: string[]) =>
     apiRequest<IAppSettings>("/api/app-settings/grocery-export-rules", {

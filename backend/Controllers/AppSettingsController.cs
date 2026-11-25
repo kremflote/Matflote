@@ -12,9 +12,29 @@ namespace DinnerPlanner.Api.Controllers;
 public class AppSettingsController(
     AppSettingsService appSettingsService,
     KassalappProductLookupService kassalappProductLookup,
-    VikunjaShoppingListExporter vikunjaExporter
+    VikunjaShoppingListExporter vikunjaExporter,
+    PlanningPreferencesService planningPreferences
 ) : ControllerBase
 {
+    [HttpGet("planning-preferences")]
+    public async Task<ActionResult<PlanningPreferencesDto>> GetPlanningPreferences(CancellationToken cancellationToken) =>
+        Ok(await planningPreferences.GetAsync(cancellationToken));
+
+    [HttpPut("planning-preferences")]
+    public async Task<ActionResult<PlanningPreferencesDto>> UpdatePlanningPreferences(
+        [FromBody] PlanningPreferencesDto? request,
+        CancellationToken cancellationToken
+    )
+    {
+        if (request is null)
+        {
+            return BadRequest("Planning preferences are required.");
+        }
+
+        var error = await planningPreferences.SaveAsync(request, cancellationToken);
+        return error is null ? Ok(await planningPreferences.GetAsync(cancellationToken)) : BadRequest(error);
+    }
+
     [HttpGet]
     public async Task<ActionResult<AppSettingsDto>> Get(CancellationToken cancellationToken) =>
         Ok(await appSettingsService.GetAsync(cancellationToken));

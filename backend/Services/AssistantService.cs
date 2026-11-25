@@ -9,7 +9,7 @@ using System.Globalization;
 
 namespace DinnerPlanner.Api.Services;
 
-public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealPlanWriter)
+public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealPlanWriter, PlanningPreferencesService planningPreferences)
 {
     private const int DefaultHistoryDays = 56;
     private const int MaxHistoryDays = 366;
@@ -81,6 +81,7 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
             today,
             StartOfWeek(today),
             history,
+            await planningPreferences.GetAsync(cancellationToken),
             new AssistantVocabularyDto(
                 AssistantUnits.CanonicalUnits,
                 AssistantUnits.AliasDescriptions,

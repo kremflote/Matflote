@@ -11,7 +11,7 @@ import { useIngredientTagCategories, useIngredients, useLanguage, useMealPlan, u
 import type { IGroceryList } from "../interfaces/IGroceryList";
 import type { MeasurementUnit } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, IMealPlanRecipe, MealSlot, PlannerViewMode } from "../interfaces/IMeal";
-import { groceryListService } from "../services";
+import { appSettingsService, groceryListService } from "../services";
 import type { MealPlanEntryRequest, MealPlanRecipeRequest } from "../services/mealPlanService";
 import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
 import { confirmationDialogStyles } from "../styles/confirmationDialogStyles";
@@ -38,7 +38,9 @@ import {
   toDateInputValue,
 } from "../utils/plannerDate";
 import {
+  defaultDinnerMinimums,
   generateMealPlanEntriesWithIssues,
+  type DinnerMinimums,
   type MealPlanGenerationIssue,
 } from "../utils/plannerGenerator";
 import { buildPrepHelperItems } from "../utils/plannerPrepHelper";
@@ -412,6 +414,10 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const generateCurrentRange = async () => {
     const generationDates = getGenerationDates(anchorDate, viewMode);
     const rangeLabel = t.planner.rangeNames[viewMode];
+    // Busy from the start: reading the minimums is a request, and the dialog closes now so it cannot be confirmed twice.
+    setPlannerAction("generate");
+    setPendingPlannerAction(null);
+    const dinnerMinimums = await loadDinnerMinimums();
 
     const generationResult = generateMealPlanEntriesWithIssues({
       dates: generationDates,
@@ -420,18 +426,17 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
       peopleEating: generatePeopleEating,
       recipes,
       tagCategories: ingredientTagCategories,
+      dinnerMinimums,
     });
     const entriesToGenerate = generationResult.entries;
     const generationIssueMessage = formatGenerationIssues(generationResult.issues, t);
 
     if (entriesToGenerate.length === 0) {
-      setPendingPlannerAction(null);
+      setPlannerAction(null);
       setPlannerActionError(generationIssueMessage ?? t.planner.noMainDishRecipesFound);
       return;
     }
 
-    setPlannerAction("generate");
-    setPendingPlannerAction(null);
     setPlannerActionError(null);
     setLocalPreference(localPreferenceKeys.plannerPeopleEating, generatePeopleEating.toString());
 
@@ -836,3 +841,13 @@ function formatGenerationIssues(
 }
 
 export default PlannerPage;
+
+/** The fish and chicken minimums from Settings, read when generating so the planner page does not load them on every visit. */
+async function loadDinnerMinimums(): Promise<DinnerMinimums> {
+  try {
+    const preferences = await appSettingsService.getPlanningPreferences();
+    return { fish: preferences.minFishDinnersPerWeek, chicken: preferences.minChickenDinnersPerWeek };
+  } catch (_error) {
+    return defaultDinnerMinimums;
+  }
+}
