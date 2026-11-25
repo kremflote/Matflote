@@ -14,7 +14,9 @@ public class AssistantService(
     MealPlanWriter mealPlanWriter,
     PlanningPreferencesService planningPreferences,
     AssistantWriteLogService writeLog,
-    MatvaretabellenNutritionLookupService matvaretabellen)
+    MatvaretabellenNutritionLookupService matvaretabellen,
+    AssistantImageDownloader imageDownloader,
+    ImageStoragePathProvider imageStorage)
 {
     private const int DefaultHistoryDays = 56;
     private const int MaxHistoryDays = 366;
@@ -167,6 +169,7 @@ public class AssistantService(
             recipe.Name,
             recipe.Description,
             recipe.Instructions,
+            recipe.ImageUrl,
             recipe.Portions,
             recipe.Tags.Select(tag => tag.TagDefinition.Name).Order().ToList(),
             recipe.Ingredients
@@ -221,7 +224,7 @@ public class AssistantService(
         var recipeResults = new List<ItemResult>();
 
         PlanIngredientDefinitions(request.Ingredients ?? [], ingredientMode, tags, catalog, ingredientResults, pendingChanges);
-        PlanRecipes(
+        var recipePlans = PlanRecipes(
             request.Recipes ?? [],
             recipeMode,
             createMissingIngredients,
@@ -236,6 +239,14 @@ public class AssistantService(
             || ingredientResults.Any(result => result.Errors.Count > 0)
             || recipeResults.Any(result => result.Errors.Count > 0);
         var applied = !dryRun && !hasErrors;
+
+        // Images are fetched before anything is written, so a bad URL rejects the request like any other error.
+        if (requestErrors.Count == 0 && recipePlans.Any(plan => plan.ImageDownload is not null))
+        {
+            await DownloadImagesAsync(recipePlans, cancellationToken);
+            hasErrors = recipeResults.Any(result => result.Errors.Count > 0) || hasErrors;
+            applied = !dryRun && !hasErrors;
+        }
 
         // Looked up for a dry run too, so it shows what would be attached; skipped for a request that is rejected anyway.
         if ((request.LookupNutrition ?? false) && (dryRun || applied))
@@ -252,6 +263,14 @@ public class AssistantService(
 
         if (applied)
         {
+            foreach (var plan in recipePlans.Where(plan => plan.DownloadedImage is not null))
+            {
+                var image = await imageDownloader.SaveAsync(plan.DownloadedImage!, cancellationToken);
+                context.UploadedImages.Add(image);
+                plan.ImageUrl = image.PublicUrl;
+                plan.Result.ImageUrl = image.PublicUrl;
+            }
+
             foreach (var change in pendingChanges)
             {
                 change();
@@ -393,7 +412,7 @@ public class AssistantService(
         }
     }
 
-    private void PlanRecipes(
+    private List<RecipePlan> PlanRecipes(
         IReadOnlyCollection<AssistantRecipeInput> inputs,
         string mode,
         bool createMissingIngredients,
@@ -510,6 +529,7 @@ public class AssistantService(
             var tagDefinitions = tags.Resolve(input.Tags ?? [], TagUse.Recipe, result.Errors, result.Warnings);
             var lines = PlanRecipeLines(input, createMissingIngredients, catalog, ingredientResults, result, pendingChanges);
             plan.Components = PlanRecipeComponents(input, plan, recipesByName, storedRecipes, result);
+            PlanRecipeImage(input, plan);
 
             if ((input.Ingredients?.Count ?? 0) == 0 && (input.Components?.Count ?? 0) == 0)
             {
@@ -530,6 +550,7 @@ public class AssistantService(
                 recipe.Description = description;
                 recipe.Instructions = instructions;
                 recipe.Portions = portions;
+                recipe.ImageUrl = plan.ImageUrl;
                 ApplyRecipeLines(recipe, lines);
                 ApplyRecipeTags(recipe, tagDefinitions);
                 ApplyRecipeComponents(recipe, plan.Components);
@@ -542,6 +563,74 @@ public class AssistantService(
         }
 
         ReportComponentCycles(plans, storedRecipes, storedById);
+        return plans;
+    }
+
+    /// <summary>
+    /// imageUrl: absent keeps the photo (a new recipe has none), "" removes it, "/images/..." uses a stored image,
+    /// and an http(s) URL is downloaded into image storage. Anything else is an error.
+    /// </summary>
+    private void PlanRecipeImage(AssistantRecipeInput input, RecipePlan plan)
+    {
+        var text = input.ImageUrl?.Trim();
+        if (text is null)
+        {
+            plan.ImageUrl = plan.IsNew ? null : plan.Recipe.ImageUrl;
+            return;
+        }
+
+        if (text.Length == 0)
+        {
+            plan.ImageUrl = null;
+            return;
+        }
+
+        if (ImageStorageUrls.ToRelativePath(text) is { } relativePath)
+        {
+            if (imageStorage.ResolveFile(relativePath) is not { } fullPath || !File.Exists(fullPath))
+            {
+                plan.Result.Errors.Add($"imageUrl \"{text}\": there is no stored image at that path.");
+                return;
+            }
+
+            plan.ImageUrl = text;
+            if (text != plan.Recipe.ImageUrl)
+            {
+                plan.Result.ImageUrl = text;
+            }
+
+            return;
+        }
+
+        if (AssistantImageDownloader.IsDownloadable(text, out var uri))
+        {
+            plan.ImageDownload = uri;
+            return;
+        }
+
+        plan.Result.Errors.Add($"imageUrl \"{text}\" must be an http(s) address of a photo, a stored image path (/images/...), or \"\" to remove the photo.");
+    }
+
+    private async Task DownloadImagesAsync(List<RecipePlan> plans, CancellationToken cancellationToken)
+    {
+        var downloads = new Dictionary<Uri, (DownloadedImage? Image, string? Error)>();
+        foreach (var plan in plans.Where(plan => plan.ImageDownload is not null && plan.Result.Errors.Count == 0))
+        {
+            var uri = plan.ImageDownload!;
+            if (!downloads.TryGetValue(uri, out var download))
+            {
+                download = await imageDownloader.DownloadAsync(uri, cancellationToken);
+                downloads[uri] = download;
+            }
+
+            if (download.Image is null)
+            {
+                plan.Result.Errors.Add($"imageUrl \"{uri}\" could not be used: {download.Error} Leave imageUrl out to save the recipe without a photo.");
+                continue;
+            }
+
+            plan.DownloadedImage = download.Image;
+        }
     }
 
     /// <summary>Attaches Matvaretabellen values to each ingredient this request creates without nutrition.</summary>
@@ -1506,6 +1595,7 @@ public class AssistantService(
         /// <summary>The new ingredient this result creates, when it is an ingredient being created.</summary>
         public Ingredient? Created { get; set; }
         public AssistantNutritionMatchDto? NutritionMatch { get; set; }
+        public string? ImageUrl { get; set; }
 
         public AssistantItemResultDto ToDto(bool applied)
         {
@@ -1519,7 +1609,7 @@ public class AssistantService(
                     _ => "error"
                 };
             var id = Target?.Invoke();
-            return new AssistantItemResultDto(Name, status, id is null or 0 ? null : id, Warnings, Errors, NutritionMatch);
+            return new AssistantItemResultDto(Name, status, id is null or 0 ? null : id, Warnings, Errors, ImageUrl, NutritionMatch);
         }
     }
 
@@ -1563,6 +1653,10 @@ public class AssistantService(
         public bool IsNew { get; } = isNew;
         public ItemResult Result { get; } = result;
         public List<RecipeComponentPlan> Components { get; set; } = [];
+        /// <summary>The photo the recipe ends up with; set from the download once it has been stored.</summary>
+        public string? ImageUrl { get; set; }
+        public Uri? ImageDownload { get; set; }
+        public DownloadedImage? DownloadedImage { get; set; }
     }
 
     private sealed class RecipeLinePlan(Ingredient ingredient)

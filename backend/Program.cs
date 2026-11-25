@@ -68,6 +68,12 @@ builder.Services.AddScoped<TagCatalogService>();
 builder.Services.AddHttpClient<MatvaretabellenNutritionLookupService>();
 builder.Services.AddHttpClient<HelsedirektoratetContentClient>();
 builder.Services.AddHttpClient<KassalappProductLookupService>();
+builder.Services.AddHttpClient<AssistantImageDownloader>(client =>
+    {
+        client.Timeout = AssistantImageDownloader.Timeout + TimeSpan.FromSeconds(5);
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("MATFLOTE/1.0");
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { MaxAutomaticRedirections = 3 });
 builder.Services.AddHttpClient<VikunjaShoppingListExporter>();
 builder.Services.AddScoped<IShoppingListExporter>(provider => provider.GetRequiredService<VikunjaShoppingListExporter>());
 

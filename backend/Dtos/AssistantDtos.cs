@@ -79,6 +79,8 @@ public record AssistantRecipeDocumentDto(
     string Name,
     string? Description,
     string? Instructions,
+    // The stored photo (/images/...), omitted when there is none. Posting it back keeps the photo.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ImageUrl,
     decimal Portions,
     IReadOnlyCollection<string> Tags,
     IReadOnlyCollection<AssistantRecipeIngredientDocumentDto> Ingredients,
@@ -154,6 +156,7 @@ public record AssistantRecipeInput(
     string? Name,
     string? Description,
     string? Instructions,
+    string? ImageUrl,
     decimal? Portions,
     IReadOnlyCollection<string>? Tags,
     IReadOnlyCollection<AssistantRecipeIngredientInput>? Ingredients,
@@ -191,6 +194,8 @@ public record AssistantItemResultDto(
     int? Id,
     IReadOnlyCollection<string> Warnings,
     IReadOnlyCollection<string> Errors,
+    // For recipes: the stored photo when this request set a new one (a downloaded image gets its own /images/... path).
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ImageUrl,
     // Set when "lookupNutrition" attached (or, in a dry run, would attach) Matvaretabellen values to a new ingredient.
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] AssistantNutritionMatchDto? NutritionMatch
 );

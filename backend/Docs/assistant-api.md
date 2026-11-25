@@ -29,7 +29,7 @@ Both write endpoints behave the same way:
 - **`portions` on a recipe** is the number of servings the listed amounts make. **`portions` on a planned meal** is how many servings to cook that day; shopping lists and nutrition scale by `planned portions / recipe portions`.
 - **One line per ingredient per recipe.** Repeated lines for the same ingredient are added together.
 - Amounts are for the raw ingredient as bought, since they feed the shopping list.
-- Recipes created here have no image. Images are added in the web app.
+- **Photos.** `imageUrl` on a recipe may be the http(s) address of a JPEG, PNG or WebP photo (at most 5 MB, fetched within 15 seconds). MATFLOTE downloads it and stores its own copy; it never links to the other site. Only use photos you are allowed to copy, such as ones the person gave you.
 
 ## GET /api/assistant/context
 
@@ -99,6 +99,7 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
       "description": "Quick weeknight soup.",
       "instructions": "1. Soften the onion in oil.\n2. Add lentils, tomatoes and water. Simmer 15 minutes.\n3. Blend and season.",
       "portions": 4,
+      "imageUrl": "https://example.com/photos/lentil-soup.jpg",
       "tags": ["Dinner", "Soup", "Vegetarian"],
       "ingredients": [
         { "name": "Red lentils", "amount": 250, "unit": "g" },
@@ -114,12 +115,13 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
 
 | Field | Meaning |
 | --- | --- |
-| `onExistingRecipe` | What to do when a recipe with the same name exists: `skip` (default, leave it and warn), `update` (replace everything except its image), `error`. |
+| `onExistingRecipe` | What to do when a recipe with the same name exists: `skip` (default, leave it and warn), `update` (replace everything; the photo only if `imageUrl` is sent; never the household's rating), `error`. |
 | `onExistingIngredient` | For entries under `ingredients`: `skip` (default) or `update`. An update only changes the fields that are present, so it can add nutrition without touching tags. |
 | `createMissingIngredients` | Default `true`: a recipe line naming an unknown ingredient creates it, with no tags and no nutrition, and says so in a warning. Set `false` to get an error with suggestions instead. |
 | `lookupNutrition` | Default `false`. When `true`, every ingredient this request **creates** without `nutritionPer100` (defined under `ingredients` or created from a recipe line) is looked up by name in Matvaretabellen, the Norwegian food composition table, and the best match is attached if its confidence is at least 0.70. The result says what was matched (`nutritionMatch`), or warns when nothing matched well enough. Norwegian names match best ("Laks", not "Salmon"). Existing ingredients are never looked up. Works in a dry run too, so you can check the matches first. |
 | `ingredients` | Optional. Define ingredients fully (tags, nutrition per 100 g/ml, colour, brand) before recipes use them. Do this for anything new, otherwise the Nutrition page has gaps. |
 | `recipes[].id` | Optional. When present the recipe with that id is updated, which is how a recipe is renamed. |
+| `recipes[].imageUrl` | Optional. An `http`/`https` address: the photo is downloaded into MATFLOTE (checked as JPEG, PNG or WebP by type and content, at most 5 MB, 15 second limit) and the recipe result's `imageUrl` gives its new `/images/...` path. A `/images/...` path from `GET /api/assistant/recipes/{id}` keeps that stored photo. `""` removes the photo. Left out: a new recipe has no photo and an update keeps the current one. A photo that cannot be fetched or is not an image is an error, so nothing is saved. Thumbnails for downloaded photos are made from the web app (Settings → Maintenance). |
 | `recipes[].ingredients[].brand` | Optional. Without it, the unbranded ingredient of that name is preferred. |
 | `recipes[].ingredients[].amount` | May be omitted for "to taste"; the shopping list then shows "as needed". |
 | `recipes[].components` | Other recipes used inside this one, by name: `{ "recipe": "Garlic yogurt sauce", "amount": 100, "unit": "g" }`. The other recipe may be in the same request. |
@@ -140,7 +142,7 @@ Response (`200`, or `422` when anything failed):
       "nutritionMatch": { "foodId": "05.123", "foodName": "Laks, oppdrett, rå", "confidence": 0.98, "url": "https://www.matvaretabellen.no/..." }
     }
   ],
-  "recipes": [{ "name": "Red lentil soup", "status": "created", "id": 17, "warnings": [], "errors": [] }]
+  "recipes": [{ "name": "Red lentil soup", "status": "created", "id": 17, "imageUrl": "/images/recipes/3f2a9c1b04de4c7e.jpg", "warnings": [], "errors": [] }]
 }
 ```
 
