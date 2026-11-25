@@ -19,6 +19,7 @@ Created with assistance of ChatGPT 5.5.
 
 - `frontend/`: React/Vite browser app.
 - `backend/`: ASP.NET Core API, SQLite migrations, seed catalog import/export, image handling, and PDF generation.
+- `backend.Tests/`: xUnit tests that run the API in memory against a temporary SQLite file. Run with `dotnet test` from the repository root (`Matflote.sln`).
 - `backend/SeedImages/`: committed starter images and placeholders that are copied into image storage on startup.
 - `docs/images/`: screenshots used by this README.
 - `docker-compose.yml`: two-container MATFLOTE stack for self-hosted use.
@@ -116,6 +117,8 @@ curl.exe -i -X POST `
 ```
 
 The import is additive. Matching ingredients and recipes are left alone, so it is useful for seeding or moving curated data, not for replacing a whole household database.
+
+Before it applies database migrations, the backend writes a copy of the database beside it, named like `dinnerplanner.db.20261125-120000.bak`, and keeps the newest five. Restoring one means stopping the backend, deleting `dinnerplanner.db-wal` and `dinnerplanner.db-shm` if present, and copying the `.bak` file over `dinnerplanner.db`.
 
 For a complete server backup, back up both Docker volumes.
 

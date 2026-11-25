@@ -252,3 +252,6 @@ static string? GetContentType(string extension) =>
         ".webp" => "image/webp",
         _ => null
     };
+
+// Lets WebApplicationFactory<Program> in backend.Tests reach the entry point of the top-level statements.
+public partial class Program;
