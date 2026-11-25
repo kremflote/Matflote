@@ -179,7 +179,7 @@ export const siteColorClasses = {
 export const typographyClasses = {
   app: "font-['Nunito_Variable','Nunito',system-ui,sans-serif]",
   hero: "font-['Segoe_Print','Bradley_Hand','Comic_Sans_MS',cursive]",
-  logo: "min-[1401px]:-translate-x-[8.5rem] font-['Ubuntu',sans-serif] text-[46px] font-bold leading-none max-sm:text-[34px]",
+  logo: "font-['Ubuntu',sans-serif] text-[46px] font-bold leading-none max-sm:text-[34px]",
   dayLabel: "text-2xl font-extralight tracking-normal",
   mealHeaderLabel: "text-2xl font-extralight tracking-wide",
 } as const;
@@ -454,7 +454,7 @@ export const headerStyles = {
   inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-[1100px]:min-h-0 max-[1100px]:grid-cols-[1fr_auto] max-[1100px]:gap-x-4 max-[1100px]:py-3 max-sm:py-3`,
   logo: (theme: SiteTheme) =>
     `justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses[theme].headerForeground}`,
-  actions: "flex items-center justify-end gap-2 min-[1401px]:translate-x-[8.5rem]",
+  actions: "flex items-center justify-end gap-2",
   nav: (theme: SiteTheme) =>
     `flex items-center justify-center gap-2 max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:bottom-0 max-[1100px]:z-50 max-[1100px]:border-t max-[1100px]:px-6 max-[1100px]:pt-2 max-[1100px]:[padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))] max-sm:px-4 ${siteColorClasses[theme].header} ${siteColorClasses[theme].bottomNav}`,
   navButton: (theme: SiteTheme, selected: boolean) =>
