@@ -85,7 +85,7 @@ function PlannerRecipePickerGrid({
                   thumbnailUrl: recipe.thumbnailUrl,
                   name: recipe.name,
                   ingredients: recipe.ingredients,
-                  subtitle: recipe.tags.slice(0, 2).join(" · "),
+                  subtitle: recipe.tags.slice(0, 2).map((tag) => t.enums.recipeTags[tag] ?? tag).join(" · "),
                 }}
                 interactiveEffect={false}
                 theme={theme}

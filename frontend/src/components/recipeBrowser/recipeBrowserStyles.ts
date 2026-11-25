@@ -13,22 +13,23 @@ import {
 export const recipeBrowserStyles = {
   title: (theme: SiteTheme) =>
     `whitespace-nowrap text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
+  // On phones and tablets the Recipes / Ingredients switch is the page's title row, with Add beside it.
   headerTitle:
-    "col-span-2 flex items-center max-[1100px]:order-2 max-[1100px]:col-span-12 max-[1100px]:justify-start",
+    "col-span-2 flex items-center max-[1100px]:sr-only",
   searchInput: controlStyles.compactSearchInput,
   headerControlsRow:
-    "grid grid-cols-12 items-center max-[1100px]:mt-0 max-[1100px]:gap-0",
+    "grid grid-cols-12 items-center max-[1100px]:flex max-[1100px]:gap-2",
   searchControls:
     "relative col-span-2 max-[1100px]:order-2 max-[1100px]:col-span-12 max-[1100px]:grid max-[1100px]:w-full max-[1100px]:grid-cols-[auto_minmax(0,1fr)] max-[1100px]:items-center max-[1100px]:gap-2",
   searchFieldShell:
     "relative w-full max-[1100px]:col-start-2 max-[1100px]:row-start-1",
   searchFieldInlineShell: "relative min-w-0 w-full",
   searchInputWithClear:
-    "pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none min-[641px]:max-[1100px]:h-11 min-[641px]:max-[1100px]:pr-10 min-[641px]:max-[1100px]:text-base",
+    "pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none max-[1100px]:h-11 max-[1100px]:pr-11 max-[1100px]:text-base",
   searchInputClearPadding:
     "pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none",
   searchClearButton: (theme: SiteTheme) =>
-    `absolute right-2 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md transition-colors min-[641px]:max-[1100px]:h-6 min-[641px]:max-[1100px]:w-6 [&_svg]:h-3 [&_svg]:w-3 min-[641px]:max-[1100px]:[&_svg]:h-3.5 min-[641px]:max-[1100px]:[&_svg]:w-3.5 ${
+    `absolute right-2 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md transition-colors max-[1100px]:right-0 max-[1100px]:h-11 max-[1100px]:w-11 [&_svg]:h-3 [&_svg]:w-3 max-[1100px]:[&_svg]:h-3.5 max-[1100px]:[&_svg]:w-3.5 ${
       theme === "dark"
         ? "text-neutral-700 hover:bg-neutral-300 hover:text-neutral-950"
         : theme === "paletteLight"
@@ -36,17 +37,17 @@ export const recipeBrowserStyles = {
           : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
     }`,
   headerActions:
-    "col-span-10 flex items-center justify-end gap-3 pt-1 max-[1100px]:contents",
-  headerActionButtonSlot: "flex shrink-0 max-[1100px]:contents",
-  headerModeToggleSlot: `${sizeClasses.thumbnailControlWidth} max-[1100px]:hidden`,
+    "col-span-10 flex items-center justify-end gap-3 pt-1 max-[1100px]:w-full max-[1100px]:flex-row-reverse max-[1100px]:gap-2 max-[1100px]:pt-0",
+  headerActionButtonSlot: "flex shrink-0",
+  headerModeToggleSlot: `${sizeClasses.thumbnailControlWidth} max-[1100px]:w-auto max-[1100px]:min-w-0 max-[1100px]:flex-1`,
   headerModeToggleStackedSlot: `hidden ${sizeClasses.thumbnailControlWidth} max-[1100px]:hidden`,
-  mobileModeToggleDock:
-    "hidden max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:bottom-[calc(4.5rem+env(safe-area-inset-bottom))] max-[1100px]:z-[55] max-[1100px]:flex",
-  mobileModeToggleInner: "w-full",
   filterButtonSlot:
-    "absolute left-[calc(100%+0.75rem)] top-0 flex h-9 w-9 shrink-0 items-center gap-2 max-[1100px]:static max-[1100px]:col-start-1 max-[1100px]:row-start-1 max-[1100px]:w-auto max-sm:h-9 max-sm:w-auto",
-  searchFilterRow:
-    "mt-3 grid grid-cols-12 items-start gap-3 max-[1100px]:fixed max-[1100px]:left-6 max-[1100px]:right-[5.25rem] max-[1100px]:bottom-30 max-[1100px]:z-[55] max-[1100px]:m-0 max-[1100px]:flex max-[1100px]:flex-col max-[1100px]:gap-2 max-sm:left-4 max-sm:right-[3.75rem]",
+    "absolute left-[calc(100%+0.75rem)] top-0 flex h-9 w-9 shrink-0 items-center gap-2 max-[1100px]:static max-[1100px]:col-start-1 max-[1100px]:row-start-1 max-[1100px]:h-11 max-[1100px]:w-auto",
+  // Lets the search row stick to the page rather than to this short header element.
+  browserHeader: "max-[1100px]:contents",
+  // Docked under the header while the results scroll, instead of floating over them.
+  searchFilterRow: (theme: SiteTheme) =>
+    `mt-3 grid grid-cols-12 items-start gap-3 max-[1100px]:sticky max-[1100px]:top-16 max-[1100px]:z-30 max-[1100px]:-mx-4 max-[1100px]:mt-2 max-[1100px]:flex max-[1100px]:flex-col max-[1100px]:gap-2 max-[1100px]:px-4 max-[1100px]:py-2 ${siteColorClasses[theme].stickyBar}`,
   activeFilterChips: (
     mode: "recipes" | "ingredients",
     hasVisibleFilters: boolean,
@@ -69,9 +70,9 @@ export const recipeBrowserStyles = {
   embeddedCategoryFilterButton: (theme: SiteTheme) =>
     `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
   filterButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-9 items-center justify-center rounded-md border min-[641px]:max-[1100px]:h-11 min-[641px]:max-[1100px]:w-11 min-[641px]:max-[1100px]:[&_svg]:h-5 min-[641px]:max-[1100px]:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
+    `inline-flex h-9 w-9 items-center justify-center rounded-md border max-[1100px]:h-11 max-[1100px]:w-11 max-[1100px]:[&_svg]:h-5 max-[1100px]:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
   categoryFilterButton: (theme: SiteTheme) =>
-    `hidden h-9 w-9 items-center justify-center rounded-md border p-0 min-[641px]:max-[1100px]:h-11 min-[641px]:max-[1100px]:w-11 min-[641px]:max-[1100px]:[&_svg]:h-5 min-[641px]:max-[1100px]:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors max-[1100px]:inline-flex ${siteColorClasses[theme].cookbookFilterButton}`,
+    `hidden h-9 w-9 items-center justify-center rounded-md border p-0 max-[1100px]:h-11 max-[1100px]:w-11 max-[1100px]:[&_svg]:h-5 max-[1100px]:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors max-[1100px]:inline-flex ${siteColorClasses[theme].cookbookFilterButton}`,
   filterChip: (theme: SiteTheme) =>
     `inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
       theme === "dark"
@@ -104,7 +105,7 @@ export const recipeBrowserStyles = {
     "mt-3 flex max-h-72 flex-col gap-2 overflow-y-auto pr-1",
   ingredientPickerItem: "h-9 px-3",
   addButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-32 items-center justify-center gap-1 rounded-md border px-3 text-xs font-extrabold ${shadowClasses.subtle} transition-colors max-[1100px]:fixed max-[1100px]:bottom-30 max-[1100px]:right-6 max-[1100px]:z-[55] max-[1100px]:h-11 max-[1100px]:w-11 max-[1100px]:rounded-md max-[1100px]:px-0 max-[1100px]:text-xl max-sm:right-4 max-sm:h-9 max-sm:w-9 max-sm:text-lg ${siteColorClasses[theme].cookbookAddButton}`,
+    `inline-flex h-9 w-32 items-center justify-center gap-1 rounded-md border px-3 text-xs font-extrabold ${shadowClasses.subtle} transition-colors max-[1100px]:h-[3.125rem] max-[1100px]:w-[3.125rem] max-[1100px]:px-0 max-[1100px]:text-xl ${siteColorClasses[theme].cookbookAddButton}`,
   addButtonLabel: "max-[1100px]:sr-only",
   modalBackdrop: `fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   modalPanel: (theme: SiteTheme) =>
@@ -527,13 +528,7 @@ export const recipeBrowserStyles = {
           : "border-neutral-300 bg-neutral-100"
     }`,
   tabs: (theme: SiteTheme) =>
-    `${segmentedToggleStyles.shell(theme)} max-[1100px]:!rounded-none ${
-      theme === "dark"
-        ? "max-[1100px]:!border-neutral-800 max-[1100px]:!bg-neutral-950"
-        : theme === "paletteLight"
-          ? ""
-          : "max-[1100px]:!border-neutral-300 max-[1100px]:!bg-neutral-200"
-    }`,
+    `${segmentedToggleStyles.shell(theme)} max-[1100px]:h-[3.125rem] max-[1100px]:p-0.5`,
   tab: (theme: SiteTheme, selected: boolean) =>
     segmentedToggleStyles.option(theme, selected),
   filterRail: (theme: SiteTheme) =>

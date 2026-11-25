@@ -76,6 +76,8 @@ const plannerControlHoverClasses = {
 
 export const siteColorClasses = {
   dark: {
+    // A bar that stays under the fixed header on narrow screens, in the page colour.
+    stickyBar: "max-[1100px]:bg-[#181818]/95 max-[1100px]:backdrop-blur-sm",
     page: "bg-[#111111] text-neutral-50 before:bg-white/[0.03]",
     header: "border-white/[0.08] bg-white/[0.06]",
     headerForeground: "text-neutral-50",
@@ -111,6 +113,8 @@ export const siteColorClasses = {
     focus: "focus-visible:outline-white",
   },
   light: {
+    // A bar that stays under the fixed header on narrow screens, in the page colour.
+    stickyBar: "max-[1100px]:bg-white/95 max-[1100px]:backdrop-blur-sm",
     page: "bg-white text-neutral-900 before:bg-black/[0.02]",
     header: "border-neutral-200 bg-neutral-50",
     headerForeground: "text-neutral-900",
@@ -143,6 +147,8 @@ export const siteColorClasses = {
     focus: "focus-visible:outline-neutral-800",
   },
   paletteLight: {
+    // A bar that stays under the fixed header on narrow screens, in the page colour.
+    stickyBar: "max-[1100px]:bg-[#EAEBEB]/95 max-[1100px]:backdrop-blur-sm",
     page: "bg-[#FAF7F2] text-[#7A8864] before:bg-[#A9BDD1]/20",
     header: "border-[#7A8864]/35 bg-[#7A8864]",
     headerForeground: "text-[#FAF7F2]",
@@ -207,7 +213,7 @@ export const sizeClasses = {
   mealCalendarCellHeight: "h-36",
   mealSlotContentInset: "h-[calc(100%_-_16px)] w-[calc(100%_-_16px)]",
   portableFixedHeaderOffset: "max-[1100px]:pt-16",
-  portableBottomNavOffset: "max-[1100px]:pb-36",
+  portableBottomNavOffset: "max-[1100px]:pb-24",
   modalOuterMaxHeight: "max-h-[88vh]",
   modalFormBodyMaxHeight: "max-h-[56vh]",
   modalFormBodyMobileMaxHeight: "max-sm:max-h-[52vh]",
@@ -277,15 +283,16 @@ export const thumbnailStyles = {
   recipeTitleBand: (theme: SiteTheme) =>
     theme === "paletteLight" ? "bg-[#556145]/95" : "bg-neutral-700/95",
   recipeTitleBandLayout:
-    "absolute inset-x-0 bottom-0 flex h-[22%] min-h-12 flex-col justify-center px-3",
+    "absolute inset-x-0 bottom-0 flex min-h-[22%] flex-col justify-center px-3 py-2",
   recipeTitleBandLayoutExpanded:
     "absolute inset-x-0 bottom-0 flex min-h-[46%] flex-col justify-end px-3 py-2",
   recipeTitleBandLayoutMicro:
     "absolute inset-x-0 bottom-0 flex h-[38%] min-h-0 flex-col justify-center px-1.5",
   recipeTitleBandExtra:
     "absolute inset-x-3 top-2",
-  recipeTitle: "truncate text-base font-bold leading-tight text-[#FAF7F2]",
-  recipeTitleCompact: "truncate text-sm font-bold leading-tight text-[#FAF7F2]",
+  // Names are at most 30 characters; two lines show them whole on a phone's two-column grid.
+  recipeTitle: "line-clamp-2 break-words text-base font-bold leading-tight text-[#FAF7F2]",
+  recipeTitleCompact: "line-clamp-2 break-words text-sm font-bold leading-tight text-[#FAF7F2]",
   recipeTitleMicro:
     "truncate text-[10px] font-bold leading-tight text-[#FAF7F2]",
   recipeSubtitle: (theme: SiteTheme) =>
@@ -458,9 +465,10 @@ export const appStyles = {
 export const headerStyles = {
   shell: (theme: SiteTheme) =>
     `relative z-10 border-b max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:top-0 max-[1100px]:z-[60] ${shadowClasses.raised} ${siteColorClasses[theme].header} ${siteColorClasses[theme].fixedHeader}`,
-  inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-[1100px]:min-h-0 max-[1100px]:grid-cols-[1fr_auto] max-[1100px]:gap-x-4 max-[1100px]:py-3 max-sm:py-3`,
+  // 64 px high on narrow screens, matching the shell's top padding and the cookbook's docked search row.
+  inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-[1100px]:h-16 max-[1100px]:min-h-0 max-[1100px]:grid-cols-[1fr_auto] max-[1100px]:gap-x-4`,
   logo: (theme: SiteTheme) =>
-    `justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses[theme].headerForeground}`,
+    `min-h-11 justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses[theme].headerForeground}`,
   actions: "flex items-center justify-end gap-2",
   nav: (theme: SiteTheme) =>
     `flex items-center justify-center gap-2 max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:bottom-0 max-[1100px]:z-50 max-[1100px]:border-t max-[1100px]:px-6 max-[1100px]:pt-2 max-[1100px]:[padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))] max-sm:px-4 ${siteColorClasses[theme].header} ${siteColorClasses[theme].bottomNav}`,
@@ -473,13 +481,13 @@ export const headerStyles = {
   icon: "h-8 w-8 fill-current max-[1100px]:h-5 max-[1100px]:w-5",
   navLabel: "text-xs font-semibold leading-none max-sm:text-[11px]",
   settingsButton: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border-0 transition-colors duration-150 max-[1100px]:h-9 max-[1100px]:w-9 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border-0 transition-colors duration-150 max-[1100px]:h-11 max-[1100px]:w-11 ${focusBase} ${siteColorClasses[theme].focus} ${
       selected
         ? siteColorClasses[theme].controlSelected
         : siteColorClasses[theme].control
     }`,
   themeButton: (theme: SiteTheme) =>
-    `inline-flex h-8 w-14 cursor-pointer items-center justify-center justify-self-end rounded-md border border-transparent bg-transparent p-0 ${focusBase} ${siteColorClasses[theme].focus}`,
+    `inline-flex h-8 w-14 cursor-pointer items-center justify-center justify-self-end rounded-md border border-transparent bg-transparent p-0 max-[1100px]:h-11 ${focusBase} ${siteColorClasses[theme].focus}`,
   // Exception to the rectangular control rule: the theme switch keeps the familiar rounded toggle shape.
   themeTrack: (theme: SiteTheme) =>
     `relative h-8 w-14 rounded-full border ${siteColorClasses[theme].switchTrack}`,
@@ -1033,7 +1041,7 @@ export const plannerControlsStyles = {
   /* Keep the planner content aligned with the cookbook grid using the shared spacing scale. */
   // One row on wide screens (actions, week, view switch) so the whole week fits under it on a 900 px screen.
   shell: `mb-5 grid w-full grid-cols-12 items-center ${layoutClasses.gridGap} max-[1100px]:mb-6 max-[1100px]:grid-cols-1 max-[1100px]:gap-3`,
-  datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap} min-[1101px]:gap-2`,
+  datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap} min-[1101px]:gap-2 max-[1100px]:justify-between max-[1100px]:gap-2`,
   // The year floats above the range label without increasing the top-control row height.
   dateYearRow: (theme: SiteTheme) =>
     `pointer-events-none absolute inset-x-0 -top-4 z-0 flex h-0 justify-center overflow-visible text-sm font-bold leading-none ${
@@ -1044,7 +1052,7 @@ export const plannerControlsStyles = {
           : "text-neutral-500"
     }`,
   datePrimary: (theme: SiteTheme) =>
-    `min-w-36 whitespace-nowrap text-center text-3xl font-bold leading-tight max-[1100px]:min-w-0 ${siteColorClasses[theme].plannerCounterAccent}`,
+    `min-w-36 whitespace-nowrap text-center text-3xl font-bold leading-tight max-[1100px]:min-w-0 max-[1100px]:flex-1 max-[1100px]:truncate max-sm:text-2xl ${siteColorClasses[theme].plannerCounterAccent}`,
   leftCell:
     "order-1 col-span-5 flex items-center justify-start max-[1100px]:hidden",
   centerCell:
@@ -1056,12 +1064,12 @@ export const plannerControlsStyles = {
   actionSlotCenter: "min-w-0",
   actionSlotRight: "min-w-0",
   iconOnlyButton: (theme: SiteTheme) =>
-    `${sizeClasses.plannerControlHeight} group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-1.5 ${radiusClasses.figma6} border px-2 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+    `${sizeClasses.plannerControlHeight} max-[1100px]:h-11 group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-1.5 ${radiusClasses.figma6} border px-2 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
   iconButton: (theme: SiteTheme) =>
-    `${sizeClasses.plannerControlHeight} inline-flex aspect-square items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
-  nextAndTodayGroup: "relative inline-flex min-[1101px]:gap-2",
+    `${sizeClasses.plannerControlHeight} inline-flex aspect-square shrink-0 items-center justify-center ${radiusClasses.figma6} border max-[1100px]:h-11 transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+  nextAndTodayGroup: "relative inline-flex gap-2",
   todayButton: (theme: SiteTheme) =>
-    `absolute left-full top-0 ml-2 min-[1101px]:static min-[1101px]:ml-0 ${sizeClasses.plannerControlHeight} inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+    `${sizeClasses.plannerControlHeight} max-[1100px]:h-11 inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
   buttonIcon: "h-4 w-4 shrink-0 fill-current",
   // Below 1440 px the four actions are icons with tooltips, so no label is cut off.
   actionButtonLabel: "min-w-0 truncate leading-none max-[1439px]:sr-only",
@@ -1072,10 +1080,8 @@ export const plannerControlsStyles = {
     segmentedToggleStyles.shell(theme, "w-full max-w-64"),
   viewToggleOption: (theme: SiteTheme, selected: boolean) =>
     segmentedToggleStyles.option(theme, selected),
-  mobileControlRow: "hidden max-[1100px]:block",
-  mobileControlPlaceholder: "hidden max-[1100px]:block",
   mobileControlButton: (theme: SiteTheme, selected = false) =>
-    `fixed bottom-30 right-8 z-[55] inline-flex h-14 w-14 min-w-0 items-center justify-center gap-2 rounded-full border p-0 text-2xl font-bold [&_svg]:h-6 [&_svg]:w-6 ${shadowClasses.subtle} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `hidden h-11 w-11 shrink-0 items-center justify-center ${radiusClasses.figma6} border p-0 max-[1100px]:inline-flex [&_svg]:h-5 [&_svg]:w-5 ${shadowClasses.subtle} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
       selected
         ? siteColorClasses[theme].plannerToggleSelected
         : theme === "dark"
@@ -1213,11 +1219,11 @@ export const mealCalendarStyles = {
   mealSlotUnavailable: "opacity-45",
   mealSlotDraggableButton: "min-[1101px]:cursor-grab min-[1101px]:active:cursor-grabbing",
   // With a mouse the card's actions appear on hover or when the card has keyboard focus (F22); on
-  // touch screens they are always shown, in a column at the card's right edge.
+  // touch screens they are always shown, in their own column at the card's right edge.
   mealSlotActions: (revealOnHover: boolean) =>
     revealOnHover
       ? "pointer-events-none absolute right-1.5 top-1.5 z-10 flex gap-1 opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:opacity-100 group-focus-within/meal-slot:pointer-events-auto group-focus-within/meal-slot:opacity-100"
-      : "absolute inset-y-0 right-0 z-10 flex flex-col justify-center gap-1 p-1",
+      : "flex shrink-0 flex-col justify-center p-1",
   // Mouse: small solid buttons over the card. Touch: 44 px ghost buttons in the card's own column.
   mealSlotActionButton: (theme: SiteTheme, compact: boolean) =>
     `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses[theme].focus} ${
@@ -1286,8 +1292,7 @@ export const mealCalendarStyles = {
           ? "bg-[#7A8864]/28"
           : "bg-neutral-300"
     }`,
-  mealSlotDetails: (roomForTouchActions: boolean) =>
-    `flex min-w-0 flex-col justify-between gap-1 ${roomForTouchActions ? "pr-12" : ""}`,
+  mealSlotDetails: "flex min-w-0 flex-col justify-between gap-1",
   mealSlotEyebrow: (theme: SiteTheme) =>
     `hidden text-[11px] font-extrabold uppercase leading-none tracking-wider max-[1100px]:block ${plannerMutedText(theme)}`,
   mealSlotTitle: (theme: SiteTheme) =>

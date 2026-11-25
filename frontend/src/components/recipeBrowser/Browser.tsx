@@ -131,7 +131,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
 
   return (
     <>
-      <header>
+      <header className={recipeBrowserStyles.browserHeader}>
         <div className={recipeBrowserStyles.headerControlsRow}>
           <div className={recipeBrowserStyles.headerModeToggleStackedSlot}>
             {modeToggle}
@@ -148,7 +148,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             </div>
           </div>
         </div>
-        <div className={recipeBrowserStyles.searchFilterRow}>
+        <div className={recipeBrowserStyles.searchFilterRow(theme)}>
           <div className={recipeBrowserStyles.searchControls}>
             <div className={recipeBrowserStyles.searchFieldShell}>
               <input
@@ -309,12 +309,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
           />
         </div>
       </section>
-
-      <div className={recipeBrowserStyles.mobileModeToggleDock}>
-        <div className={recipeBrowserStyles.mobileModeToggleInner}>
-          {modeToggle}
-        </div>
-      </div>
 
       {selectedDetailKey !== null && (
         <BrowserDetailModal

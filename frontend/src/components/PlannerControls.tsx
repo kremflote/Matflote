@@ -138,6 +138,21 @@ function PlannerControls({
           {anchorYear}
         </time>
         <div className={plannerControlsStyles.datePrimaryRow}>
+          {/* On phones and tablets the tools sit in this row rather than floating over the cards. */}
+          {showMobileTools ? (
+            <button
+              aria-haspopup="dialog"
+              aria-expanded={isMobileActionsOpen}
+              aria-label={t.planner.openPlannerActions}
+              className={plannerControlsStyles.mobileControlButton(theme)}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
+              title={t.planner.plannerTools}
+              type="button"
+              onClick={() => setIsMobileActionsOpen(true)}
+            >
+              <ToolsIcon />
+            </button>
+          ) : null}
           <button
             aria-label={t.planner.previousRange(rangeLabel)}
             className={plannerControlsStyles.iconButton(theme)}
@@ -191,21 +206,6 @@ function PlannerControls({
             {t.enums.viewModes.month}
           </button>
         </div>
-      </div>
-      <div className={plannerControlsStyles.mobileControlRow}>
-        {showMobileTools ? (
-          <button
-            aria-haspopup="dialog"
-            aria-expanded={isMobileActionsOpen}
-            aria-label={t.planner.openPlannerActions}
-            className={plannerControlsStyles.mobileControlButton(theme)}
-            disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
-            type="button"
-            onClick={() => setIsMobileActionsOpen(true)}
-          >
-            <PrepIcon />
-          </button>
-        ) : null}
       </div>
       {isMobileActionsOpen ? (
         <Modal
@@ -303,6 +303,14 @@ function ExportIcon() {
   return (
     <svg aria-hidden="true" className={plannerControlsStyles.buttonIcon} viewBox="0 0 24 24">
       <path d="M12 3 7.5 7.5l1.4 1.4 2.1-2.1V15h2V6.8l2.1 2.1 1.4-1.4L12 3Zm-7 9h2v7h10v-7h2v9H5v-9Z" />
+    </svg>
+  );
+}
+
+function ToolsIcon() {
+  return (
+    <svg aria-hidden="true" className={plannerControlsStyles.buttonIcon} viewBox="0 0 24 24">
+      <path d="M4 6h10v2H4V6Zm14 0h2v2h-2V6Zm-2-2h2v6h-2V4ZM4 16h4v2H4v-2Zm8 0h8v2h-8v-2Zm-2-2h2v6h-2v-6Z" />
     </svg>
   );
 }

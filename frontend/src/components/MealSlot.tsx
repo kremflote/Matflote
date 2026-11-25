@@ -151,7 +151,7 @@ function MealSlot({
                 style={{ background: getRecipeColorBarBackground(mainColors) }}
               />
             )}
-            <span className={mealCalendarStyles.mealSlotDetails(showsTouchActions)}>
+            <span className={mealCalendarStyles.mealSlotDetails}>
               <span className={mealCalendarStyles.mealSlotEyebrow(theme)}>{slotLabel}</span>
               <span className={mealCalendarStyles.mealSlotTitle(theme)}>{mainName}</span>
               <span className={mealCalendarStyles.mealSlotMetaRow}>
