@@ -70,7 +70,7 @@ public class GroceryListApiTests(MatfloteFactory factory) : IClassFixture<Matflo
     {
         var flour = await CreateIngredient(client, "GL2 flour", "Grain");
         var salt = await CreateIngredient(client, "GL2 salt", "Spice");
-        var yeast = await CreateIngredient(client, "GL2 yeast", "Pantry");
+        var yeast = await CreateIngredient(client, "GL2 yeast", "Grain");
         // Two levels of components: pizza -> dough -> starter.
         var starter = await CreateRecipe(client, Recipe("GL2 starter", 1, [Line(yeast.IngredientId, 10), Line(flour.IngredientId, 90)]));
         var dough = await CreateRecipe(client, Recipe("GL2 dough", 1, [Line(flour.IngredientId, 400)], [Component(starter.RecipeId, 50)]));

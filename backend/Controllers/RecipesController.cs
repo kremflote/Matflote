@@ -15,7 +15,6 @@ namespace DinnerPlanner.Api.Controllers;
 [Route("api/[controller]")]
 public class RecipesController(
     DinnerPlannerContext context,
-    TagCatalogService tagCatalog,
     RecipePdfService recipePdfService,
     ImageThumbnails imageThumbnails) : ControllerBase
 {
@@ -53,28 +52,18 @@ public class RecipesController(
     [HttpPost]
     public async Task<ActionResult<RecipeDto>> CreateRecipe(RecipeRequest request)
     {
-        var ingredients = await GetIngredients(GetRequestedIngredientIds(request.Ingredients));
-        var missingIngredientIds = GetMissingIngredientIds(GetRequestedIngredientIds(request.Ingredients), ingredients);
-        if (missingIngredientIds.Count > 0)
+        var validation = await ValidateRequestAsync(request, recipeId: null);
+        if (validation.Problems.Count > 0)
         {
-            return BadRequest($"No ingredients found for IDs: {string.Join(", ", missingIngredientIds)}.");
-        }
-
-        var requestedComponents = NormalizeComponents(request.Components);
-        var componentRecipes = await GetComponentRecipes(requestedComponents.Select(component => component.RecipeId));
-        var componentValidationError = ValidateComponents(requestedComponents, componentRecipes);
-        if (componentValidationError is not null)
-        {
-            return BadRequest(componentValidationError);
+            return BadRequest(ApiErrorDto.From(validation.Problems));
         }
 
         var recipe = CreateRecipeModel(request);
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients);
-        var knownTags = await tagCatalog.NormalizeKnownTagDefinitionsAsync(request.Tags, HttpContext.RequestAborted);
-        recipe.Tags = knownTags
+        recipe.Tags = validation.Tags
             .Select(tag => new RecipeTagAssignment { IngredientTagDefinitionId = tag.IngredientTagDefinitionId })
             .ToList();
-        recipe.Components = ToRecipeComponents(requestedComponents);
+        recipe.Components = ToRecipeComponents(validation.Components);
 
         context.Recipes.Add(recipe);
         await context.SaveChangesAsync();
@@ -94,25 +83,15 @@ public class RecipesController(
             return NotFound();
         }
 
-        var requestedIngredientIds = GetRequestedIngredientIds(request.Ingredients);
-        var ingredients = await GetIngredients(requestedIngredientIds);
-        var missingIngredientIds = GetMissingIngredientIds(requestedIngredientIds, ingredients);
-        if (missingIngredientIds.Count > 0)
+        var validation = await ValidateRequestAsync(request, recipe.RecipeId);
+        if (validation.Problems.Count > 0)
         {
-            return BadRequest($"No ingredients found for IDs: {string.Join(", ", missingIngredientIds)}.");
+            return BadRequest(ApiErrorDto.From(validation.Problems));
         }
 
-        var requestedComponents = NormalizeComponents(request.Components);
-        var componentRecipes = await GetComponentRecipes(requestedComponents.Select(component => component.RecipeId));
-        var componentValidationError = ValidateComponents(requestedComponents, componentRecipes, recipe.RecipeId);
-        if (componentValidationError is not null)
+        if (await WouldCreateComponentCycle(recipe.RecipeId, validation.Components.Select(component => component.RecipeId)))
         {
-            return BadRequest(componentValidationError);
-        }
-
-        if (await WouldCreateComponentCycle(recipe.RecipeId, requestedComponents.Select(component => component.RecipeId)))
-        {
-            return BadRequest("Recipe components cannot create a circular recipe reference.");
+            return BadRequest(new ApiErrorDto("Recipe components cannot create a circular recipe reference."));
         }
 
         recipe.Name = request.Name;
@@ -123,8 +102,7 @@ public class RecipesController(
         context.RecipeIngredients.RemoveRange(recipe.Ingredients);
         recipe.Ingredients = ToRecipeIngredients(request.Ingredients, recipe.RecipeId);
         context.RecipeTagAssignments.RemoveRange(recipe.Tags);
-        var knownTags = await tagCatalog.NormalizeKnownTagDefinitionsAsync(request.Tags, HttpContext.RequestAborted);
-        recipe.Tags = knownTags
+        recipe.Tags = validation.Tags
             .Select(tag => new RecipeTagAssignment
             {
                 RecipeId = recipe.RecipeId,
@@ -132,7 +110,7 @@ public class RecipesController(
             })
             .ToList();
         context.RecipeComponents.RemoveRange(recipe.Components);
-        recipe.Components = ToRecipeComponents(requestedComponents, recipe.RecipeId);
+        recipe.Components = ToRecipeComponents(validation.Components, recipe.RecipeId);
 
         await context.SaveChangesAsync();
 
@@ -204,6 +182,79 @@ public class RecipesController(
         await context.SaveChangesAsync();
         return NoContent();
     }
+
+    /// <summary>
+    /// Everything wrong with a create or update, so nothing is dropped quietly (AUDIT B2): unknown ingredients,
+    /// component recipes and tags, an ingredient or component listed twice, and units or preparations that do not exist.
+    /// </summary>
+    private async Task<RecipeValidation> ValidateRequestAsync(RecipeRequest request, int? recipeId)
+    {
+        var problems = new List<string>();
+
+        var requestedIngredientIds = GetRequestedIngredientIds(request.Ingredients);
+        var ingredients = await GetIngredients(requestedIngredientIds);
+        var missingIngredientIds = GetMissingIngredientIds(requestedIngredientIds, ingredients);
+        if (missingIngredientIds.Count > 0)
+        {
+            problems.Add($"No ingredients found for IDs: {string.Join(", ", missingIngredientIds)}.");
+        }
+
+        var ingredientNames = ingredients.ToDictionary(ingredient => ingredient.IngredientId, ingredient => ingredient.IngredientName);
+        string IngredientLabel(int id) => ingredientNames.TryGetValue(id, out var name) ? $"\"{name}\"" : $"Ingredient {id}";
+        foreach (var repeated in request.Ingredients.GroupBy(line => line.IngredientId).Where(group => group.Count() > 1))
+        {
+            problems.Add($"{IngredientLabel(repeated.Key)} is listed {repeated.Count()} times. A recipe has one line per ingredient: add the amounts into one line.");
+        }
+
+        foreach (var line in request.Ingredients)
+        {
+            AddLineProblems(IngredientLabel(line.IngredientId), line.Unit, line.Preparation, problems);
+        }
+
+        var components = (request.Components ?? []).ToList();
+        var componentRecipes = await GetComponentRecipes(components.Select(component => component.RecipeId));
+        var componentNames = componentRecipes.ToDictionary(child => child.RecipeId, child => child.Name);
+        string ComponentLabel(int id) => componentNames.TryGetValue(id, out var name) ? $"Component \"{name}\"" : $"Component recipe {id}";
+        foreach (var repeated in components.GroupBy(component => component.RecipeId).Where(group => group.Count() > 1))
+        {
+            problems.Add($"{ComponentLabel(repeated.Key)} is listed {repeated.Count()} times. Use one entry with the total amount.");
+        }
+
+        foreach (var component in components)
+        {
+            AddLineProblems(ComponentLabel(component.RecipeId), component.Unit, component.Preparation, problems);
+        }
+
+        var normalizedComponents = NormalizeComponents(components);
+        var componentError = ValidateComponents(normalizedComponents, componentRecipes, recipeId);
+        if (componentError is not null)
+        {
+            problems.Add(componentError);
+        }
+
+        var tagIndex = await TagIndex.LoadAsync(context, HttpContext.RequestAborted);
+        var tags = tagIndex.Resolve(request.Tags, TagUse.Recipe, problems, warnings: [], TagIndex.CreateFirstHint);
+
+        return new RecipeValidation(problems, normalizedComponents, tags);
+    }
+
+    private static void AddLineProblems(string label, MeasurementUnit unit, IngredientPreparation preparation, List<string> problems)
+    {
+        if (!Enum.IsDefined(unit))
+        {
+            problems.Add($"{label}: unit \"{(int)unit}\" is not valid. Use one of: {string.Join(", ", Enum.GetNames<MeasurementUnit>())}.");
+        }
+
+        if (!Enum.IsDefined(preparation))
+        {
+            problems.Add($"{label}: {RecipeLineRules.DescribeUnknownPreparation(((int)preparation).ToString())}");
+        }
+    }
+
+    private sealed record RecipeValidation(
+        List<string> Problems,
+        List<RecipeComponentRequest> Components,
+        List<IngredientTagDefinition> Tags);
 
     private Task<Recipe?> LoadRecipe(int id) => RecipeDetails(asNoTracking: true)
         .FirstOrDefaultAsync(recipe => recipe.RecipeId == id);
@@ -299,7 +350,6 @@ public class RecipesController(
         components is null
             ? []
             : components
-                .Where(component => component.RecipeId > 0)
                 .GroupBy(component => component.RecipeId)
                 .Select((group, index) =>
                 {
@@ -393,17 +443,13 @@ public class RecipesController(
         int recipeId = 0
     ) =>
         ingredients
-            .GroupBy(ingredient => ingredient.IngredientId)
-            .Select(group => group.First())
             .Select(ingredient => new RecipeIngredient
             {
                 RecipeId = recipeId,
                 IngredientId = ingredient.IngredientId,
                 Amount = ingredient.Amount,
                 Unit = ingredient.Unit,
-                Preparation = Enum.IsDefined(ingredient.Preparation)
-                    ? ingredient.Preparation
-                    : IngredientPreparation.None
+                Preparation = ingredient.Preparation
             })
             .ToList();
 
@@ -418,9 +464,7 @@ public class RecipesController(
                 ChildRecipeId = component.RecipeId,
                 Amount = component.Amount,
                 Unit = component.Unit,
-                Preparation = Enum.IsDefined(component.Preparation)
-                    ? component.Preparation
-                    : IngredientPreparation.None,
+                Preparation = component.Preparation,
                 SortOrder = component.SortOrder > 0 ? component.SortOrder : index + 1
             })
             .ToList();

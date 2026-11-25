@@ -71,6 +71,9 @@ public enum TagUse
 /// </summary>
 public sealed class TagIndex(List<IngredientTagDefinition> definitions)
 {
+    /// <summary>The hint after an unknown tag on the regular endpoints.</summary>
+    public const string CreateFirstHint = "Tags must already exist: create it under tag management first.";
+
     private readonly Dictionary<string, IngredientTagDefinition> byKey = definitions
         .GroupBy(tag => TagKey(tag.Name))
         .ToDictionary(group => group.Key, group => group.First());

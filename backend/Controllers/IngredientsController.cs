@@ -15,7 +15,6 @@ namespace DinnerPlanner.Api.Controllers;
 [Route("api/[controller]")]
 public class IngredientsController(
     DinnerPlannerContext context,
-    TagCatalogService tagCatalog,
     IngredientUsageService ingredientUsage,
     ImageThumbnails imageThumbnails) : ControllerBase
 {
@@ -51,12 +50,12 @@ public class IngredientsController(
     [HttpPost]
     public async Task<ActionResult<IngredientDto>> CreateIngredient(IngredientRequest request)
     {
-        if (!await BrandExists(request.BrandId))
+        var (problems, knownTags) = await ValidateRequestAsync(request);
+        if (problems.Count > 0)
         {
-            return BadRequest("No brand found with that ID.");
+            return BadRequest(ApiErrorDto.From(problems));
         }
 
-        var knownTags = await tagCatalog.NormalizeKnownTagDefinitionsAsync(request.Tags, HttpContext.RequestAborted);
         var ingredient = new Ingredient
         {
             IngredientName = request.IngredientName,
@@ -96,16 +95,16 @@ public class IngredientsController(
             return NotFound();
         }
 
-        if (!await BrandExists(request.BrandId))
+        var (problems, knownTags) = await ValidateRequestAsync(request);
+        if (problems.Count > 0)
         {
-            return BadRequest("No brand found with that ID.");
+            return BadRequest(ApiErrorDto.From(problems));
         }
 
         ingredient.IngredientName = request.IngredientName;
         ingredient.Description = request.Description;
         ingredient.BrandId = request.BrandId;
         ingredient.ImageUrl = request.ImageUrl;
-        var knownTags = await tagCatalog.NormalizeKnownTagDefinitionsAsync(request.Tags, HttpContext.RequestAborted);
         context.IngredientTagAssignments.RemoveRange(ingredient.Tags);
         ingredient.Tags = knownTags
             .Select(tag => new IngredientTagAssignment
@@ -183,6 +182,20 @@ public class IngredientsController(
             moved,
             merged,
             mealItems));
+    }
+
+    /// <summary>An unknown brand or tag is an error rather than being dropped (AUDIT B2).</summary>
+    private async Task<(List<string> Problems, List<IngredientTagDefinition> Tags)> ValidateRequestAsync(IngredientRequest request)
+    {
+        var problems = new List<string>();
+        if (!await BrandExists(request.BrandId))
+        {
+            problems.Add($"No brand found with ID {request.BrandId}.");
+        }
+
+        var tagIndex = await TagIndex.LoadAsync(context, HttpContext.RequestAborted);
+        var tags = tagIndex.Resolve(request.Tags ?? [], TagUse.Ingredient, problems, warnings: [], TagIndex.CreateFirstHint);
+        return (problems, tags);
     }
 
     private async Task<bool> BrandExists(int? brandId) =>
