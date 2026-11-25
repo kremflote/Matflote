@@ -108,4 +108,43 @@ public class MigrationTests : IDisposable
             await Strings("SELECT Name || '|' || Description || '|' || Portions || '|' || coalesce(Rating, '-') || '|' || coalesce(RatingNote, '-') FROM Recipes WHERE Name = 'Owner stew'"));
         Assert.Equal(["0"], await Strings("SELECT CAST(count(*) AS TEXT) FROM Recipes WHERE Rating IS NOT NULL OR RatingNote IS NOT NULL"));
     }
+
+    [Fact]
+    public async Task Behaviour_keys_go_on_existing_tags_by_name_and_no_tag_is_added_or_taken()
+    {
+        await MigrateToJustBefore("_AddBehaviourSystemKeys");
+        // As an owner's database could be: Vegetable renamed to Norwegian, Dip already carrying a key of its own,
+        // and a second "saus" beside the seeded Sauce.
+        await Execute("""
+            UPDATE IngredientTagDefinitions SET Name = 'Grønnsaker' WHERE Name = 'Vegetable';
+            UPDATE IngredientTagDefinitions SET SystemKey = 'Owner.Dip' WHERE Name = 'Dip';
+            INSERT INTO IngredientTagDefinitions (Name, SortOrder, IsSystemTag, IngredientTagCategoryId) VALUES ('saus', 900, 0, 3);
+            """);
+        var tagsBefore = await Strings("SELECT Name FROM IngredientTagDefinitions ORDER BY IngredientTagDefinitionId");
+
+        await using (var context = OpenContext())
+        {
+            await context.Database.MigrateAsync();
+        }
+
+        Assert.Equal(tagsBefore, await Strings("SELECT Name FROM IngredientTagDefinitions ORDER BY IngredientTagDefinitionId"));
+        Assert.Equal(
+            [
+                "Berry=Produce.Berry", "Dairy=Food.Dairy", "Dip=Owner.Dip", "Frozen=Storage.Frozen", "Fruit=Produce.Fruit",
+                "Grain=Food.Grain", "Grønnsaker=Produce.Vegetable", "Herb=Produce.Herb", "LeafyGreen=Produce.LeafyGreen",
+                "RootVegetable=Produce.RootVegetable", "Salad=FoodRole.Salad", "Sauce=FoodRole.Sauce", "Side=FoodRole.Side", "Spice=Food.Spice",
+            ],
+            await Strings("SELECT Name || '=' || SystemKey FROM IngredientTagDefinitions WHERE SystemKey IS NOT NULL ORDER BY Name"));
+        Assert.Equal(["0"], await Strings("SELECT CAST(count(*) AS TEXT) FROM IngredientTagDefinitions WHERE IsSystemTag = 1"));
+
+        // Running it again (as on a database restored from before) changes nothing.
+        await using (var context = OpenContext())
+        {
+            var migrations = context.Database.GetMigrations().ToList();
+            await context.GetService<IMigrator>().MigrateAsync(migrations[migrations.FindIndex(name => name.EndsWith("_AddBehaviourSystemKeys", StringComparison.Ordinal)) - 1]);
+            await context.Database.MigrateAsync();
+        }
+
+        Assert.Equal(12 + 2, (await Strings("SELECT SystemKey FROM IngredientTagDefinitions WHERE SystemKey IS NOT NULL")).Count);
+    }
 }
