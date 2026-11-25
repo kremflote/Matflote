@@ -3,6 +3,7 @@ import { useLanguage } from "../contexts";
 import type { INutritionSummary } from "../interfaces/INutrition";
 import { nutritionService } from "../services";
 import { nutritionStyles, pageStyles, type SiteTheme } from "../styles/appStyles";
+import { addDays, getWeekStart, parseDateInputValue, toDateInputValue } from "../utils/plannerDate";
 
 type NutritionPageProps = {
   theme: SiteTheme;
@@ -15,11 +16,11 @@ function NutritionPage({ theme }: NutritionPageProps) {
   const { t } = useLanguage();
   const [profileId, setProfileId] = useState(DEFAULT_PROFILE_ID);
   const [peopleEating, setPeopleEating] = useState(DEFAULT_PEOPLE_EATING);
-  const [weekStart, setWeekStart] = useState(() => toDateInput(startOfWeek(new Date())));
+  const [weekStart, setWeekStart] = useState(() => toDateInputValue(getWeekStart(new Date())));
   const [summary, setSummary] = useState<INutritionSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart]);
+  const weekEnd = useMemo(() => getWeekEndValue(weekStart), [weekStart]);
 
   useEffect(() => {
     let ignore = false;
@@ -274,21 +275,9 @@ function toPerPersonItem(item: INutritionSummary["items"][number], peopleEating:
   };
 }
 
-function startOfWeek(date: Date) {
-  const nextDate = new Date(date);
-  const day = (nextDate.getDay() + 6) % 7;
-  nextDate.setDate(nextDate.getDate() - day);
-  return nextDate;
-}
-
-function addDays(value: string, days: number) {
-  const date = new Date(`${value}T00:00:00`);
-  date.setDate(date.getDate() + days);
-  return toDateInput(date);
-}
-
-function toDateInput(date: Date) {
-  return date.toISOString().slice(0, 10);
+function getWeekEndValue(weekStart: string) {
+  const startDate = parseDateInputValue(weekStart);
+  return startDate === null ? weekStart : toDateInputValue(addDays(startDate, 6));
 }
 
 function formatAmount(value: number | null, unit: string, locale: string) {

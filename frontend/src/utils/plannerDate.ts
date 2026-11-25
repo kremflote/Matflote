@@ -119,11 +119,18 @@ export function toDateInputValue(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+/** Reads a `yyyy-MM-dd` value as local midnight; null when it is not a valid date. */
+export function parseDateInputValue(value: string) {
+  const parsedDate = new Date(`${value}T00:00:00`);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
 function capitalizeFirstLetter(value: string) {
   return value.length === 0 ? value : value.charAt(0).toLocaleUpperCase() + value.slice(1);
 }
 
-function getWeekStart(date: Date) {
+/** Monday of the week that holds the date, at local midnight. */
+export function getWeekStart(date: Date) {
   const nextDate = stripTime(date);
   const day = nextDate.getDay() || 7;
   return addDays(nextDate, 1 - day);
@@ -133,7 +140,7 @@ function getWeekEnd(date: Date) {
   return addDays(getWeekStart(date), 6);
 }
 
-function addDays(date: Date, days: number) {
+export function addDays(date: Date, days: number) {
   const nextDate = new Date(date);
   nextDate.setDate(nextDate.getDate() + days);
   return stripTime(nextDate);
