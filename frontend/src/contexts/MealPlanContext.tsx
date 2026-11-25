@@ -3,7 +3,7 @@ import type { IMealPlanEntry } from "../interfaces/IMeal";
 import type { IProviderProps } from "../interfaces/IProviderProps";
 import type { IMealPlanContext, IMealPlanRange } from "../interfaces/contexts/IMealPlanContext";
 import { mealPlanService } from "../services";
-import type { MealPlanEntryRequest } from "../services/mealPlanService";
+import type { MealPlanBatchRequest, MealPlanEntryRequest } from "../services/mealPlanService";
 import { getErrorMessage } from "./contextHelpers";
 import { MealPlanContext } from "./contextHooks";
 
@@ -80,14 +80,22 @@ export function MealPlanProvider({ children }: IProviderProps) {
     [runWrite],
   );
 
-  const clearMealPlanRange = useCallback(
-    (from: string, to: string) =>
+  const applyMealPlanBatch = useCallback(
+    (request: MealPlanBatchRequest) =>
       runWrite(async () => {
-        const entriesToDelete = mealPlanEntries.filter((entry) => entry.date >= from && entry.date <= to);
-        await Promise.all(entriesToDelete.map((entry) => mealPlanService.delete(entry.mealPlanEntryId)));
-        setMealPlanEntries((current) => current.filter((entry) => entry.date < from || entry.date > to));
+        const result = await mealPlanService.batch(request);
+        // The result holds every entry in from..to, so it replaces that part of what is on screen.
+        setMealPlanEntries((current) => [
+          ...current.filter((entry) => entry.date < result.from || entry.date > result.to),
+          ...result.entries,
+        ]);
       }),
-    [mealPlanEntries, runWrite],
+    [runWrite],
+  );
+
+  const clearMealPlanRange = useCallback(
+    (from: string, to: string) => applyMealPlanBatch({ clearRange: { from, to } }),
+    [applyMealPlanBatch],
   );
 
   // Loading means "the requested range has no data on screen yet", never "a refresh is running".
@@ -102,6 +110,7 @@ export function MealPlanProvider({ children }: IProviderProps) {
       mealPlanIsSaving: savingCount > 0,
       initError,
       loadedRange,
+      applyMealPlanBatch,
       clearMealPlanRange,
       deleteMealPlanEntry,
       loadMealPlan,
@@ -114,6 +123,7 @@ export function MealPlanProvider({ children }: IProviderProps) {
       savingCount,
       initError,
       loadedRange,
+      applyMealPlanBatch,
       clearMealPlanRange,
       deleteMealPlanEntry,
       loadMealPlan,

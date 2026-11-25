@@ -102,6 +102,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     mealPlanIsSaving,
     initError,
     loadedRange,
+    applyMealPlanBatch,
     clearMealPlanRange,
     deleteMealPlanEntry,
     loadMealPlan,
@@ -218,8 +219,13 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     setPlannerActionError(null);
 
     try {
-      await saveMealPlanEntry(sourceEntry.mealPlanEntryId, toMealPlanRequest(targetEntry, sourceEntry.date, sourceEntry.slot));
-      await saveMealPlanEntry(targetEntry.mealPlanEntryId, toMealPlanRequest(sourceEntry, targetEntry.date, targetEntry.slot));
+      // One atomic request: each slot gets the other's items.
+      await applyMealPlanBatch({
+        upsert: [
+          toMealPlanRequest(targetEntry, sourceEntry.date, sourceEntry.slot),
+          toMealPlanRequest(sourceEntry, targetEntry.date, targetEntry.slot),
+        ],
+      });
     } catch (error) {
       setPlannerActionError(getPlannerActionError(error, t.planner.couldNotMoveMeal));
     }
@@ -238,23 +244,23 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     setPlannerActionError(null);
 
     try {
-      await saveMealPlanEntry(null, {
-        date: pendingMealMove.target.date,
-        slot: pendingMealMove.target.slot,
-        notes: pendingMealMove.sourceEntry.notes,
-        recipes: targetRecipes,
+      // One atomic request: the target gets the moved part, the source keeps the rest or is removed.
+      await applyMealPlanBatch({
+        upsert: [
+          {
+            date: pendingMealMove.target.date,
+            slot: pendingMealMove.target.slot,
+            notes: pendingMealMove.sourceEntry.notes,
+            recipes: targetRecipes,
+          },
+          {
+            date: pendingMealMove.source.date,
+            slot: pendingMealMove.source.slot,
+            notes: pendingMealMove.sourceEntry.notes,
+            recipes: remainingRecipes,
+          },
+        ],
       });
-
-      if (remainingRecipes.length === 0) {
-        await deleteMealPlanEntry(pendingMealMove.sourceEntry.mealPlanEntryId);
-      } else {
-        await saveMealPlanEntry(pendingMealMove.sourceEntry.mealPlanEntryId, {
-          date: pendingMealMove.source.date,
-          slot: pendingMealMove.source.slot,
-          notes: pendingMealMove.sourceEntry.notes,
-          recipes: remainingRecipes,
-        });
-      }
 
       setPendingMealMove(null);
     } catch (error) {
@@ -392,9 +398,8 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     setLocalPreference(localPreferenceKeys.plannerPeopleEating, generatePeopleEating.toString());
 
     try {
-      for (const entryToGenerate of entriesToGenerate) {
-        await saveMealPlanEntry(null, entryToGenerate);
-      }
+      // The whole range in one atomic request, so a failure cannot leave half a week.
+      await applyMealPlanBatch({ upsert: entriesToGenerate });
       setPlannerActionError(generationIssueMessage);
     } catch (error) {
       setPlannerActionError(getPlannerActionError(error, t.planner.couldNotGenerate(rangeLabel)));

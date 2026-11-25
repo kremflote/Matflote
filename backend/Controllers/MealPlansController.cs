@@ -4,6 +4,7 @@
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;
+using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,8 +12,10 @@ namespace DinnerPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MealPlansController(DinnerPlannerContext context) : ControllerBase
+public class MealPlansController(DinnerPlannerContext context, MealPlanWriter writer) : ControllerBase
 {
+    private const int MaxBatchRangeDays = 62;
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MealPlanEntryDto>>> GetMealPlan(
         [FromQuery] DateOnly from,
@@ -51,48 +54,18 @@ public class MealPlansController(DinnerPlannerContext context) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<MealPlanEntryDto>> CreateMealPlanEntry(MealPlanEntryRequest request)
     {
-        if (!Enum.IsDefined(request.Slot))
-        {
-            return BadRequest("Unsupported meal slot.");
-        }
-
-        if (ContainsUnsupportedRecipeRole(request.Recipes))
-        {
-            return BadRequest("Unsupported meal recipe role.");
-        }
-
         if (await EntryExists(request.Date, request.Slot))
         {
             return Conflict("A meal plan entry already exists for that date and slot.");
         }
 
-        var missingRecipeIds = await GetMissingRecipeIds(request.Recipes);
-        if (missingRecipeIds.Count > 0)
-        {
-            return BadRequest($"No recipes found for IDs: {string.Join(", ", missingRecipeIds)}.");
-        }
-
-        var missingIngredientIds = await GetMissingIngredientIds(request.Recipes);
-        if (missingIngredientIds.Count > 0)
-        {
-            return BadRequest($"No ingredients found for IDs: {string.Join(", ", missingIngredientIds)}.");
-        }
-
-        var validationError = ValidateMealPlanItems(request.Recipes);
+        var validationError = await writer.ValidateAsync([request], HttpContext.RequestAborted);
         if (validationError is not null)
         {
             return BadRequest(validationError);
         }
 
-        var entry = new MealPlanEntry
-        {
-            Date = request.Date,
-            Slot = request.Slot,
-            Notes = request.Notes,
-            Recipes = ToModels(request.Recipes)
-        };
-
-        context.MealPlanEntries.Add(entry);
+        var entry = writer.Upsert(null, request.Date, request.Slot, request.Notes, MealPlanWriter.ToModels(request.Recipes));
         await context.SaveChangesAsync();
 
         var created = await LoadEntry(entry.MealPlanEntryId);
@@ -102,16 +75,6 @@ public class MealPlansController(DinnerPlannerContext context) : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<ActionResult<MealPlanEntryDto>> UpdateMealPlanEntry(int id, MealPlanEntryRequest request)
     {
-        if (!Enum.IsDefined(request.Slot))
-        {
-            return BadRequest("Unsupported meal slot.");
-        }
-
-        if (ContainsUnsupportedRecipeRole(request.Recipes))
-        {
-            return BadRequest("Unsupported meal recipe role.");
-        }
-
         var entry = await context.MealPlanEntries
             .Include(mealPlanEntry => mealPlanEntry.Recipes)
             .FirstOrDefaultAsync(mealPlanEntry => mealPlanEntry.MealPlanEntryId == id);
@@ -126,35 +89,140 @@ public class MealPlansController(DinnerPlannerContext context) : ControllerBase
             return Conflict("A meal plan entry already exists for that date and slot.");
         }
 
-        var missingRecipeIds = await GetMissingRecipeIds(request.Recipes);
-        if (missingRecipeIds.Count > 0)
-        {
-            return BadRequest($"No recipes found for IDs: {string.Join(", ", missingRecipeIds)}.");
-        }
-
-        var missingIngredientIds = await GetMissingIngredientIds(request.Recipes);
-        if (missingIngredientIds.Count > 0)
-        {
-            return BadRequest($"No ingredients found for IDs: {string.Join(", ", missingIngredientIds)}.");
-        }
-
-        var validationError = ValidateMealPlanItems(request.Recipes);
+        var validationError = await writer.ValidateAsync([request], HttpContext.RequestAborted);
         if (validationError is not null)
         {
             return BadRequest(validationError);
         }
 
-        entry.Date = request.Date;
-        entry.Slot = request.Slot;
-        entry.Notes = request.Notes;
-
-        context.MealPlanRecipes.RemoveRange(entry.Recipes);
-        entry.Recipes = ToModels(request.Recipes);
-
+        writer.Upsert(entry, request.Date, request.Slot, request.Notes, MealPlanWriter.ToModels(request.Recipes));
         await context.SaveChangesAsync();
 
         var updated = await LoadEntry(entry.MealPlanEntryId);
         return Ok(ToDto(updated!));
+    }
+
+    /// <summary>
+    /// Several meal plan changes in one transaction: entries to delete by id, an optional range to clear,
+    /// and entries to write by date and slot (an entry without items empties its slot). Either everything
+    /// is applied or, on any error, nothing. Returns every entry in the range the request touched.
+    /// </summary>
+    [HttpPut("batch")]
+    public async Task<ActionResult<MealPlanBatchResultDto>> ApplyBatch(MealPlanBatchRequest request)
+    {
+        var upserts = request.Upsert ?? [];
+        var deleteIds = (request.Delete ?? []).Distinct().ToList();
+
+        if (upserts.Count == 0 && deleteIds.Count == 0 && request.ClearRange is null)
+        {
+            return BadRequest("Nothing to do: provide \"upsert\", \"delete\" and/or \"clearRange\".");
+        }
+
+        if (request.ClearRange is { } clearRange)
+        {
+            if (clearRange.From > clearRange.To)
+            {
+                return BadRequest("clearRange.from must be on or before clearRange.to.");
+            }
+
+            if (clearRange.To.DayNumber - clearRange.From.DayNumber >= MaxBatchRangeDays)
+            {
+                return BadRequest($"clearRange can span at most {MaxBatchRangeDays} days.");
+            }
+        }
+
+        var duplicateSlot = upserts
+            .GroupBy(entry => (entry.Date, entry.Slot))
+            .FirstOrDefault(group => group.Count() > 1);
+        if (duplicateSlot is not null)
+        {
+            return BadRequest($"{duplicateSlot.Key.Date:yyyy-MM-dd} {duplicateSlot.Key.Slot} appears more than once in \"upsert\".");
+        }
+
+        var validationError = await writer.ValidateAsync(upserts, HttpContext.RequestAborted);
+        if (validationError is not null)
+        {
+            return BadRequest(validationError);
+        }
+
+        var deleteDates = await context.MealPlanEntries
+            .Where(entry => deleteIds.Contains(entry.MealPlanEntryId))
+            .Select(entry => new { entry.MealPlanEntryId, entry.Date })
+            .ToListAsync(HttpContext.RequestAborted);
+        var missingDeleteIds = deleteIds.Except(deleteDates.Select(entry => entry.MealPlanEntryId)).ToList();
+        if (missingDeleteIds.Count > 0)
+        {
+            return BadRequest($"No meal plan entries found for IDs: {string.Join(", ", missingDeleteIds)}.");
+        }
+
+        var dates = upserts.Select(entry => entry.Date)
+            .Concat(deleteDates.Select(entry => entry.Date))
+            .ToList();
+        if (request.ClearRange is not null)
+        {
+            dates.Add(request.ClearRange.From);
+            dates.Add(request.ClearRange.To);
+        }
+
+        var from = dates.Min();
+        var to = dates.Max();
+        if (to.DayNumber - from.DayNumber >= MaxBatchRangeDays)
+        {
+            return BadRequest($"A batch can touch at most {MaxBatchRangeDays} days.");
+        }
+
+        var stored = await writer.LoadRangeAsync(from, to, HttpContext.RequestAborted);
+        var storedBySlot = stored.ToDictionary(entry => (entry.Date, entry.Slot));
+        var upsertSlots = upserts.Select(entry => (entry.Date, entry.Slot)).ToHashSet();
+        var toRemove = stored
+            .Where(entry => deleteIds.Contains(entry.MealPlanEntryId))
+            .ToHashSet();
+        if (request.ClearRange is not null)
+        {
+            toRemove.UnionWith(stored.Where(entry =>
+                entry.Date >= request.ClearRange.From &&
+                entry.Date <= request.ClearRange.To &&
+                !upsertSlots.Contains((entry.Date, entry.Slot))));
+        }
+
+        foreach (var upsert in upserts)
+        {
+            storedBySlot.TryGetValue((upsert.Date, upsert.Slot), out var existing);
+            if (upsert.Recipes.Count == 0)
+            {
+                if (existing is not null)
+                {
+                    toRemove.Add(existing);
+                }
+
+                continue;
+            }
+
+            // A slot that is deleted and written in the same request keeps its row and gets the new items.
+            if (existing is not null)
+            {
+                toRemove.Remove(existing);
+            }
+
+            writer.Upsert(existing, upsert.Date, upsert.Slot, upsert.Notes, MealPlanWriter.ToModels(upsert.Recipes));
+        }
+
+        foreach (var entry in toRemove)
+        {
+            writer.Remove(entry);
+        }
+
+        await context.SaveChangesAsync(HttpContext.RequestAborted);
+
+        var entries = await context.MealPlanEntries
+            .AsNoTracking()
+            .Include(entry => entry.Recipes)
+            .Where(entry => entry.Date >= from && entry.Date <= to)
+            .OrderBy(entry => entry.Date)
+            .ThenBy(entry => entry.Slot)
+            .ToListAsync(HttpContext.RequestAborted);
+
+        return Ok(new MealPlanBatchResultDto(from, to, entries.Select(ToDto).ToList()));
     }
 
     [HttpDelete("{id:int}")]
@@ -182,80 +250,6 @@ public class MealPlansController(DinnerPlannerContext context) : ControllerBase
             entry.Date == date &&
             entry.Slot == slot &&
             (ignoredEntryId == null || entry.MealPlanEntryId != ignoredEntryId));
-
-    private async Task<List<int>> GetMissingRecipeIds(IReadOnlyCollection<MealPlanRecipeRequest> recipeRequests)
-    {
-        var requestedIds = recipeRequests
-            .Where(recipe => recipe.RecipeId is not null)
-            .Select(recipe => recipe.RecipeId!.Value)
-            .Distinct()
-            .ToList();
-        var existingIds = await context.Recipes
-            .Where(recipe => requestedIds.Contains(recipe.RecipeId))
-            .Select(recipe => recipe.RecipeId)
-            .ToListAsync();
-
-        return requestedIds.Except(existingIds).ToList();
-    }
-
-    private async Task<List<int>> GetMissingIngredientIds(IReadOnlyCollection<MealPlanRecipeRequest> recipeRequests)
-    {
-        var requestedIds = recipeRequests
-            .Where(recipe => recipe.IngredientId is not null)
-            .Select(recipe => recipe.IngredientId!.Value)
-            .Distinct()
-            .ToList();
-
-        var existingIds = await context.Ingredients
-            .Where(ingredient => requestedIds.Contains(ingredient.IngredientId))
-            .Select(ingredient => ingredient.IngredientId)
-            .ToListAsync();
-
-        return requestedIds.Except(existingIds).ToList();
-    }
-
-    private static bool ContainsUnsupportedRecipeRole(IEnumerable<MealPlanRecipeRequest> recipes) =>
-        recipes.Any(recipe => !Enum.IsDefined(recipe.Role));
-
-    private static string? ValidateMealPlanItems(IEnumerable<MealPlanRecipeRequest> recipes)
-    {
-        foreach (var recipe in recipes)
-        {
-            var hasRecipe = recipe.RecipeId is not null;
-            var hasIngredient = recipe.IngredientId is not null;
-            if (hasRecipe == hasIngredient)
-            {
-                return "Each meal plan item must include either a recipe or an ingredient.";
-            }
-
-            if (hasRecipe && (recipe.Portions is null || recipe.Portions <= 0m))
-            {
-                return "Recipe meal plan items need a positive portion count.";
-            }
-
-            if (hasIngredient && (recipe.Amount is null || recipe.Amount <= 0m || recipe.Unit is null || !Enum.IsDefined(recipe.Unit.Value)))
-            {
-                return "Ingredient meal plan items need a positive amount and supported unit.";
-            }
-        }
-
-        return null;
-    }
-
-    private static List<MealPlanRecipe> ToModels(IEnumerable<MealPlanRecipeRequest> recipes) =>
-        recipes
-            .OrderBy(recipe => recipe.SortOrder)
-            .Select((recipe, index) => new MealPlanRecipe
-            {
-                RecipeId = recipe.RecipeId,
-                IngredientId = recipe.IngredientId,
-                Role = recipe.Role,
-                SortOrder = recipe.SortOrder < 0 ? index : recipe.SortOrder,
-                Portions = recipe.RecipeId is null ? null : recipe.Portions,
-                Amount = recipe.IngredientId is null ? null : recipe.Amount,
-                Unit = recipe.IngredientId is null ? null : recipe.Unit
-            })
-            .ToList();
 
     private static MealPlanEntryDto ToDto(MealPlanEntry entry) => new(
         entry.MealPlanEntryId,

@@ -9,7 +9,7 @@ using System.Globalization;
 
 namespace DinnerPlanner.Api.Services;
 
-public class AssistantService(DinnerPlannerContext context)
+public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealPlanWriter)
 {
     private const int DefaultHistoryDays = 56;
     private const int MaxHistoryDays = 366;
@@ -896,10 +896,7 @@ public class AssistantService(DinnerPlannerContext context)
         {
             var firstDate = dates.Min();
             var lastDate = dates.Max();
-            storedEntries = await context.MealPlanEntries
-                .Include(entry => entry.Recipes)
-                .Where(entry => entry.Date >= firstDate && entry.Date <= lastDate)
-                .ToListAsync(cancellationToken);
+            storedEntries = await mealPlanWriter.LoadRangeAsync(firstDate, lastDate, cancellationToken);
         }
 
         var storedBySlot = storedEntries.ToDictionary(entry => (entry.Date, entry.Slot));
@@ -948,33 +945,14 @@ public class AssistantService(DinnerPlannerContext context)
                 result.Status = stored is null ? EntryStatus.Unchanged : EntryStatus.Clear;
                 if (stored is not null)
                 {
-                    pendingChanges.Add(() => context.MealPlanEntries.Remove(stored));
+                    pendingChanges.Add(() => mealPlanWriter.Remove(stored));
                 }
 
                 continue;
             }
 
             result.Status = stored is null ? EntryStatus.Create : EntryStatus.Replace;
-            pendingChanges.Add(() =>
-            {
-                var entry = stored;
-                if (entry is null)
-                {
-                    entry = new MealPlanEntry { Date = entryInput.Date, Slot = slot };
-                    context.MealPlanEntries.Add(entry);
-                }
-                else
-                {
-                    context.MealPlanRecipes.RemoveRange(entry.Recipes);
-                    entry.Recipes.Clear();
-                }
-
-                entry.Notes = notes;
-                foreach (var item in items)
-                {
-                    entry.Recipes.Add(item);
-                }
-            });
+            pendingChanges.Add(() => mealPlanWriter.Upsert(stored, entryInput.Date, slot, notes, items));
         }
 
         if (request.ClearRange is not null && requestErrors.Count == 0)
@@ -986,7 +964,7 @@ public class AssistantService(DinnerPlannerContext context)
                 .ThenBy(entry => entry.Slot))
             {
                 results.Add(new EntryResult(stored.Date, stored.Slot.ToString()) { Status = EntryStatus.Clear });
-                pendingChanges.Add(() => context.MealPlanEntries.Remove(stored));
+                pendingChanges.Add(() => mealPlanWriter.Remove(stored));
             }
         }
 

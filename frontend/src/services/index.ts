@@ -15,5 +15,5 @@ export type { ImageFolder, ImageUploadResponse } from "./imageUploadService";
 export type { ConversionRuleRequest } from "./conversionRuleService";
 export type { IngredientRequest } from "./ingredientService";
 export type { LookupRequest } from "./brandService";
-export type { MealPlanEntryRequest, MealPlanRecipeRequest } from "./mealPlanService";
+export type { MealPlanBatchRequest, MealPlanBatchResult, MealPlanEntryRequest, MealPlanRecipeRequest } from "./mealPlanService";
 export type { RecipeRequest } from "./recipeService";

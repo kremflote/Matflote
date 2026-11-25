@@ -43,3 +43,20 @@ public record MealPlanEntryDto(
     string? Notes,
     IReadOnlyCollection<MealPlanRecipeDto> Recipes
 );
+
+public record MealPlanBatchRequest(
+    IReadOnlyCollection<MealPlanEntryRequest>? Upsert,
+    IReadOnlyCollection<int>? Delete,
+    MealPlanDateRange? ClearRange
+);
+
+public record MealPlanDateRange(
+    DateOnly From,
+    DateOnly To
+);
+
+public record MealPlanBatchResultDto(
+    DateOnly From,
+    DateOnly To,
+    IReadOnlyCollection<MealPlanEntryDto> Entries
+);

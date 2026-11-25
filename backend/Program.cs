@@ -50,6 +50,7 @@ builder.Services.AddScoped<AssistantService>();
 builder.Services.AddScoped<VikunjaOptionsResolver>();
 builder.Services.AddScoped<GroceryListService>();
 builder.Services.AddScoped<ImageMaintenanceService>();
+builder.Services.AddScoped<MealPlanWriter>();
 builder.Services.AddScoped<NutritionReferenceImportService>();
 builder.Services.AddScoped<HelsedirektoratetNutritionReferenceParser>();
 builder.Services.AddScoped<NutritionSummaryService>();
