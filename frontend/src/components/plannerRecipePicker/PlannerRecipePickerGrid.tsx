@@ -204,6 +204,8 @@ function PickerInlineControls({
   onUnitChange,
   onValueChange,
 }: PickerOverlayProps) {
+  const { t } = useLanguage();
+
   return (
     <div className={plannerPickerStyles.pickerInlineControls}>
       <label className={plannerPickerStyles.pickerInlineLabel}>
@@ -225,7 +227,7 @@ function PickerInlineControls({
         >
           {measurementUnits.map((measurementUnit) => (
             <option key={measurementUnit} value={measurementUnit}>
-              {measurementUnit}
+              {t.enums.measurementUnits[measurementUnit]}
             </option>
           ))}
         </select>

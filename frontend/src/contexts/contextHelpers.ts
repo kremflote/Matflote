@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getDocumentTranslations } from "../i18n";
 
 export function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Something went wrong.";
+  return error instanceof Error ? error.message : getDocumentTranslations().common.somethingWentWrong;
 }
 
 /**

@@ -41,14 +41,16 @@ function CreatableSelect({
   helperText,
   labelClassName,
   required = false,
-  placeholder = "Select option",
-  createLabel = "Create New",
+  placeholder: placeholderProp,
+  createLabel: createLabelProp,
   onChange,
   onCreate,
   onCreatedOptionSelected,
   onDeleteOption,
 }: CreatableSelectProps) {
   const { t } = useLanguage();
+  const placeholder = placeholderProp ?? t.common.selectOption;
+  const createLabel = createLabelProp ?? t.common.createNew;
   const selectRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -190,7 +192,7 @@ function CreatableSelect({
                 >
                   <span className={recipeBrowserStyles.customSelectOptionLabel}>{option.name}</span>
                   <span
-                    aria-label={`Delete ${option.name}`}
+                    aria-label={t.common.deleteOptionNamed(option.name)}
                     className={recipeBrowserStyles.customSelectDeleteButton(theme)}
                     role="button"
                     tabIndex={0}

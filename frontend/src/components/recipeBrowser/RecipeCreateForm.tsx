@@ -318,7 +318,7 @@ function RecipeCreateForm({
             <div className={recipeBrowserStyles.createFormPrimaryFields}>
               <label className={recipeBrowserStyles.field}>
                 <span className={recipeBrowserStyles.label(theme)}>
-                  Name<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+                  {t.cookbook.name}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
                   <span className={recipeBrowserStyles.inlineHint(theme)}>
                     {name.length}/{RECIPE_NAME_MAX_LENGTH}
                   </span>

@@ -140,7 +140,7 @@ function RecipeDetailContent({
         />
       </div>
 
-      <DetailSection title={t.cookbook.dietaryInformation} subtitle="per 100g" theme={theme}>
+      <DetailSection title={t.cookbook.dietaryInformation} subtitle={t.cookbook.per100g} theme={theme}>
         <NutritionGrid
           nutrition={nutrition}
           recipePortions={recipe.portions}

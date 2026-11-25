@@ -101,8 +101,6 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   };
 
   const handleRemove = async () => {
-    const itemLabel = activeDetail.kind === "recipe" ? "recipe" : "ingredient";
-
     setIsDeleting(true);
     setDeleteError(null);
 
@@ -118,7 +116,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
 
       onClose();
     } catch (caughtError) {
-      setDeleteError(caughtError instanceof Error ? caughtError.message : `Could not remove ${itemLabel}.`);
+      setDeleteError(caughtError instanceof Error ? caughtError.message : activeDetail.kind === "recipe" ? t.cookbook.couldNotRemoveRecipe : t.cookbook.couldNotRemoveIngredient);
     } finally {
       setIsDeleting(false);
       setIsConfirmingDelete(false);
@@ -280,11 +278,11 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
           )}
         {isConfirmingDelete && (
           <ConfirmationDialog
-            body={`This will delete ${activeDetail.kind === "recipe" ? "the recipe" : "the ingredient"}.`}
+            body={activeDetail.kind === "recipe" ? t.cookbook.removeRecipeBody : t.cookbook.removeIngredientBody}
             confirmLabel={t.common.remove}
             isBusy={isDeleting}
             theme={theme}
-            title={`Remove ${getDetailName(activeDetail)}?`}
+            title={t.common.removeNamed(getDetailName(activeDetail))}
             onCancel={() => setIsConfirmingDelete(false)}
             onConfirm={() => void handleRemove()}
           />

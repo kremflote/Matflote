@@ -60,6 +60,14 @@ export type TranslationDictionary = {
     serverUnreachable: string;
     somethingWentWrong: string;
     somethingWentWrongBody: string;
+    amountFor: (name: string) => string;
+    deleteOptionNamed: (name: string) => string;
+    imageCouldNotBeLoaded: string;
+    openNamed: (name: string) => string;
+    preparationFor: (name: string) => string;
+    selectNamed: (name: string) => string;
+    selectOption: string;
+    unitFor: (name: string) => string;
     working: string;
   };
   browser: {
@@ -117,6 +125,8 @@ export type TranslationDictionary = {
     dietaryInformation: string;
     dietaryInformationPer100g: string;
     couldNotExportPdf: string;
+    couldNotRemoveIngredient: string;
+    couldNotRemoveRecipe: string;
     fiberPer100g: string;
     fiber: string;
     fetchingCookbook: string;
@@ -141,6 +151,9 @@ export type TranslationDictionary = {
     monounsaturatedFatsPer100g: string;
     monounsaturatedFats: string;
     name: string;
+    per100g: string;
+    removeIngredientBody: string;
+    removeRecipeBody: string;
     none: string;
     noDescription: string;
     noDietaryInformation: string;

@@ -602,7 +602,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
                     <span className={confirmationDialogStyles.fieldTitle(theme)}>
                       {pendingMealMove.amountKind === "portions"
                         ? t.planner.moveMealPortionsLabel
-                        : t.planner.moveMealAmountLabel(pendingMealMove.unit ?? "")}
+                        : t.planner.moveMealAmountLabel(pendingMealMove.unit === null ? "" : t.enums.measurementUnits[pendingMealMove.unit])}
                     </span>
                     <input
                       className={confirmationDialogStyles.numberInput(theme)}

@@ -1,3 +1,4 @@
+import { getDocumentTranslations } from "../i18n";
 import { createThumbnail } from "../utils/imageThumbnail";
 import { apiRequest } from "./apiClient";
 
@@ -107,7 +108,7 @@ async function loadImage(file: File): Promise<ImageBitmap | HTMLImageElement> {
     };
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error("Image could not be loaded."));
+      reject(new Error(getDocumentTranslations().common.imageCouldNotBeLoaded));
     };
     image.src = objectUrl;
   });

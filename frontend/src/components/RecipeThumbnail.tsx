@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useLanguage } from "../contexts";
 import type { IRecipe } from "../interfaces/IRecipe";
 import { getThumbnailSrc } from "../utils/imageThumbnail";
 import { thumbnailStyles, type SiteTheme } from "../styles/appStyles";
@@ -29,6 +30,7 @@ function RecipeThumbnail({
   theme = "dark",
   onClick,
 }: RecipeThumbnailProps) {
+  const { t } = useLanguage();
   const subtitle = recipe.subtitle ?? "";
   const imageUrl = getThumbnailSrc(recipe);
   const titleClassName =
@@ -83,7 +85,7 @@ function RecipeThumbnail({
   if (onClick) {
     return (
       <button
-        aria-label={`Open ${recipe.name}`}
+        aria-label={t.common.openNamed(recipe.name)}
         aria-pressed={ariaPressed}
         className={sharedClassName}
         type="button"

@@ -113,10 +113,12 @@ function RecipeIngredientPickerRow({
   onToggle,
   onUnitChange,
 }: RecipeIngredientPickerRowProps) {
+  const { t } = useLanguage();
+
   return (
     <div className={recipeBrowserStyles.recipeIngredientPickerRow}>
       <input
-        aria-label={`Select ${ingredient.ingredientName}`}
+        aria-label={t.common.selectNamed(ingredient.ingredientName)}
         checked={selected}
         className={recipeBrowserStyles.checkbox}
         type="checkbox"
@@ -133,7 +135,7 @@ function RecipeIngredientPickerRow({
       />
       <div className={recipeBrowserStyles.recipeIngredientControlGrid}>
         <input
-          aria-label={`${ingredient.ingredientName} amount`}
+          aria-label={t.common.amountFor(ingredient.ingredientName)}
           className={recipeBrowserStyles.compactTextField(theme)}
           disabled={!selected}
           min="0"
@@ -144,7 +146,7 @@ function RecipeIngredientPickerRow({
           onChange={(event) => onAmountChange(event.target.value)}
         />
         <select
-          aria-label={`${ingredient.ingredientName} unit`}
+          aria-label={t.common.unitFor(ingredient.ingredientName)}
           className={recipeBrowserStyles.compactTextField(theme)}
           disabled={!selected}
           value={unit}
@@ -157,7 +159,7 @@ function RecipeIngredientPickerRow({
           ))}
         </select>
         <select
-          aria-label={`${ingredient.ingredientName} preparation`}
+          aria-label={t.common.preparationFor(ingredient.ingredientName)}
           className={`${recipeBrowserStyles.compactTextField(theme)} ${recipeBrowserStyles.recipeIngredientPreparationField}`}
           disabled={!selected}
           value={preparation}
@@ -331,10 +333,12 @@ function RecipeComponentPickerRow({
   onToggle,
   onUnitChange,
 }: RecipeComponentPickerRowProps) {
+  const { t } = useLanguage();
+
   return (
     <div className={recipeBrowserStyles.recipeIngredientPickerRow}>
       <input
-        aria-label={`Select ${recipe.name}`}
+        aria-label={t.common.selectNamed(recipe.name)}
         checked={selected}
         className={recipeBrowserStyles.checkbox}
         type="checkbox"
@@ -355,7 +359,7 @@ function RecipeComponentPickerRow({
       />
       <div className={recipeBrowserStyles.recipeIngredientControlGrid}>
         <input
-          aria-label={`${recipe.name} amount`}
+          aria-label={t.common.amountFor(recipe.name)}
           className={recipeBrowserStyles.compactTextField(theme)}
           disabled={!selected}
           min="0.01"
@@ -366,7 +370,7 @@ function RecipeComponentPickerRow({
           onChange={(event) => onAmountChange(event.target.value)}
         />
         <select
-          aria-label={`${recipe.name} unit`}
+          aria-label={t.common.unitFor(recipe.name)}
           className={recipeBrowserStyles.compactTextField(theme)}
           disabled={!selected}
           value={unit}
@@ -379,7 +383,7 @@ function RecipeComponentPickerRow({
           ))}
         </select>
         <select
-          aria-label={`${recipe.name} preparation`}
+          aria-label={t.common.preparationFor(recipe.name)}
           className={`${recipeBrowserStyles.compactTextField(theme)} ${recipeBrowserStyles.recipeIngredientPreparationField}`}
           disabled={!selected}
           value={preparation}
