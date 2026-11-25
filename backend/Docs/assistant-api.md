@@ -236,7 +236,7 @@ The latest writes through this API, newest first (`?limit=`, default 10, at most
 
 These regular endpoints are useful after planning:
 
-- `GET /api/grocerylists/preview?from=YYYY-MM-DD&to=YYYY-MM-DD` — the shopping list the plan produces.
+- `GET /api/grocerylists/preview?from=YYYY-MM-DD&to=YYYY-MM-DD` — the shopping list the plan produces. Each ingredient is one line per kind of unit (weight or volume), its total rounded up to a shop-sized step and given in g or ml, or in kg or l from 1000; `displayAmount` is the text to show. Sections come from the tags' system keys.
 - `GET /api/nutrition/weekly?from=YYYY-MM-DD&to=YYYY-MM-DD` — nutrition totals against the household's reference profile, including which ingredients lack nutrition data.
 
 ## A typical session
