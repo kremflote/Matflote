@@ -26,6 +26,9 @@ const dinnerMinimums: Partial<Record<(typeof dinnerProteinSystemTags)[number], n
 };
 const toppingAmountGrams = 50;
 
+/** Returns a number in [0, 1), like Math.random. */
+export type RandomSource = () => number;
+
 type GenerateMealPlanEntriesArgs = {
   dates: Date[];
   existingEntries: IMealPlanEntry[];
@@ -33,6 +36,8 @@ type GenerateMealPlanEntriesArgs = {
   peopleEating: number;
   recipes: IRecipe[];
   tagCategories: IIngredientTagCategory[];
+  /** Defaults to Math.random. Pass a seeded source to get repeatable plans. */
+  random?: RandomSource;
 };
 
 export type MealPlanGenerationIssue =
@@ -75,6 +80,7 @@ export function generateMealPlanEntries({
   peopleEating,
   recipes,
   tagCategories,
+  random,
 }: GenerateMealPlanEntriesArgs): MealPlanEntryRequest[] {
   return generateMealPlanEntriesWithIssues({
     dates,
@@ -83,6 +89,7 @@ export function generateMealPlanEntries({
     peopleEating,
     recipes,
     tagCategories,
+    random,
   }).entries;
 }
 
@@ -93,6 +100,7 @@ export function generateMealPlanEntriesWithIssues({
   peopleEating,
   recipes,
   tagCategories,
+  random = Math.random,
 }: GenerateMealPlanEntriesArgs): MealPlanGenerationResult {
   const systemTags = buildSystemTagLookup(tagCategories);
   const filledSlots = new Set(existingEntries.map((entry) => getEntryKey(entry.date, entry.slot)));
@@ -137,6 +145,7 @@ export function generateMealPlanEntriesWithIssues({
       selectedDinnerRecipeIds,
       dinnerProteinCounts,
       peopleEating,
+      random,
     );
 
     if (recipe === undefined) {
@@ -168,6 +177,7 @@ export function generateMealPlanEntriesWithIssues({
         toppingIngredients,
         toppingIdsByWeek,
         systemTags,
+        random,
       );
 
       generatedEntries.push({
@@ -204,6 +214,7 @@ function pickRecipeForSlot(
   selectedDinnerRecipeIds: Set<number>,
   dinnerProteinCounts: Map<string, number>,
   peopleEating: number,
+  random: RandomSource,
 ) {
   const candidates = getRecipeCandidatesForSlot(
     recipes,
@@ -214,7 +225,7 @@ function pickRecipeForSlot(
   );
 
   if (slot !== "Dinner") {
-    return pickRandomItem(candidates);
+    return pickRandomItem(candidates, random);
   }
 
   for (const proteinTag of Object.keys(dinnerMinimums) as (typeof dinnerProteinSystemTags)[number][]) {
@@ -225,21 +236,22 @@ function pickRecipeForSlot(
 
     const recipe = pickRandomItem(candidates.filter((candidate) =>
       itemHasSystemTag(candidate.tags, systemTags, proteinTag),
-    ));
+    ), random);
     if (recipe !== undefined) {
       return recipe;
     }
   }
 
-  return pickDinnerVarietyRecipe(candidates, systemTags, dinnerProteinCounts);
+  return pickDinnerVarietyRecipe(candidates, systemTags, dinnerProteinCounts, random);
 }
 
 function pickDinnerVarietyRecipe(
   candidates: IRecipe[],
   systemTags: SystemTagLookup,
   proteinCounts: Map<string, number>,
+  random: RandomSource,
 ) {
-  return shuffle(candidates)
+  return shuffle(candidates, random)
     .sort((first, second) =>
       (proteinCounts.get(getDinnerProteinKey(first, systemTags)) ?? 0) -
       (proteinCounts.get(getDinnerProteinKey(second, systemTags)) ?? 0),
@@ -339,6 +351,7 @@ function createGeneratedMealItems(
   toppingIngredients: IIngredient[],
   toppingIdsByWeek: Map<string, Set<number>>,
   systemTags: SystemTagLookup,
+  random: RandomSource,
 ) {
   const plannedItems: MealPlanRecipeRequest[] = [
     {
@@ -353,7 +366,7 @@ function createGeneratedMealItems(
   ];
 
   if (target.slot === "Breakfast" && itemHasSystemTag(recipe.tags, systemTags, "Format.Bread")) {
-    const topping = pickToppingIngredient(target.date, toppingIngredients, toppingIdsByWeek);
+    const topping = pickToppingIngredient(target.date, toppingIngredients, toppingIdsByWeek, random);
 
     if (topping !== undefined) {
       plannedItems.push({
@@ -387,6 +400,7 @@ function pickToppingIngredient(
   date: Date,
   toppingIngredients: IIngredient[],
   toppingIdsByWeek: Map<string, Set<number>>,
+  random: RandomSource,
 ) {
   if (toppingIngredients.length === 0) {
     return undefined;
@@ -401,15 +415,16 @@ function pickToppingIngredient(
       weekToppingIds.has(ingredient.ingredientId),
     );
 
-    return pickRandomItem(existingToppings);
+    return pickRandomItem(existingToppings, random);
   }
 
   const newTopping = pickRandomItem(
     toppingIngredients.filter((ingredient) => !weekToppingIds.has(ingredient.ingredientId)),
+    random,
   );
 
   if (newTopping === undefined) {
-    return pickRandomItem(toppingIngredients);
+    return pickRandomItem(toppingIngredients, random);
   }
 
   weekToppingIds.add(newTopping.ingredientId);
@@ -526,12 +541,12 @@ function getEntryKey(date: string, slot: MealSlot) {
   return `${date}::${slot}`;
 }
 
-function pickRandomItem<TItem>(items: TItem[]) {
-  return items[Math.floor(Math.random() * items.length)];
+function pickRandomItem<TItem>(items: TItem[], random: RandomSource) {
+  return items[Math.floor(random() * items.length)];
 }
 
-function shuffle<TItem>(items: TItem[]) {
-  return [...items].sort(() => Math.random() - 0.5);
+function shuffle<TItem>(items: TItem[], random: RandomSource) {
+  return [...items].sort(() => random() - 0.5);
 }
 
 function dedupeIssues(issues: MealPlanGenerationIssue[]) {
