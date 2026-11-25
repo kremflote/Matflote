@@ -7,6 +7,7 @@ import { getThumbnailSrc } from "../../utils/imageThumbnail";
 import type { SiteTheme } from "../../styles/appStyles";
 import { DetailSection, DetailText, DetailTextWithMeta, NutritionGrid } from "./detailComponents";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
+import RecipeFallbackTile from "../RecipeFallbackTile";
 import RecipeRatingSection from "./RecipeRatingSection";
 import type { EnrichedRecipe } from "./types";
 type RecipeDetailContentProps = {
@@ -60,9 +61,7 @@ function RecipeDetailContent({
           {imageUrl ? (
             <img className={recipeBrowserStyles.detailImage} src={imageUrl} alt={recipe.name} />
           ) : (
-            <div className={recipeBrowserStyles.detailImageFallback}>
-              {t.cookbook.noImage}
-            </div>
+            <RecipeFallbackTile recipe={recipe} />
           )}
         </div>
 

@@ -159,7 +159,6 @@ export const en: TranslationDictionary = {
     none: "None",
     noDescription: "No description yet.",
     noDietaryInformation: "No dietary information yet.",
-    noImage: "No image",
     noIngredientsAdded: "No ingredients added.",
     noIngredientsFound: "No ingredients found",
     noIngredientsSelected: "No ingredients selected.",

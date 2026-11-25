@@ -2,8 +2,9 @@ import { useLanguage } from "../contexts";
 import type { IIngredient } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, MealSlot as MealSlotId } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
-import { mealCalendarStyles, type SiteTheme } from "../styles/appStyles";
+import { colorPalette, mealCalendarStyles, type SiteTheme } from "../styles/appStyles";
 import { getThumbnailSrc } from "../utils/imageThumbnail";
+import { getMainIngredientNames, getRecipeColorBarBackground, getRecipeTile } from "../utils/recipeTile";
 
 type MealSlotProps = {
   canUseDesktopInteractions: boolean;
@@ -57,6 +58,10 @@ function MealSlot({
   const mainName = mainItem?.recipe?.name ?? mainItem?.ingredient?.ingredientName;
   const mainImageSrc = getThumbnailSrc(mainItem?.recipe ?? mainItem?.ingredient);
   const mainRecipe = mainItem?.recipe;
+  const mainColors = mainRecipe !== undefined
+    ? getRecipeTile(mainRecipe).colors
+    : [mainItem?.ingredient?.color ?? colorPalette.stone];
+  const mainIngredientNames = mainRecipe !== undefined ? getMainIngredientNames(mainRecipe) : [];
   const hasMeal = plannedItems.length > 0;
   const isUnavailable = isLoading || isDisabled;
   const canDragMeal = canUseDesktopInteractions && hasMeal && !isUnavailable;
@@ -110,11 +115,11 @@ function MealSlot({
         {isLoading ? (
           <MealSlotSkeleton theme={theme} />
         ) : hasMeal ? (
-          <div className={mealCalendarStyles.mealSlotContent}>
+          <div className={mealCalendarStyles.mealSlotContent(Boolean(mainImageSrc))}>
             {mainName !== undefined ? (
               <>
-                <div className={mealCalendarStyles.mealSlotImageFrame(theme)}>
-                  {mainImageSrc ? (
+                {mainImageSrc ? (
+                  <div className={mealCalendarStyles.mealSlotImageFrame(theme)}>
                     <img
                       alt=""
                       className={mealCalendarStyles.mealSlotImage}
@@ -122,14 +127,25 @@ function MealSlot({
                       loading="lazy"
                       decoding="async"
                     />
-                  ) : (
-                    <div className={mealCalendarStyles.mealSlotImageFallback(theme)} aria-hidden="true" />
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  // Without a photo the card is text-first: a thin bar of the ingredients' colours, then the name.
+                  <span
+                    aria-hidden="true"
+                    className={mealCalendarStyles.mealSlotColorBar}
+                    data-testid="meal-slot-color-bar"
+                    style={{ background: getRecipeColorBarBackground(mainColors) }}
+                  />
+                )}
                 <div className={mealCalendarStyles.mealSlotDetails}>
                   <h3 className={mealCalendarStyles.mealSlotTitle(theme)}>
                     {mainName}
                   </h3>
+                  {!mainImageSrc && mainIngredientNames.length > 0 && (
+                    <p className={mealCalendarStyles.mealSlotIngredients(theme)}>
+                      {mainIngredientNames.join(" · ")}
+                    </p>
+                  )}
                   {mainItem?.portions !== null && mainItem?.portions !== undefined && (
                     <span className={mealCalendarStyles.mealSlotPortions(theme)}>
                       {mainItem.portions}x
@@ -199,7 +215,7 @@ function MealSlot({
 
 function MealSlotSkeleton({ theme }: { theme: SiteTheme }) {
   return (
-    <div className={mealCalendarStyles.mealSlotContent} aria-hidden="true">
+    <div className={mealCalendarStyles.mealSlotContent(true)} aria-hidden="true">
       <div className={mealCalendarStyles.mealSlotSkeletonImage(theme)} />
       <div className={mealCalendarStyles.mealSlotSkeletonDetails}>
         <span className={mealCalendarStyles.mealSlotSkeletonLine(theme, "title")} />

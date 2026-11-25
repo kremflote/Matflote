@@ -168,7 +168,6 @@ export type TranslationDictionary = {
     none: string;
     noDescription: string;
     noDietaryInformation: string;
-    noImage: string;
     noIngredientsAdded: string;
     noIngredientsFound: string;
     noIngredientsSelected: string;

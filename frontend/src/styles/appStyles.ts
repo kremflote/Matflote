@@ -263,6 +263,13 @@ export const thumbnailStyles = {
     "cursor-pointer transition-transform hover:scale-[1.01]",
   recipeImage: "h-full w-full object-cover",
   recipeImageFallback: "h-full w-full bg-neutral-700",
+  // The imageless tile scales its initials with its own width (container query units).
+  recipeTile:
+    "@container relative flex h-full w-full overflow-hidden select-none ring-1 ring-inset ring-black/10",
+  recipeTileInitials:
+    "m-auto text-[30cqw] font-black leading-none tracking-tight",
+  recipeTileInitialsTop:
+    "absolute left-[8%] top-[7%] text-[17cqw] opacity-90 font-black leading-none tracking-tight",
   recipeImageOverlay: (theme: SiteTheme) =>
     theme === "dark"
       ? "pointer-events-none absolute inset-0 bg-black/20"
@@ -1239,7 +1246,9 @@ export const mealCalendarStyles = {
           ? "border-[#7A8864]/35"
           : "border-neutral-300"
     }`,
-  mealSlotContent: `grid ${sizeClasses.mealSlotContentInset} grid-cols-2 overflow-hidden ${radiusClasses.figma6}`,
+  mealSlotContent: (hasImage: boolean) =>
+    `grid ${sizeClasses.mealSlotContentInset} ${hasImage ? "grid-cols-2" : "grid-cols-[0.375rem_minmax(0,1fr)]"} overflow-hidden ${radiusClasses.figma6}`,
+  mealSlotColorBar: "h-full w-full rounded-l-md",
   mealSlotImageFrame: (theme: SiteTheme) =>
     `h-full w-full overflow-hidden rounded-l-md ${
       theme === "dark"
@@ -1289,6 +1298,10 @@ export const mealCalendarStyles = {
         : theme === "paletteLight"
           ? "text-[#556145]"
           : "text-neutral-900"
+    }`,
+  mealSlotIngredients: (theme: SiteTheme) =>
+    `min-w-0 truncate text-xs font-semibold leading-snug ${
+      theme === "dark" ? "text-neutral-300" : theme === "paletteLight" ? "text-[#556145]/90" : "text-neutral-600"
     }`,
   mealSlotRecipeList: "flex min-w-0 flex-wrap items-start gap-1.5 overflow-hidden",
   mealSlotPortions: (theme: SiteTheme) =>

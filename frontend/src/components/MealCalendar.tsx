@@ -11,6 +11,7 @@ import {
   setLocalStringListPreference,
 } from "../utils/localPreferences";
 import MealSlot from "./MealSlot";
+import RecipeFallbackTile from "./RecipeFallbackTile";
 
 type MealCalendarProps = {
   anchorDate: Date;
@@ -271,8 +272,13 @@ function DayMealPreview({ entry, ingredientsById, recipesById, theme }: DayMealP
           loading="lazy"
           decoding="async"
         />
+      ) : recipe !== undefined ? (
+        <RecipeFallbackTile recipe={recipe} />
       ) : (
-        <span className={mealCalendarStyles.dayPreviewImageFallback(theme)} />
+        <span
+          className={mealCalendarStyles.dayPreviewImageFallback(theme)}
+          style={{ backgroundColor: ingredient?.color ?? undefined }}
+        />
       )}
     </span>
   );

@@ -2,12 +2,16 @@ import type { ReactNode } from "react";
 import { useLanguage } from "../contexts";
 import type { IRecipe } from "../interfaces/IRecipe";
 import { getThumbnailSrc } from "../utils/imageThumbnail";
+import type { TileIngredientLine } from "../utils/recipeTile";
+import RecipeFallbackTile from "./RecipeFallbackTile";
 import { thumbnailStyles, type SiteTheme } from "../styles/appStyles";
 
 type RecipeThumbnailProps = {
   recipe: Pick<IRecipe, "name" | "imageUrl"> & {
     thumbnailUrl?: string | null;
     subtitle?: string | null;
+    /** Lets a recipe without a photo show its ingredients' colours instead of a blank block. */
+    ingredients?: readonly TileIngredientLine[];
   };
   className?: string;
   interactiveEffect?: boolean;
@@ -65,7 +69,11 @@ function RecipeThumbnail({
           decoding="async"
         />
       ) : (
-        <div className={thumbnailStyles.recipeImageFallback} aria-hidden="true" />
+        <RecipeFallbackTile
+          initialsPosition="top"
+          recipe={recipe}
+          showInitials={textScale !== "micro"}
+        />
       )}
 
       <div className={thumbnailStyles.recipeImageOverlay(theme)} aria-hidden="true" />

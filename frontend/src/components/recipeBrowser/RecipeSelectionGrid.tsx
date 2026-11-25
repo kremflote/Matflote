@@ -38,6 +38,7 @@ function RecipeSelectionGrid({
               imageUrl: recipe.imageUrl,
               thumbnailUrl: recipe.thumbnailUrl,
               name: recipe.name,
+              ingredients: recipe.ingredients,
               subtitle: getSubtitle?.(recipe) ?? recipe.tags.slice(0, 2).join(" · "),
             }}
             onClick={() => onSelect(recipe)}

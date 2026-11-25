@@ -158,7 +158,6 @@ export const nb: TranslationDictionary = {
     none: "Ingen",
     noDescription: "Ingen beskrivelse ennå.",
     noDietaryInformation: "Ingen næringsinformasjon ennå.",
-    noImage: "Ingen bilde",
     noIngredientsAdded: "Ingen ingredienser lagt til.",
     noIngredientsFound: "Ingen ingredienser funnet",
     noIngredientsSelected: "Ingen ingredienser valgt.",

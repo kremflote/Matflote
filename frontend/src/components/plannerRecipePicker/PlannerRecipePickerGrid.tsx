@@ -84,6 +84,7 @@ function PlannerRecipePickerGrid({
                   imageUrl: recipe.imageUrl,
                   thumbnailUrl: recipe.thumbnailUrl,
                   name: recipe.name,
+                  ingredients: recipe.ingredients,
                   subtitle: recipe.tags.slice(0, 2).join(" · "),
                 }}
                 interactiveEffect={false}
