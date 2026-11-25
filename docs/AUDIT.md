@@ -2,7 +2,7 @@
 
 November 2026. Covers the backend, frontend, deployment, design, and how well the app works as a target for an AI that creates recipes and plans weeks.
 
-This document has two readers. Sections 1–3 are for the owner. Section 4 is a work plan written so a separate implementation session can pick up any package without the rest of this conversation.
+Sections 1–3 are the findings. The work plan for the implementation session is in `docs/PLAN.md`.
 
 ## 1. Summary
 
@@ -15,20 +15,9 @@ MATFLOTE is in better shape than most one-person apps of its size. The domain mo
 
 For the AI goal specifically: before this branch, having an agent add 12 recipes and plan two weeks took 86 API calls with numeric IDs, and reading a 15-recipe cookbook cost 63 KB. The draft assistant API on this branch does the same job in 3 calls and describes the cookbook in under 7 KB. What remains is deciding how the agent reaches the Pi, and putting access control in front before it does.
 
-### The ten things to do first
+### Priorities
 
-| # | What | Why | Package |
-| --- | --- | --- | --- |
-| 1 | Put access control in front of the app and stop CORS in production | Everything else in security depends on it | WP1 |
-| 2 | Stop test-connection endpoints sending stored tokens to caller-supplied URLs | Confirmed token leak | WP1 |
-| 3 | Make ingredient delete refuse when the ingredient is in use | Confirmed silent data loss and a 500 | WP2 |
-| 4 | Set `client_max_body_size`, gzip and asset caching in nginx | Uploads and restore fail; pages are 4× heavier than needed | WP3 |
-| 5 | Copy the database before migrations run; add a real backup | The price-removal migration on this branch is destructive | WP3 |
-| 6 | Add tests and CI before more features land | Nothing guards regressions today | WP4 |
-| 7 | Fix the six small frontend bugs F1–F6 | A week that appears empty, a dialog that cancels itself, Sunday missing from nutrition | WP6 |
-| 8 | Design a card for recipes without an image; label planner columns, mark today, fix the clipped header | AI-created recipes all look blank otherwise; the rest is cheap and visible every day | WP7 |
-| 9 | Review and merge the assistant API, then wrap it as an MCP server | This is the AI goal | WP5 |
-| 10 | Move to .NET 10 | .NET 9 is out of support | WP3 |
+The owner has since clarified that the server is Tailscale-only with one user, and that slowness is the main day-to-day complaint. `docs/PLAN.md` orders the work accordingly: a safety net first, then speed, frontend bugs, the AI path, data-loss fixes, design, runtime, and housekeeping.
 
 ## 2. What is on this branch
 
@@ -104,6 +93,10 @@ Lines are grouped by unit, so 200 g and 1 kg of the same ingredient become two l
 *Fix options:* a `Piece` unit with grams-per-piece on the ingredient, or keep storage as is and make conversion rules structured (ingredient, grams) so both the UI and the assistant API can apply them.
 
 ### 3.3 Performance on a Raspberry Pi
+
+**P0. Every page load refetches the whole catalog, uncompressed, and nothing is cacheable. High for day-to-day use. Confirmed.**
+Measured in a browser against a production build: every page, including Settings, requests `recipes`, `ingredients`, `ingredient-tag-categories` and `brands` (97 KB of JSON with 19 recipes and 36 ingredients), and a reload fetches all of it again because the API sends no validators. The JSON compresses about sixteen-fold (`/api/recipes` 65 KB → 4.1 KB) but nginx has gzip off. Saving one meal is a `PUT` followed by a full reload of the week, during which all 21 slots show skeletons for at least 450 ms by design (`frontend/src/components/MealCalendar.tsx:84-93`). Generating a week is 42 requests: 21 `POST`s each followed by a `GET` of the week. Photos are served without `Cache-Control`, and the two bundled sample photos are 2.6 MB and 2.2 MB.
+*Fix:* `docs/PLAN.md` WP1.
 
 **P1. The recipe list is heavy and built by one cartesian query. Medium. Confirmed.**
 `RecipeDetails()` (`backend/Controllers/RecipesController.cs:177-204`) includes ingredients, their tags, recipe tags, and components with their ingredients and tags in a single SQL statement; EF Core logs `MultipleCollectionIncludeWarning` for it on every start. Each recipe embeds full ingredient objects with all nutrition fields, so 15 recipes are 63 KB of JSON (4.2 KB per recipe). At 200 recipes that is roughly 0.85 MB parsed on every page load, and the row count behind it grows with ingredients × tags × components.
@@ -325,94 +318,9 @@ The 86-call scenario becomes 3 calls.
 
 ## 4. Implementation plan
 
-Packages are ordered by dependency and value. Each is sized to be one pull request. File references are to this branch.
+The plan lives in `docs/PLAN.md`. It was reordered after the owner clarified two things: the server is reachable only over Tailscale and has a single user, so security work is reduced to two small hygiene fixes; and the app feels slow, so performance comes first.
 
-### WP1. Close the open doors (security)
-
-1. In `backend/Program.cs`, call `UseCors()` and register the policy only when `app.Environment.IsDevelopment()`.
-2. In `VikunjaOptionsResolver.ResolveForTestAsync` and `KassalappProductLookupService.TestConnectionAsync`, fall back to the stored secret only when the request's base URL equals the stored base URL after trimming and normalising the trailing slash. Otherwise return 400 "Enter the token to test a different URL."
-3. In `AppSettingsService.UpdateAsync`, clear a stored secret when its base URL changes and no new secret is supplied.
-4. In `SeedCatalogService.ExtractPackageImagesAsync`, skip entries whose extension is not `.jpg`, `.jpeg`, `.png` or `.webp`, and stop after a total size limit.
-5. Choose and document access control. Minimum that needs no new moving parts: `auth_basic` in `frontend/nginx.conf` with the credentials file mounted from the host, documented in the README. Decide separately whether the assistant API gets its own bearer token (A2).
-
-*Done when:* a preflight from a foreign origin gets no CORS headers in a production build; the test endpoints with a foreign base URL and no token return 400 and make no outbound request; a zip containing `evil.html` imports without writing it; an unauthenticated request to the deployed stack is refused.
-
-### WP2. Stop losing data (API correctness)
-
-1. `DELETE /api/ingredients/{id}`: when recipe lines or planned items reference the ingredient, return 409 with their names. Accept `?force=true` to keep today's behaviour for recipe lines; never 500.
-2. Recipe and ingredient writes: return 400 naming unknown tags, repeated ingredient lines and invalid preparations instead of dropping them. Update the frontend forms to show the message. Share the validation with `AssistantService`.
-3. `import-package`: add `?syncTags=false` as the default; update the README.
-4. Reject duplicate recipe names and duplicate ingredient name plus brand with 409 on create and rename.
-5. Reject meal entries with no items.
-6. Shopping list: group by base unit, round, pick sections by tag category or system key.
-
-*Done when:* each of the confirmed cases in B1–B6 has a test that fails on `main` and passes.
-
-### WP3. Make the deployment solid
-
-1. `frontend/nginx.conf`: `client_max_body_size`, gzip, immutable caching for `/assets/`, and no caching for `index.html`.
-2. `backend/Program.cs`: before `MigrateAsync()`, if `GetPendingMigrationsAsync()` is non-empty and the database file exists, copy it next to itself with a timestamp; keep the newest five.
-3. Backup: an endpoint or script that writes `VACUUM INTO` output plus an archive of the images folder to a mounted backup directory; a compose-level schedule; README updated.
-4. `docker-compose.yml`: health checks, `TZ`, memory limits, non-root users.
-5. Upgrade to .NET 10 and current EF Core; float patch versions.
-6. Self-host the two font families; remove `UseHttpsRedirection()` or configure forwarded headers.
-
-*Done when:* a 4 MB photo uploads through port 8080; a package restore through port 8080 succeeds; the browser's network panel shows the script gzipped and served from cache on reload; starting a new image with a pending migration leaves a `.bak` file.
-
-### WP4. Tests and CI
-
-1. Backend test project using `WebApplicationFactory` and a temporary SQLite file. Cover: recipe create, update and delete with components; meal plan create and replace; shopping-list totals including components and portion scaling; nutrition weekly totals; every assistant endpoint including its error paths.
-2. Frontend: Vitest for `utils/plannerGenerator.ts`, `utils/plannerDate.ts` and `utils/plannerPrepHelper.ts`, which are pure functions with real rules in them.
-3. Get `npm run lint` to zero. The seven unused-variable errors are all `_`-prefixed and go away with `argsIgnorePattern`, `varsIgnorePattern` and `caughtErrorsIgnorePattern` set to `^_`. Most `set-state-in-effect` errors are "reset state when a prop changes" and are fixed by keying the component or deriving the value.
-4. GitHub Actions: backend build and test, frontend lint, type-check, test and build, and a Docker build for `linux/arm64`.
-
-*Done when:* CI is green on a pull request and fails when a test is broken on purpose.
-
-### WP5. Finish the AI path
-
-1. Review commit `c192a8b`; adjust names and defaults; add the tests from WP4.
-2. Add `planningPreferences` to settings (people eating, minimum fish and chicken dinners, excluded tags or ingredients, how many weeks before a dinner may repeat) and return it from `GET /api/assistant/context`. Make the built-in generator read the same values.
-3. Log each assistant write and add "undo last assistant change" for meal plans.
-4. Add an MCP server exposing `get_context`, `get_recipe`, `save_recipes`, `get_meal_plan` and `set_meal_plan`, each calling the matching endpoint. A stdio server run from a home computer is the simplest start; a remote one needs WP1 and its own token.
-5. Optional: Matvaretabellen nutrition lookup for ingredients created without nutrition; an `imageUrl` field on assistant recipes.
-
-*Done when:* from a fresh chat with only the MCP server configured, "plan dinners for next week, two fish days, nothing we had in the last three weeks" produces a saved week and a shopping-list summary without the agent guessing at ids, units or tag names.
-
-### WP6. Frontend bug fixes
-
-Small, independent fixes. Each is a few lines.
-
-1. F1: ignore stale meal-plan responses in `MealPlanContext.loadMealPlan`.
-2. F2 and F21: move focus-on-open, focus trap, focus restore, Escape and scroll lock into `components/Modal.tsx`; remove the per-dialog copies.
-3. F3: replace `NutritionPage`'s date helpers with the ones in `utils/plannerDate.ts`.
-4. F4: match any selected meal tag in the picker, not all.
-5. F5: format scaled amounts with up to two decimals instead of rounding to integers.
-6. F6: open the planner on the current week and add a Today button.
-7. F7: a visible error state with Retry for failed loads; disable planner slots while the plan is unknown; never render a non-JSON error body; add an error boundary.
-8. F8: reset the last-scanned barcode on stop and after a failed lookup; use the ISO week-year in the week label; pass a recipe id rather than a new object to the detail modal.
-9. F11: wrap the camera lifecycle in a hook that can cancel during start-up.
-10. F15 and B6: replace English tag-name checks with system keys or tag categories.
-11. F24: move the remaining English strings into the dictionaries.
-
-*Done when:* each of F1–F6 has a test or a scripted browser check that fails on `main` and passes.
-
-### WP7. Design fixes
-
-1. Header: raise the two `min-[1401px]` breakpoints in `appStyles.ts:182` and `:426` to about 1500 px, or drop the offsets.
-2. Imageless recipe card for planner, cookbook and picker (D2).
-3. Week view: restore the commented-out header row in `MealCalendar.tsx:157-168` using the translated slot names, add a today highlight, make rows denser (D3). Month view: chips for planned meals, "add" on demand (D4).
-4. Recipe view as a full-height sheet with a single column on phones (D5).
-5. Phone: label or remove the three day squares, stop floating controls covering content, two-line names (D6).
-6. Hash routes for pages and an open recipe (D7).
-7. Web app manifest and icons.
-8. Touch targets of at least 44 px and text contrast of at least 4.5:1 (F23).
-9. Start moving theme colours to CSS tokens and delete the unreachable `light` theme (F17–F19). Do it one style group at a time.
-
-*Done when:* screenshots at 390, 1280, 1440 and 1920 px in both themes show no clipped or overlapping controls, and a week of imageless recipes is readable at a glance.
-
-### WP8. Housekeeping
-
-Extract shared mapping and validation out of controllers; one error format; remove the unused `IngredientTag` enum and compatibility-only nutrition fields; move sample data out of `HasData`; fix `frontend/README.md`; split the four large frontend files along the seams in F20; trim the boilerplate file headers.
+Section 3.1 is kept for the record. Read its severities with that context: on a private, single-user network S1 and S2 are low.
 
 ## 5. How this audit was done
 
