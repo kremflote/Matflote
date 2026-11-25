@@ -105,10 +105,7 @@ app.UseExceptionHandler(exceptionApp =>
 });
 
 app.UseCors();
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+// No HTTPS redirection: TLS ends at the reverse proxy, and the app only ever sees plain HTTP from nginx.
 app.UseDefaultFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
