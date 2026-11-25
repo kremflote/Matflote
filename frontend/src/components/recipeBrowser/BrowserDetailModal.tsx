@@ -215,7 +215,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
 
   return (
     <Modal
-      backdropClassName={recipeBrowserStyles.modalBackdrop}
+      backdropClassName={recipeBrowserStyles.detailModalBackdrop}
       bodyClassName={recipeBrowserStyles.detailBodyScrollArea}
       closeButtonClassName={recipeBrowserStyles.detailCloseButton(theme)}
       closeLabel={t.common.close}

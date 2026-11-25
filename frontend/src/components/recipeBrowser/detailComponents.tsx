@@ -50,7 +50,7 @@ type DetailTextWithMetaProps = DetailTextProps & {
 
 export function DetailTextWithMeta({ className = "", label, meta, theme, value }: DetailTextWithMetaProps) {
   return (
-    <section className={`${recipeBrowserStyles.detailsPanel(theme)} min-h-0 overflow-hidden ${className}`}>
+    <section className={`${recipeBrowserStyles.detailsPanel(theme)} ${className}`}>
       <div className={recipeBrowserStyles.detailTextMetaHeader}>
         <h3 className={recipeBrowserStyles.detailSectionTitle}>{label}</h3>
         <span className={recipeBrowserStyles.helperText(theme)}>{meta}</span>

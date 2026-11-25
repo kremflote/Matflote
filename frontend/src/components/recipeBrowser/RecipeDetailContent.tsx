@@ -3,6 +3,7 @@ import { useIngredients, useLanguage } from "../../contexts";
 import { formatRecipeIngredientAmount } from "./recipeAmountFormat";
 import type { IIngredient, INutritionFacts, MeasurementUnit } from "../../interfaces/IIngredient";
 import { getApiAssetUrl } from "../../services/apiClient";
+import { pickReadableTextColor } from "../../utils/colorContrast";
 import { getThumbnailSrc } from "../../utils/imageThumbnail";
 import type { SiteTheme } from "../../styles/appStyles";
 import { DetailSection, DetailText, DetailTextWithMeta, NutritionGrid } from "./detailComponents";
@@ -69,7 +70,7 @@ function RecipeDetailContent({
           <DetailTextWithMeta
             className={recipeBrowserStyles.recipeDetailDescriptionPanel}
             label={t.cookbook.description}
-            meta={recipe.tags.join(" · ")}
+            meta={recipe.tags.map((tag) => t.enums.recipeTags[tag] ?? tag).join(" · ")}
             theme={theme}
             value={recipe.description || t.cookbook.noDescription}
           />
@@ -207,7 +208,14 @@ function RecipeIngredientSection({
               <span
                 aria-hidden="true"
                 className={recipeBrowserStyles.detailIngredientImageFrame(theme)}
-                style={{ backgroundColor: recipeIngredient.ingredient.color ?? undefined }}
+                style={
+                  recipeIngredient.ingredient.color
+                    ? {
+                        backgroundColor: recipeIngredient.ingredient.color,
+                        color: pickReadableTextColor(recipeIngredient.ingredient.color),
+                      }
+                    : undefined
+                }
               >
                 {recipeIngredient.ingredient.imageUrl ? (
                   <img

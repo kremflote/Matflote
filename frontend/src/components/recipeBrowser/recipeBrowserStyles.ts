@@ -479,7 +479,7 @@ export const recipeBrowserStyles = {
   formActions:
     "flex flex-wrap items-center justify-end gap-3 pt-2 max-sm:flex-nowrap",
   formActionButton:
-    "max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3 max-sm:text-sm",
+    "whitespace-nowrap max-sm:h-11 max-sm:min-w-0 max-sm:flex-1 max-sm:px-2 max-sm:text-[13px]",
   nestedModalBackdrop: `fixed inset-0 z-[110] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   nestedIngredientModalPanel: (theme: SiteTheme) =>
     `grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-md border p-6 max-sm:max-h-[calc(100vh_-_16px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
@@ -490,11 +490,13 @@ export const recipeBrowserStyles = {
     `${controlStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`,
   detailHeaderRemoveButton: (theme: SiteTheme) =>
     `${controlStyles.removeButton(theme)} ${recipeBrowserStyles.formActionButton}`,
+  // The recipe view is a full-height sheet, the whole screen on a phone, with one scroll area (AUDIT D5).
+  detailModalBackdrop: "fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4 max-sm:p-0",
   detailModalPanel: (theme: SiteTheme) =>
-    `relative grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden rounded-md border p-6 ${responsiveClasses.mobileModalPanel} ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+    `relative grid h-[calc(100dvh_-_2rem)] w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden rounded-md border p-6 max-sm:h-[100dvh] max-sm:max-w-none max-sm:gap-3 max-sm:rounded-none max-sm:border-0 max-sm:p-4 max-sm:pb-[calc(1rem+env(safe-area-inset-bottom))] ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   detailCloseButton: (theme: SiteTheme) =>
     `${recipeBrowserStyles.modalCloseButton(theme)} ml-auto`,
-  detailBodyScrollArea: `${sizeClasses.modalFormBodyMaxHeight} ${sizeClasses.modalFormBodyMobileMaxHeight} grid min-h-0 gap-4 overflow-y-auto pr-1`,
+  detailBodyScrollArea: "grid min-h-0 content-start gap-4 overflow-y-auto overscroll-contain pr-1",
   detailFrameHeader: "flex items-start justify-between gap-4",
   detailHeaderDescription: "mt-2",
   detailHeaderShell: "grid gap-2 max-sm:pr-12",
@@ -737,18 +739,19 @@ export const recipeBrowserStyles = {
     }`,
   emptyStateTitle: "text-2xl font-bold leading-[1.15] max-sm:text-xl",
   emptyStateBody: "mt-2 max-w-xl text-base leading-[1.5] max-sm:text-sm",
-  detailShell: "mt-6 grid gap-6 max-sm:mt-4 max-sm:gap-4",
+  detailShell: "mt-2 grid gap-6 max-sm:mt-0 max-sm:gap-4",
   recipeDetailHeroGrid:
-    "grid grid-cols-[minmax(180px,260px)_minmax(0,1fr)] gap-6 max-md:grid-cols-1 max-sm:grid-cols-2 max-sm:items-start max-sm:gap-3",
+    "grid grid-cols-[minmax(200px,280px)_minmax(0,1fr)] items-start gap-6 max-md:grid-cols-1 max-md:gap-4",
   recipeDetailImageFrame:
-    "aspect-square overflow-hidden rounded-md bg-neutral-800",
+    "aspect-square overflow-hidden rounded-md bg-neutral-800 max-md:aspect-[16/9] max-md:w-full",
   detailImage: "h-full w-full object-cover",
   detailImageFallback:
     "flex h-full w-full items-center justify-center px-4 text-center text-sm font-bold text-neutral-400",
   recipeDetailDescriptionWrap: "grid content-start",
   recipeDetailDescriptionPanel:
-    "h-[260px] grid-rows-[auto_minmax(0,1fr)] max-md:h-auto max-sm:min-h-[38vw]",
-  recipeDetailSplitGrid: "grid grid-cols-2 gap-6 max-md:grid-cols-1",
+    "content-start",
+  // Ingredients beside the method on wide screens, above it on narrow ones; both listed in full.
+  recipeDetailSplitGrid: "grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-start gap-6 max-md:grid-cols-1 max-md:gap-4",
   detailSectionHeader: "flex flex-wrap items-center justify-between gap-3",
   detailSectionTitleRow: "flex flex-wrap items-baseline gap-2",
   detailSectionTitle: "text-sm font-bold uppercase tracking-wide",
@@ -761,9 +764,9 @@ export const recipeBrowserStyles = {
           : "text-neutral-500"
     }`,
   detailText:
-    "self-start whitespace-pre-wrap text-left text-sm font-semibold leading-[1.55]",
+    "self-start whitespace-pre-wrap text-left text-[15px] font-semibold leading-[1.6]",
   detailTextScrollable:
-    "min-h-0 self-start overflow-y-auto whitespace-pre-wrap pr-1 text-left text-sm font-semibold leading-[1.55]",
+    "self-start whitespace-pre-wrap text-left text-[15px] font-semibold leading-[1.6]",
   detailTextMetaHeader: "flex flex-wrap items-baseline justify-between gap-3",
   detailRow: (theme: SiteTheme) =>
     `flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-semibold ${
@@ -817,10 +820,10 @@ export const recipeBrowserStyles = {
     }`,
   detailIngredientImage: "h-full w-full object-cover",
   detailIngredientImageFallback:
-    "text-xs font-black leading-none text-white/90",
+    "text-xs font-black leading-none",
   detailIngredientContent: "grid min-w-0 gap-1",
   detailIngredientName:
-    "min-w-0 truncate text-sm font-bold leading-tight",
+    "min-w-0 break-words text-sm font-bold leading-tight",
   detailIngredientMetaRow:
     "grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2",
   detailIngredientAmount:
