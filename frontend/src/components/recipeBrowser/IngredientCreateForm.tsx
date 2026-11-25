@@ -1,7 +1,7 @@
 import { useCallback, useId, useState, type FormEvent } from "react";
 import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IIngredient, IngredientTag, NutritionDataSource } from "../../interfaces/IIngredient";
-import { brandService, imageUploadService, ingredientService, ingredientTagCategoryService } from "../../services";
+import { ApiError, brandService, imageUploadService, ingredientService, ingredientTagCategoryService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../../constants/validation";
 import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../../utils/tagCatalog";
@@ -193,7 +193,9 @@ function IngredientCreateForm({
       }
       onCreated(trimmedName);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : t.cookbook.couldNotSaveIngredient);
+      setError(caughtError instanceof ApiError && caughtError.status === 409
+        ? t.cookbook.ingredientNameTaken(trimmedName)
+        : caughtError instanceof Error ? caughtError.message : t.cookbook.couldNotSaveIngredient);
     } finally {
       setIsSaving(false);
     }

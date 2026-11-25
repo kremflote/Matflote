@@ -50,6 +50,11 @@ public class IngredientsController(
     [HttpPost]
     public async Task<ActionResult<IngredientDto>> CreateIngredient(IngredientRequest request)
     {
+        if (await FindIngredientWithSameName(request.IngredientName, request.BrandId, exceptId: null) is { } clash)
+        {
+            return Conflict(DescribeNameClash(clash));
+        }
+
         var (problems, knownTags) = await ValidateRequestAsync(request);
         if (problems.Count > 0)
         {
@@ -93,6 +98,15 @@ public class IngredientsController(
         if (ingredient is null)
         {
             return NotFound();
+        }
+
+        // Only a change of name or brand can clash; an ingredient that already shares both with another one
+        // (possible in data from before this check) can still be saved.
+        var renamed = CatalogNames.Key(request.IngredientName) != CatalogNames.Key(ingredient.IngredientName)
+            || request.BrandId != ingredient.BrandId;
+        if (renamed && await FindIngredientWithSameName(request.IngredientName, request.BrandId, exceptId: id) is { } clash)
+        {
+            return Conflict(DescribeNameClash(clash));
         }
 
         var (problems, knownTags) = await ValidateRequestAsync(request);
@@ -183,6 +197,27 @@ public class IngredientsController(
             merged,
             mealItems));
     }
+
+    /// <summary>
+    /// Another ingredient with the same brand (or also without one) whose name is the same apart from case and spacing
+    /// (AUDIT B4). Compared in memory, because SQLite's lower() only folds A to Z.
+    /// </summary>
+    private async Task<(int IngredientId, string Name, string? Brand)?> FindIngredientWithSameName(string name, int? brandId, int? exceptId)
+    {
+        var key = CatalogNames.Key(name);
+        var sameBrand = await context.Ingredients
+            .AsNoTracking()
+            .Where(ingredient => ingredient.BrandId == brandId && ingredient.IngredientId != exceptId)
+            .Select(ingredient => new { ingredient.IngredientId, ingredient.IngredientName, Brand = ingredient.Brand == null ? null : ingredient.Brand.Name })
+            .ToListAsync(HttpContext.RequestAborted);
+        var match = sameBrand.FirstOrDefault(ingredient => CatalogNames.Key(ingredient.IngredientName) == key);
+        return match is null ? null : (match.IngredientId, match.IngredientName, match.Brand);
+    }
+
+    private static ApiErrorDto DescribeNameClash((int IngredientId, string Name, string? Brand) clash) =>
+        new(clash.Brand is null
+            ? $"An ingredient named \"{clash.Name}\" without a brand already exists (id {clash.IngredientId})."
+            : $"An ingredient named \"{clash.Name}\" from {clash.Brand} already exists (id {clash.IngredientId}).");
 
     /// <summary>An unknown brand or tag is an error rather than being dropped (AUDIT B2).</summary>
     private async Task<(List<string> Problems, List<IngredientTagDefinition> Tags)> ValidateRequestAsync(IngredientRequest request)

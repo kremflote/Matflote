@@ -162,6 +162,8 @@ export type TranslationDictionary = {
     replaceWithHelp: string;
     replaceAndRemove: string;
     couldNotReplaceIngredient: string;
+    recipeNameTaken: (name: string) => string;
+    ingredientNameTaken: (name: string) => string;
     removeRecipeBody: string;
     none: string;
     noDescription: string;

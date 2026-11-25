@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { useIngredientTagCategories, useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
 import type { IConversionRule } from "../../interfaces/IConversionRule";
-import { conversionRuleService, imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
+import { ApiError, conversionRuleService, imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
 import { getAllCategoryTagNames, getRecipeVisibleTagCategories } from "../../utils/tagCatalog";
 import {
@@ -302,7 +302,9 @@ function RecipeCreateForm({
       }
       onCreated();
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : t.cookbook.couldNotCreateRecipe);
+      setError(caughtError instanceof ApiError && caughtError.status === 409
+        ? t.cookbook.recipeNameTaken(trimmedName)
+        : caughtError instanceof Error ? caughtError.message : t.cookbook.couldNotCreateRecipe);
     } finally {
       setIsSaving(false);
     }

@@ -52,6 +52,11 @@ public class RecipesController(
     [HttpPost]
     public async Task<ActionResult<RecipeDto>> CreateRecipe(RecipeRequest request)
     {
+        if (await FindRecipeWithSameName(request.Name, exceptId: null) is { } clash)
+        {
+            return Conflict(DescribeNameClash(clash));
+        }
+
         var validation = await ValidateRequestAsync(request, recipeId: null);
         if (validation.Problems.Count > 0)
         {
@@ -81,6 +86,14 @@ public class RecipesController(
         if (recipe is null)
         {
             return NotFound();
+        }
+
+        // Renaming onto another recipe's name is refused; saving a recipe that already shares a name with another
+        // (possible in data from before this check) without renaming it is allowed.
+        if (CatalogNames.Key(request.Name) != CatalogNames.Key(recipe.Name)
+            && await FindRecipeWithSameName(request.Name, exceptId: recipe.RecipeId) is { } clash)
+        {
+            return Conflict(DescribeNameClash(clash));
         }
 
         var validation = await ValidateRequestAsync(request, recipe.RecipeId);
@@ -250,6 +263,25 @@ public class RecipesController(
             problems.Add($"{label}: {RecipeLineRules.DescribeUnknownPreparation(((int)preparation).ToString())}");
         }
     }
+
+    /// <summary>
+    /// Another recipe whose name is the same apart from case and spacing (AUDIT B4). Compared in memory, because
+    /// SQLite's lower() only folds A to Z and would treat "Ærter" and "ærter" as different.
+    /// </summary>
+    private async Task<(int RecipeId, string Name)?> FindRecipeWithSameName(string name, int? exceptId)
+    {
+        var key = CatalogNames.Key(name);
+        var names = await context.Recipes
+            .AsNoTracking()
+            .Where(recipe => recipe.RecipeId != exceptId)
+            .Select(recipe => new { recipe.RecipeId, recipe.Name })
+            .ToListAsync(HttpContext.RequestAborted);
+        var match = names.FirstOrDefault(recipe => CatalogNames.Key(recipe.Name) == key);
+        return match is null ? null : (match.RecipeId, match.Name);
+    }
+
+    private static ApiErrorDto DescribeNameClash((int RecipeId, string Name) clash) =>
+        new($"A recipe named \"{clash.Name}\" already exists (id {clash.RecipeId}). Choose another name.");
 
     private sealed record RecipeValidation(
         List<string> Problems,

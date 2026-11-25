@@ -153,6 +153,8 @@ export const en: TranslationDictionary = {
     replaceWithHelp: "A recipe that already has the chosen ingredient keeps one line with the two amounts added together.",
     replaceAndRemove: "Replace and remove",
     couldNotReplaceIngredient: "Could not replace the ingredient.",
+    recipeNameTaken: (name) => `A recipe named ${name} already exists. Choose another name.`,
+    ingredientNameTaken: (name) => `An ingredient named ${name} with this brand already exists. Choose another name or brand.`,
     removeRecipeBody: "This will delete the recipe.",
     none: "None",
     noDescription: "No description yet.",

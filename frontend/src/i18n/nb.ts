@@ -152,6 +152,8 @@ export const nb: TranslationDictionary = {
     replaceWithHelp: "En oppskrift som allerede har den valgte ingrediensen, beholder én linje der mengdene er lagt sammen.",
     replaceAndRemove: "Erstatt og fjern",
     couldNotReplaceIngredient: "Kunne ikke erstatte ingrediensen.",
+    recipeNameTaken: (name) => `Det finnes allerede en oppskrift som heter ${name}. Velg et annet navn.`,
+    ingredientNameTaken: (name) => `Det finnes allerede en ingrediens som heter ${name} med dette merket. Velg et annet navn eller merke.`,
     removeRecipeBody: "Dette sletter oppskriften.",
     none: "Ingen",
     noDescription: "Ingen beskrivelse ennå.",
