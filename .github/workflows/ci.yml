@@ -51,12 +51,8 @@ jobs:
       - name: Install
         run: npm ci
 
-      # Not blocking yet: lint still reports react-hooks/set-state-in-effect and
-      # react-refresh/only-export-components errors that later packages fix as they
-      # touch those files. Remove continue-on-error once `npm run lint` reaches zero.
       - name: Lint
         run: npm run lint
-        continue-on-error: true
 
       - name: Type-check
         run: npx tsc -b
