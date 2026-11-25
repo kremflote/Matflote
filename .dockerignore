@@ -26,3 +26,4 @@ backend/wwwroot/images/
 !backend/wwwroot/images/recipes/
 !backend/wwwroot/images/recipes/chicken-rice-bowl.png
 !backend/wwwroot/images/recipes/garlic-yogurt-sauce.png
+*.bak

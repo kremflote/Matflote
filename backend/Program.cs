@@ -120,6 +120,7 @@ static async Task PrepareDatabaseAsync(WebApplication app)
 
     await using var scope = app.Services.CreateAsyncScope();
     var context = scope.ServiceProvider.GetRequiredService<DinnerPlannerContext>();
+    await BackUpBeforeMigratingAsync(app, context, connectionString);
     await context.Database.MigrateAsync();
 
     var tagCatalog = scope.ServiceProvider.GetRequiredService<TagCatalogService>();
@@ -131,6 +132,28 @@ static async Task PrepareDatabaseAsync(WebApplication app)
 
     var systemTagService = scope.ServiceProvider.GetRequiredService<SystemTagService>();
     await systemTagService.EnsureRequiredTagsAsync();
+}
+
+static async Task BackUpBeforeMigratingAsync(WebApplication app, DinnerPlannerContext context, string connectionString)
+{
+    var databasePath = DatabaseBackup.ResolveDatabasePath(connectionString);
+    if (databasePath is null || !File.Exists(databasePath))
+    {
+        return;
+    }
+
+    var pending = (await context.Database.GetPendingMigrationsAsync()).ToList();
+    if (pending.Count == 0)
+    {
+        return;
+    }
+
+    var backupPath = await DatabaseBackup.CreateAsync(connectionString, databasePath, DateTime.Now);
+    app.Logger.LogInformation(
+        "Copied the database to {BackupPath} before applying {Count} migration(s): {Migrations}",
+        backupPath,
+        pending.Count,
+        string.Join(", ", pending));
 }
 
 static void EnsureSqliteDirectory(string connectionString, string contentRootPath)
