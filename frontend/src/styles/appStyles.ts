@@ -1019,6 +1019,9 @@ export const plannerControlsStyles = {
     `${sizeClasses.plannerControlHeight} group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-2 ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
   iconButton: (theme: SiteTheme) =>
     `${sizeClasses.plannerControlHeight} inline-flex aspect-square items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+  nextAndTodayGroup: "relative inline-flex",
+  todayButton: (theme: SiteTheme) =>
+    `absolute left-full top-0 ml-2 ${sizeClasses.plannerControlHeight} inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
   buttonIcon: "h-4 w-4 shrink-0 fill-current",
   actionButtonLabel: "min-w-0 truncate leading-none",
   tooltip: (theme: SiteTheme) =>

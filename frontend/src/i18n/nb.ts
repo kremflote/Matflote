@@ -545,6 +545,7 @@ export const nb: TranslationDictionary = {
     noMatchingRecipesFound: "Ingen oppskrifter funnet.",
     noMainDishRecipesFound: "Ingen hovedretter funnet.",
     nextRange: (range) => `Neste ${range}`,
+    today: "I dag",
     openPlannerActions: "Åpne planleggerverktøy",
     openMealSlot: "Åpne måltidsplass",
     openRecipe: "Åpne oppskrift",

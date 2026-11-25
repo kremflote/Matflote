@@ -16,11 +16,14 @@ import type { MealPlanEntryRequest, MealPlanRecipeRequest } from "../services/me
 import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
 import { confirmationDialogStyles } from "../styles/confirmationDialogStyles";
 import {
-  getLocalDatePreference,
   getLocalNumberPreference,
   getLocalPreference,
+  getSessionDatePreference,
   localPreferenceKeys,
+  removeRetiredLocalPreferences,
+  sessionPreferenceKeys,
   setLocalPreference,
+  setSessionPreference,
 } from "../utils/localPreferences";
 import {
   addCalendarRange,
@@ -69,17 +72,12 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const [viewMode, setViewMode] = useState<PlannerViewMode>(() =>
     getLocalPreference(localPreferenceKeys.plannerViewMode, plannerViewModes, "week"),
   );
+  // A fresh visit opens on today; the week last viewed is kept only for this browser session.
   const [weekAnchorDate, setWeekAnchorDate] = useState(() =>
-    stripTime(getLocalDatePreference(
-      localPreferenceKeys.plannerWeekAnchorDate,
-      getLocalDatePreference(localPreferenceKeys.plannerAnchorDate, new Date()),
-    )),
+    stripTime(getSessionDatePreference(sessionPreferenceKeys.plannerWeekAnchorDate, new Date())),
   );
   const [monthAnchorDate, setMonthAnchorDate] = useState(() =>
-    stripTime(getLocalDatePreference(
-      localPreferenceKeys.plannerMonthAnchorDate,
-      getLocalDatePreference(localPreferenceKeys.plannerAnchorDate, new Date()),
-    )),
+    stripTime(getSessionDatePreference(sessionPreferenceKeys.plannerMonthAnchorDate, new Date())),
   );
   const [selectedSlot, setSelectedSlot] = useState<SelectedPlannerSlot | null>(null);
   const [activeRecipeDetail, setActiveRecipeDetail] = useState<IRecipe | null>(null);
@@ -188,12 +186,16 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   }, [viewMode]);
 
   useEffect(() => {
-    setLocalPreference(localPreferenceKeys.plannerWeekAnchorDate, toDateInputValue(weekAnchorDate));
+    setSessionPreference(sessionPreferenceKeys.plannerWeekAnchorDate, toDateInputValue(weekAnchorDate));
   }, [weekAnchorDate]);
 
   useEffect(() => {
-    setLocalPreference(localPreferenceKeys.plannerMonthAnchorDate, toDateInputValue(monthAnchorDate));
+    setSessionPreference(sessionPreferenceKeys.plannerMonthAnchorDate, toDateInputValue(monthAnchorDate));
   }, [monthAnchorDate]);
+
+  useEffect(() => {
+    removeRetiredLocalPreferences();
+  }, []);
 
   const getEntryForSlot = (date: string, slot: MealSlot) =>
     entriesByDateSlot.get(getMealPlanEntryKey(date, slot));
@@ -324,6 +326,17 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     setMonthAnchorDate((currentDate) => addCalendarRange(currentDate, viewMode, 1));
   };
 
+  const moveToToday = () => {
+    setPlannerActionError(null);
+    const today = stripTime(new Date());
+    if (viewMode === "week") {
+      setWeekAnchorDate(today);
+      return;
+    }
+
+    setMonthAnchorDate(today);
+  };
+
   const changeViewMode = (nextViewMode: PlannerViewMode) => {
     setPlannerActionError(null);
     setViewMode(nextViewMode);
@@ -441,6 +454,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           isGenerateRangeRunning={plannerAction === "generate"}
           isMobileToolsHidden={selectedSlot !== null}
           isRangeBusy={isMealPlanBusy}
+          isShowingToday={visibleRange.from === getVisibleRange(new Date(), viewMode).from}
           theme={theme}
           viewMode={viewMode}
           onClearRange={requestClearCurrentRange}
@@ -449,6 +463,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           onNextRange={moveToNextRange}
           onOpenPrepHelper={() => setIsPrepHelperOpen(true)}
           onPreviousRange={moveToPreviousRange}
+          onToday={moveToToday}
           onViewModeChange={changeViewMode}
         />
         {plannerActionError !== null && (

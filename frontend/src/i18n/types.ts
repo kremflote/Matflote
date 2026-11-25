@@ -396,6 +396,7 @@ export type TranslationDictionary = {
     prepHelperTitle: string;
     previousRange: (range: string) => string;
     nextRange: (range: string) => string;
+    today: string;
     openMealSlot: string;
     openRecipe: string;
     rangeNames: Record<PlannerViewMode, string>;

@@ -478,6 +478,7 @@ export const en: TranslationDictionary = {
     noMatchingRecipesFound: "No matching recipes found.",
     noMainDishRecipesFound: "No main dish recipes found.",
     nextRange: (range) => `Next ${range}`,
+    today: "Today",
     openPlannerActions: "Open planner tools",
     openMealSlot: "Open meal slot",
     openRecipe: "Open recipe",

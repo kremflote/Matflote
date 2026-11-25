@@ -12,10 +12,13 @@ type PlannerControlsProps = {
   isGenerateRangeRunning?: boolean;
   isMobileToolsHidden?: boolean;
   isRangeBusy?: boolean;
+  /** The visible week or month holds today, so the Today button has nothing to do. */
+  isShowingToday?: boolean;
   theme?: SiteTheme;
   viewMode: PlannerViewMode;
   onNextRange: () => void;
   onPreviousRange: () => void;
+  onToday: () => void;
   onClearRange: () => void | Promise<void>;
   onExportRange: () => void | Promise<void>;
   onGenerateRange: () => void | Promise<void>;
@@ -31,10 +34,12 @@ function PlannerControls({
   isGenerateRangeRunning = false,
   isMobileToolsHidden = false,
   isRangeBusy = false,
+  isShowingToday = false,
   theme = "dark",
   viewMode,
   onNextRange,
   onPreviousRange,
+  onToday,
   onClearRange,
   onExportRange,
   onGenerateRange,
@@ -143,15 +148,26 @@ function PlannerControls({
             <ArrowIcon direction="left" />
           </button>
           <div className={plannerControlsStyles.datePrimary(theme)}>{anchorLabel}</div>
-          <button
-            aria-label={t.planner.nextRange(rangeLabel)}
-            className={plannerControlsStyles.iconButton(theme)}
-            disabled={isClearRangeRunning || isGenerateRangeRunning}
-            type="button"
-            onClick={onNextRange}
-          >
-            <ArrowIcon direction="right" />
-          </button>
+          <span className={plannerControlsStyles.nextAndTodayGroup}>
+            <button
+              aria-label={t.planner.nextRange(rangeLabel)}
+              className={plannerControlsStyles.iconButton(theme)}
+              disabled={isClearRangeRunning || isGenerateRangeRunning}
+              type="button"
+              onClick={onNextRange}
+            >
+              <ArrowIcon direction="right" />
+            </button>
+            {/* Hangs to the right of the arrow so the week label stays centred. */}
+            <button
+              className={plannerControlsStyles.todayButton(theme)}
+              disabled={isShowingToday || isClearRangeRunning || isGenerateRangeRunning}
+              type="button"
+              onClick={onToday}
+            >
+              {t.planner.today}
+            </button>
+          </span>
         </div>
       </div>
       <div className={plannerControlsStyles.rightCell}>
