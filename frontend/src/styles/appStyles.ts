@@ -1205,16 +1205,25 @@ export const mealCalendarStyles = {
   // A slot whose plan could not be loaded: visibly not an empty, editable slot.
   mealSlotUnavailable: "opacity-45",
   mealSlotDraggableButton: "min-[1101px]:cursor-grab min-[1101px]:active:cursor-grabbing",
-  mealSlotDeleteButton: (theme: SiteTheme) =>
-    `pointer-events-none absolute bottom-2 right-2 z-10 hidden h-8 w-8 items-center justify-center rounded-md border opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100 max-[1100px]:hidden ${focusBase} ${siteColorClasses[theme].focus} ${
+  // On a desktop with a mouse the card's actions appear on hover; on touch screens they are always shown, over the image.
+  mealSlotDeleteButton: (theme: SiteTheme, revealOnHover: boolean) =>
+    `absolute z-10 h-8 w-8 items-center justify-center rounded-md border ${
+      revealOnHover
+        ? "pointer-events-none bottom-2 right-2 hidden opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100"
+        : "left-2 top-2 flex"
+    } ${focusBase} ${siteColorClasses[theme].focus} ${
       theme === "dark"
         ? "border-red-400/35 bg-red-950 text-red-100 hover:bg-red-900"
         : theme === "paletteLight"
           ? "border-red-900/30 bg-red-900 text-[#FAF7F2] hover:bg-red-800"
           : "border-red-800/30 bg-red-700 text-white hover:bg-red-800"
     }`,
-  mealSlotOpenRecipeButton: (theme: SiteTheme) =>
-    `pointer-events-none absolute bottom-2 left-2 z-10 hidden h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold opacity-0 shadow-sm transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100 max-[1100px]:hidden ${focusBase} ${siteColorClasses[theme].focus} ${
+  mealSlotOpenRecipeButton: (theme: SiteTheme, revealOnHover: boolean) =>
+    `absolute bottom-2 left-2 z-10 h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold shadow-sm max-sm:px-2 ${
+      revealOnHover
+        ? "pointer-events-none hidden opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100"
+        : "flex"
+    } ${focusBase} ${siteColorClasses[theme].focus} ${
       theme === "dark"
         ? "border-white/[0.16] bg-neutral-950 text-neutral-100 hover:bg-neutral-900"
         : theme === "paletteLight"

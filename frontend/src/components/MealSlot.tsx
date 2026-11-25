@@ -171,10 +171,10 @@ function MealSlot({
           <div className={mealCalendarStyles.mealSlotInner(theme)} />
         )}
       </button>
-      {canUseDesktopInteractions && !isUnavailable && mainRecipe !== undefined && (
+      {!isUnavailable && mainRecipe !== undefined && (
         <button
           aria-label={t.planner.openRecipe}
-          className={mealCalendarStyles.mealSlotOpenRecipeButton(theme)}
+          className={mealCalendarStyles.mealSlotOpenRecipeButton(theme, canUseDesktopInteractions)}
           title={t.planner.openRecipe}
           type="button"
           onClick={() => onOpenRecipe(mainRecipe)}
@@ -182,10 +182,10 @@ function MealSlot({
           {t.planner.openRecipe}
         </button>
       )}
-      {canDragMeal && (
+      {!isUnavailable && hasMeal && (
         <button
           aria-label={t.planner.removeMeal}
-          className={mealCalendarStyles.mealSlotDeleteButton(theme)}
+          className={mealCalendarStyles.mealSlotDeleteButton(theme, canUseDesktopInteractions)}
           title={t.planner.removeMeal}
           type="button"
           onClick={() => onDeleteRequest(date, slot)}
