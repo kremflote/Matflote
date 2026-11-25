@@ -162,7 +162,19 @@ describe("getAnchorLabel", () => {
 });
 
 describe("getAnchorYear", () => {
-  it("is the calendar year of the anchor", () => {
-    expect(getAnchorYear(date(2026, 11, 25), "en")).toBe("2026");
+  it("is the calendar year of the anchor in month view", () => {
+    expect(getAnchorYear(date(2026, 11, 25), "month", "en")).toBe("2026");
+    expect(getAnchorYear(date(2025, 12, 29), "month", "en")).toBe("2025");
+  });
+
+  it("is the ISO week-year in week view, so it matches the week number (F8)", () => {
+    expect(getAnchorYear(date(2026, 11, 25), "week", "en")).toBe("2026");
+    // Monday 29 December 2025 starts week 1 of 2026.
+    expect(getAnchorYear(date(2025, 12, 29), "week", "en")).toBe("2026");
+    expect(getAnchorYear(date(2025, 12, 31), "week", "en")).toBe("2026");
+    // Friday 1 January 2027 is in week 53 of 2026.
+    expect(getAnchorYear(date(2027, 1, 1), "week", "en")).toBe("2026");
+    expect(getAnchorYear(date(2027, 1, 3), "week", "en")).toBe("2026");
+    expect(getAnchorYear(date(2027, 1, 4), "week", "en")).toBe("2027");
   });
 });

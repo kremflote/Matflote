@@ -81,10 +81,16 @@ export function getAnchorLabel(
   return formatWeekLabel(getIsoWeek(anchorDate));
 }
 
-export function getAnchorYear(anchorDate: Date, locale: string) {
+/**
+ * The year shown above the range label. In week view it is the ISO week-year, the year that holds
+ * the week's Thursday, so that it matches the week number: 29 December 2025 is "Week 1 / 2026".
+ */
+export function getAnchorYear(anchorDate: Date, viewMode: PlannerViewMode, locale: string) {
+  const yearDate = viewMode === "week" ? addDays(getWeekStart(anchorDate), 3) : anchorDate;
+
   return new Intl.DateTimeFormat(locale, {
     year: "numeric",
-  }).format(anchorDate);
+  }).format(yearDate);
 }
 
 export function getDatesInRange(fromDate: Date, toDate: Date) {

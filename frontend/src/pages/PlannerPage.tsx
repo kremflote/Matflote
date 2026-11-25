@@ -459,7 +459,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
       <div className={plannerControlsStyles.viewport}>
         <PlannerControls
           anchorLabel={getAnchorLabel(anchorDate, viewMode, locale, t.planner.weekLabel)}
-          anchorYear={getAnchorYear(anchorDate, locale)}
+          anchorYear={getAnchorYear(anchorDate, viewMode, locale)}
           isClearRangeRunning={plannerAction === "clear"}
           isExportRangeRunning={isGroceryListLoading}
           isGenerateRangeRunning={plannerAction === "generate"}
