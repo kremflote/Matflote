@@ -96,6 +96,7 @@ Lines are grouped by unit, so 200 g and 1 kg of the same ingredient become two l
 
 **P0. Every page load refetches the whole catalog, uncompressed, and nothing is cacheable. High for day-to-day use. Confirmed.**
 Measured in a browser against a production build: every page, including Settings, requests `recipes`, `ingredients`, `ingredient-tag-categories` and `brands` (97 KB of JSON with 19 recipes and 36 ingredients), and a reload fetches all of it again because the API sends no validators. The JSON compresses about sixteen-fold (`/api/recipes` 65 KB → 4.1 KB) but nginx has gzip off. Saving one meal is a `PUT` followed by a full reload of the week, during which all 21 slots show skeletons for at least 450 ms by design (`frontend/src/components/MealCalendar.tsx:84-93`). Generating a week is 42 requests: 21 `POST`s each followed by a `GET` of the week. Photos are served without `Cache-Control`, and the two bundled sample photos are 2.6 MB and 2.2 MB.
+On the owner's Pi with real data (53 recipes, 180 ingredients; measured there by the agent on the Pi): `GET /api/recipes` is 590 KB and takes 0.89 s, `GET /api/ingredients` is 178 KB, and neither the app's nginx nor the proxy in front compresses JSON, JavaScript or CSS. Each page load therefore moves about 775 KB of JSON and waits about a second for the recipe list. The shopping-list preview takes 0.45 s for an empty week.
 *Fix:* `docs/PLAN.md` WP1.
 
 **P1. The recipe list is heavy and built by one cartesian query. Medium. Confirmed.**
