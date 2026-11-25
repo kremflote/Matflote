@@ -90,7 +90,7 @@ export default function AssistantLogPanel({ theme }: AssistantLogPanelProps) {
           {entries.map((entry) => {
             const counts = describeLogCounts(entry, t);
             return (
-              <li className={`${settingsStyles.integrationBlock} flex flex-wrap items-center justify-between gap-3`} key={entry.id}>
+              <li className="flex flex-wrap items-center justify-between gap-3 border-b pb-3 last:border-b-0 last:pb-0" key={entry.id}>
                 <div className="grid min-w-0 gap-1">
                   <span className={settingsStyles.label}>{describeLogTitle(entry, t, locale)}</span>
                   <span className={settingsStyles.helpText(theme)} title={entry.summary}>

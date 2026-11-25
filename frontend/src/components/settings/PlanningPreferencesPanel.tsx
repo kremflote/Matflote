@@ -103,7 +103,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
     onChange: (value: number) => void,
     help?: string,
   ) => (
-    <div className={settingsStyles.fieldGroup}>
+    <div className={`${settingsStyles.fieldGroup} content-start`}>
       <label className={settingsStyles.fieldGroup}>
         <span className={settingsStyles.label}>{label}</span>
         <input
