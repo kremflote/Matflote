@@ -17,3 +17,9 @@ public record ImageCleanupItemDto(
 public record ImagesWithoutThumbnailsDto(
     IReadOnlyCollection<string> ImageUrls
 );
+
+public record DatabaseBackupDto(
+    string Path,
+    long SizeBytes,
+    DateTimeOffset CreatedAt
+);

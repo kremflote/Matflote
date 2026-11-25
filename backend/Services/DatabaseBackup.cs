@@ -1,4 +1,4 @@
-// MATFLOTE: Writes a consistent copy of the SQLite database before migrations run.
+// MATFLOTE: Writes consistent copies of the SQLite database: before migrations run, and on request for the nightly backup.
 // Note: The copy is made with VACUUM INTO, so it is safe even while the database is in WAL mode.
 
 using System.Globalization;
@@ -49,18 +49,58 @@ public static class DatabaseBackup
             backupPath = Path.Combine(directory, $"{fileName}.{stamp}-{attempt}.bak");
         }
 
-        var builder = new SqliteConnectionStringBuilder(connectionString) { Pooling = false };
-        await using (var connection = new SqliteConnection(builder.ConnectionString))
-        {
-            await connection.OpenAsync(cancellationToken);
-            await using var command = connection.CreateCommand();
-            command.CommandText = "VACUUM INTO $path;";
-            command.Parameters.AddWithValue("$path", backupPath);
-            await command.ExecuteNonQueryAsync(cancellationToken);
-        }
+        await VacuumIntoAsync(connectionString, backupPath, cancellationToken);
 
         Prune(directory, fileName);
         return backupPath;
+    }
+
+    /// <summary>The folder, beside the database, that holds the copy <see cref="CreateLatestAsync"/> writes.</summary>
+    public const string LatestFolderName = "backups";
+
+    /// <summary>
+    /// Writes a consistent copy of the database to <c>&lt;database folder&gt;/backups/&lt;name&gt;.latest&lt;extension&gt;</c>,
+    /// for example <c>/data/backups/dinnerplanner.latest.db</c>, replacing the previous one.
+    /// The copy is written to a temporary file in the same folder first and then moved into place,
+    /// so a file backup that runs at the same time sees either the old copy or the new one, never half of one.
+    /// Returns the path of the copy.
+    /// </summary>
+    public static async Task<string> CreateLatestAsync(
+        string connectionString,
+        string databasePath,
+        CancellationToken cancellationToken = default)
+    {
+        var directory = Path.Combine(Path.GetDirectoryName(databasePath) ?? ".", LatestFolderName);
+        Directory.CreateDirectory(directory);
+
+        var latestPath = Path.Combine(
+            directory,
+            Path.GetFileNameWithoutExtension(databasePath) + ".latest" + Path.GetExtension(databasePath));
+        // VACUUM INTO refuses to write over an existing file, so every call gets its own temporary name.
+        var temporaryPath = $"{latestPath}.{Guid.NewGuid():N}.tmp";
+
+        try
+        {
+            await VacuumIntoAsync(connectionString, temporaryPath, cancellationToken);
+            File.Move(temporaryPath, latestPath, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporaryPath);
+        }
+
+        return latestPath;
+    }
+
+    private static async Task VacuumIntoAsync(string connectionString, string path, CancellationToken cancellationToken)
+    {
+        var builder = new SqliteConnectionStringBuilder(connectionString) { Pooling = false };
+        await using var connection = new SqliteConnection(builder.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "VACUUM INTO $path;";
+        command.Parameters.AddWithValue("$path", path);
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private static void Prune(string directory, string fileName)
