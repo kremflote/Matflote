@@ -184,27 +184,20 @@ public class RecipesController(
             ? context.Recipes.AsNoTracking()
             : context.Recipes;
 
+        // Split queries: one statement per collection instead of one row per ingredient x tag x component.
         return query
-        .Include(recipe => recipe.Ingredients)
-            .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                .ThenInclude(ingredient => ingredient.Brand)
-        .Include(recipe => recipe.Ingredients)
-            .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                .ThenInclude(ingredient => ingredient.Tags)
-                    .ThenInclude(tag => tag.TagDefinition)
-        .Include(recipe => recipe.Tags)
-            .ThenInclude(tag => tag.TagDefinition)
-        .Include(recipe => recipe.Components)
-            .ThenInclude(component => component.ChildRecipe)
-                .ThenInclude(childRecipe => childRecipe.Ingredients)
-                    .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                        .ThenInclude(ingredient => ingredient.Brand)
-        .Include(recipe => recipe.Components)
-            .ThenInclude(component => component.ChildRecipe)
-                .ThenInclude(childRecipe => childRecipe.Ingredients)
-                    .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                        .ThenInclude(ingredient => ingredient.Tags)
-                            .ThenInclude(tag => tag.TagDefinition);
+            .AsSplitQuery()
+            .Include(recipe => recipe.Ingredients)
+                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
+                    .ThenInclude(ingredient => ingredient.Brand)
+            .Include(recipe => recipe.Ingredients)
+                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
+                    .ThenInclude(ingredient => ingredient.Tags)
+                        .ThenInclude(tag => tag.TagDefinition)
+            .Include(recipe => recipe.Tags)
+                .ThenInclude(tag => tag.TagDefinition)
+            .Include(recipe => recipe.Components)
+                .ThenInclude(component => component.ChildRecipe);
     }
 
     private async Task<List<Recipe>> GetComponentRecipes(IEnumerable<int> recipeIds)
@@ -401,7 +394,7 @@ public class RecipesController(
 
     private static RecipeIngredientDto ToDto(RecipeIngredient recipeIngredient) => new(
         recipeIngredient.RecipeIngredientId,
-        ToDto(recipeIngredient.Ingredient),
+        ToSummaryDto(recipeIngredient.Ingredient),
         recipeIngredient.Amount,
         recipeIngredient.Unit,
         recipeIngredient.Preparation
@@ -410,28 +403,18 @@ public class RecipesController(
     private static RecipeComponentDto ToDto(RecipeComponent component) => new(
         component.ChildRecipe.RecipeId,
         component.ChildRecipe.Name,
-        component.ChildRecipe.ImageUrl,
         component.Amount,
         component.Unit,
         component.Preparation,
-        component.SortOrder,
-        component.ChildRecipe.Ingredients.Select(ToDto).ToList()
+        component.SortOrder
     );
 
-    private static IngredientDto ToDto(Ingredient ingredient) => new(
+    private static RecipeIngredientSummaryDto ToSummaryDto(Ingredient ingredient) => new(
         ingredient.IngredientId,
         ingredient.IngredientName,
-        ingredient.Description,
-        ingredient.BrandId,
         ingredient.Brand is null ? null : new BrandDto(ingredient.Brand.BrandId, ingredient.Brand.Name),
         ingredient.ImageUrl,
         ingredient.Tags.Select(ingredientTag => ingredientTag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
-        ingredient.NutritionPer100,
-        ingredient.NutritionSource,
-        ingredient.NutritionSourceLabel,
-        ingredient.MatvaretabellenFoodId,
-        ingredient.NutritionMatchedName,
-        ingredient.NutritionMatchConfidence,
         ingredient.Color
     );
 }

@@ -49,15 +49,20 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
   const ingredientFilterButtonRef = useRef<HTMLButtonElement | null>(null);
   const ingredientPickerRef = useRef<HTMLDivElement | null>(null);
 
+  const recipesById = useMemo(
+    () => new Map(recipes.map((recipe) => [recipe.recipeId, recipe])),
+    [recipes],
+  );
   const filteredRecipes = useMemo(
     () =>
       recipes.filter((recipe) =>
         matchesRecipeSearch(recipe, searchTerm) &&
-        matchesSelectedIngredients(recipe, selectedIngredientIds) &&
-        matchesRecipeTags(recipe, selectedRecipeTags),
+        matchesSelectedIngredients(recipe, selectedIngredientIds, recipesById) &&
+        matchesRecipeTags(recipe, selectedRecipeTags, recipesById),
       ),
     [
       recipes,
+      recipesById,
       searchTerm,
       selectedIngredientIds,
       selectedRecipeTags,

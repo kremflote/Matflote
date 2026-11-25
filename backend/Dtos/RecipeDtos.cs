@@ -54,19 +54,31 @@ public record RecipeDto(
 
 public record RecipeIngredientDto(
     int RecipeIngredientId,
-    IngredientDto Ingredient,
+    RecipeIngredientSummaryDto Ingredient,
     decimal? Amount,
     MeasurementUnit Unit,
     IngredientPreparation Preparation
 );
 
+/// <summary>
+/// The parts of an ingredient a recipe list needs. The full ingredient, with its description and
+/// nutrition, comes from GET /api/ingredients.
+/// </summary>
+public record RecipeIngredientSummaryDto(
+    int IngredientId,
+    string IngredientName,
+    BrandDto? Brand,
+    string? ImageUrl,
+    IReadOnlyCollection<string> Tags,
+    string? Color
+);
+
+/// <summary>A component recipe by reference; its ingredients are in its own entry of the recipe list.</summary>
 public record RecipeComponentDto(
     int RecipeId,
     string Name,
-    string? ImageUrl,
     decimal Amount,
     MeasurementUnit Unit,
     IngredientPreparation Preparation,
-    int SortOrder,
-    IReadOnlyCollection<RecipeIngredientDto> Ingredients
+    int SortOrder
 );

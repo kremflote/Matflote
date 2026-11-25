@@ -127,4 +127,47 @@ public class RecipesApiTests(MatfloteFactory factory) : IClassFixture<MatfloteFa
             [Component(999_999, 5)]));
         await unknownComponent.EnsureStatus(HttpStatusCode.BadRequest);
     }
+
+    [Fact]
+    public async Task The_recipe_list_embeds_slim_ingredients_and_components()
+    {
+        var brand = await (await client.PostJson("/api/brands", new { name = "RT slim brand" })).Read<BrandDto>();
+        var flour = await client.PostJson("/api/ingredients", new
+        {
+            ingredientName = "RT slim flour",
+            description = "Long text that the recipe list does not need.",
+            brandId = brand.BrandId,
+            imageUrl = "/images/ingredients/flour.jpg",
+            tags = new[] { "Grain" },
+            nutritionPer100 = new { calories = 364, proteinGrams = 10m, vitamins = Array.Empty<string>() },
+            color = "#eeddcc",
+        });
+        await flour.EnsureStatus(HttpStatusCode.Created);
+        var flourId = (await flour.Read<IngredientDto>()).IngredientId;
+        var dough = await CreateRecipe(client, Recipe("RT slim dough", 1, [Line(flourId, 500)]));
+        var pizza = await CreateRecipe(client, Recipe("RT slim pizza", 2, [Line(flourId, 50)], [Component(dough.RecipeId, 300)]));
+
+        var list = await (await client.GetAsync("/api/recipes")).ReadJson();
+        var json = list.EnumerateArray().Single(recipe => recipe.GetProperty("recipeId").GetInt32() == pizza.RecipeId);
+
+        var ingredient = json.GetProperty("ingredients")[0].GetProperty("ingredient");
+        Assert.Equal(
+            ["brand", "color", "imageUrl", "ingredientId", "ingredientName", "tags"],
+            ingredient.EnumerateObject().Select(property => property.Name).Order());
+        Assert.Equal("RT slim brand", ingredient.GetProperty("brand").GetProperty("name").GetString());
+        Assert.Equal("/images/ingredients/flour.jpg", ingredient.GetProperty("imageUrl").GetString());
+        Assert.Equal("Grain", ingredient.GetProperty("tags")[0].GetString());
+        Assert.Equal("#eeddcc", ingredient.GetProperty("color").GetString());
+
+        var component = json.GetProperty("components")[0];
+        Assert.Equal(
+            ["amount", "name", "preparation", "recipeId", "sortOrder", "unit"],
+            component.EnumerateObject().Select(property => property.Name).Order());
+        Assert.Equal(dough.RecipeId, component.GetProperty("recipeId").GetInt32());
+        Assert.Equal("RT slim dough", component.GetProperty("name").GetString());
+
+        // The full ingredient is still available from its own endpoint.
+        var full = await client.GetJson<IngredientDto>($"/api/ingredients/{flourId}");
+        Assert.Equal(364, full.NutritionPer100!.Calories);
+    }
 }

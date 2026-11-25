@@ -79,7 +79,7 @@ function recipe(
 }
 
 function component(child: IRecipe, amount: number, unit: MeasurementUnit = "Gram"): IRecipeComponent {
-  return { recipeId: child.recipeId, name: child.name, imageUrl: null, amount, unit, preparation: "None", sortOrder: 1 };
+  return { recipeId: child.recipeId, name: child.name, amount, unit, preparation: "None", sortOrder: 1 };
 }
 
 function meal(date: string, ...items: Array<[IRecipe, number | null]>): IMealPlanEntry {

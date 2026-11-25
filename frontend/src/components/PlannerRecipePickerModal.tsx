@@ -174,11 +174,12 @@ function PlannerRecipePickerModal({
           isMainDish(recipe) &&
           matchesSelectedRecipeTags(recipe, selectedMainRecipeTags),
         )
-        .filter((recipe) => matchesSelectedIngredients(recipe, selectedIngredientIds))
+        .filter((recipe) => matchesSelectedIngredients(recipe, selectedIngredientIds, recipeById))
         .filter((recipe) => matchesSearch(recipe, searchTerm))
         .sort((first, second) => first.name.localeCompare(second.name)),
     [
       recipes,
+      recipeById,
       searchTerm,
       selectedIngredientIds,
       selectedMainRecipeTags,

@@ -3,6 +3,7 @@ import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
 import type { MealRecipeRole } from "../../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
 import { ingredientTags } from "../recipeBrowser/formOptions";
+import { getRecipeAndComponentLines } from "../../utils/recipeComponents";
 
 export const mainProteinFilters: IngredientTag[] = ingredientTags.filter(
   (ingredientTag) =>
@@ -30,29 +31,31 @@ export function isMainDish(recipe: IRecipe) {
   return recipe.recipeId > 0;
 }
 
-export function matchesSelectedIngredients(recipe: IRecipe, selectedIngredientIds: number[]) {
+export function matchesSelectedIngredients(
+  recipe: IRecipe,
+  selectedIngredientIds: number[],
+  recipesById: ReadonlyMap<number, IRecipe>,
+) {
   if (selectedIngredientIds.length === 0) {
     return true;
   }
 
+  const lines = getRecipeAndComponentLines(recipe, recipesById);
   return selectedIngredientIds.every((ingredientId) =>
-    recipe.ingredients.some((recipeIngredient) =>
-      recipeIngredient.ingredient.ingredientId === ingredientId,
-    ) ||
-    recipe.components.some((component) =>
-      component.ingredients?.some((recipeIngredient) =>
-        recipeIngredient.ingredient.ingredientId === ingredientId,
-      ) ?? false,
-    ),
+    lines.some((recipeIngredient) => recipeIngredient.ingredient.ingredientId === ingredientId),
   );
 }
 
-export function matchesSelectedIngredientTags(recipe: IRecipe, selectedIngredientTags: IngredientTag[]) {
+export function matchesSelectedIngredientTags(
+  recipe: IRecipe,
+  selectedIngredientTags: IngredientTag[],
+  recipesById: ReadonlyMap<number, IRecipe>,
+) {
   if (selectedIngredientTags.length === 0) {
     return true;
   }
 
-  return selectedIngredientTags.every((ingredientTag) => recipeHasIngredientTag(recipe, ingredientTag));
+  return selectedIngredientTags.every((ingredientTag) => recipeHasIngredientTag(recipe, ingredientTag, recipesById));
 }
 
 export function matchesSelectedRecipeTags(recipe: IRecipe, selectedRecipeTags: RecipeTag[]) {
@@ -96,16 +99,13 @@ export function matchesIngredientSearch(ingredient: IIngredient, searchTerm: str
     .includes(normalizedSearch);
 }
 
-export function recipeHasIngredientTag(recipe: IRecipe, ingredientTag: IngredientTag) {
-  return (
-    recipe.ingredients.some((recipeIngredient) =>
-      recipeIngredient.ingredient.tags.includes(ingredientTag),
-    ) ||
-    recipe.components.some((component) =>
-      component.ingredients?.some((recipeIngredient) =>
-        recipeIngredient.ingredient.tags.includes(ingredientTag),
-      ) ?? false,
-    )
+export function recipeHasIngredientTag(
+  recipe: IRecipe,
+  ingredientTag: IngredientTag,
+  recipesById: ReadonlyMap<number, IRecipe>,
+) {
+  return getRecipeAndComponentLines(recipe, recipesById).some((recipeIngredient) =>
+    recipeIngredient.ingredient.tags.includes(ingredientTag),
   );
 }
 
