@@ -138,12 +138,12 @@ public class PlanningPreferencesService(DinnerPlannerContext context)
     private static List<string> Canonical(IEnumerable<string> requested, List<string> known, List<string> unknown)
     {
         var byKey = known
-            .GroupBy(AssistantService.Key)
+            .GroupBy(CatalogNames.Key)
             .ToDictionary(group => group.Key, group => group.First());
         var result = new List<string>();
         foreach (var name in requested.Where(name => !string.IsNullOrWhiteSpace(name)))
         {
-            if (byKey.TryGetValue(AssistantService.Key(name), out var canonical))
+            if (byKey.TryGetValue(CatalogNames.Key(name), out var canonical))
             {
                 if (!result.Contains(canonical, StringComparer.OrdinalIgnoreCase))
                 {

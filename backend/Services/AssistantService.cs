@@ -6,6 +6,7 @@ using DinnerPlanner.Api.Dtos;
 using DinnerPlanner.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using static DinnerPlanner.Api.Services.CatalogNames;
 
 namespace DinnerPlanner.Api.Services;
 
@@ -22,7 +23,6 @@ public class AssistantService(
     private const int MaxHistoryDays = 366;
     private const int MaxRangeDays = 62;
     private const int MaxReadRangeDays = 366;
-    private const int MaxSuggestions = 3;
     private const decimal MaxNutrientValue = 100_000m;
 
     /// <summary>
@@ -31,6 +31,7 @@ public class AssistantService(
     /// </summary>
     public const decimal NutritionMatchThreshold = 0.70m;
 
+    private const string AssistantTagHint = "Tags must already exist; see tagCategories in GET /api/assistant/context.";
     private const string ModeSkip = "skip";
     private const string ModeUpdate = "update";
     private const string ModeError = "error";
@@ -343,7 +344,7 @@ public class AssistantService(
             }
 
             var nutrition = ToNutritionFacts(input.NutritionPer100, result.Errors);
-            var tagDefinitions = input.Tags is null ? null : tags.Resolve(input.Tags, TagUse.Ingredient, result.Errors, result.Warnings);
+            var tagDefinitions = input.Tags is null ? null : tags.Resolve(input.Tags, TagUse.Ingredient, result.Errors, result.Warnings, AssistantTagHint);
 
             if (result.Errors.Count > 0)
             {
@@ -537,7 +538,7 @@ public class AssistantService(
                 result.Errors.Add("portions is required and must be greater than 0: the number of servings the listed amounts make.");
             }
 
-            var tagDefinitions = tags.Resolve(input.Tags ?? [], TagUse.Recipe, result.Errors, result.Warnings);
+            var tagDefinitions = tags.Resolve(input.Tags ?? [], TagUse.Recipe, result.Errors, result.Warnings, AssistantTagHint);
             var lines = PlanRecipeLines(input, createMissingIngredients, catalog, ingredientResults, result, pendingChanges);
             plan.Components = PlanRecipeComponents(input, plan, recipesByName, storedRecipes, result);
             PlanRecipeImage(input, plan);
@@ -729,7 +730,7 @@ public class AssistantService(
 
             if (!TryParsePreparation(lineInput.Preparation, out var preparation))
             {
-                result.Errors.Add($"{label}: {DescribeUnknownPreparation(lineInput.Preparation)}");
+                result.Errors.Add($"{label}: {RecipeLineRules.DescribeUnknownPreparation(lineInput.Preparation)}");
                 lineIsValid = false;
             }
 
@@ -866,7 +867,7 @@ public class AssistantService(
 
             if (!TryParsePreparation(componentInput.Preparation, out var preparation))
             {
-                result.Errors.Add($"{label}: {DescribeUnknownPreparation(componentInput.Preparation)}");
+                result.Errors.Add($"{label}: {RecipeLineRules.DescribeUnknownPreparation(componentInput.Preparation)}");
                 componentIsValid = false;
             }
 
@@ -1528,10 +1529,6 @@ public class AssistantService(
             || (Enum.TryParse(cleaned, ignoreCase: true, out preparation) && Enum.IsDefined(preparation));
     }
 
-    private static string DescribeUnknownPreparation(string? value) =>
-        $"preparation \"{value}\" is not valid. Leave it out or use one of: "
-        + $"{string.Join(", ", Enum.GetNames<IngredientPreparation>().Where(name => name != nameof(IngredientPreparation.None)))}.";
-
     private static bool IsHexColor(string value) =>
         value.Length is 4 or 7 && value[0] == '#' && value.Skip(1).All(Uri.IsHexDigit);
 
@@ -1541,42 +1538,9 @@ public class AssistantService(
         return brandName is null ? displayName : $"{displayName} ({brandName})";
     }
 
-    private static string Quote(IEnumerable<string> values) =>
-        string.Join(", ", values.Select(value => $"\"{value}\""));
-
-    internal static string Clean(string? value) =>
-        value is null ? string.Empty : string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
-
     internal static string Key(string? value) => Clean(value).ToLowerInvariant();
 
     private static string? NullIfEmpty(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
-
-    /// <summary>
-    /// Finds existing names that are probably what the caller meant: one contains the other, or they are a typo apart.
-    /// </summary>
-    internal static List<string> Suggest(string name, IEnumerable<string> knownNames)
-    {
-        var key = Key(name);
-        if (key.Length < 3)
-        {
-            return [];
-        }
-
-        var known = knownNames.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        var contained = known.Where(candidate =>
-        {
-            var candidateKey = Key(candidate);
-            return candidateKey != key
-                && candidateKey.Length >= 3
-                && (candidateKey.Contains(key) || key.Contains(candidateKey));
-        });
-        var nearDuplicate = LookupDuplicateDetector.FindNearDuplicate(name, known);
-
-        return (nearDuplicate is null ? contained : contained.Prepend(nearDuplicate))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(MaxSuggestions)
-            .ToList();
-    }
 
     private enum ItemStatus
     {
@@ -1622,12 +1586,6 @@ public class AssistantService(
             var id = Target?.Invoke();
             return new AssistantItemResultDto(Name, status, id is null or 0 ? null : id, Warnings, Errors, ImageUrl, NutritionMatch);
         }
-    }
-
-    private enum TagUse
-    {
-        Ingredient,
-        Recipe
     }
 
     private sealed class EntryResult(DateOnly? date, string slot)
@@ -1681,60 +1639,6 @@ public class AssistantService(
     private sealed record RecipeComponentPlan(Recipe Child, decimal Amount, MeasurementUnit Unit, IngredientPreparation Preparation);
 
     private sealed record RecipeReference(int Id, string Name, decimal Portions);
-
-    /// <summary>
-    /// Tag lookup that forgives case, spaces and hyphens ("root vegetable" matches "RootVegetable").
-    /// </summary>
-    private sealed class TagIndex(List<IngredientTagDefinition> definitions)
-    {
-        private readonly Dictionary<string, IngredientTagDefinition> byKey = definitions
-            .GroupBy(tag => TagKey(tag.Name))
-            .ToDictionary(group => group.Key, group => group.First());
-
-        public static async Task<TagIndex> LoadAsync(DinnerPlannerContext context, CancellationToken cancellationToken) =>
-            new(await context.IngredientTagDefinitions.AsNoTracking().Include(tag => tag.Category).ToListAsync(cancellationToken));
-
-        public List<IngredientTagDefinition> Resolve(IReadOnlyCollection<string> names, TagUse use, List<string> errors, List<string> warnings)
-        {
-            var resolved = new List<IngredientTagDefinition>();
-            foreach (var name in names)
-            {
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    continue;
-                }
-
-                if (byKey.TryGetValue(TagKey(name), out var definition))
-                {
-                    if (!resolved.Contains(definition))
-                    {
-                        resolved.Add(definition);
-                        // The web app hides tags of a category that is not shown for this kind of item.
-                        var shown = use == TagUse.Recipe ? definition.Category?.ShowForRecipes : definition.Category?.ShowForIngredients;
-                        if (shown == false)
-                        {
-                            warnings.Add(
-                                $"Tag \"{definition.Name}\" belongs to category \"{definition.Category!.Name}\", which is not used for "
-                                + $"{(use == TagUse.Recipe ? "recipes" : "ingredients")} (see forRecipes / forIngredients in tagCategories). It was saved but the web app does not show it.");
-                        }
-                    }
-
-                    continue;
-                }
-
-                var suggestions = Suggest(name, definitions.Select(tag => tag.Name));
-                errors.Add(
-                    $"Unknown tag \"{name.Trim()}\"."
-                    + (suggestions.Count == 0 ? string.Empty : $" Did you mean {Quote(suggestions)}?")
-                    + " Tags must already exist; see tagCategories in GET /api/assistant/context.");
-            }
-
-            return resolved;
-        }
-
-        private static string TagKey(string name) =>
-            new string(name.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
-    }
 
     /// <summary>
     /// The ingredients known so far, including ones an import has decided to create but not yet saved.
@@ -1791,7 +1695,7 @@ public class AssistantService(
         }
 
         public List<string> Suggest(string name, Ingredient? except = null) =>
-            AssistantService.Suggest(
+            CatalogNames.Suggest(
                 name,
                 ingredients.Where(ingredient => !ReferenceEquals(ingredient, except)).Select(ingredient => ingredient.IngredientName));
 
@@ -1848,7 +1752,7 @@ internal static class AssistantUnits
 
     public static bool TryParse(string? text, out MeasurementUnit unit, out decimal factor)
     {
-        var cleaned = AssistantService.Clean(text).TrimEnd('.');
+        var cleaned = Clean(text).TrimEnd('.');
         if (cleaned.Length == 0)
         {
             unit = MeasurementUnit.Gram;
