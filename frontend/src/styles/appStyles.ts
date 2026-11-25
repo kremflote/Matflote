@@ -177,7 +177,7 @@ export const siteColorClasses = {
 } as const;
 
 export const typographyClasses = {
-  app: "font-['Nunito',system-ui,sans-serif]",
+  app: "font-['Nunito_Variable','Nunito',system-ui,sans-serif]",
   hero: "font-['Segoe_Print','Bradley_Hand','Comic_Sans_MS',cursive]",
   logo: "min-[1401px]:-translate-x-[8.5rem] font-['Ubuntu',sans-serif] text-[46px] font-bold leading-none max-sm:text-[34px]",
   dayLabel: "text-2xl font-extralight tracking-normal",

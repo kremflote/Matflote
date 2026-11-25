@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import Header, { type PageId } from "./components/Header";
 import CookbookPage from "./pages/CookbookPage";
-import NutritionPage from "./pages/NutritionPage";
 import PlannerPage from "./pages/PlannerPage";
-import ScannerPage from "./pages/ScannerPage";
-import SettingsPage from "./pages/SettingsPage";
 import { appStyles, type SiteTheme } from "./styles/appStyles";
 import { getLocalPreference, localPreferenceKeys, setLocalPreference } from "./utils/localPreferences";
+
+// The first load carries only the planner and the cookbook; the other pages load when first opened.
+const NutritionPage = lazy(() => import("./pages/NutritionPage"));
+const ScannerPage = lazy(() => import("./pages/ScannerPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
 const pageIds: PageId[] = ["weekPlanner", "cookbook", "scanner", "nutrition", "settings"];
 const themes: SiteTheme[] = ["dark", "light", "paletteLight"];
@@ -35,11 +37,13 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
       />
-      {activePage === "settings" && <SettingsPage theme={theme} />}
       {activePage === "weekPlanner" && <PlannerPage theme={theme} />}
       {activePage === "cookbook" && <CookbookPage theme={theme} />}
-      {activePage === "scanner" && <ScannerPage theme={theme} />}
-      {activePage === "nutrition" && <NutritionPage theme={theme} />}
+      <Suspense fallback={null}>
+        {activePage === "settings" && <SettingsPage theme={theme} />}
+        {activePage === "scanner" && <ScannerPage theme={theme} />}
+        {activePage === "nutrition" && <NutritionPage theme={theme} />}
+      </Suspense>
     </div>
   );
 }
