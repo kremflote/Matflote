@@ -34,4 +34,43 @@ public class SqlitePragmaTests(MatfloteFactory factory) : IClassFixture<Matflote
             await context.Database.CloseConnectionAsync();
         }
     }
+
+    [Fact]
+    public async Task Startup_switches_a_database_restored_without_wal_back_to_wal()
+    {
+        var directory = MatfloteFactory.CreateTempDirectory();
+        var path = Path.Combine(directory, "matflote-test.db");
+        try
+        {
+            await using (var context = new DinnerPlannerContext(
+                new DbContextOptionsBuilder<DinnerPlannerContext>().UseSqlite($"Data Source={path};Pooling=False").Options))
+            {
+                await context.Database.MigrateAsync();
+                await context.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=DELETE;");
+            }
+
+            using (var restored = new MatfloteFactory { Directory = directory, DeleteDirectoryOnDispose = false })
+            {
+                _ = restored.CreateClient();
+            }
+
+            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+            await using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False");
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA journal_mode;";
+            Assert.Equal("wal", await command.ExecuteScalarAsync());
+        }
+        finally
+        {
+            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+            try
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+            catch (IOException)
+            {
+            }
+        }
+    }
 }

@@ -133,6 +133,9 @@ static async Task PrepareDatabaseAsync(WebApplication app)
     var context = scope.ServiceProvider.GetRequiredService<DinnerPlannerContext>();
     await BackUpBeforeMigratingAsync(app, context, connectionString);
     await context.Database.MigrateAsync();
+    // WAL is stored in the file and EF Core sets it on files it creates; a file restored from a copy may not
+    // have it, and synchronous=NORMAL (SqlitePragmaInterceptor) is only safe in WAL mode.
+    await context.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;");
 
     var tagCatalog = scope.ServiceProvider.GetRequiredService<TagCatalogService>();
     await tagCatalog.RemoveOrphanedAssignmentsAsync();
