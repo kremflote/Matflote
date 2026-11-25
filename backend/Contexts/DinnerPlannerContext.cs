@@ -568,7 +568,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         {
             RecipeId = 1,
             Name = "Garlic yogurt sauce",
-            ImageUrl = "/images/recipes/garlic-yogurt-sauce.png",
+            ImageUrl = "/images/recipes/garlic-yogurt-sauce.jpg",
             Description = "Cold yogurt sauce with grated garlic and lemon. Best with chicken bowls, grilled meat, roasted vegetables, and rice.",
             Instructions = "Grate the garlic finely. Stir garlic, lemon juice, and a little lemon zest into the yogurt. Season with salt and let it rest for at least 10 minutes before serving.",
             Portions = 1m
@@ -578,7 +578,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         {
             RecipeId = 2,
             Name = "Chicken rice bowl",
-            ImageUrl = "/images/recipes/chicken-rice-bowl.png",
+            ImageUrl = "/images/recipes/chicken-rice-bowl.jpg",
             Description = "Weeknight bowl with pan-fried chicken, steamed rice, and fresh garlic yogurt sauce. Good as dinner and easy to scale for meal prep.",
             Instructions = "Rinse the rice and cook until tender. Slice the chicken breast, season lightly, and fry in a hot pan until cooked through. Spoon rice into bowls, add chicken, and finish with garlic yogurt sauce.",
             Portions = 1m

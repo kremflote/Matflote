@@ -2151,7 +2151,7 @@ namespace backend.Migrations
                         {
                             RecipeId = 1,
                             Description = "Cold yogurt sauce with grated garlic and lemon. Best with chicken bowls, grilled meat, roasted vegetables, and rice.",
-                            ImageUrl = "/images/recipes/garlic-yogurt-sauce.png",
+                            ImageUrl = "/images/recipes/garlic-yogurt-sauce.jpg",
                             Instructions = "Grate the garlic finely. Stir garlic, lemon juice, and a little lemon zest into the yogurt. Season with salt and let it rest for at least 10 minutes before serving.",
                             Name = "Garlic yogurt sauce",
                             Portions = 1m
@@ -2160,7 +2160,7 @@ namespace backend.Migrations
                         {
                             RecipeId = 2,
                             Description = "Weeknight bowl with pan-fried chicken, steamed rice, and fresh garlic yogurt sauce. Good as dinner and easy to scale for meal prep.",
-                            ImageUrl = "/images/recipes/chicken-rice-bowl.png",
+                            ImageUrl = "/images/recipes/chicken-rice-bowl.jpg",
                             Instructions = "Rinse the rice and cook until tender. Slice the chicken breast, season lightly, and fry in a hot pan until cooked through. Spoon rice into bowls, add chicken, and finish with garlic yogurt sauce.",
                             Name = "Chicken rice bowl",
                             Portions = 1m
