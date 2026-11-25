@@ -9,7 +9,7 @@ Written for the implementation session. It assumes nothing from the planning con
 - **How it is deployed.** See "The Pi" below. In short: a Raspberry Pi 4 behind Nginx Proxy Manager, Tailscale-only, single user, built on the Pi from a checkout of this repo. Deploying is: push to GitHub, `git pull` on the Pi, rebuild the two services. Database migrations run when the backend starts.
 - **Every migration must be safe to run on the owner's real data.** Do WP0 step 1 first so there is always a copy.
 - **Security is not a priority.** The server is Tailscale-only and has one user. Do not add login, tokens or proxies. Two small hygiene fixes are listed in WP7.
-- **Toolchain.** Backend: .NET SDK 9 or newer (`dotnet build backend`). Creating migrations needs `dotnet-ef` 9. Frontend: Node 22 or 24, `npm ci`, `npm run build`, `npm run lint`. The frontend dev server expects the backend on `http://localhost:5132`.
+- **Toolchain.** Backend: .NET SDK 10 (`dotnet build backend`). Creating migrations needs `dotnet-ef` 10. Frontend: Node 22 or 24, `npm ci`, `npm run build`, `npm run lint`. The frontend dev server expects the backend on `http://localhost:5132`.
 - **Verify in a browser, not only with a build.** Several bugs here were only visible when running the app.
 
 ## Order and rationale

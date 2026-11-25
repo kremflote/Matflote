@@ -170,7 +170,7 @@ public class AgentGuideSessionTests(MatfloteFactory factory) : IClassFixture<Mat
             .Where(item => item.TryGetProperty("recipe", out _))
             .Select(item => item.GetProperty("recipe").GetString()!)
             .ToHashSet();
-        Assert.Empty(plannedNames.Where(before.Contains));
+        Assert.DoesNotContain(plannedNames, before.Contains);
     }
 
     [Fact]

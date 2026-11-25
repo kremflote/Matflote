@@ -110,7 +110,7 @@ public class AssistantUndoTests : IClassFixture<MatfloteFactory>, IAsyncLifetime
         var log = (await Log(4)).EnumerateArray().ToList();
         Assert.Equal(
             ["POST /api/assistant/meal-plan/undo", "POST /api/assistant/meal-plan/undo", "PUT /api/assistant/meal-plan", "PUT /api/assistant/meal-plan"],
-            log.Select(row => row.GetProperty("endpoint").GetString()).ToArray());
+            log.Select(row => row.GetProperty("endpoint").GetString()!).ToArray());
         Assert.All(log.Skip(2), row => Assert.True(row.TryGetProperty("undoneAt", out _)));
         Assert.All(log, row => Assert.False(row.GetProperty("canUndo").GetBoolean()));
     }
