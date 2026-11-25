@@ -113,8 +113,35 @@ public record AssistantIngredientInput(
     string? Brand,
     string? Description,
     IReadOnlyCollection<string>? Tags,
-    NutritionFacts? NutritionPer100,
+    AssistantNutritionInput? NutritionPer100,
     string? Color
+);
+
+/// <summary>
+/// Nutrition per 100 g or 100 ml. A separate type from <see cref="NutritionFacts"/> so that a misspelled
+/// nutrient is rejected like any other unknown field, and so calories may be sent with decimals.
+/// </summary>
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public record AssistantNutritionInput(
+    decimal? Calories,
+    decimal? CarbohydrateGrams,
+    decimal? ProteinGrams,
+    decimal? FatGrams,
+    decimal? SaltGrams,
+    decimal? DietaryFiberGrams,
+    decimal? SaturatedFatGrams,
+    decimal? TransFatGrams,
+    decimal? MonounsaturatedFatGrams,
+    decimal? PolyunsaturatedFatGrams,
+    decimal? Omega3Grams,
+    decimal? Omega6Grams,
+    decimal? CholesterolMilligrams,
+    decimal? VitaminAMicrograms,
+    decimal? VitaminB9Micrograms,
+    decimal? VitaminB12Micrograms,
+    decimal? VitaminCMilligrams,
+    decimal? VitaminDMicrograms,
+    decimal? VitaminEMilligrams
 );
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
@@ -198,13 +225,13 @@ public record AssistantMealPlanRequest(
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public record AssistantDateRangeInput(
-    DateOnly From,
-    DateOnly To
+    DateOnly? From,
+    DateOnly? To
 );
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public record AssistantMealPlanEntryInput(
-    DateOnly Date,
+    DateOnly? Date,
     string? Slot,
     string? Notes,
     IReadOnlyCollection<AssistantMealPlanItemInput>? Items
@@ -230,7 +257,8 @@ public record AssistantMealPlanResultDto(
 );
 
 public record AssistantMealPlanEntryResultDto(
-    DateOnly Date,
+    // Null only for an entry that was sent without a date (and so has an error).
+    DateOnly? Date,
     string Slot,
     string Status,
     IReadOnlyCollection<string> Items,

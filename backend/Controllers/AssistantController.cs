@@ -63,6 +63,12 @@ public class AssistantController(AssistantService assistantService, IWebHostEnvi
             return BadRequest("'from' must be before or equal to 'to'.");
         }
 
+        var (start, end) = AssistantService.ResolveReadRange(from, to);
+        if (AssistantService.IsReadRangeTooLong(start, end))
+        {
+            return BadRequest("Read at most 366 days at a time.");
+        }
+
         return Ok(await assistantService.GetMealPlanAsync(from, to, cancellationToken));
     }
 

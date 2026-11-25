@@ -2,7 +2,8 @@
 
 A small, name-based API for AI agents and scripts that create recipes and plan meals.
 It sits next to the regular API (which the web app uses and which works with numeric IDs).
-All paths below are relative to the MATFLOTE base URL, for example `http://<server>:8080`.
+All paths below are relative to the MATFLOTE base URL: the address the web app is opened at, for example `https://<hostname>`
+(the web app's nginx passes `/api` on to the backend), or the backend directly at `http://<server>:8080`.
 
 This guide is served at `GET /api/assistant`.
 
@@ -24,7 +25,7 @@ Both write endpoints behave the same way:
 
 - **Units are weight or volume only**: `g`, `kg`, `ml`, `l`. `cl`, `dl`, `tsp`/`ts` and `tbsp`/`ss` are accepted and converted to ml. There is no "piece" unit: convert "2 onions" to grams. `conversionRules` in the context lists the household's own conversions (for example `1 yellow onion → 170 g`).
 - **Recipe names are short** (see `vocabulary.limits.recipeNameMaxLength`, currently 30 characters). Put detail in `description`.
-- **Tags must already exist.** Use the names from `tagCategories` in the context. Matching ignores case and spaces. The meal tags (`Breakfast`, `Lunch`, `Dinner`) and protein tags (`Fish`, `Chicken`, `Beef`, `Lamb`, `Mince`) matter: the app's own "Generate week" feature and its variety rules rely on them, so tag recipes accurately.
+- **Tags must already exist.** Use the names from `tagCategories` in the context. Matching ignores case, spaces and hyphens. A category with `forRecipes: false` holds ingredient-only tags (and `forIngredients: false` recipe-only ones); such a tag on the wrong kind of item is saved but gives a warning, because the web app does not show it. The meal tags (`Breakfast`, `Lunch`, `Dinner`) and protein tags (`Fish`, `Chicken`, `Beef`, `Lamb`, `Mince`) matter: the app's own "Generate week" feature and its variety rules rely on them, so tag recipes accurately.
 - **`portions` on a recipe** is the number of servings the listed amounts make. **`portions` on a planned meal** is how many servings to cook that day; shopping lists and nutrition scale by `planned portions / recipe portions`.
 - **One line per ingredient per recipe.** Repeated lines for the same ingredient are added together.
 - Amounts are for the raw ingredient as bought, since they feed the shopping list.
@@ -111,7 +112,7 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
 | `recipes[].ingredients[].amount` | May be omitted for "to taste"; the shopping list then shows "as needed". |
 | `recipes[].components` | Other recipes used inside this one, by name: `{ "recipe": "Garlic yogurt sauce", "amount": 100, "unit": "g" }`. The other recipe may be in the same request. |
 
-`nutritionPer100` fields (all optional): `calories`, `carbohydrateGrams`, `proteinGrams`, `fatGrams`, `saltGrams`, `dietaryFiberGrams`, `saturatedFatGrams`, `transFatGrams`, `monounsaturatedFatGrams`, `polyunsaturatedFatGrams`, `omega3Grams`, `omega6Grams`, `cholesterolMilligrams`, `vitaminAMicrograms`, `vitaminB9Micrograms`, `vitaminB12Micrograms`, `vitaminCMilligrams`, `vitaminDMicrograms`, `vitaminEMilligrams`. For Norwegian foods, `GET /api/product-lookup/matvaretabellen?query=<norwegian name>` returns official values to copy from.
+`nutritionPer100` fields (all optional, per 100 g or 100 ml, between 0 and 100000; a misspelled field is rejected with `400`; `calories` is rounded to a whole number): `calories`, `carbohydrateGrams`, `proteinGrams`, `fatGrams`, `saltGrams`, `dietaryFiberGrams`, `saturatedFatGrams`, `transFatGrams`, `monounsaturatedFatGrams`, `polyunsaturatedFatGrams`, `omega3Grams`, `omega6Grams`, `cholesterolMilligrams`, `vitaminAMicrograms`, `vitaminB9Micrograms`, `vitaminB12Micrograms`, `vitaminCMilligrams`, `vitaminDMicrograms`, `vitaminEMilligrams`. For Norwegian foods, `GET /api/product-lookup/matvaretabellen?query=<norwegian name>` returns official values to copy from.
 
 Response (`200`, or `422` when anything failed):
 
@@ -125,7 +126,7 @@ Response (`200`, or `422` when anything failed):
 }
 ```
 
-`status` is `created`, `updated` or `skipped` when `applied` is true; `would_create` / `would_update` when it is a dry run or the request was rejected; `error` for the items that caused a rejection.
+`status` is `created` or `updated` when `applied` is true; `would_create` / `would_update` when it is a dry run or the request was rejected; `skipped` (never prefixed) for an existing item left alone; `error` for the items that caused a rejection. Two entries in one request may not change the same recipe (for example one by `id` and one by its old name).
 
 To edit an existing recipe: `GET /api/assistant/recipes/{id}` returns it in exactly the shape above, so change what is needed and post it back inside `"recipes": [ ... ]` with `"onExistingRecipe": "update"`.
 
@@ -153,14 +154,21 @@ To edit an existing recipe: `GET /api/assistant/recipes/{id}` returns it in exac
 | Field | Meaning |
 | --- | --- |
 | `mode` | `replace` (default): each listed date + slot is overwritten. `fill`: slots that already have something are left alone and reported as `skipped`. |
-| `clearRange` | Optional. Every existing meal in the range that is **not** listed in `entries` is removed. Use it with a full week of entries to replace the week. At most 62 days. |
+| `entries[].date` | Required, `YYYY-MM-DD`. |
+| `entries[].slot` | Required: a name from `vocabulary.mealSlots` (case is ignored; numbers are not accepted). |
+| `clearRange` | Optional, `{ "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }`, both required. Every existing meal in the range that is **not** listed in `entries` is removed. Use it with a full week of entries to replace the week. At most 62 days. |
 | `entries[].items` | A recipe item (`recipe` name or `recipeId`, plus `portions`) or an ingredient item (`ingredient`, `amount`, `unit`). An entry with no items clears that slot. |
-| `items[].portions` | Defaults to the recipe's own portion count. |
+| `items[].portions` | Recipe items only. Defaults to the recipe's own portion count. Must be greater than 0 after rounding to two decimals. |
+| `items[].amount`, `items[].unit` | Ingredient items only. `amount` is required and greater than 0. |
 | `items[].role` | `Main`, `Sauce`, `Side` or `Extra`. Defaults to `Main` for the first item and `Side` for the rest. |
 
 There is one entry per date and slot. Recipes and ingredients must exist before they are planned; an unknown name is an error with "did you mean" suggestions.
 
-Response (`200` or `422`): one row per affected slot with `status` `created`, `replaced`, `cleared`, `skipped` or `unchanged` (prefixed `would_` when not applied), the resolved `items`, and any `warnings` / `errors`.
+Response (`200` or `422`): one row per affected slot with `status` `created`, `replaced` or `cleared` (prefixed `would_` when not applied), `skipped` (a planned slot left alone in `fill` mode) or `unchanged` (an empty entry for a slot that was already empty), the resolved `items`, and any `warnings` / `errors`.
+
+## GET /api/assistant/meal-plan
+
+`from` and `to` are optional: with neither, the current week (Monday to Sunday); with one, the seven days starting or ending on it. At most 366 days per read (`400` otherwise).
 
 ## Checking the result
 

@@ -223,9 +223,14 @@ public class AssistantMealPlanTests : IClassFixture<MatfloteFactory>, IAsyncLife
         { "unknown ingredient", new { entries = new[] { Meal(ErrorDay, "Snack1", new { ingredient = "AM nothing like it", amount = 10, unit = "g" }) } }, "does not exist" },
         { "recipe and ingredient", new { entries = new[] { Meal(ErrorDay, "Dinner", new { recipe = "AM soup", ingredient = "Lemon", amount = 10, unit = "g" }) } }, "exactly one of" },
         { "neither recipe nor ingredient", new { entries = new[] { Meal(ErrorDay, "Dinner", new { portions = 2 }) } }, "exactly one of" },
+        { "portions that round to zero", new { entries = new[] { Meal(ErrorDay, "Dinner", RecipeItem("AM soup", 0.001m)) } }, "portions must be greater than 0" },
         { "zero portions", new { entries = new[] { Meal(ErrorDay, "Dinner", RecipeItem("AM soup", 0)) } }, "portions must be greater than 0" },
         { "invalid role", new { entries = new[] { Meal(ErrorDay, "Dinner", RecipeItem("AM soup", role: "Dessert")) } }, "role \"Dessert\" is not valid" },
         { "ingredient without amount", new { entries = new[] { Meal(ErrorDay, "Snack1", new { ingredient = "Lemon", unit = "g" }) } }, "amount is required" },
+        { "missing date", new { entries = new[] { new { slot = "Dinner", items = new[] { RecipeItem("AM soup") } } } }, "date is required" },
+        { "clearRange without to", new { clearRange = new { from = ErrorDay } }, "clearRange needs both" },
+        { "numeric slot", new { entries = new[] { Meal(ErrorDay, "2", RecipeItem("AM soup")) } }, "slot \"2\" is not valid" },
+        { "numeric role", new { entries = new[] { Meal(ErrorDay, "Dinner", RecipeItem("AM soup", role: "1")) } }, "role \"1\" is not valid" },
         { "ingredient with piece unit", new { entries = new[] { Meal(ErrorDay, "Snack1", new { ingredient = "Lemon", amount = 1, unit = "stk" }) } }, "unit \"stk\" is not supported" },
     };
 
@@ -265,6 +270,36 @@ public class AssistantMealPlanTests : IClassFixture<MatfloteFactory>, IAsyncLife
 
         await response.EnsureStatus(HttpStatusCode.BadRequest);
         Assert.Empty(await Entries(day, day));
+    }
+
+    [Fact]
+    public async Task A_missing_date_is_not_stored_as_year_one()
+    {
+        await client.PlanMeals(new { entries = new[] { new { slot = "Dinner", items = new[] { RecipeItem("AM soup") } } } }, HttpStatusCode.UnprocessableEntity);
+        Assert.Empty(await Entries(DateOnly.MinValue, DateOnly.MinValue.AddDays(6)));
+    }
+
+    [Fact]
+    public async Task Portions_on_an_ingredient_item_are_ignored_with_a_warning()
+    {
+        var day = new DateOnly(2034, 8, 7);
+        var result = await client.PlanMeals(new { dryRun = true, entries = new[] { Meal(day, "Snack1", new { ingredient = "Rice", amount = 50, unit = "g", portions = 2 }) } });
+        Assert.Contains("portions only applies to recipe items", string.Join(" ", Row(result, day, "Snack1").Strings("warnings")));
+    }
+
+    [Fact]
+    public async Task Reading_with_only_to_covers_the_seven_days_up_to_it()
+    {
+        var plan = await client.GetJson<JsonElement>("/api/assistant/meal-plan?to=2034-01-14");
+        Assert.Equal("2034-01-08", plan.GetProperty("from").GetString());
+        Assert.Equal("2034-01-14", plan.GetProperty("to").GetString());
+    }
+
+    [Fact]
+    public async Task Reading_more_than_a_year_is_400()
+    {
+        var response = await client.GetAsync("/api/assistant/meal-plan?from=2034-01-01&to=2035-01-02");
+        await response.EnsureStatus(HttpStatusCode.BadRequest);
     }
 
     [Fact]

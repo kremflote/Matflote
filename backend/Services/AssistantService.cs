@@ -14,7 +14,9 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
     private const int DefaultHistoryDays = 56;
     private const int MaxHistoryDays = 366;
     private const int MaxRangeDays = 62;
+    private const int MaxReadRangeDays = 366;
     private const int MaxSuggestions = 3;
+    private const decimal MaxNutrientValue = 100_000m;
 
     private const string ModeSkip = "skip";
     private const string ModeUpdate = "update";
@@ -274,7 +276,8 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 result.Errors.Add($"color \"{color}\" must be a hex colour such as \"#f28c28\".");
             }
 
-            var tagDefinitions = input.Tags is null ? null : tags.Resolve(input.Tags, result.Errors);
+            var nutrition = ToNutritionFacts(input.NutritionPer100, result.Errors);
+            var tagDefinitions = input.Tags is null ? null : tags.Resolve(input.Tags, TagUse.Ingredient, result.Errors, result.Warnings);
 
             if (result.Errors.Count > 0)
             {
@@ -287,8 +290,8 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 var ingredient = catalog.Create(name, brandName);
                 ingredient.Description = description;
                 ingredient.Color = color;
-                ingredient.NutritionPer100 = input.NutritionPer100;
-                ingredient.NutritionSource = input.NutritionPer100 is null ? NutritionDataSource.None : NutritionDataSource.Manual;
+                ingredient.NutritionPer100 = nutrition;
+                ingredient.NutritionSource = nutrition is null ? NutritionDataSource.None : NutritionDataSource.Manual;
                 ingredient.Tags = (tagDefinitions ?? [])
                     .Select(tag => new IngredientTagAssignment { IngredientTagDefinitionId = tag.IngredientTagDefinitionId })
                     .ToList();
@@ -321,9 +324,9 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                     existing.Color = color;
                 }
 
-                if (input.NutritionPer100 is not null)
+                if (nutrition is not null)
                 {
-                    existing.NutritionPer100 = input.NutritionPer100;
+                    existing.NutritionPer100 = nutrition;
                     existing.NutritionSource = NutritionDataSource.Manual;
                     existing.NutritionSourceLabel = null;
                     existing.MatvaretabellenFoodId = null;
@@ -368,6 +371,8 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
         // Pass 1: decide what each input does, so components can refer to recipes later in the same request.
         var plans = new List<RecipePlan>();
         var seenNames = new HashSet<string>();
+        // Two entries must not both write the same stored recipe (one by id, one by its old name, say).
+        var targetedRecipes = new HashSet<Recipe>(ReferenceEqualityComparer.Instance);
         foreach (var input in inputs)
         {
             var name = Clean(input.Name);
@@ -411,6 +416,12 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 recipesByName.TryGetValue(Key(name), out existing);
             }
 
+            if (existing is not null && !targetedRecipes.Add(existing))
+            {
+                result.Errors.Add($"Another entry in this request already changes recipe {existing.RecipeId} (\"{existing.Name}\"). List each recipe once.");
+                continue;
+            }
+
             if (existing is not null)
             {
                 result.Target = () => existing.RecipeId;
@@ -449,12 +460,13 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 result.Errors.Add($"description is {description.Length} characters; the maximum is {ValidationLimits.DescriptionMaxLength}. Put the steps in instructions instead.");
             }
 
-            if (input.Portions is null or <= 0m)
+            // Checked after rounding to the stored two decimals, so 0.001 is not saved as 0.
+            if (input.Portions is null || Math.Round(input.Portions.Value, 2) <= 0m)
             {
                 result.Errors.Add("portions is required and must be greater than 0: the number of servings the listed amounts make.");
             }
 
-            var tagDefinitions = tags.Resolve(input.Tags ?? [], result.Errors);
+            var tagDefinitions = tags.Resolve(input.Tags ?? [], TagUse.Recipe, result.Errors, result.Warnings);
             var lines = PlanRecipeLines(input, createMissingIngredients, catalog, ingredientResults, result, pendingChanges);
             plan.Components = PlanRecipeComponents(input, plan, recipesByName, storedRecipes, result);
 
@@ -655,7 +667,7 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 componentIsValid = false;
             }
 
-            if (componentInput.Amount is null or <= 0m)
+            if (componentInput.Amount is null || Math.Round(componentInput.Amount.Value * factor, 2) <= 0m)
             {
                 result.Errors.Add($"{label}: amount is required and must be greater than 0.");
                 componentIsValid = false;
@@ -808,10 +820,18 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
 
     // ---------- Meal plan ----------
 
+    /// <summary>The range a read covers: the current week by default, or seven days from or up to the one date given.</summary>
+    public static (DateOnly From, DateOnly To) ResolveReadRange(DateOnly? from, DateOnly? to)
+    {
+        var start = from ?? (to is null ? StartOfWeek(DateOnly.FromDateTime(DateTime.Now)) : to.Value.AddDays(-6));
+        return (start, to ?? start.AddDays(6));
+    }
+
+    public static bool IsReadRangeTooLong(DateOnly from, DateOnly to) => to.DayNumber - from.DayNumber >= MaxReadRangeDays;
+
     public async Task<AssistantMealPlanDto> GetMealPlanAsync(DateOnly? from, DateOnly? to, CancellationToken cancellationToken)
     {
-        var start = from ?? StartOfWeek(DateOnly.FromDateTime(DateTime.Now));
-        var end = to ?? start.AddDays(6);
+        var (start, end) = ResolveReadRange(from, to);
 
         var entries = await context.MealPlanEntries
             .AsNoTracking()
@@ -860,17 +880,28 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
             requestErrors.Add("Nothing to do: provide \"entries\" and/or \"clearRange\".");
         }
 
-        if (request.ClearRange is { } clearRange)
+        (DateOnly From, DateOnly To)? clearRange = null;
+        if (request.ClearRange is { } range)
         {
-            if (clearRange.From > clearRange.To)
+            if (range.From is null || range.To is null)
+            {
+                requestErrors.Add("clearRange needs both \"from\" and \"to\" (YYYY-MM-DD).");
+            }
+            else if (range.From > range.To)
             {
                 requestErrors.Add("clearRange.from must be on or before clearRange.to.");
             }
-            else if (clearRange.To.DayNumber - clearRange.From.DayNumber >= MaxRangeDays)
+            else if (range.To.Value.DayNumber - range.From.Value.DayNumber >= MaxRangeDays)
             {
                 requestErrors.Add($"clearRange can span at most {MaxRangeDays} days.");
             }
+            else
+            {
+                clearRange = (range.From.Value, range.To.Value);
+            }
         }
+
+        var datedInputs = entryInputs.Where(entry => entry.Date is not null).ToList();
 
         var recipes = await context.Recipes
             .AsNoTracking()
@@ -884,11 +915,11 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
             await context.Ingredients.AsNoTracking().Include(ingredient => ingredient.Brand).ToListAsync(cancellationToken),
             []);
 
-        var dates = entryInputs.Select(entry => entry.Date).ToList();
-        if (request.ClearRange is not null && requestErrors.Count == 0)
+        var dates = datedInputs.Select(entry => entry.Date!.Value).ToList();
+        if (clearRange is not null)
         {
-            dates.Add(request.ClearRange.From);
-            dates.Add(request.ClearRange.To);
+            dates.Add(clearRange.Value.From);
+            dates.Add(clearRange.Value.To);
         }
 
         var storedEntries = new List<MealPlanEntry>();
@@ -910,14 +941,20 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
             var result = new EntryResult(entryInput.Date, Clean(entryInput.Slot));
             results.Add(result);
 
-            if (!Enum.TryParse<MealSlot>(Clean(entryInput.Slot), ignoreCase: true, out var slot) || !Enum.IsDefined(slot))
+            if (entryInput.Date is not { } date)
+            {
+                result.Errors.Add("date is required (YYYY-MM-DD).");
+                continue;
+            }
+
+            if (!TryParseName<MealSlot>(entryInput.Slot, out var slot))
             {
                 result.Errors.Add($"slot \"{entryInput.Slot}\" is not valid. Use one of: {string.Join(", ", Enum.GetNames<MealSlot>())}.");
                 continue;
             }
 
             result.Slot = slot.ToString();
-            if (!requestedSlots.Add((entryInput.Date, slot)))
+            if (!requestedSlots.Add((date, slot)))
             {
                 result.Errors.Add("This date and slot appears more than once in the request. Put all items for a meal in one entry.");
                 continue;
@@ -930,7 +967,7 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
             }
 
             var items = PlanMealItems(entryInput.Items ?? [], recipesById, recipesByName, catalog, result);
-            storedBySlot.TryGetValue((entryInput.Date, slot), out var stored);
+            storedBySlot.TryGetValue((date, slot), out var stored);
 
             if (stored is not null && stored.Recipes.Count > 0 && mode == ModeFill)
             {
@@ -952,13 +989,13 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
             }
 
             result.Status = stored is null ? EntryStatus.Create : EntryStatus.Replace;
-            pendingChanges.Add(() => mealPlanWriter.Upsert(stored, entryInput.Date, slot, notes, items));
+            pendingChanges.Add(() => mealPlanWriter.Upsert(stored, date, slot, notes, items));
         }
 
-        if (request.ClearRange is not null && requestErrors.Count == 0)
+        if (clearRange is not null && requestErrors.Count == 0)
         {
             foreach (var stored in storedEntries
-                .Where(entry => entry.Date >= request.ClearRange.From && entry.Date <= request.ClearRange.To)
+                .Where(entry => entry.Date >= clearRange.Value.From && entry.Date <= clearRange.Value.To)
                 .Where(entry => !requestedSlots.Contains((entry.Date, entry.Slot)))
                 .OrderBy(entry => entry.Date)
                 .ThenBy(entry => entry.Slot))
@@ -1018,7 +1055,7 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 // Mirrors the planner UI: the first item is the meal, the rest accompany it.
                 role = items.Count == 0 ? MealRecipeRole.Main : MealRecipeRole.Side;
             }
-            else if (!Enum.TryParse(Clean(itemInput.Role), ignoreCase: true, out role) || !Enum.IsDefined(role))
+            else if (!TryParseName(itemInput.Role, out role))
             {
                 result.Errors.Add($"role \"{itemInput.Role}\" is not valid. Use one of: {string.Join(", ", Enum.GetNames<MealRecipeRole>())}.");
                 continue;
@@ -1046,7 +1083,7 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                     continue;
                 }
 
-                if (itemInput.Portions is <= 0m)
+                if (itemInput.Portions is not null && Math.Round(itemInput.Portions.Value, 2) <= 0m)
                 {
                     result.Errors.Add($"\"{recipe.Name}\": portions must be greater than 0.");
                     continue;
@@ -1092,10 +1129,15 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 continue;
             }
 
-            if (itemInput.Amount is null or <= 0m)
+            if (itemInput.Amount is null || Math.Round(itemInput.Amount.Value * factor, 2) <= 0m)
             {
                 result.Errors.Add($"{label}: amount is required for ingredient items and must be greater than 0.");
                 continue;
+            }
+
+            if (itemInput.Portions is not null)
+            {
+                result.Warnings.Add($"{label}: portions only applies to recipe items and was ignored. Use amount and unit for ingredients.");
             }
 
             var amount = Math.Round(itemInput.Amount.Value * factor, 2);
@@ -1154,6 +1196,69 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
         {
             result.Warnings.Add($"Similar ingredients already exist: {Quote(suggestions)}. Reuse one of them if this is the same thing.");
         }
+    }
+
+    private static NutritionFacts? ToNutritionFacts(AssistantNutritionInput? input, List<string> errors)
+    {
+        if (input is null)
+        {
+            return null;
+        }
+
+        var values = new (string Name, decimal? Value)[]
+        {
+            ("calories", input.Calories), ("carbohydrateGrams", input.CarbohydrateGrams), ("proteinGrams", input.ProteinGrams),
+            ("fatGrams", input.FatGrams), ("saltGrams", input.SaltGrams), ("dietaryFiberGrams", input.DietaryFiberGrams),
+            ("saturatedFatGrams", input.SaturatedFatGrams), ("transFatGrams", input.TransFatGrams),
+            ("monounsaturatedFatGrams", input.MonounsaturatedFatGrams), ("polyunsaturatedFatGrams", input.PolyunsaturatedFatGrams),
+            ("omega3Grams", input.Omega3Grams), ("omega6Grams", input.Omega6Grams), ("cholesterolMilligrams", input.CholesterolMilligrams),
+            ("vitaminAMicrograms", input.VitaminAMicrograms), ("vitaminB9Micrograms", input.VitaminB9Micrograms),
+            ("vitaminB12Micrograms", input.VitaminB12Micrograms), ("vitaminCMilligrams", input.VitaminCMilligrams),
+            ("vitaminDMicrograms", input.VitaminDMicrograms), ("vitaminEMilligrams", input.VitaminEMilligrams),
+        };
+        var invalid = values.Where(value => value.Value is < 0m or > MaxNutrientValue).Select(value => value.Name).ToList();
+        if (invalid.Count > 0)
+        {
+            errors.Add($"nutritionPer100: {string.Join(", ", invalid)} must be between 0 and {MaxNutrientValue} (values are per 100 g or 100 ml).");
+            return null;
+        }
+
+        return new NutritionFacts
+        {
+            Calories = input.Calories is null ? null : (int)Math.Round(input.Calories.Value, MidpointRounding.AwayFromZero),
+            CarbohydrateGrams = Round(input.CarbohydrateGrams),
+            ProteinGrams = Round(input.ProteinGrams),
+            FatGrams = Round(input.FatGrams),
+            SaltGrams = Round(input.SaltGrams),
+            DietaryFiberGrams = Round(input.DietaryFiberGrams),
+            SaturatedFatGrams = Round(input.SaturatedFatGrams),
+            TransFatGrams = Round(input.TransFatGrams),
+            MonounsaturatedFatGrams = Round(input.MonounsaturatedFatGrams),
+            PolyunsaturatedFatGrams = Round(input.PolyunsaturatedFatGrams),
+            Omega3Grams = Round(input.Omega3Grams),
+            Omega6Grams = Round(input.Omega6Grams),
+            CholesterolMilligrams = Round(input.CholesterolMilligrams),
+            VitaminAMicrograms = Round(input.VitaminAMicrograms),
+            VitaminB9Micrograms = Round(input.VitaminB9Micrograms),
+            VitaminB12Micrograms = Round(input.VitaminB12Micrograms),
+            VitaminCMilligrams = Round(input.VitaminCMilligrams),
+            VitaminDMicrograms = Round(input.VitaminDMicrograms),
+            VitaminEMilligrams = Round(input.VitaminEMilligrams),
+        };
+
+        // The columns hold two decimals.
+        static decimal? Round(decimal? value) => value is null ? null : Math.Round(value.Value, 2);
+    }
+
+    /// <summary>Parses an enum name, ignoring case. Unlike Enum.TryParse it does not accept numbers such as "2".</summary>
+    private static bool TryParseName<TEnum>(string? value, out TEnum result) where TEnum : struct, Enum
+    {
+        var cleaned = Clean(value);
+        result = default;
+        return cleaned.Length > 0
+            && !int.TryParse(cleaned, out _)
+            && Enum.TryParse(cleaned, ignoreCase: true, out result)
+            && Enum.IsDefined(result);
     }
 
     private static bool TryParsePreparation(string? value, out IngredientPreparation preparation)
@@ -1256,9 +1361,15 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
         }
     }
 
-    private sealed class EntryResult(DateOnly date, string slot)
+    private enum TagUse
     {
-        public DateOnly Date { get; } = date;
+        Ingredient,
+        Recipe
+    }
+
+    private sealed class EntryResult(DateOnly? date, string slot)
+    {
+        public DateOnly? Date { get; } = date;
         public string Slot { get; set; } = slot;
         public EntryStatus Status { get; set; } = EntryStatus.Error;
         public List<string> Items { get; } = [];
@@ -1314,9 +1425,9 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
             .ToDictionary(group => group.Key, group => group.First());
 
         public static async Task<TagIndex> LoadAsync(DinnerPlannerContext context, CancellationToken cancellationToken) =>
-            new(await context.IngredientTagDefinitions.AsNoTracking().ToListAsync(cancellationToken));
+            new(await context.IngredientTagDefinitions.AsNoTracking().Include(tag => tag.Category).ToListAsync(cancellationToken));
 
-        public List<IngredientTagDefinition> Resolve(IReadOnlyCollection<string> names, List<string> errors)
+        public List<IngredientTagDefinition> Resolve(IReadOnlyCollection<string> names, TagUse use, List<string> errors, List<string> warnings)
         {
             var resolved = new List<IngredientTagDefinition>();
             foreach (var name in names)
@@ -1331,6 +1442,14 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                     if (!resolved.Contains(definition))
                     {
                         resolved.Add(definition);
+                        // The web app hides tags of a category that is not shown for this kind of item.
+                        var shown = use == TagUse.Recipe ? definition.Category?.ShowForRecipes : definition.Category?.ShowForIngredients;
+                        if (shown == false)
+                        {
+                            warnings.Add(
+                                $"Tag \"{definition.Name}\" belongs to category \"{definition.Category!.Name}\", which is not used for "
+                                + $"{(use == TagUse.Recipe ? "recipes" : "ingredients")} (see forRecipes / forIngredients in tagCategories). It was saved but the web app does not show it.");
+                        }
                     }
 
                     continue;

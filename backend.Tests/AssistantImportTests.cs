@@ -303,6 +303,7 @@ public class AssistantImportTests(MatfloteFactory factory) : IClassFixture<Matfl
         { "name too long", new { recipes = new[] { SimpleRecipe(new string('x', 31)) } }, "the maximum is 30" },
         { "missing name", new { recipes = new[] { SimpleRecipe("") } }, "name is required" },
         { "missing portions", new { recipes = new[] { new { name = "IM err e", tags = Array.Empty<string>(), ingredients = new[] { new { name = "Rice", amount = 1, unit = "g" } } } } }, "portions is required" },
+        { "portions that round to zero", new { recipes = new[] { SimpleRecipe("IM err v", portions: 0.004m) } }, "portions is required" },
         { "description too long", new { recipes = new[] { new { name = "IM err f", description = new string('d', 601), portions = 2, tags = Array.Empty<string>(), ingredients = Array.Empty<object>() } } }, "the maximum is 600" },
         { "negative amount", new { recipes = new[] { SimpleRecipe("IM err g", amount: -5) } }, "amount cannot be negative" },
         { "unknown preparation", new { recipes = new[] { new { name = "IM err h", portions = 2, tags = Array.Empty<string>(), ingredients = new[] { new { name = "Rice", amount = 1, unit = "g", preparation = "Juggled" } } } } }, "preparation \"Juggled\" is not valid" },
@@ -319,6 +320,7 @@ public class AssistantImportTests(MatfloteFactory factory) : IClassFixture<Matfl
         { "duplicate ingredient definition", new { ingredients = new[] { new { name = "IM err q" }, new { name = "IM err q" } } }, "listed more than once" },
         { "invalid colour", new { ingredients = new[] { new { name = "IM err r", color = "orange" } } }, "must be a hex colour" },
         { "ingredient name too long", new { ingredients = new[] { new { name = new string('i', 41) } } }, "the maximum is 40" },
+        { "negative nutrient", new { ingredients = new[] { new { name = "IM err t", nutritionPer100 = new { calories = 100, fatGrams = -1 } } } }, "fatGrams must be between 0" },
         { "unknown ingredient tag", new { ingredients = new[] { new { name = "IM err s", tags = new[] { "Vegetabel" } } } }, "Unknown tag \"Vegetabel\"" },
     };
 
@@ -400,6 +402,58 @@ public class AssistantImportTests(MatfloteFactory factory) : IClassFixture<Matfl
         await topLevel.EnsureStatus(HttpStatusCode.BadRequest);
 
         Assert.Null((await client.Context()).FindRecipe("IM typo"));
+    }
+
+    [Fact]
+    public async Task One_recipe_cannot_be_changed_twice_in_a_request()
+    {
+        var first = await client.Import(new { recipes = new[] { SimpleRecipe("IM twice") } });
+        var id = Id(first.Item("recipes", "IM twice"));
+
+        // Renamed by id, and also listed under its old name.
+        var result = await client.Import(
+            new { onExistingRecipe = "update", recipes = new object[] { new { id, name = "IM twice renamed", portions = 2, tags = Array.Empty<string>(), ingredients = Array.Empty<object>() }, SimpleRecipe("IM twice") } },
+            HttpStatusCode.UnprocessableEntity);
+
+        Assert.Contains("already changes recipe", result.AllErrors());
+        Assert.NotNull((await client.Context()).FindRecipe("IM twice"));
+    }
+
+    [Fact]
+    public async Task A_misspelled_nutrient_is_rejected_with_400()
+    {
+        var response = await client.PostJson("/api/assistant/recipes", new { ingredients = new[] { new { name = "IM nutrient typo", nutritionPer100 = new { calories = 100, protienGrams = 3 } } } });
+        await response.EnsureStatus(HttpStatusCode.BadRequest);
+        Assert.Null((await client.Context()).FindIngredient("IM nutrient typo"));
+    }
+
+    [Fact]
+    public async Task Calories_with_decimals_are_rounded()
+    {
+        var result = await client.Import(new { ingredients = new[] { new { name = "IM decimal calories", tags = new[] { "Grain" }, nutritionPer100 = new { calories = 340.6m, proteinGrams = 24.567m } } } });
+        var id = Id(result.Item("ingredients", "IM decimal calories"));
+
+        var ingredient = await client.GetJson<JsonElement>($"/api/ingredients/{id}");
+        var nutrition = ingredient.GetProperty("nutritionPer100");
+        Assert.Equal(341, nutrition.GetProperty("calories").GetInt32());
+        Assert.Equal(24.57m, nutrition.GetProperty("proteinGrams").GetDecimal());
+        Assert.True((await client.Context()).FindIngredient("IM decimal calories")!.Value.GetProperty("hasNutrition").GetBoolean());
+    }
+
+    [Fact]
+    public async Task A_tag_from_an_ingredient_only_category_on_a_recipe_is_saved_with_a_warning()
+    {
+        // The "Food role" category is shown for ingredients only.
+        var categories = await client.GetJson<JsonElement>("/api/ingredient-tag-categories");
+        var ingredientOnlyTag = categories.EnumerateArray()
+            .First(category => !category.GetProperty("showForRecipes").GetBoolean())
+            .GetProperty("tags")[0].GetProperty("name").GetString()!;
+
+        var result = await client.Import(new { recipes = new[] { new { name = "IM tag scope", portions = 2, tags = new[] { "Dinner", ingredientOnlyTag }, ingredients = new[] { new { name = "Rice", amount = 1, unit = "g" } } } } });
+
+        var recipe = result.Item("recipes", "IM tag scope");
+        Assert.Equal("created", recipe.Status());
+        Assert.Contains("not used for recipes", string.Join(" ", recipe.Strings("warnings")));
     }
 
     [Fact]
