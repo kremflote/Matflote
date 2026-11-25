@@ -43,6 +43,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<ImageStoragePathProvider>();
 builder.Services.AddScoped<AppSettingsService>();
+builder.Services.AddScoped<AssistantService>();
 builder.Services.AddScoped<VikunjaOptionsResolver>();
 builder.Services.AddScoped<GroceryListService>();
 builder.Services.AddScoped<ImageMaintenanceService>();

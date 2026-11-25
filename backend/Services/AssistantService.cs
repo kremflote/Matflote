@@ -1,0 +1,1523 @@
+// MATFLOTE: Name-based catalog and meal-plan operations for AI agents and scripts (the /api/assistant surface).
+// Note: Every write validates the whole request first and reports all problems at once; nothing is saved unless the request is clean.
+
+using DinnerPlanner.Api.Contexts;
+using DinnerPlanner.Api.Dtos;
+using DinnerPlanner.Api.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+
+namespace DinnerPlanner.Api.Services;
+
+public class AssistantService(DinnerPlannerContext context)
+{
+    private const int DefaultHistoryDays = 56;
+    private const int MaxHistoryDays = 366;
+    private const int MaxRangeDays = 62;
+    private const int MaxSuggestions = 3;
+
+    private const string ModeSkip = "skip";
+    private const string ModeUpdate = "update";
+    private const string ModeError = "error";
+    private const string ModeReplace = "replace";
+    private const string ModeFill = "fill";
+
+    // ---------- Context ----------
+
+    public async Task<AssistantContextDto> GetContextAsync(int? historyDays, CancellationToken cancellationToken)
+    {
+        var history = Math.Clamp(historyDays ?? DefaultHistoryDays, 1, MaxHistoryDays);
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var historyStart = today.AddDays(-history);
+
+        var tagCategories = await context.IngredientTagCategories
+            .AsNoTracking()
+            .Include(category => category.Tags)
+            .OrderBy(category => category.SortOrder)
+            .ThenBy(category => category.Name)
+            .ToListAsync(cancellationToken);
+
+        var conversionRules = await context.ConversionRules
+            .AsNoTracking()
+            .OrderBy(rule => rule.SortOrder)
+            .Select(rule => new AssistantConversionRuleDto(rule.FromText, rule.ToText))
+            .ToListAsync(cancellationToken);
+
+        var ingredients = await context.Ingredients
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(ingredient => ingredient.Brand)
+            .Include(ingredient => ingredient.Tags)
+                .ThenInclude(tag => tag.TagDefinition)
+            .OrderBy(ingredient => ingredient.IngredientName)
+            .ToListAsync(cancellationToken);
+
+        var recipes = await context.Recipes
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(recipe => recipe.Ingredients)
+                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
+            .Include(recipe => recipe.Tags)
+                .ThenInclude(tag => tag.TagDefinition)
+            .Include(recipe => recipe.Components)
+                .ThenInclude(component => component.ChildRecipe)
+            .OrderBy(recipe => recipe.Name)
+            .ToListAsync(cancellationToken);
+
+        var plannedDates = await context.MealPlanRecipes
+            .AsNoTracking()
+            .Where(item => item.RecipeId != null && item.MealPlanEntry.Date <= today)
+            .Select(item => new { RecipeId = item.RecipeId!.Value, item.MealPlanEntry.Date })
+            .ToListAsync(cancellationToken);
+        var usageByRecipe = plannedDates
+            .GroupBy(item => item.RecipeId)
+            .ToDictionary(
+                group => group.Key,
+                group => (Count: group.Count(item => item.Date >= historyStart), Last: group.Max(item => item.Date)));
+
+        return new AssistantContextDto(
+            today,
+            StartOfWeek(today),
+            history,
+            new AssistantVocabularyDto(
+                AssistantUnits.CanonicalUnits,
+                AssistantUnits.AliasDescriptions,
+                Enum.GetNames<IngredientPreparation>().Where(name => name != nameof(IngredientPreparation.None)).ToList(),
+                Enum.GetNames<MealSlot>(),
+                Enum.GetNames<MealRecipeRole>(),
+                new AssistantLimitsDto(
+                    ValidationLimits.RecipeNameMaxLength,
+                    ValidationLimits.IngredientNameMaxLength,
+                    ValidationLimits.DescriptionMaxLength,
+                    ValidationLimits.MealNotesMaxLength)),
+            tagCategories
+                .Select(category => new AssistantTagCategoryDto(
+                    category.Name,
+                    category.ShowForIngredients,
+                    category.ShowForRecipes,
+                    category.Tags.OrderBy(tag => tag.SortOrder).ThenBy(tag => tag.Name).Select(tag => tag.Name).ToList()))
+                .ToList(),
+            conversionRules,
+            ingredients
+                .Select(ingredient => new AssistantIngredientSummaryDto(
+                    ingredient.IngredientId,
+                    ingredient.IngredientName,
+                    ingredient.Brand?.Name,
+                    ingredient.Tags.Select(tag => tag.TagDefinition.Name).Order().ToList(),
+                    ingredient.NutritionPer100?.Calories is not null))
+                .ToList(),
+            recipes
+                .Select(recipe =>
+                {
+                    usageByRecipe.TryGetValue(recipe.RecipeId, out var usage);
+                    return new AssistantRecipeSummaryDto(
+                        recipe.RecipeId,
+                        recipe.Name,
+                        recipe.Portions,
+                        recipe.Tags.Select(tag => tag.TagDefinition.Name).Order().ToList(),
+                        recipe.Ingredients.Select(line => line.Ingredient.IngredientName).Order().ToList(),
+                        recipe.Components.Count == 0
+                            ? null
+                            : recipe.Components.OrderBy(component => component.SortOrder).Select(component => component.ChildRecipe.Name).ToList(),
+                        usage.Count,
+                        usage.Count == 0 && usage.Last == default ? null : usage.Last);
+                })
+                .ToList());
+    }
+
+    // ---------- Recipes ----------
+
+    public async Task<AssistantRecipeDocumentDto?> GetRecipeAsync(int id, CancellationToken cancellationToken)
+    {
+        var recipe = await context.Recipes
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(value => value.Ingredients)
+                .ThenInclude(line => line.Ingredient)
+                    .ThenInclude(ingredient => ingredient.Brand)
+            .Include(value => value.Tags)
+                .ThenInclude(tag => tag.TagDefinition)
+            .Include(value => value.Components)
+                .ThenInclude(component => component.ChildRecipe)
+            .FirstOrDefaultAsync(value => value.RecipeId == id, cancellationToken);
+
+        if (recipe is null)
+        {
+            return null;
+        }
+
+        return new AssistantRecipeDocumentDto(
+            recipe.RecipeId,
+            recipe.Name,
+            recipe.Description,
+            recipe.Instructions,
+            recipe.Portions,
+            recipe.Tags.Select(tag => tag.TagDefinition.Name).Order().ToList(),
+            recipe.Ingredients
+                .OrderBy(line => line.RecipeIngredientId)
+                .Select(line => new AssistantRecipeIngredientDocumentDto(
+                    line.Ingredient.IngredientName,
+                    line.Ingredient.Brand?.Name,
+                    line.Amount,
+                    AssistantUnits.ToShort(line.Unit),
+                    line.Preparation == IngredientPreparation.None ? null : line.Preparation.ToString()))
+                .ToList(),
+            recipe.Components
+                .OrderBy(component => component.SortOrder)
+                .Select(component => new AssistantRecipeComponentDocumentDto(
+                    component.ChildRecipe.Name,
+                    component.Amount,
+                    AssistantUnits.ToShort(component.Unit),
+                    component.Preparation == IngredientPreparation.None ? null : component.Preparation.ToString()))
+                .ToList());
+    }
+
+    public async Task<AssistantImportResultDto> ImportAsync(AssistantImportRequest request, CancellationToken cancellationToken)
+    {
+        var dryRun = request.DryRun ?? false;
+        var requestErrors = new List<string>();
+        var recipeMode = ParseOption(request.OnExistingRecipe, ModeSkip, [ModeSkip, ModeUpdate, ModeError], "onExistingRecipe", requestErrors);
+        var ingredientMode = ParseOption(request.OnExistingIngredient, ModeSkip, [ModeSkip, ModeUpdate], "onExistingIngredient", requestErrors);
+        var createMissingIngredients = request.CreateMissingIngredients ?? true;
+
+        if ((request.Ingredients?.Count ?? 0) == 0 && (request.Recipes?.Count ?? 0) == 0)
+        {
+            requestErrors.Add("Nothing to import: provide at least one entry in \"recipes\" or \"ingredients\".");
+        }
+
+        var tags = await TagIndex.LoadAsync(context, cancellationToken);
+        var catalog = new IngredientCatalog(
+            await context.Ingredients
+                .Include(ingredient => ingredient.Brand)
+                .Include(ingredient => ingredient.Tags)
+                .ToListAsync(cancellationToken),
+            await context.Brands.ToListAsync(cancellationToken));
+        var storedRecipes = await context.Recipes
+            .AsSplitQuery()
+            .Include(recipe => recipe.Ingredients)
+            .Include(recipe => recipe.Tags)
+            .Include(recipe => recipe.Components)
+            .ToListAsync(cancellationToken);
+
+        // Changes are collected here and only run once the whole request has validated.
+        var pendingChanges = new List<Action>();
+        var ingredientResults = new List<ItemResult>();
+        var recipeResults = new List<ItemResult>();
+
+        PlanIngredientDefinitions(request.Ingredients ?? [], ingredientMode, tags, catalog, ingredientResults, pendingChanges);
+        PlanRecipes(
+            request.Recipes ?? [],
+            recipeMode,
+            createMissingIngredients,
+            tags,
+            catalog,
+            storedRecipes,
+            ingredientResults,
+            recipeResults,
+            pendingChanges);
+
+        var hasErrors = requestErrors.Count > 0
+            || ingredientResults.Any(result => result.Errors.Count > 0)
+            || recipeResults.Any(result => result.Errors.Count > 0);
+        var applied = !dryRun && !hasErrors;
+
+        if (applied)
+        {
+            foreach (var change in pendingChanges)
+            {
+                change();
+            }
+
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        return new AssistantImportResultDto(
+            dryRun,
+            applied,
+            requestErrors,
+            ingredientResults.Select(result => result.ToDto(applied)).ToList(),
+            recipeResults.Select(result => result.ToDto(applied)).ToList());
+    }
+
+    private void PlanIngredientDefinitions(
+        IReadOnlyCollection<AssistantIngredientInput> inputs,
+        string mode,
+        TagIndex tags,
+        IngredientCatalog catalog,
+        List<ItemResult> results,
+        List<Action> pendingChanges)
+    {
+        var seenKeys = new HashSet<string>();
+
+        foreach (var input in inputs)
+        {
+            var name = Clean(input.Name);
+            var brandName = NullIfEmpty(Clean(input.Brand));
+            var result = new ItemResult(DescribeIngredient(name, brandName));
+            results.Add(result);
+
+            ValidateIngredientName(name, result.Errors);
+            if (!seenKeys.Add($"{Key(name)}|{Key(brandName)}"))
+            {
+                result.Errors.Add("This ingredient is listed more than once in the request.");
+            }
+
+            var description = NullIfEmpty(input.Description?.Trim());
+            if (description?.Length > ValidationLimits.DescriptionMaxLength)
+            {
+                result.Errors.Add($"description is {description.Length} characters; the maximum is {ValidationLimits.DescriptionMaxLength}.");
+            }
+
+            var color = NullIfEmpty(input.Color?.Trim());
+            if (color is not null && !IsHexColor(color))
+            {
+                result.Errors.Add($"color \"{color}\" must be a hex colour such as \"#f28c28\".");
+            }
+
+            var tagDefinitions = input.Tags is null ? null : tags.Resolve(input.Tags, result.Errors);
+
+            if (result.Errors.Count > 0)
+            {
+                continue;
+            }
+
+            var existing = catalog.FindExact(name, brandName);
+            if (existing is null)
+            {
+                var ingredient = catalog.Create(name, brandName);
+                ingredient.Description = description;
+                ingredient.Color = color;
+                ingredient.NutritionPer100 = input.NutritionPer100;
+                ingredient.NutritionSource = input.NutritionPer100 is null ? NutritionDataSource.None : NutritionDataSource.Manual;
+                ingredient.Tags = (tagDefinitions ?? [])
+                    .Select(tag => new IngredientTagAssignment { IngredientTagDefinitionId = tag.IngredientTagDefinitionId })
+                    .ToList();
+                pendingChanges.Add(() => context.Ingredients.Add(ingredient));
+                result.Target = () => ingredient.IngredientId;
+                result.Status = ItemStatus.Create;
+                AddSimilarIngredientWarning(result, name, catalog, ingredient);
+                continue;
+            }
+
+            result.Target = () => existing.IngredientId;
+            if (mode == ModeSkip)
+            {
+                result.Status = ItemStatus.Skip;
+                result.Warnings.Add("Already exists and was left unchanged. Send onExistingIngredient: \"update\" to change it.");
+                continue;
+            }
+
+            result.Status = ItemStatus.Update;
+            pendingChanges.Add(() =>
+            {
+                // Only fields present in the request are touched, so an update can add nutrition without wiping tags.
+                if (description is not null)
+                {
+                    existing.Description = description;
+                }
+
+                if (color is not null)
+                {
+                    existing.Color = color;
+                }
+
+                if (input.NutritionPer100 is not null)
+                {
+                    existing.NutritionPer100 = input.NutritionPer100;
+                    existing.NutritionSource = NutritionDataSource.Manual;
+                    existing.NutritionSourceLabel = null;
+                    existing.MatvaretabellenFoodId = null;
+                    existing.NutritionMatchedName = null;
+                    existing.NutritionMatchConfidence = null;
+                }
+
+                if (tagDefinitions is not null)
+                {
+                    var wantedIds = tagDefinitions.Select(tag => tag.IngredientTagDefinitionId).ToHashSet();
+                    foreach (var assignment in existing.Tags.Where(tag => !wantedIds.Contains(tag.IngredientTagDefinitionId)).ToList())
+                    {
+                        existing.Tags.Remove(assignment);
+                    }
+
+                    var currentIds = existing.Tags.Select(tag => tag.IngredientTagDefinitionId).ToHashSet();
+                    foreach (var tagId in wantedIds.Where(tagId => !currentIds.Contains(tagId)))
+                    {
+                        existing.Tags.Add(new IngredientTagAssignment { IngredientTagDefinitionId = tagId });
+                    }
+                }
+            });
+        }
+    }
+
+    private void PlanRecipes(
+        IReadOnlyCollection<AssistantRecipeInput> inputs,
+        string mode,
+        bool createMissingIngredients,
+        TagIndex tags,
+        IngredientCatalog catalog,
+        List<Recipe> storedRecipes,
+        List<ItemResult> ingredientResults,
+        List<ItemResult> recipeResults,
+        List<Action> pendingChanges)
+    {
+        var storedById = storedRecipes.ToDictionary(recipe => recipe.RecipeId);
+        var recipesByName = storedRecipes
+            .GroupBy(recipe => Key(recipe.Name))
+            .ToDictionary(group => group.Key, group => group.OrderBy(recipe => recipe.RecipeId).First());
+
+        // Pass 1: decide what each input does, so components can refer to recipes later in the same request.
+        var plans = new List<RecipePlan>();
+        var seenNames = new HashSet<string>();
+        foreach (var input in inputs)
+        {
+            var name = Clean(input.Name);
+            var result = new ItemResult(name.Length == 0 ? "(unnamed recipe)" : name);
+            recipeResults.Add(result);
+
+            if (name.Length == 0)
+            {
+                result.Errors.Add("name is required.");
+                continue;
+            }
+
+            if (name.Length > ValidationLimits.RecipeNameMaxLength)
+            {
+                result.Errors.Add($"name is {name.Length} characters; the maximum is {ValidationLimits.RecipeNameMaxLength}. Shorten it and put the detail in description.");
+            }
+
+            if (!seenNames.Add(Key(name)))
+            {
+                result.Errors.Add("This recipe name appears more than once in the request.");
+                continue;
+            }
+
+            Recipe? existing;
+            if (input.Id is not null)
+            {
+                if (!storedById.TryGetValue(input.Id.Value, out existing))
+                {
+                    result.Errors.Add($"No recipe has id {input.Id}. Leave id out to match by name or create a new recipe.");
+                    continue;
+                }
+
+                if (recipesByName.TryGetValue(Key(name), out var sameName) && sameName.RecipeId != existing.RecipeId)
+                {
+                    result.Errors.Add($"Cannot rename recipe {existing.RecipeId} to \"{name}\": recipe {sameName.RecipeId} already has that name.");
+                    continue;
+                }
+            }
+            else
+            {
+                recipesByName.TryGetValue(Key(name), out existing);
+            }
+
+            if (existing is not null)
+            {
+                result.Target = () => existing.RecipeId;
+                // An explicit id means "this recipe", so it is always an update.
+                if (input.Id is null && mode == ModeSkip)
+                {
+                    result.Status = ItemStatus.Skip;
+                    result.Warnings.Add($"A recipe with this name already exists (id {existing.RecipeId}) and was left unchanged. Send onExistingRecipe: \"update\" to replace it.");
+                    continue;
+                }
+
+                if (input.Id is null && mode == ModeError)
+                {
+                    result.Errors.Add($"A recipe with this name already exists (id {existing.RecipeId}).");
+                    continue;
+                }
+            }
+
+            var recipe = existing ?? new Recipe();
+            result.Target = () => recipe.RecipeId;
+            result.Status = existing is null ? ItemStatus.Create : ItemStatus.Update;
+            plans.Add(new RecipePlan(input, name, recipe, existing is null, result));
+            // Components elsewhere in this request resolve the name to the planned recipe.
+            recipesByName[Key(name)] = recipe;
+        }
+
+        // Pass 2: validate content and queue the change.
+        foreach (var plan in plans)
+        {
+            var input = plan.Input;
+            var result = plan.Result;
+
+            var description = NullIfEmpty(input.Description?.Trim());
+            if (description?.Length > ValidationLimits.DescriptionMaxLength)
+            {
+                result.Errors.Add($"description is {description.Length} characters; the maximum is {ValidationLimits.DescriptionMaxLength}. Put the steps in instructions instead.");
+            }
+
+            if (input.Portions is null or <= 0m)
+            {
+                result.Errors.Add("portions is required and must be greater than 0: the number of servings the listed amounts make.");
+            }
+
+            var tagDefinitions = tags.Resolve(input.Tags ?? [], result.Errors);
+            var lines = PlanRecipeLines(input, createMissingIngredients, catalog, ingredientResults, result, pendingChanges);
+            plan.Components = PlanRecipeComponents(input, plan, recipesByName, storedRecipes, result);
+
+            if ((input.Ingredients?.Count ?? 0) == 0 && (input.Components?.Count ?? 0) == 0)
+            {
+                result.Warnings.Add("The recipe has no ingredients, so it adds nothing to shopping lists or nutrition totals.");
+            }
+
+            if (string.IsNullOrWhiteSpace(input.Instructions))
+            {
+                result.Warnings.Add("The recipe has no instructions.");
+            }
+
+            var recipe = plan.Recipe;
+            var instructions = NullIfEmpty(input.Instructions?.Trim());
+            var portions = Math.Round(input.Portions ?? 1m, 2);
+            pendingChanges.Add(() =>
+            {
+                recipe.Name = plan.Name;
+                recipe.Description = description;
+                recipe.Instructions = instructions;
+                recipe.Portions = portions;
+                ApplyRecipeLines(recipe, lines);
+                ApplyRecipeTags(recipe, tagDefinitions);
+                ApplyRecipeComponents(recipe, plan.Components);
+
+                if (plan.IsNew)
+                {
+                    context.Recipes.Add(recipe);
+                }
+            });
+        }
+
+        ReportComponentCycles(plans, storedRecipes, storedById);
+    }
+
+    private List<RecipeLinePlan> PlanRecipeLines(
+        AssistantRecipeInput input,
+        bool createMissingIngredients,
+        IngredientCatalog catalog,
+        List<ItemResult> ingredientResults,
+        ItemResult result,
+        List<Action> pendingChanges)
+    {
+        var lines = new List<RecipeLinePlan>();
+
+        foreach (var lineInput in input.Ingredients ?? [])
+        {
+            var name = Clean(lineInput.Name);
+            var brandName = NullIfEmpty(Clean(lineInput.Brand));
+            var label = DescribeIngredient(name, brandName);
+            if (name.Length == 0)
+            {
+                result.Errors.Add("An ingredient line is missing its name.");
+                continue;
+            }
+
+            var lineIsValid = true;
+            if (!AssistantUnits.TryParse(lineInput.Unit, out var unit, out var factor))
+            {
+                result.Errors.Add($"{label}: {AssistantUnits.DescribeUnsupported(lineInput.Unit)}");
+                lineIsValid = false;
+            }
+
+            if (lineInput.Amount is < 0m)
+            {
+                result.Errors.Add($"{label}: amount cannot be negative.");
+                lineIsValid = false;
+            }
+
+            if (!TryParsePreparation(lineInput.Preparation, out var preparation))
+            {
+                result.Errors.Add($"{label}: {DescribeUnknownPreparation(lineInput.Preparation)}");
+                lineIsValid = false;
+            }
+
+            var ingredient = catalog.Find(name, brandName, out var findWarning);
+            if (findWarning is not null)
+            {
+                result.Warnings.Add($"{label}: {findWarning}");
+            }
+
+            if (ingredient is null)
+            {
+                var suggestions = catalog.Suggest(name);
+                var suggestionText = suggestions.Count == 0 ? string.Empty : $" Similar existing ingredients: {Quote(suggestions)}.";
+                if (!createMissingIngredients)
+                {
+                    result.Errors.Add($"{label}: no such ingredient.{suggestionText} Add it under \"ingredients\" or send createMissingIngredients: true.");
+                    continue;
+                }
+
+                var nameErrors = new List<string>();
+                ValidateIngredientName(name, nameErrors);
+                if (nameErrors.Count > 0)
+                {
+                    result.Errors.AddRange(nameErrors.Select(error => $"{label}: {error}"));
+                    continue;
+                }
+
+                var created = catalog.Create(name, brandName);
+                pendingChanges.Add(() => context.Ingredients.Add(created));
+                ingredient = created;
+
+                var ingredientResult = new ItemResult(label)
+                {
+                    Status = ItemStatus.Create,
+                    Target = () => created.IngredientId
+                };
+                ingredientResult.Warnings.Add(
+                    $"Created automatically for recipe \"{Clean(input.Name)}\" with no tags and no nutrition data. Define it under \"ingredients\" to set them.{suggestionText}");
+                ingredientResults.Add(ingredientResult);
+            }
+
+            if (!lineIsValid)
+            {
+                continue;
+            }
+
+            var amount = lineInput.Amount is null ? (decimal?)null : lineInput.Amount.Value * factor;
+            var duplicate = lines.FirstOrDefault(line => ReferenceEquals(line.Ingredient, ingredient));
+            if (duplicate is null)
+            {
+                lines.Add(new RecipeLinePlan(ingredient)
+                {
+                    Amount = amount is null ? null : Math.Round(amount.Value, 2),
+                    Unit = unit,
+                    Preparation = preparation
+                });
+                continue;
+            }
+
+            // The data model holds one line per ingredient, so repeated lines are summed.
+            if (AssistantUnits.IsMass(duplicate.Unit) != AssistantUnits.IsMass(unit))
+            {
+                result.Errors.Add($"{label}: listed more than once with both weight and volume units. Use one line, or the same kind of unit, so the amounts can be added.");
+                continue;
+            }
+
+            var total = AssistantUnits.ToBase(duplicate.Amount, duplicate.Unit) + AssistantUnits.ToBase(amount, unit);
+            duplicate.Amount = duplicate.Amount is null && amount is null ? null : Math.Round(total, 2);
+            duplicate.Unit = AssistantUnits.IsMass(unit) ? MeasurementUnit.Gram : MeasurementUnit.Milliliter;
+            if (duplicate.Preparation == IngredientPreparation.None)
+            {
+                duplicate.Preparation = preparation;
+            }
+
+            result.Warnings.Add($"{label}: listed more than once; the amounts were added into one line.");
+        }
+
+        return lines;
+    }
+
+    private static List<RecipeComponentPlan> PlanRecipeComponents(
+        AssistantRecipeInput input,
+        RecipePlan plan,
+        Dictionary<string, Recipe> recipesByName,
+        List<Recipe> storedRecipes,
+        ItemResult result)
+    {
+        var components = new List<RecipeComponentPlan>();
+
+        foreach (var componentInput in input.Components ?? [])
+        {
+            var childName = Clean(componentInput.Recipe);
+            if (childName.Length == 0)
+            {
+                result.Errors.Add("A component is missing \"recipe\" (the name of the recipe it uses).");
+                continue;
+            }
+
+            var label = $"Component \"{childName}\"";
+            if (!recipesByName.TryGetValue(Key(childName), out var child))
+            {
+                var suggestions = Suggest(childName, storedRecipes.Select(recipe => recipe.Name));
+                result.Errors.Add(
+                    $"{label}: no such recipe. Include it in the same request or create it first."
+                    + (suggestions.Count == 0 ? string.Empty : $" Similar existing recipes: {Quote(suggestions)}."));
+                continue;
+            }
+
+            if (ReferenceEquals(child, plan.Recipe))
+            {
+                result.Errors.Add($"{label}: a recipe cannot use itself as a component.");
+                continue;
+            }
+
+            if (components.Any(component => ReferenceEquals(component.Child, child)))
+            {
+                result.Errors.Add($"{label}: listed more than once.");
+                continue;
+            }
+
+            var componentIsValid = true;
+            if (!AssistantUnits.TryParse(componentInput.Unit, out var unit, out var factor))
+            {
+                result.Errors.Add($"{label}: {AssistantUnits.DescribeUnsupported(componentInput.Unit)}");
+                componentIsValid = false;
+            }
+
+            if (componentInput.Amount is null or <= 0m)
+            {
+                result.Errors.Add($"{label}: amount is required and must be greater than 0.");
+                componentIsValid = false;
+            }
+
+            if (!TryParsePreparation(componentInput.Preparation, out var preparation))
+            {
+                result.Errors.Add($"{label}: {DescribeUnknownPreparation(componentInput.Preparation)}");
+                componentIsValid = false;
+            }
+
+            if (componentIsValid)
+            {
+                components.Add(new RecipeComponentPlan(child, Math.Round(componentInput.Amount!.Value * factor, 2), unit, preparation));
+            }
+        }
+
+        return components;
+    }
+
+    private static void ReportComponentCycles(
+        List<RecipePlan> plans,
+        List<Recipe> storedRecipes,
+        Dictionary<int, Recipe> storedById)
+    {
+        // Graph of "recipe uses recipe" as it would look after the import.
+        var plannedRecipes = plans.Select(plan => plan.Recipe).ToHashSet(ReferenceEqualityComparer.Instance);
+        var childrenByRecipe = new Dictionary<Recipe, List<Recipe>>(ReferenceEqualityComparer.Instance);
+        foreach (var recipe in storedRecipes.Where(recipe => !plannedRecipes.Contains(recipe)))
+        {
+            childrenByRecipe[recipe] = recipe.Components
+                .Select(component => storedById.GetValueOrDefault(component.ChildRecipeId))
+                .OfType<Recipe>()
+                .ToList();
+        }
+
+        foreach (var plan in plans)
+        {
+            childrenByRecipe[plan.Recipe] = plan.Components.Select(component => component.Child).ToList();
+        }
+
+        foreach (var plan in plans.Where(plan => plan.Components.Count > 0))
+        {
+            var seen = new HashSet<Recipe>(ReferenceEqualityComparer.Instance);
+            var stack = new Stack<Recipe>(childrenByRecipe[plan.Recipe]);
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+                if (ReferenceEquals(current, plan.Recipe))
+                {
+                    plan.Result.Errors.Add("Its components lead back to the recipe itself (a circular reference).");
+                    break;
+                }
+
+                if (!seen.Add(current) || !childrenByRecipe.TryGetValue(current, out var children))
+                {
+                    continue;
+                }
+
+                foreach (var child in children)
+                {
+                    stack.Push(child);
+                }
+            }
+        }
+    }
+
+    private void ApplyRecipeLines(Recipe recipe, List<RecipeLinePlan> lines)
+    {
+        var wanted = lines.Select(line => line.Ingredient).ToHashSet(ReferenceEqualityComparer.Instance);
+        var existingByIngredientId = recipe.Ingredients.ToDictionary(line => line.IngredientId);
+
+        foreach (var stale in recipe.Ingredients
+            .Where(line => !lines.Any(wantedLine => wantedLine.Ingredient.IngredientId != 0 && wantedLine.Ingredient.IngredientId == line.IngredientId))
+            .ToList())
+        {
+            recipe.Ingredients.Remove(stale);
+            context.RecipeIngredients.Remove(stale);
+        }
+
+        foreach (var line in lines)
+        {
+            if (line.Ingredient.IngredientId != 0 && existingByIngredientId.TryGetValue(line.Ingredient.IngredientId, out var existingLine))
+            {
+                existingLine.Amount = line.Amount;
+                existingLine.Unit = line.Unit;
+                existingLine.Preparation = line.Preparation;
+                continue;
+            }
+
+            recipe.Ingredients.Add(new RecipeIngredient
+            {
+                Recipe = recipe,
+                Ingredient = line.Ingredient,
+                Amount = line.Amount,
+                Unit = line.Unit,
+                Preparation = line.Preparation
+            });
+        }
+    }
+
+    private static void ApplyRecipeTags(Recipe recipe, List<IngredientTagDefinition> tagDefinitions)
+    {
+        var wantedIds = tagDefinitions.Select(tag => tag.IngredientTagDefinitionId).ToHashSet();
+        foreach (var assignment in recipe.Tags.Where(tag => !wantedIds.Contains(tag.IngredientTagDefinitionId)).ToList())
+        {
+            recipe.Tags.Remove(assignment);
+        }
+
+        var currentIds = recipe.Tags.Select(tag => tag.IngredientTagDefinitionId).ToHashSet();
+        foreach (var tagId in wantedIds.Where(tagId => !currentIds.Contains(tagId)))
+        {
+            recipe.Tags.Add(new RecipeTagAssignment { IngredientTagDefinitionId = tagId });
+        }
+    }
+
+    private static void ApplyRecipeComponents(Recipe recipe, List<RecipeComponentPlan> components)
+    {
+        foreach (var stale in recipe.Components
+            .Where(component => !components.Any(wanted => wanted.Child.RecipeId != 0 && wanted.Child.RecipeId == component.ChildRecipeId))
+            .ToList())
+        {
+            recipe.Components.Remove(stale);
+        }
+
+        var existingByChildId = recipe.Components.ToDictionary(component => component.ChildRecipeId);
+        for (var index = 0; index < components.Count; index++)
+        {
+            var wanted = components[index];
+            if (wanted.Child.RecipeId != 0 && existingByChildId.TryGetValue(wanted.Child.RecipeId, out var existingComponent))
+            {
+                existingComponent.Amount = wanted.Amount;
+                existingComponent.Unit = wanted.Unit;
+                existingComponent.Preparation = wanted.Preparation;
+                existingComponent.SortOrder = index + 1;
+                continue;
+            }
+
+            recipe.Components.Add(new RecipeComponent
+            {
+                ParentRecipe = recipe,
+                ChildRecipe = wanted.Child,
+                Amount = wanted.Amount,
+                Unit = wanted.Unit,
+                Preparation = wanted.Preparation,
+                SortOrder = index + 1
+            });
+        }
+    }
+
+    // ---------- Meal plan ----------
+
+    public async Task<AssistantMealPlanDto> GetMealPlanAsync(DateOnly? from, DateOnly? to, CancellationToken cancellationToken)
+    {
+        var start = from ?? StartOfWeek(DateOnly.FromDateTime(DateTime.Now));
+        var end = to ?? start.AddDays(6);
+
+        var entries = await context.MealPlanEntries
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(entry => entry.Recipes)
+                .ThenInclude(item => item.Recipe)
+            .Include(entry => entry.Recipes)
+                .ThenInclude(item => item.Ingredient)
+            .Where(entry => entry.Date >= start && entry.Date <= end)
+            .ToListAsync(cancellationToken);
+
+        return new AssistantMealPlanDto(
+            start,
+            end,
+            entries
+                .OrderBy(entry => entry.Date)
+                .ThenBy(entry => entry.Slot)
+                .Select(entry => new AssistantMealPlanEntryDto(
+                    entry.Date,
+                    entry.Date.DayOfWeek.ToString(),
+                    entry.Slot.ToString(),
+                    entry.Notes,
+                    entry.Recipes
+                        .OrderBy(item => item.SortOrder)
+                        .Select(item => new AssistantMealPlanItemDto(
+                            item.Role.ToString(),
+                            item.Recipe?.Name,
+                            item.RecipeId,
+                            item.Portions,
+                            item.Ingredient?.IngredientName,
+                            item.Amount,
+                            item.Unit is null ? null : AssistantUnits.ToShort(item.Unit.Value)))
+                        .ToList()))
+                .ToList());
+    }
+
+    public async Task<AssistantMealPlanResultDto> SetMealPlanAsync(AssistantMealPlanRequest request, CancellationToken cancellationToken)
+    {
+        var dryRun = request.DryRun ?? false;
+        var requestErrors = new List<string>();
+        var mode = ParseOption(request.Mode, ModeReplace, [ModeReplace, ModeFill], "mode", requestErrors);
+        var entryInputs = request.Entries ?? [];
+
+        if (entryInputs.Count == 0 && request.ClearRange is null)
+        {
+            requestErrors.Add("Nothing to do: provide \"entries\" and/or \"clearRange\".");
+        }
+
+        if (request.ClearRange is { } clearRange)
+        {
+            if (clearRange.From > clearRange.To)
+            {
+                requestErrors.Add("clearRange.from must be on or before clearRange.to.");
+            }
+            else if (clearRange.To.DayNumber - clearRange.From.DayNumber >= MaxRangeDays)
+            {
+                requestErrors.Add($"clearRange can span at most {MaxRangeDays} days.");
+            }
+        }
+
+        var recipes = await context.Recipes
+            .AsNoTracking()
+            .Select(recipe => new RecipeReference(recipe.RecipeId, recipe.Name, recipe.Portions))
+            .ToListAsync(cancellationToken);
+        var recipesById = recipes.ToDictionary(recipe => recipe.Id);
+        var recipesByName = recipes
+            .GroupBy(recipe => Key(recipe.Name))
+            .ToDictionary(group => group.Key, group => group.OrderBy(recipe => recipe.Id).First());
+        var catalog = new IngredientCatalog(
+            await context.Ingredients.AsNoTracking().Include(ingredient => ingredient.Brand).ToListAsync(cancellationToken),
+            []);
+
+        var dates = entryInputs.Select(entry => entry.Date).ToList();
+        if (request.ClearRange is not null && requestErrors.Count == 0)
+        {
+            dates.Add(request.ClearRange.From);
+            dates.Add(request.ClearRange.To);
+        }
+
+        var storedEntries = new List<MealPlanEntry>();
+        if (dates.Count > 0)
+        {
+            var firstDate = dates.Min();
+            var lastDate = dates.Max();
+            storedEntries = await context.MealPlanEntries
+                .Include(entry => entry.Recipes)
+                .Where(entry => entry.Date >= firstDate && entry.Date <= lastDate)
+                .ToListAsync(cancellationToken);
+        }
+
+        var storedBySlot = storedEntries.ToDictionary(entry => (entry.Date, entry.Slot));
+
+        var results = new List<EntryResult>();
+        var pendingChanges = new List<Action>();
+        var requestedSlots = new HashSet<(DateOnly, MealSlot)>();
+
+        foreach (var entryInput in entryInputs)
+        {
+            var result = new EntryResult(entryInput.Date, Clean(entryInput.Slot));
+            results.Add(result);
+
+            if (!Enum.TryParse<MealSlot>(Clean(entryInput.Slot), ignoreCase: true, out var slot) || !Enum.IsDefined(slot))
+            {
+                result.Errors.Add($"slot \"{entryInput.Slot}\" is not valid. Use one of: {string.Join(", ", Enum.GetNames<MealSlot>())}.");
+                continue;
+            }
+
+            result.Slot = slot.ToString();
+            if (!requestedSlots.Add((entryInput.Date, slot)))
+            {
+                result.Errors.Add("This date and slot appears more than once in the request. Put all items for a meal in one entry.");
+                continue;
+            }
+
+            var notes = NullIfEmpty(entryInput.Notes?.Trim());
+            if (notes?.Length > ValidationLimits.MealNotesMaxLength)
+            {
+                result.Errors.Add($"notes is {notes.Length} characters; the maximum is {ValidationLimits.MealNotesMaxLength}.");
+            }
+
+            var items = PlanMealItems(entryInput.Items ?? [], recipesById, recipesByName, catalog, result);
+            storedBySlot.TryGetValue((entryInput.Date, slot), out var stored);
+
+            if (stored is not null && stored.Recipes.Count > 0 && mode == ModeFill)
+            {
+                result.Status = EntryStatus.Skip;
+                result.Warnings.Add("This slot is already planned and mode is \"fill\", so it was left unchanged.");
+                continue;
+            }
+
+            if (items.Count == 0 && result.Errors.Count == 0)
+            {
+                // An entry with no items means "this meal should be empty".
+                result.Status = stored is null ? EntryStatus.Unchanged : EntryStatus.Clear;
+                if (stored is not null)
+                {
+                    pendingChanges.Add(() => context.MealPlanEntries.Remove(stored));
+                }
+
+                continue;
+            }
+
+            result.Status = stored is null ? EntryStatus.Create : EntryStatus.Replace;
+            pendingChanges.Add(() =>
+            {
+                var entry = stored;
+                if (entry is null)
+                {
+                    entry = new MealPlanEntry { Date = entryInput.Date, Slot = slot };
+                    context.MealPlanEntries.Add(entry);
+                }
+                else
+                {
+                    context.MealPlanRecipes.RemoveRange(entry.Recipes);
+                    entry.Recipes.Clear();
+                }
+
+                entry.Notes = notes;
+                foreach (var item in items)
+                {
+                    entry.Recipes.Add(item);
+                }
+            });
+        }
+
+        if (request.ClearRange is not null && requestErrors.Count == 0)
+        {
+            foreach (var stored in storedEntries
+                .Where(entry => entry.Date >= request.ClearRange.From && entry.Date <= request.ClearRange.To)
+                .Where(entry => !requestedSlots.Contains((entry.Date, entry.Slot)))
+                .OrderBy(entry => entry.Date)
+                .ThenBy(entry => entry.Slot))
+            {
+                results.Add(new EntryResult(stored.Date, stored.Slot.ToString()) { Status = EntryStatus.Clear });
+                pendingChanges.Add(() => context.MealPlanEntries.Remove(stored));
+            }
+        }
+
+        var hasErrors = requestErrors.Count > 0 || results.Any(result => result.Errors.Count > 0);
+        var applied = !dryRun && !hasErrors;
+        if (applied)
+        {
+            foreach (var change in pendingChanges)
+            {
+                change();
+            }
+
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        return new AssistantMealPlanResultDto(
+            dryRun,
+            applied,
+            requestErrors,
+            results
+                .OrderBy(result => result.Date)
+                .ThenBy(result => Enum.TryParse<MealSlot>(result.Slot, out var slot) ? (int)slot : int.MaxValue)
+                .Select(result => result.ToDto(applied))
+                .ToList());
+    }
+
+    private static List<MealPlanRecipe> PlanMealItems(
+        IReadOnlyCollection<AssistantMealPlanItemInput> itemInputs,
+        Dictionary<int, RecipeReference> recipesById,
+        Dictionary<string, RecipeReference> recipesByName,
+        IngredientCatalog catalog,
+        EntryResult result)
+    {
+        var items = new List<MealPlanRecipe>();
+
+        foreach (var itemInput in itemInputs)
+        {
+            var recipeName = Clean(itemInput.Recipe);
+            var ingredientName = Clean(itemInput.Ingredient);
+            var wantsRecipe = recipeName.Length > 0 || itemInput.RecipeId is not null;
+            var wantsIngredient = ingredientName.Length > 0;
+            if (wantsRecipe == wantsIngredient)
+            {
+                result.Errors.Add("Each item needs exactly one of \"recipe\" (or \"recipeId\") and \"ingredient\".");
+                continue;
+            }
+
+            MealRecipeRole role;
+            if (string.IsNullOrWhiteSpace(itemInput.Role))
+            {
+                // Mirrors the planner UI: the first item is the meal, the rest accompany it.
+                role = items.Count == 0 ? MealRecipeRole.Main : MealRecipeRole.Side;
+            }
+            else if (!Enum.TryParse(Clean(itemInput.Role), ignoreCase: true, out role) || !Enum.IsDefined(role))
+            {
+                result.Errors.Add($"role \"{itemInput.Role}\" is not valid. Use one of: {string.Join(", ", Enum.GetNames<MealRecipeRole>())}.");
+                continue;
+            }
+
+            if (wantsRecipe)
+            {
+                RecipeReference? recipe;
+                if (itemInput.RecipeId is not null)
+                {
+                    recipesById.TryGetValue(itemInput.RecipeId.Value, out recipe);
+                }
+                else
+                {
+                    recipesByName.TryGetValue(Key(recipeName), out recipe);
+                }
+
+                if (recipe is null)
+                {
+                    var wanted = itemInput.RecipeId is not null ? $"id {itemInput.RecipeId}" : $"\"{recipeName}\"";
+                    var suggestions = recipeName.Length == 0 ? [] : Suggest(recipeName, recipesByName.Values.Select(value => value.Name));
+                    result.Errors.Add(
+                        $"Recipe {wanted} does not exist."
+                        + (suggestions.Count == 0 ? " Create it with POST /api/assistant/recipes first." : $" Did you mean {Quote(suggestions)}?"));
+                    continue;
+                }
+
+                if (itemInput.Portions is <= 0m)
+                {
+                    result.Errors.Add($"\"{recipe.Name}\": portions must be greater than 0.");
+                    continue;
+                }
+
+                if (itemInput.Amount is not null || !string.IsNullOrWhiteSpace(itemInput.Unit))
+                {
+                    result.Warnings.Add($"\"{recipe.Name}\": amount and unit only apply to ingredient items and were ignored. Use portions for recipes.");
+                }
+
+                var portions = Math.Round(itemInput.Portions ?? recipe.Portions, 2);
+                items.Add(new MealPlanRecipe
+                {
+                    RecipeId = recipe.Id,
+                    Role = role,
+                    SortOrder = items.Count,
+                    Portions = portions
+                });
+                result.Items.Add($"{recipe.Name} × {portions.ToString("0.##", CultureInfo.InvariantCulture)}");
+                continue;
+            }
+
+            var brandName = NullIfEmpty(Clean(itemInput.Brand));
+            var label = DescribeIngredient(ingredientName, brandName);
+            var ingredient = catalog.Find(ingredientName, brandName, out var findWarning);
+            if (findWarning is not null)
+            {
+                result.Warnings.Add($"{label}: {findWarning}");
+            }
+
+            if (ingredient is null)
+            {
+                var suggestions = catalog.Suggest(ingredientName);
+                result.Errors.Add(
+                    $"Ingredient {label} does not exist."
+                    + (suggestions.Count == 0 ? " Create it with POST /api/assistant/recipes first." : $" Did you mean {Quote(suggestions)}?"));
+                continue;
+            }
+
+            if (!AssistantUnits.TryParse(itemInput.Unit, out var unit, out var factor))
+            {
+                result.Errors.Add($"{label}: {AssistantUnits.DescribeUnsupported(itemInput.Unit)}");
+                continue;
+            }
+
+            if (itemInput.Amount is null or <= 0m)
+            {
+                result.Errors.Add($"{label}: amount is required for ingredient items and must be greater than 0.");
+                continue;
+            }
+
+            var amount = Math.Round(itemInput.Amount.Value * factor, 2);
+            items.Add(new MealPlanRecipe
+            {
+                IngredientId = ingredient.IngredientId,
+                Role = role,
+                SortOrder = items.Count,
+                Amount = amount,
+                Unit = unit
+            });
+            result.Items.Add($"{ingredient.IngredientName} {amount.ToString("0.##", CultureInfo.InvariantCulture)} {AssistantUnits.ToShort(unit)}");
+        }
+
+        return items;
+    }
+
+    // ---------- Shared helpers ----------
+
+    private static DateOnly StartOfWeek(DateOnly date) =>
+        date.AddDays(-(((int)date.DayOfWeek + 6) % 7));
+
+    private static string ParseOption(string? value, string fallback, string[] allowed, string name, List<string> errors)
+    {
+        var cleaned = Clean(value).ToLowerInvariant();
+        if (cleaned.Length == 0)
+        {
+            return fallback;
+        }
+
+        if (allowed.Contains(cleaned))
+        {
+            return cleaned;
+        }
+
+        errors.Add($"{name} \"{value}\" is not valid. Use one of: {string.Join(", ", allowed)}.");
+        return fallback;
+    }
+
+    private static void ValidateIngredientName(string name, List<string> errors)
+    {
+        if (name.Length == 0)
+        {
+            errors.Add("name is required.");
+        }
+        else if (name.Length > ValidationLimits.IngredientNameMaxLength)
+        {
+            errors.Add($"name is {name.Length} characters; the maximum is {ValidationLimits.IngredientNameMaxLength}.");
+        }
+    }
+
+    private static void AddSimilarIngredientWarning(ItemResult result, string name, IngredientCatalog catalog, Ingredient created)
+    {
+        var suggestions = catalog.Suggest(name, except: created);
+        if (suggestions.Count > 0)
+        {
+            result.Warnings.Add($"Similar ingredients already exist: {Quote(suggestions)}. Reuse one of them if this is the same thing.");
+        }
+    }
+
+    private static bool TryParsePreparation(string? value, out IngredientPreparation preparation)
+    {
+        preparation = IngredientPreparation.None;
+        var cleaned = new string(Clean(value).Where(char.IsLetter).ToArray());
+        return cleaned.Length == 0
+            || (Enum.TryParse(cleaned, ignoreCase: true, out preparation) && Enum.IsDefined(preparation));
+    }
+
+    private static string DescribeUnknownPreparation(string? value) =>
+        $"preparation \"{value}\" is not valid. Leave it out or use one of: "
+        + $"{string.Join(", ", Enum.GetNames<IngredientPreparation>().Where(name => name != nameof(IngredientPreparation.None)))}.";
+
+    private static bool IsHexColor(string value) =>
+        value.Length is 4 or 7 && value[0] == '#' && value.Skip(1).All(Uri.IsHexDigit);
+
+    private static string DescribeIngredient(string name, string? brandName)
+    {
+        var displayName = name.Length == 0 ? "(unnamed ingredient)" : name;
+        return brandName is null ? displayName : $"{displayName} ({brandName})";
+    }
+
+    private static string Quote(IEnumerable<string> values) =>
+        string.Join(", ", values.Select(value => $"\"{value}\""));
+
+    internal static string Clean(string? value) =>
+        value is null ? string.Empty : string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+    internal static string Key(string? value) => Clean(value).ToLowerInvariant();
+
+    private static string? NullIfEmpty(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    /// <summary>
+    /// Finds existing names that are probably what the caller meant: one contains the other, or they are a typo apart.
+    /// </summary>
+    internal static List<string> Suggest(string name, IEnumerable<string> knownNames)
+    {
+        var key = Key(name);
+        if (key.Length < 3)
+        {
+            return [];
+        }
+
+        var known = knownNames.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var contained = known.Where(candidate =>
+        {
+            var candidateKey = Key(candidate);
+            return candidateKey != key
+                && candidateKey.Length >= 3
+                && (candidateKey.Contains(key) || key.Contains(candidateKey));
+        });
+        var nearDuplicate = LookupDuplicateDetector.FindNearDuplicate(name, known);
+
+        return (nearDuplicate is null ? contained : contained.Prepend(nearDuplicate))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(MaxSuggestions)
+            .ToList();
+    }
+
+    private enum ItemStatus
+    {
+        Error,
+        Create,
+        Update,
+        Skip
+    }
+
+    private enum EntryStatus
+    {
+        Error,
+        Create,
+        Replace,
+        Clear,
+        Skip,
+        Unchanged
+    }
+
+    private sealed class ItemResult(string name)
+    {
+        public string Name { get; } = name;
+        public ItemStatus Status { get; set; } = ItemStatus.Error;
+        public Func<int>? Target { get; set; }
+        public List<string> Warnings { get; } = [];
+        public List<string> Errors { get; } = [];
+
+        public AssistantItemResultDto ToDto(bool applied)
+        {
+            var status = Errors.Count > 0
+                ? "error"
+                : Status switch
+                {
+                    ItemStatus.Create => applied ? "created" : "would_create",
+                    ItemStatus.Update => applied ? "updated" : "would_update",
+                    ItemStatus.Skip => "skipped",
+                    _ => "error"
+                };
+            var id = Target?.Invoke();
+            return new AssistantItemResultDto(Name, status, id is null or 0 ? null : id, Warnings, Errors);
+        }
+    }
+
+    private sealed class EntryResult(DateOnly date, string slot)
+    {
+        public DateOnly Date { get; } = date;
+        public string Slot { get; set; } = slot;
+        public EntryStatus Status { get; set; } = EntryStatus.Error;
+        public List<string> Items { get; } = [];
+        public List<string> Warnings { get; } = [];
+        public List<string> Errors { get; } = [];
+
+        public AssistantMealPlanEntryResultDto ToDto(bool applied)
+        {
+            var status = Errors.Count > 0
+                ? "error"
+                : Status switch
+                {
+                    EntryStatus.Create => applied ? "created" : "would_create",
+                    EntryStatus.Replace => applied ? "replaced" : "would_replace",
+                    EntryStatus.Clear => applied ? "cleared" : "would_clear",
+                    EntryStatus.Skip => "skipped",
+                    EntryStatus.Unchanged => "unchanged",
+                    _ => "error"
+                };
+            return new AssistantMealPlanEntryResultDto(Date, Slot, status, Items, Warnings, Errors);
+        }
+    }
+
+    private sealed class RecipePlan(AssistantRecipeInput input, string name, Recipe recipe, bool isNew, ItemResult result)
+    {
+        public AssistantRecipeInput Input { get; } = input;
+        public string Name { get; } = name;
+        public Recipe Recipe { get; } = recipe;
+        public bool IsNew { get; } = isNew;
+        public ItemResult Result { get; } = result;
+        public List<RecipeComponentPlan> Components { get; set; } = [];
+    }
+
+    private sealed class RecipeLinePlan(Ingredient ingredient)
+    {
+        public Ingredient Ingredient { get; } = ingredient;
+        public decimal? Amount { get; set; }
+        public MeasurementUnit Unit { get; set; }
+        public IngredientPreparation Preparation { get; set; }
+    }
+
+    private sealed record RecipeComponentPlan(Recipe Child, decimal Amount, MeasurementUnit Unit, IngredientPreparation Preparation);
+
+    private sealed record RecipeReference(int Id, string Name, decimal Portions);
+
+    /// <summary>
+    /// Tag lookup that forgives case, spaces and hyphens ("root vegetable" matches "RootVegetable").
+    /// </summary>
+    private sealed class TagIndex(List<IngredientTagDefinition> definitions)
+    {
+        private readonly Dictionary<string, IngredientTagDefinition> byKey = definitions
+            .GroupBy(tag => TagKey(tag.Name))
+            .ToDictionary(group => group.Key, group => group.First());
+
+        public static async Task<TagIndex> LoadAsync(DinnerPlannerContext context, CancellationToken cancellationToken) =>
+            new(await context.IngredientTagDefinitions.AsNoTracking().ToListAsync(cancellationToken));
+
+        public List<IngredientTagDefinition> Resolve(IReadOnlyCollection<string> names, List<string> errors)
+        {
+            var resolved = new List<IngredientTagDefinition>();
+            foreach (var name in names)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+
+                if (byKey.TryGetValue(TagKey(name), out var definition))
+                {
+                    if (!resolved.Contains(definition))
+                    {
+                        resolved.Add(definition);
+                    }
+
+                    continue;
+                }
+
+                var suggestions = Suggest(name, definitions.Select(tag => tag.Name));
+                errors.Add(
+                    $"Unknown tag \"{name.Trim()}\"."
+                    + (suggestions.Count == 0 ? string.Empty : $" Did you mean {Quote(suggestions)}?")
+                    + " Tags must already exist; see tagCategories in GET /api/assistant/context.");
+            }
+
+            return resolved;
+        }
+
+        private static string TagKey(string name) =>
+            new string(name.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// The ingredients known so far, including ones an import has decided to create but not yet saved.
+    /// </summary>
+    private sealed class IngredientCatalog(List<Ingredient> ingredients, List<Brand> brands)
+    {
+        private readonly List<Ingredient> ingredients = ingredients;
+        private readonly List<Brand> brands = brands;
+
+        public Ingredient? FindExact(string name, string? brandName) =>
+            Named(name).FirstOrDefault(ingredient => Key(ingredient.Brand?.Name) == Key(brandName));
+
+        public Ingredient? Find(string name, string? brandName, out string? warning)
+        {
+            warning = null;
+            if (brandName is not null)
+            {
+                return FindExact(name, brandName);
+            }
+
+            var candidates = Named(name).ToList();
+            var unbranded = candidates.FirstOrDefault(ingredient => ingredient.Brand is null);
+            if (unbranded is not null || candidates.Count == 0)
+            {
+                return unbranded;
+            }
+
+            if (candidates.Count > 1)
+            {
+                warning = $"several brands exist ({string.Join(", ", candidates.Select(ingredient => ingredient.Brand!.Name))}); "
+                    + $"used {candidates[0].Brand!.Name}. Set \"brand\" to choose another.";
+            }
+
+            return candidates[0];
+        }
+
+        public Ingredient Create(string name, string? brandName)
+        {
+            var ingredient = new Ingredient { IngredientName = name };
+            if (brandName is not null)
+            {
+                var brand = brands.FirstOrDefault(value => Key(value.Name) == Key(brandName));
+                if (brand is null)
+                {
+                    brand = new Brand { Name = brandName };
+                    brands.Add(brand);
+                }
+
+                ingredient.Brand = brand;
+            }
+
+            ingredients.Add(ingredient);
+            return ingredient;
+        }
+
+        public List<string> Suggest(string name, Ingredient? except = null) =>
+            AssistantService.Suggest(
+                name,
+                ingredients.Where(ingredient => !ReferenceEquals(ingredient, except)).Select(ingredient => ingredient.IngredientName));
+
+        private IEnumerable<Ingredient> Named(string name) =>
+            ingredients.Where(ingredient => Key(ingredient.IngredientName) == Key(name));
+    }
+}
+
+/// <summary>
+/// Unit parsing for the assistant API. MATFLOTE stores grams, kilograms, millilitres and litres;
+/// other exact metric and spoon measures are converted on the way in.
+/// </summary>
+internal static class AssistantUnits
+{
+    private static readonly Dictionary<string, (MeasurementUnit Unit, decimal Factor)> Known = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["g"] = (MeasurementUnit.Gram, 1m),
+        ["gram"] = (MeasurementUnit.Gram, 1m),
+        ["grams"] = (MeasurementUnit.Gram, 1m),
+        ["kg"] = (MeasurementUnit.Kilogram, 1m),
+        ["kilogram"] = (MeasurementUnit.Kilogram, 1m),
+        ["kilograms"] = (MeasurementUnit.Kilogram, 1m),
+        ["ml"] = (MeasurementUnit.Milliliter, 1m),
+        ["milliliter"] = (MeasurementUnit.Milliliter, 1m),
+        ["milliliters"] = (MeasurementUnit.Milliliter, 1m),
+        ["millilitre"] = (MeasurementUnit.Milliliter, 1m),
+        ["millilitres"] = (MeasurementUnit.Milliliter, 1m),
+        ["l"] = (MeasurementUnit.Liter, 1m),
+        ["liter"] = (MeasurementUnit.Liter, 1m),
+        ["liters"] = (MeasurementUnit.Liter, 1m),
+        ["litre"] = (MeasurementUnit.Liter, 1m),
+        ["litres"] = (MeasurementUnit.Liter, 1m),
+        ["cl"] = (MeasurementUnit.Milliliter, 10m),
+        ["dl"] = (MeasurementUnit.Milliliter, 100m),
+        ["tsp"] = (MeasurementUnit.Milliliter, 5m),
+        ["ts"] = (MeasurementUnit.Milliliter, 5m),
+        ["teaspoon"] = (MeasurementUnit.Milliliter, 5m),
+        ["teaspoons"] = (MeasurementUnit.Milliliter, 5m),
+        ["tbsp"] = (MeasurementUnit.Milliliter, 15m),
+        ["ss"] = (MeasurementUnit.Milliliter, 15m),
+        ["tablespoon"] = (MeasurementUnit.Milliliter, 15m),
+        ["tablespoons"] = (MeasurementUnit.Milliliter, 15m)
+    };
+
+    public static IReadOnlyCollection<string> CanonicalUnits { get; } = ["g", "kg", "ml", "l"];
+
+    public static IReadOnlyDictionary<string, string> AliasDescriptions { get; } = new Dictionary<string, string>
+    {
+        ["cl"] = "10 ml",
+        ["dl"] = "100 ml",
+        ["tsp / ts"] = "5 ml",
+        ["tbsp / ss"] = "15 ml"
+    };
+
+    public static bool TryParse(string? text, out MeasurementUnit unit, out decimal factor)
+    {
+        var cleaned = AssistantService.Clean(text).TrimEnd('.');
+        if (cleaned.Length == 0)
+        {
+            unit = MeasurementUnit.Gram;
+            factor = 1m;
+            return true;
+        }
+
+        if (Known.TryGetValue(cleaned, out var match))
+        {
+            (unit, factor) = match;
+            return true;
+        }
+
+        unit = MeasurementUnit.Gram;
+        factor = 1m;
+        return false;
+    }
+
+    public static string DescribeUnsupported(string? text) =>
+        $"unit \"{text}\" is not supported. Use g, kg, ml or l (cl, dl, tsp/ts and tbsp/ss are converted to ml). "
+        + "Convert pieces, cloves, cans and similar to grams; conversionRules in GET /api/assistant/context lists the household's own conversions.";
+
+    public static string ToShort(MeasurementUnit unit) => unit switch
+    {
+        MeasurementUnit.Gram => "g",
+        MeasurementUnit.Kilogram => "kg",
+        MeasurementUnit.Milliliter => "ml",
+        MeasurementUnit.Liter => "l",
+        _ => unit.ToString()
+    };
+
+    public static bool IsMass(MeasurementUnit unit) => unit is MeasurementUnit.Gram or MeasurementUnit.Kilogram;
+
+    public static decimal ToBase(decimal? amount, MeasurementUnit unit) =>
+        (amount ?? 0m) * (unit is MeasurementUnit.Kilogram or MeasurementUnit.Liter ? 1000m : 1m);
+}

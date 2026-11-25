@@ -177,6 +177,25 @@ Export the generated list to the configured provider:
 POST /api/grocerylists/export?from=YYYY-MM-DD&to=YYYY-MM-DD
 ```
 
+## Assistant API
+
+MATFLOTE has a small name-based API for AI agents and scripts that create recipes and plan weeks. It works with ingredient and recipe names instead of numeric IDs, validates a whole request before saving anything, supports dry runs, and reports every problem at once.
+
+The API describes itself. Point an agent at:
+
+```text
+GET /api/assistant
+```
+
+That returns the usage guide (also in `backend/Docs/assistant-api.md`). The endpoints are:
+
+- `GET /api/assistant/context`: allowed units, tags and limits, plus a compact list of all ingredients and recipes with how recently each recipe was planned.
+- `POST /api/assistant/recipes`: create or update recipes by name; missing ingredients can be created in the same call.
+- `GET /api/assistant/recipes/{id}`: one recipe in the same shape the import accepts.
+- `GET /api/assistant/meal-plan?from=YYYY-MM-DD&to=YYYY-MM-DD` and `PUT /api/assistant/meal-plan`: read and set meals by recipe name, many slots per call.
+
+Like the rest of MATFLOTE, this API has no authentication. Anyone who can reach the server can use it, so keep MATFLOTE on a trusted network or behind a proxy that adds access control.
+
 ## Product Scanner
 
 The Scanner page uses Kassalapp through the backend.
