@@ -170,6 +170,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
         {
             entity.Property(recipe => recipe.Name).HasMaxLength(ValidationLimits.RecipeNameMaxLength);
             entity.Property(recipe => recipe.Description).HasMaxLength(600);
+            entity.Property(recipe => recipe.RatingNote).HasMaxLength(ValidationLimits.RatingNoteMaxLength);
 
             entity.HasMany(recipe => recipe.Ingredients)
                 .WithOne(recipeIngredient => recipeIngredient.Recipe)

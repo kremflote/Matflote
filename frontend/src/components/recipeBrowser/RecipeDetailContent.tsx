@@ -7,6 +7,7 @@ import { getThumbnailSrc } from "../../utils/imageThumbnail";
 import type { SiteTheme } from "../../styles/appStyles";
 import { DetailSection, DetailText, DetailTextWithMeta, NutritionGrid } from "./detailComponents";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
+import RecipeRatingSection from "./RecipeRatingSection";
 import type { EnrichedRecipe } from "./types";
 type RecipeDetailContentProps = {
   allRecipes: EnrichedRecipe[];
@@ -139,6 +140,8 @@ function RecipeDetailContent({
           value={recipe.instructions || t.cookbook.noInstructions}
         />
       </div>
+
+      <RecipeRatingSection recipe={recipe} theme={theme} />
 
       <DetailSection title={t.cookbook.dietaryInformation} subtitle={t.cookbook.per100g} theme={theme}>
         <NutritionGrid

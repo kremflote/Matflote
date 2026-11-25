@@ -2142,6 +2142,13 @@ namespace backend.Migrations
                     b.Property<decimal>("Portions")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("Rating")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RatingNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("RecipeId");
 
                     b.ToTable("Recipes");

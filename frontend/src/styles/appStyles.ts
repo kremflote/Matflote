@@ -317,7 +317,7 @@ export const thumbnailStyles = {
   ingredientBrandCompact: "text-[10px]",
 } as const;
 
-const focusBase =
+export const focusBase =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
 
 export const toastStyles = {

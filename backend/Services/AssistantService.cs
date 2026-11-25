@@ -123,7 +123,9 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                             ? null
                             : recipe.Components.OrderBy(component => component.SortOrder).Select(component => component.ChildRecipe.Name).ToList(),
                         usage.Count,
-                        usage.Count == 0 && usage.Last == default ? null : usage.Last);
+                        usage.Count == 0 && usage.Last == default ? null : usage.Last,
+                        recipe.Rating,
+                        recipe.RatingNote);
                 })
                 .ToList());
     }

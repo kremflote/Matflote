@@ -672,6 +672,18 @@ export const en: TranslationDictionary = {
     couldNotLoad: "Could not load the planning preferences.",
     couldNotSave: "Could not save the planning preferences.",
   },
+  recipeRating: {
+    title: "Your rating",
+    help: "How did it go down? The planner assistant reads this.",
+    star: (value) => (value === 1 ? "1 star" : `${value} stars`),
+    notRated: "Not rated",
+    clear: "Clear",
+    note: "Note",
+    notePlaceholder: "For example: kids loved it, use less salt",
+    saveNote: "Save note",
+    saving: "Saving...",
+    couldNotSave: "Could not save the rating.",
+  },
   theme: {
     switchToDark: "Switch to dark mode",
     switchToLight: "Switch to palette light mode",

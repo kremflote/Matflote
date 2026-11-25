@@ -51,7 +51,16 @@ public record RecipeDto(
     decimal Portions,
     IReadOnlyCollection<RecipeIngredientDto> Ingredients,
     IReadOnlyCollection<string> Tags,
-    IReadOnlyCollection<RecipeComponentDto> Components
+    IReadOnlyCollection<RecipeComponentDto> Components,
+    // 1 to 5, or null when the household has not rated the recipe.
+    int? Rating,
+    string? RatingNote
+);
+
+/// <summary>Sets or clears a recipe's rating. A null rating clears the rating and the note.</summary>
+public record RecipeRatingRequest(
+    int? Rating,
+    string? Note
 );
 
 public record RecipeIngredientDto(

@@ -91,4 +91,21 @@ public class MigrationTests : IDisposable
             ["/images/recipes/0123abcd.jpg"],
             await Strings("SELECT PublicUrl FROM UploadedImages ORDER BY PublicUrl"));
     }
+
+    [Fact]
+    public async Task Adding_ratings_keeps_every_recipe_and_leaves_them_unrated()
+    {
+        await MigrateToJustBefore("_AddRecipeRating");
+        await Execute("INSERT INTO Recipes (Name, Description, Portions) VALUES ('Owner stew', 'Family favourite', 4);");
+
+        await using (var context = OpenContext())
+        {
+            await context.Database.MigrateAsync();
+        }
+
+        Assert.Equal(
+            ["Owner stew|Family favourite|4|-|-"],
+            await Strings("SELECT Name || '|' || Description || '|' || Portions || '|' || coalesce(Rating, '-') || '|' || coalesce(RatingNote, '-') FROM Recipes WHERE Name = 'Owner stew'"));
+        Assert.Equal(["0"], await Strings("SELECT CAST(count(*) AS TEXT) FROM Recipes WHERE Rating IS NOT NULL OR RatingNote IS NOT NULL"));
+    }
 }

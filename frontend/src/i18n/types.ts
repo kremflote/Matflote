@@ -538,6 +538,18 @@ export type TranslationDictionary = {
     couldNotLoad: string;
     couldNotSave: string;
   };
+  recipeRating: {
+    title: string;
+    help: string;
+    star: (value: number) => string;
+    notRated: string;
+    clear: string;
+    note: string;
+    notePlaceholder: string;
+    saveNote: string;
+    saving: string;
+    couldNotSave: string;
+  };
   theme: {
     switchToDark: string;
     switchToLight: string;

@@ -17,6 +17,8 @@ const recipe: IRecipe = {
   ingredients: [],
   tags: ["Dinner"],
   components: [],
+  rating: null,
+  ratingNote: null,
 };
 
 function RefreshButton() {

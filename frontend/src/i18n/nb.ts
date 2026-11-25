@@ -739,6 +739,18 @@ export const nb: TranslationDictionary = {
     couldNotLoad: "Kunne ikke hente planleggingsvalgene.",
     couldNotSave: "Kunne ikke lagre planleggingsvalgene.",
   },
+  recipeRating: {
+    title: "Din vurdering",
+    help: "Hvordan falt den i smak? Planleggingsassistenten leser dette.",
+    star: (value) => (value === 1 ? "1 stjerne" : `${value} stjerner`),
+    notRated: "Ikke vurdert",
+    clear: "Fjern",
+    note: "Notat",
+    notePlaceholder: "For eksempel: barna elsket den, bruk mindre salt",
+    saveNote: "Lagre notat",
+    saving: "Lagrer...",
+    couldNotSave: "Kunne ikke lagre vurderingen.",
+  },
   theme: {
     switchToDark: "Bytt til mørk modus",
     switchToLight: "Bytt til lys palett",

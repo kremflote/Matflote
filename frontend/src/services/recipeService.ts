@@ -61,6 +61,11 @@ export const recipeService = {
       method: "PUT",
       body: recipe,
     }),
+  setRating: (id: number, rating: number | null, note: string | null) =>
+    apiRequest<IRecipe>(`/api/recipes/${id}/rating`, {
+      method: "PUT",
+      body: { rating, note },
+    }),
   delete: (id: number) =>
     apiRequest<void>(`/api/recipes/${id}`, {
       method: "DELETE",

@@ -140,6 +140,34 @@ public class RecipesController(
         return Ok(ToDto(updated!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
     }
 
+    /// <summary>The household's rating, kept apart from the recipe edit so saving the recipe form never touches it.</summary>
+    [HttpPut("{id:int}/rating")]
+    public async Task<ActionResult<RecipeDto>> SetRating(int id, RecipeRatingRequest request)
+    {
+        if (request.Rating is < ValidationLimits.MinRating or > ValidationLimits.MaxRating)
+        {
+            return BadRequest($"Rating must be between {ValidationLimits.MinRating} and {ValidationLimits.MaxRating}, or null to clear it.");
+        }
+
+        var note = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim();
+        if (note?.Length > ValidationLimits.RatingNoteMaxLength)
+        {
+            return BadRequest($"The note can be at most {ValidationLimits.RatingNoteMaxLength} characters.");
+        }
+
+        var recipe = await context.Recipes.FindAsync(id);
+        if (recipe is null)
+        {
+            return NotFound();
+        }
+
+        recipe.Rating = request.Rating;
+        recipe.RatingNote = request.Rating is null ? null : note;
+        await context.SaveChangesAsync();
+
+        return Ok(ToDto((await LoadRecipe(id))!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteRecipe(int id)
     {
@@ -260,7 +288,9 @@ public class RecipesController(
         recipe.Components
             .OrderBy(component => component.SortOrder)
             .Select(ToDto)
-            .ToList()
+            .ToList(),
+        recipe.Rating,
+        recipe.RatingNote
     );
 
     private static decimal NormalizePortions(decimal portions) => portions <= 0m ? 1m : portions;

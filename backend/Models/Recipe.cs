@@ -15,6 +15,9 @@ public class Recipe
     public string? Description { get; set; }
     public string? Instructions { get; set; }
     public decimal Portions { get; set; } = 1m;
+    // The household's verdict, 1 (never again) to 5 (a favourite); null until rated. Set in the recipe view only.
+    public int? Rating { get; set; }
+    public string? RatingNote { get; set; }
     public ICollection<RecipeIngredient> Ingredients { get; set; } = [];
     public ICollection<RecipeTagAssignment> Tags { get; set; } = [];
     public ICollection<RecipeComponent> Components { get; set; } = [];

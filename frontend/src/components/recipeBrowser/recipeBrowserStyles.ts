@@ -1,5 +1,6 @@
 import {
   controlStyles,
+  focusBase,
   responsiveClasses,
   segmentedToggleStyles,
   shadowClasses,
@@ -250,6 +251,21 @@ export const recipeBrowserStyles = {
     }`,
   textArea: (theme: SiteTheme) =>
     `${controlStyles.textArea(theme)} max-sm:h-9 max-sm:min-h-9 max-sm:resize-none max-sm:px-3 max-sm:py-2 max-sm:text-sm max-sm:leading-tight`,
+  ratingBody: "grid gap-3",
+  ratingStars: "flex flex-wrap items-center gap-1",
+  ratingStar: (theme: SiteTheme, filled: boolean) =>
+    `inline-flex h-10 w-10 items-center justify-center rounded-md text-2xl leading-none transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
+      filled
+        ? theme === "paletteLight"
+          ? "text-[#B7791F]"
+          : "text-amber-400"
+        : theme === "dark"
+          ? "text-neutral-600 hover:text-neutral-400"
+          : "text-neutral-300 hover:text-neutral-500"
+    }`,
+  ratingNoteRow: "flex flex-wrap items-center gap-2",
+  ratingNoteInput: (theme: SiteTheme) => `${controlStyles.formField(theme)} h-10 flex-1 min-w-48`,
+  ratingButton: (theme: SiteTheme) => `${controlStyles.secondaryButton(theme)} h-10 min-w-0 px-4 text-sm`,
   helperText: (theme: SiteTheme) =>
     `text-xs font-semibold leading-[1.45] ${
       theme === "dark"

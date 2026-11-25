@@ -13,6 +13,9 @@ export interface IRecipe {
   ingredients: IRecipeIngredient[];
   tags: RecipeTag[];
   components: IRecipeComponent[];
+  /** The household's rating, 1 to 5; null until rated. */
+  rating: number | null;
+  ratingNote: string | null;
 }
 
 /** A component recipe by reference; its ingredients are in its own entry of the recipe list. */

@@ -62,11 +62,14 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
     {
       "id": 8, "name": "Spaghetti bolognese", "portions": 4, "tags": ["Dinner", "Pasta"],
       "ingredients": ["Canned tomatoes", "Minced beef", "Spaghetti"],
-      "plannedCount": 2, "lastPlanned": "2026-11-24"
+      "plannedCount": 2, "lastPlanned": "2026-11-24",
+      "rating": 4, "ratingNote": "Kids loved it"
     }
   ]
 }
 ```
+
+`rating` (1 = never again, 5 = a favourite) and `ratingNote` are the household's own verdict on a recipe, set in the recipe view; both are omitted for unrated recipes. Prefer well-rated recipes, avoid low-rated ones, and read the note. The assistant API cannot change them.
 
 `planningPreferences` is what the household set under Settings → Planning preferences: how many people eat (use it as the `portions` of planned dinners), the minimum fish and chicken dinners per week (recipes tagged `Fish` / `Chicken`), tags and ingredients to avoid, how many weeks must pass before a dinner is planned again (`0` = no rule) and free-text notes. Follow them unless the person asks for something else.
 

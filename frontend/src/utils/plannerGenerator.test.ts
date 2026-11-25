@@ -72,6 +72,8 @@ function recipe(name: string, portions: number, ...tags: string[]): IRecipe {
     ingredients: [],
     tags,
     components: [],
+    rating: null,
+    ratingNote: null,
   };
 }
 

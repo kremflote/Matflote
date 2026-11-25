@@ -77,6 +77,8 @@ function recipe(
     })),
     tags: [],
     components: options.components ?? [],
+    rating: null,
+    ratingNote: null,
   };
 }
 
