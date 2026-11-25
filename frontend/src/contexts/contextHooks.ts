@@ -1,4 +1,5 @@
 import { createContext, useContext, type Context } from "react";
+import type { SupportedLanguage, TranslationDictionary } from "../i18n";
 import type { IBrandContext } from "../interfaces/contexts/IBrandContext";
 import type { IIngredientContext } from "../interfaces/contexts/IIngredientContext";
 import type { IIngredientTagCategoryContext } from "../interfaces/contexts/IIngredientTagCategoryContext";
@@ -8,6 +9,14 @@ import type { IRecipeContext } from "../interfaces/contexts/IRecipeContext";
 // The context objects and their hooks live apart from the provider components so that
 // each provider file only exports a component (keeps React Fast Refresh working).
 
+export type LanguageContextValue = {
+  language: SupportedLanguage;
+  locale: string;
+  setLanguage: (language: SupportedLanguage) => void;
+  t: TranslationDictionary;
+};
+
+export const LanguageContext = createContext<LanguageContextValue | null>(null);
 export const BrandContext = createContext<IBrandContext | null>(null);
 export const IngredientContext = createContext<IIngredientContext | null>(null);
 export const IngredientTagCategoryContext = createContext<IIngredientTagCategoryContext | null>(null);
@@ -33,6 +42,10 @@ export function useIngredients() {
 
 export function useIngredientTagCategories() {
   return useRequiredContext(IngredientTagCategoryContext, "useIngredientTagCategories", "IngredientTagCategoryProvider");
+}
+
+export function useLanguage() {
+  return useRequiredContext(LanguageContext, "useLanguage", "LanguageProvider");
 }
 
 export function useMealPlan() {

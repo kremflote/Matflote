@@ -35,12 +35,15 @@ function GroceryExportDialog({
   const [exportMessage, setExportMessage] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // A new list, or new default rules, start the selection over (adjusted during render, not in an effect).
+  const [selectionBasis, setSelectionBasis] = useState({ defaultExcludedTags, groceryList });
+  if (selectionBasis.groceryList !== groceryList || selectionBasis.defaultExcludedTags !== defaultExcludedTags) {
+    setSelectionBasis({ defaultExcludedTags, groceryList });
     setSelectedItemKeys(getInitialSelectedKeys(groceryList, defaultExcludedTags));
     setExportStatus("idle");
     setExportMessage(null);
     setExportError(null);
-  }, [defaultExcludedTags, groceryList]);
+  }
 
   useEffect(() => {
     let ignore = false;

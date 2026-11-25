@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import Modal from "../components/Modal";
 import SuccessToast from "../components/SuccessToast";
 import { useBarcodeScanner, type BarcodeScannerError } from "../hooks/useBarcodeScanner";
@@ -23,7 +23,8 @@ import MatvaretabellenSearchDialog, {
   MatvaretabellenCandidateList,
   type MatvaretabellenNutritionCandidate,
 } from "../components/recipeBrowser/MatvaretabellenSearchDialog";
-import NutritionEditor, { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "../components/recipeBrowser/NutritionEditor";
+import NutritionEditor from "../components/recipeBrowser/NutritionEditor";
+import { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "../components/recipeBrowser/nutritionEditorValues";
 
 type ScannerPageProps = {
   theme: SiteTheme;
@@ -125,38 +126,40 @@ function ScannerPage({ theme }: ScannerPageProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const candidates = useMemo(() => buildIngredientCandidates(products), [products]);
 
-  useEffect(() => {
-    const firstCandidate = candidates[0];
+  // New lookup results preselect their first candidate (or clear the editor when there are none).
+  const showProducts = (nextProducts: IProductLookupResult[]) => {
+    setProducts(nextProducts);
+    const firstCandidate = buildIngredientCandidates(nextProducts)[0];
+    setEditorError(null);
+
     if (firstCandidate === undefined) {
       setSelectedCandidateId(null);
       setIngredientDraft(null);
       setIsEditorOpen(false);
-      setEditorError(null);
       return;
     }
 
     setSelectedCandidateId(firstCandidate.id);
     setIngredientDraft(candidateToDraft(firstCandidate, brands));
-    setEditorError(null);
-  }, [candidates]);
+  };
 
-  const lookupEan = useCallback(async (rawEan: string) => {
+  const lookupEan = async (rawEan: string) => {
     const normalizedEan = rawEan.replace(/\D/g, "");
     if (!/^(\d{8}|\d{13})$/.test(normalizedEan)) {
       setError(t.scanner.invalidEan);
-      setProducts([]);
+      showProducts([]);
       setLookedUpEan(null);
       return false;
     }
 
     setIsLoading(true);
     setError(null);
-    setProducts([]);
+    showProducts([]);
     setLookedUpEan(normalizedEan);
 
     try {
       const response = await productLookupService.lookupByEan(normalizedEan);
-      setProducts(response.products);
+      showProducts(response.products);
       return true;
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : t.scanner.lookupFailed);
@@ -164,7 +167,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [t.scanner.invalidEan, t.scanner.lookupFailed]);
+  };
 
   const lookupProduct = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -455,7 +458,9 @@ function IngredientDraftEditor({
   const { ingredients, refreshIngredients } = useIngredients();
   const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
   const imageInputId = useId();
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  // The chosen photo and its object URL; shown only while it is still the draft's file.
+  const [imagePreview, setImagePreview] = useState<{ file: File; url: string } | null>(null);
+  const imagePreviewUrl = imagePreview !== null && imagePreview.file === draft.imageFile ? imagePreview.url : null;
   const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
   const [isMatvarePickerOpen, setIsMatvarePickerOpen] = useState(false);
   const [isMatvareSearchOpen, setIsMatvareSearchOpen] = useState(false);
@@ -489,17 +494,7 @@ function IngredientDraftEditor({
     && draft.matvaretabellenSupplementStatus === "NoMatch"
     && !hasMatvaretabellenSupplement;
 
-  useEffect(() => {
-    if (draft.imageFile === null) {
-      setImagePreviewUrl(null);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(draft.imageFile);
-    setImagePreviewUrl(objectUrl);
-
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [draft.imageFile]);
+  useEffect(() => (imagePreview === null ? undefined : () => URL.revokeObjectURL(imagePreview.url)), [imagePreview]);
 
   return (
     <section className={scannerStyles.ingredientEditor(theme)}>
@@ -509,7 +504,11 @@ function IngredientDraftEditor({
           className={scannerStyles.hiddenFileInput}
           id={imageInputId}
           type="file"
-          onChange={(event) => onChange(clearAutofillSource({ ...draft, imageFile: event.target.files?.[0] ?? null }, "image"))}
+          onChange={(event) => {
+            const imageFile = event.target.files?.[0] ?? null;
+            setImagePreview(imageFile === null ? null : { file: imageFile, url: URL.createObjectURL(imageFile) });
+            onChange(clearAutofillSource({ ...draft, imageFile }, "image"));
+          }}
         />
         <FieldLabel
           className={scannerStyles.editorImageLabel}

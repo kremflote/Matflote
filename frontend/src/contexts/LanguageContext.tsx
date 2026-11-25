@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -11,18 +9,9 @@ import {
   supportedLanguages,
   translations,
   type SupportedLanguage,
-  type TranslationDictionary,
 } from "../i18n";
+import { LanguageContext } from "./contextHooks";
 import { getOptionalLocalPreference, localPreferenceKeys, setLocalPreference } from "../utils/localPreferences";
-
-type LanguageContextValue = {
-  language: SupportedLanguage;
-  locale: string;
-  setLanguage: (language: SupportedLanguage) => void;
-  t: TranslationDictionary;
-};
-
-const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
 
 type LanguageProviderProps = {
   children: ReactNode;
@@ -51,16 +40,6 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
-}
-
-export function useLanguage() {
-  const context = useContext(LanguageContext);
-
-  if (context === undefined) {
-    throw new Error("useLanguage must be used inside LanguageProvider.");
-  }
-
-  return context;
 }
 
 function getInitialLanguage(): SupportedLanguage {

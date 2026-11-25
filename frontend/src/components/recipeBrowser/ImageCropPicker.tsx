@@ -26,21 +26,8 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
   const [cropConfirmed, setCropConfirmed] = useState(false);
   const currentImageUrl = getApiAssetUrl(initialImageUrl);
 
-  useEffect(() => {
-    if (sourceFile === null) {
-      setImageUrl(null);
-      setPreviewUrl(null);
-      onCroppedFileChange(null);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(sourceFile);
-    setImageUrl(objectUrl);
-    setPreviewUrl(null);
-    onCroppedFileChange(null);
-
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [sourceFile, onCroppedFileChange]);
+  // The object URL of the chosen file lives until another file is chosen or the picker closes.
+  useEffect(() => (imageUrl === null ? undefined : () => URL.revokeObjectURL(imageUrl)), [imageUrl]);
 
   useEffect(() => {
     if (imageUrl === null || sourceFile === null) {
@@ -104,6 +91,9 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
   const hasImage = useMemo(() => sourceFile !== null && previewUrl !== null, [previewUrl, sourceFile]);
   const handleImageSelected = (file: File | null) => {
     setSourceFile(file);
+    setImageUrl(file === null ? null : URL.createObjectURL(file));
+    setPreviewUrl(null);
+    onCroppedFileChange(null);
     setZoom(1);
     setOffsetX(0);
     setOffsetY(0);

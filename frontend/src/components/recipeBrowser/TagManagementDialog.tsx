@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { useLanguage } from "../../contexts";
 import type { SiteTheme } from "../../styles/appStyles";
 import ConfirmationDialog from "../ConfirmationDialog";
@@ -61,7 +61,7 @@ function TagManagementDialog({
   const { t } = useLanguage();
   const titleId = useId();
   const nameDialogTitleId = useId();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(categories[0]?.id ?? null);
+  const [chosenCategoryId, setSelectedCategoryId] = useState<number | null>(categories[0]?.id ?? null);
   const [nameDialogMode, setNameDialogMode] = useState<NameDialogMode | null>(null);
   const [newName, setNewName] = useState("");
   const [nameDialogError, setNameDialogError] = useState<string | null>(null);
@@ -76,19 +76,11 @@ function TagManagementDialog({
   const visibleCategories = categories.filter((category) =>
     activeMode === "ingredients" ? category.showForIngredients !== false : category.showForRecipes !== false,
   );
-  const selectedCategory = visibleCategories.find((category) => category.id === selectedCategoryId) ?? null;
+  // The chosen category, or the first visible one when the chosen one is hidden or gone.
+  const selectedCategory =
+    visibleCategories.find((category) => category.id === chosenCategoryId) ?? visibleCategories[0] ?? null;
+  const selectedCategoryId = selectedCategory?.id ?? null;
   const canCreateTagInSelectedCategory = selectedCategory !== null && selectedCategory.id > 0;
-
-  useEffect(() => {
-    if (visibleCategories.length === 0) {
-      setSelectedCategoryId(null);
-      return;
-    }
-
-    if (!visibleCategories.some((category) => category.id === selectedCategoryId)) {
-      setSelectedCategoryId(visibleCategories[0].id);
-    }
-  }, [selectedCategoryId, visibleCategories]);
 
   async function saveNewName() {
     const normalizedName = normalizeCustomTagName(newName);

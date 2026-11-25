@@ -161,7 +161,7 @@ export function MatvaretabellenCandidateList({
   );
 }
 
-export function toMatvaretabellenNutritionCandidate(
+function toMatvaretabellenNutritionCandidate(
   candidate: IMatvaretabellenCandidate,
 ): MatvaretabellenNutritionCandidate {
   return {

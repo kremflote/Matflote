@@ -14,7 +14,8 @@ import CreatableSelect from "./CreatableSelect";
 import ImageCropPicker from "./ImageCropPicker";
 import IngredientTagCreateDialog from "./IngredientTagCreateDialog";
 import MatvaretabellenSearchDialog, { type MatvaretabellenNutritionCandidate } from "./MatvaretabellenSearchDialog";
-import NutritionEditor, { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "./NutritionEditor";
+import NutritionEditor from "./NutritionEditor";
+import { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "./nutritionEditorValues";
 import TagPickerDialog from "./TagPickerDialog";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 
