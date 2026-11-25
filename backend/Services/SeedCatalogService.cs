@@ -153,7 +153,6 @@ public class SeedCatalogService(
                 ingredient.Description,
                 ingredient.Brand == null ? null : ingredient.Brand.Name,
                 ingredient.ImageUrl,
-                ingredient.Price,
                 ingredient.Tags.Select(tag => tag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
                 ingredient.NutritionPer100,
                 ingredient.NutritionSource,
@@ -509,7 +508,6 @@ public class SeedCatalogService(
                 Description = NullIfWhiteSpace(seedIngredient.Description),
                 BrandId = brand?.BrandId,
                 ImageUrl = NullIfWhiteSpace(seedIngredient.ImageUrl),
-                Price = seedIngredient.Price,
                 NutritionPer100 = seedIngredient.NutritionPer100,
                 NutritionSource = seedIngredient.NutritionPer100 is null
                     ? NutritionDataSource.None

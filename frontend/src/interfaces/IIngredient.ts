@@ -7,7 +7,6 @@ export interface IIngredient {
   brandId: number | null;
   brand: IBrand | null;
   imageUrl: string | null;
-  price: number | null;
   tags: IngredientTag[];
   nutritionPer100: INutritionFacts | null;
   nutritionSource: NutritionDataSource;

@@ -173,24 +173,7 @@ export const recipeBrowserStyles = {
     "relative mt-6 grid min-w-0 content-start max-md:mt-0 max-md:gap-2 md:pt-0",
   createImageLabel: "absolute -top-6 left-0 max-md:static",
   createImageControl: "max-md:mt-0",
-  ingredientBrandPriceRow:
-    "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-4 max-sm:grid-cols-1",
-  ingredientPriceToggleField: "grid min-w-0 gap-2",
-  ingredientPriceToggleButton: (theme: SiteTheme) =>
-    `${controlStyles.formField(theme)} flex w-full cursor-pointer items-center justify-center text-center font-semibold transition-colors ${
-      theme === "dark"
-        ? "hover:bg-white/[0.08]"
-        : theme === "paletteLight"
-          ? "hover:bg-[#E5D5BC]/55"
-          : "hover:bg-neutral-100"
-    }`,
-  ingredientPricePanel: "grid gap-3 rounded-md border p-3",
-  ingredientPriceGrid:
-    "grid grid-cols-[minmax(0,1fr)_minmax(0,8rem)] items-start gap-3 max-sm:grid-cols-1",
-  ingredientPriceSecondaryGrid:
-    "grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] items-start gap-3 max-sm:grid-cols-1",
   field: "grid min-w-0 gap-2",
-  labelStack: "grid gap-0.5",
   label: (theme: SiteTheme) =>
     `text-xs font-bold ${
       theme === "dark"
@@ -198,14 +181,6 @@ export const recipeBrowserStyles = {
         : theme === "paletteLight"
           ? "text-[#556145]"
           : "text-neutral-700"
-    }`,
-  labelSubtitle: (theme: SiteTheme) =>
-    `justify-self-end text-right text-[10px] font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-500"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
     }`,
   requiredMark: (theme: SiteTheme) =>
     theme === "dark"
@@ -493,6 +468,7 @@ export const recipeBrowserStyles = {
   nestedIngredientModalPanel: (theme: SiteTheme) =>
     `grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-md border p-6 max-sm:max-h-[calc(100vh_-_16px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
   nestedIngredientModalBody: `${sizeClasses.modalFormBodyMaxHeight} ${sizeClasses.modalFormBodyMobileMaxHeight} grid min-h-0 gap-3 overflow-y-auto pr-1`,
+  nestedDialogForm: "grid gap-3",
   primaryButton: controlStyles.primaryButton,
   detailHeaderEditButton: (theme: SiteTheme) =>
     `${controlStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`,
@@ -864,38 +840,6 @@ export const recipeBrowserStyles = {
           : "text-neutral-500"
     }`,
   ingredientDetailMetaValue: "min-w-0 truncate",
-  ingredientDetailActionButton: (theme: SiteTheme) =>
-    `${controlStyles.primaryButton(theme)} h-10 min-w-0 px-3 text-xs max-sm:h-10 max-sm:w-full`,
-  ingredientPriceDialogForm: "grid gap-3",
-  ingredientPriceForm:
-    "grid grid-cols-[minmax(0,1fr)_8rem_auto] items-end gap-3 max-sm:grid-cols-1",
-  ingredientPriceField: "grid gap-2",
-  ingredientPriceInput: (theme: SiteTheme) => controlStyles.formField(theme),
-  ingredientPriceButton: (theme: SiteTheme) =>
-    `${controlStyles.primaryButton(theme)} max-sm:w-full`,
-  ingredientPriceRows: "grid gap-2",
-  ingredientPriceRow: (theme: SiteTheme) =>
-    `grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold max-sm:grid-cols-1 max-sm:gap-1 ${
-      theme === "dark"
-        ? "bg-white/[0.05] text-neutral-200"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/45 text-[#556145]"
-          : "bg-neutral-100 text-neutral-700"
-    }`,
-  ingredientPriceRowMain: "grid min-w-0 gap-1",
-  ingredientPriceStore: "min-w-0 truncate font-bold",
-  ingredientPriceNote: (theme: SiteTheme) =>
-    `min-w-0 truncate text-xs font-semibold ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
-    }`,
-  ingredientPriceValue:
-    "justify-self-end text-base font-extrabold max-sm:justify-self-start",
-  ingredientPriceDate:
-    "justify-self-end text-xs font-bold opacity-70 max-sm:justify-self-start",
   detailChipSection: "grid gap-2",
   detailChipSectionCompact: "grid gap-1",
   detailChipList: "flex flex-wrap gap-2",

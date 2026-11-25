@@ -93,14 +93,19 @@ public class KassalappProductLookupService(
         using var payload = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
         var kassalappPayload = ReadPayload(payload.RootElement, ean);
 
+        // Kassalapp returns one listing per store for the same EAN. MATFLOTE only needs the product itself,
+        // so listings that share a name and brand collapse into the most complete one.
         var productTasks = kassalappPayload.Products
             .Where(product => !string.IsNullOrWhiteSpace(product.Name))
+            .GroupBy(product => $"{product.Name!.Trim()}|{product.Brand?.Trim()}", StringComparer.OrdinalIgnoreCase)
+            .Select(listings => listings
+                .OrderByDescending(product => !string.IsNullOrWhiteSpace(product.Image))
+                .ThenByDescending(product => product.NutritionalContents?.Count ?? 0)
+                .First())
             .Select(product => ToProductLookupResultAsync(product, kassalappPayload.Ean, kassalappPayload.Nutrition, cancellationToken))
             .ToList();
         var products = (await Task.WhenAll(productTasks))
-            .OrderBy(product => product.CurrentPrice is null)
-            .ThenBy(product => product.CurrentPrice)
-            .ThenBy(product => product.Name)
+            .OrderBy(product => product.Name)
             .ToList();
 
         return new ProductLookupResponseDto(ean, products);
@@ -201,11 +206,8 @@ public class KassalappProductLookupService(
             product.Description,
             product.Ingredients,
             product.Image,
-            product.CurrentPrice?.Price,
-            product.CurrentPrice?.UnitPrice,
             product.Weight,
             product.WeightUnit,
-            product.Store is null ? null : new ProductLookupStoreDto(product.Store.Name ?? string.Empty, product.Store.Url, product.Store.Logo),
             ToKassalappUrl(product, ean),
             kassalappNutrition,
             usesMatvaretabellen ? matvaretabellenMatch?.Nutrition : null,
@@ -428,36 +430,14 @@ public record KassalappProduct(
     string? Ingredients,
     [property: JsonPropertyName("image")]
     string? Image,
-    [property: JsonPropertyName("current_price")]
-    KassalappCurrentPrice? CurrentPrice,
     [property: JsonPropertyName("weight")]
     decimal? Weight,
     [property: JsonPropertyName("weight_unit")]
     string? WeightUnit,
     [property: JsonPropertyName("ean")]
     string? Ean,
-    [property: JsonPropertyName("store")]
-    KassalappStore? Store,
     [property: JsonPropertyName("nutritional_contents")]
     IReadOnlyCollection<KassalappNutritionalContent>? NutritionalContents
-);
-
-public record KassalappCurrentPrice(
-    [property: JsonPropertyName("price")]
-    decimal? Price,
-    [property: JsonPropertyName("unit_price")]
-    decimal? UnitPrice,
-    [property: JsonPropertyName("date")]
-    DateTimeOffset? Date
-);
-
-public record KassalappStore(
-    [property: JsonPropertyName("name")]
-    string? Name,
-    [property: JsonPropertyName("url")]
-    string? Url,
-    [property: JsonPropertyName("logo")]
-    string? Logo
 );
 
 public record KassalappNutritionalContent(

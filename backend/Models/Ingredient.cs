@@ -15,7 +15,6 @@ public class Ingredient
     public int? BrandId { get; set; }
     public Brand? Brand { get; set; }
     public string? ImageUrl { get; set; }
-    public decimal? Price { get; set; }
     public ICollection<IngredientTagAssignment> Tags { get; set; } = [];
     public NutritionFacts? NutritionPer100 { get; set; }
     public NutritionDataSource NutritionSource { get; set; } = NutritionDataSource.None;

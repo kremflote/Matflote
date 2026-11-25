@@ -8,7 +8,7 @@ namespace DinnerPlanner.Api.Dtos;
 
 public record RecipeRequest(
     [Required]
-    [StringLength(30, MinimumLength = 1)]
+    [StringLength(ValidationLimits.RecipeNameMaxLength, MinimumLength = 1)]
     string Name,
     string? ImageUrl,
     [StringLength(600)]

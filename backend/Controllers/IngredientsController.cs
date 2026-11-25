@@ -56,7 +56,6 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
             Description = request.Description,
             BrandId = request.BrandId,
             ImageUrl = request.ImageUrl,
-            Price = request.Price,
             Tags = knownTags
                 .Select(tag => new IngredientTagAssignment
                 {
@@ -99,7 +98,6 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
         ingredient.Description = request.Description;
         ingredient.BrandId = request.BrandId;
         ingredient.ImageUrl = request.ImageUrl;
-        ingredient.Price = request.Price;
         var knownTags = await tagCatalog.NormalizeKnownTagDefinitionsAsync(request.Tags, HttpContext.RequestAborted);
         context.IngredientTagAssignments.RemoveRange(ingredient.Tags);
         ingredient.Tags = knownTags
@@ -161,7 +159,6 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
         ingredient.BrandId,
         ingredient.Brand is null ? null : new BrandDto(ingredient.Brand.BrandId, ingredient.Brand.Name),
         ingredient.ImageUrl,
-        ingredient.Price,
         ingredient.Tags.Select(ingredientTag => ingredientTag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
         ingredient.NutritionPer100,
         ingredient.NutritionSource,

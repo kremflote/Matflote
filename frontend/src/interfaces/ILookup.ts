@@ -3,11 +3,6 @@ export interface IBrand {
   name: string;
 }
 
-export interface IStore {
-  storeId: number;
-  name: string;
-}
-
 export interface IIngredientTagDefinition {
   ingredientTagDefinitionId: number;
   name: string;

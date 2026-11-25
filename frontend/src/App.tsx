@@ -3,13 +3,12 @@ import Header, { type PageId } from "./components/Header";
 import CookbookPage from "./pages/CookbookPage";
 import NutritionPage from "./pages/NutritionPage";
 import PlannerPage from "./pages/PlannerPage";
-import PricesPage from "./pages/PricesPage";
 import ScannerPage from "./pages/ScannerPage";
 import SettingsPage from "./pages/SettingsPage";
 import { appStyles, type SiteTheme } from "./styles/appStyles";
 import { getLocalPreference, localPreferenceKeys, setLocalPreference } from "./utils/localPreferences";
 
-const pageIds: PageId[] = ["weekPlanner", "cookbook", "scanner", "prices", "nutrition", "settings"];
+const pageIds: PageId[] = ["weekPlanner", "cookbook", "scanner", "nutrition", "settings"];
 const themes: SiteTheme[] = ["dark", "light", "paletteLight"];
 
 function App() {
@@ -40,7 +39,6 @@ function App() {
       {activePage === "weekPlanner" && <PlannerPage theme={theme} />}
       {activePage === "cookbook" && <CookbookPage theme={theme} />}
       {activePage === "scanner" && <ScannerPage theme={theme} />}
-      {activePage === "prices" && <PricesPage theme={theme} />}
       {activePage === "nutrition" && <NutritionPage theme={theme} />}
     </div>
   );

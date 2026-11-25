@@ -483,7 +483,7 @@ function TagManagementDialog({
           titleId={nameDialogTitleId}
           onClose={() => setNameDialogMode(null)}
         >
-          <div className={recipeBrowserStyles.ingredientPriceDialogForm}>
+          <div className={recipeBrowserStyles.nestedDialogForm}>
             {nameDialogError !== null && <p className={recipeBrowserStyles.statusError(theme)}>{nameDialogError}</p>}
             <label className={recipeBrowserStyles.field}>
               <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.name}</span>

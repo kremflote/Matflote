@@ -13,7 +13,6 @@ Created with assistance of ChatGPT 5.5.
 	- Prep helper for the current week. It lists produce-style ingredients only when an explicit preparation exists or one can be inferred from recipe instructions.
 	- Shopping-list preview and export through the provider-based grocery-list system. Vikunja is the first supported provider.
 - Scanner page for Norwegian grocery lookup by barcode/EAN through Kassalapp, with missing nutrition fields supplemented from Matvaretabellen.
-- Prices page for local household price tracking by ingredient, store, and date.
 - Nutrition page for approximate weekly nutrition summaries from planned meals and locally stored Helsedirektoratet reference values.
 
 ## Project Structure
@@ -37,10 +36,6 @@ Created with assistance of ChatGPT 5.5.
 ### Nutrition
 
 ![MATFLOTE nutrition light mode](docs/images/nutritionlight.png)
-
-### Prices
-
-![MATFLOTE prices light mode](docs/images/priceslight.png)
 
 ### Mobile 
 
@@ -101,7 +96,7 @@ http://localhost:8095
 
 MATFLOTE household data is made of two parts:
 
-- Database data: ingredients, recipes, tags, tag categories, brands, stores, price points, meal plans, nutrition references/settings, grocery export rules, integration settings, conversion rules, and image metadata.
+- Database data: ingredients, recipes, tags, tag categories, brands, meal plans, nutrition references/settings, grocery export rules, integration settings, conversion rules, and image metadata.
 - Image files: uploaded ingredient/recipe images and seeded placeholder images.
 
 For an app-level portable backup, use:
@@ -209,7 +204,7 @@ GET /api/product-lookup/ean/{ean}
 
 Camera scanning uses ZXing in the browser and is loaded only when the scan button is used. Phone browsers normally require MATFLOTE to be opened from a secure origin such as HTTPS before camera access works.
 
-On phone/tablet widths, scanned product results become suggested ingredients. Choose a suggestion, edit the name, brand, image, price, store, tags, or nutrition, then confirm to save it through the normal ingredient API.
+On phone/tablet widths, scanned product results become suggested ingredients. Choose a suggestion, edit the name, brand, image, tags, or nutrition, then confirm to save it through the normal ingredient API.
 
 ## Nutrition References
 
@@ -301,7 +296,6 @@ Example JSON shape:
       "description": "Sweet root vegetable for soups, stews, salads, and sides.",
       "brandName": null,
       "imageUrl": null,
-      "price": null,
       "tags": ["Vegetable"],
       "nutritionPer100": null,
       "color": "#f28c28"

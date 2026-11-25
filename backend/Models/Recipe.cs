@@ -9,7 +9,7 @@ public class Recipe
 {
     [Key]
     public int RecipeId { get; set; }
-    [StringLength(30, MinimumLength = 1)]
+    [StringLength(ValidationLimits.RecipeNameMaxLength, MinimumLength = 1)]
     public string Name { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
     public string? Description { get; set; }

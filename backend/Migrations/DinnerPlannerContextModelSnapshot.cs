@@ -261,10 +261,6 @@ namespace backend.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal?>("Price")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
-
                     b.HasKey("IngredientId");
 
                     b.HasIndex("BrandId");
@@ -278,8 +274,7 @@ namespace backend.Migrations
                             Color = "#f6d4b8",
                             Description = "Lean poultry cut with mild flavor. Useful as the main protein in bowls, salads, soups, and quick pan-fried dinners.",
                             IngredientName = "Chicken breast",
-                            NutritionSource = "Manual",
-                            Price = 89.90m
+                            NutritionSource = "Manual"
                         },
                         new
                         {
@@ -287,8 +282,7 @@ namespace backend.Migrations
                             Color = "#f4ead2",
                             Description = "Aromatic vegetable used to build flavor in sauces, marinades, soups, stir fries, and roasted dishes.",
                             IngredientName = "Garlic",
-                            NutritionSource = "Manual",
-                            Price = 14.90m
+                            NutritionSource = "Manual"
                         },
                         new
                         {
@@ -296,8 +290,7 @@ namespace backend.Migrations
                             Color = "#fff7ef",
                             Description = "Thick cultured dairy product. Works as a base for cold sauces, dressings, marinades, and high-protein breakfasts.",
                             IngredientName = "Greek yogurt",
-                            NutritionSource = "Manual",
-                            Price = 34.90m
+                            NutritionSource = "Manual"
                         },
                         new
                         {
@@ -305,8 +298,7 @@ namespace backend.Migrations
                             Color = "#f6f0df",
                             Description = "Neutral grain that works as a side or base for bowls, curries, stir fries, and meal prep portions.",
                             IngredientName = "Rice",
-                            NutritionSource = "Manual",
-                            Price = 39.90m
+                            NutritionSource = "Manual"
                         },
                         new
                         {
@@ -314,41 +306,8 @@ namespace backend.Migrations
                             Color = "#f9dc5c",
                             Description = "Bright acidic fruit used for sauces, dressings, marinades, desserts, and finishing cooked dishes.",
                             IngredientName = "Lemon",
-                            NutritionSource = "Manual",
-                            Price = 8.90m
+                            NutritionSource = "Manual"
                         });
-                });
-
-            modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientPricePoint", b =>
-                {
-                    b.Property<int>("IngredientPricePointId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("IngredientId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("StoreId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("IngredientPricePointId");
-
-                    b.HasIndex("StoreId");
-
-                    b.HasIndex("IngredientId", "Date");
-
-                    b.ToTable("IngredientPricePoints");
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientTagAssignment", b =>
@@ -2357,72 +2316,6 @@ namespace backend.Migrations
                     b.ToTable("RecipeTagAssignments");
                 });
 
-            modelBuilder.Entity("DinnerPlanner.Api.Models.Store", b =>
-                {
-                    b.Property<int>("StoreId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("StoreId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Stores");
-
-                    b.HasData(
-                        new
-                        {
-                            StoreId = 1,
-                            Name = "Rema 1000"
-                        },
-                        new
-                        {
-                            StoreId = 2,
-                            Name = "Coop Mega"
-                        },
-                        new
-                        {
-                            StoreId = 3,
-                            Name = "Coop Prix"
-                        },
-                        new
-                        {
-                            StoreId = 4,
-                            Name = "Coop Obs"
-                        },
-                        new
-                        {
-                            StoreId = 5,
-                            Name = "Coop Extra"
-                        },
-                        new
-                        {
-                            StoreId = 6,
-                            Name = "Meny"
-                        },
-                        new
-                        {
-                            StoreId = 7,
-                            Name = "Kiwi"
-                        },
-                        new
-                        {
-                            StoreId = 8,
-                            Name = "Bunnpris"
-                        },
-                        new
-                        {
-                            StoreId = 9,
-                            Name = "Europris"
-                        });
-                });
-
             modelBuilder.Entity("DinnerPlanner.Api.Models.UploadedImage", b =>
                 {
                     b.Property<int>("UploadedImageId")
@@ -2590,25 +2483,6 @@ namespace backend.Migrations
                     b.Navigation("NutritionPer100");
                 });
 
-            modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientPricePoint", b =>
-                {
-                    b.HasOne("DinnerPlanner.Api.Models.Ingredient", "Ingredient")
-                        .WithMany()
-                        .HasForeignKey("IngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DinnerPlanner.Api.Models.Store", "Store")
-                        .WithMany("PricePoints")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Ingredient");
-
-                    b.Navigation("Store");
-                });
-
             modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientTagAssignment", b =>
                 {
                     b.HasOne("DinnerPlanner.Api.Models.Ingredient", "Ingredient")
@@ -2761,11 +2635,6 @@ namespace backend.Migrations
                     b.Navigation("Tags");
 
                     b.Navigation("UsedInRecipes");
-                });
-
-            modelBuilder.Entity("DinnerPlanner.Api.Models.Store", b =>
-                {
-                    b.Navigation("PricePoints");
                 });
 #pragma warning restore 612, 618
         }

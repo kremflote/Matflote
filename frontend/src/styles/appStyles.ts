@@ -713,18 +713,6 @@ export const scannerStyles = {
           ? "bg-[#E5D5BC] text-[#556145]"
           : "bg-neutral-200 text-neutral-700"
     }`,
-  priceBlock:
-    "grid content-start justify-items-end gap-1 max-sm:col-span-2 max-sm:justify-items-start",
-  price: (theme: SiteTheme) =>
-    `text-xl font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
-  unitPrice: (theme: SiteTheme) =>
-    `text-xs font-bold ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
-    }`,
   nutritionGrid: "grid grid-cols-4 gap-2 max-md:grid-cols-2 max-sm:grid-cols-1",
   nutritionItem: (theme: SiteTheme) =>
     `rounded-md border px-2 py-1 text-xs font-semibold ${surfaceClasses.panel(theme)}`,
@@ -785,24 +773,6 @@ export const scannerStyles = {
   hiddenFileInput: "sr-only",
   compactFormGrid:
     "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-3 max-sm:grid-cols-1",
-  priceField: "relative mb-4 grid gap-2",
-  labelStack: "grid gap-0.5",
-  labelSubtitle: (theme: SiteTheme) =>
-    `justify-self-end text-right text-[10px] font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-500"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
-    }`,
-  floatingLabelSubtitle: (theme: SiteTheme) =>
-    `pointer-events-none absolute right-0 top-full mt-1 text-right text-[10px] font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-500"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
-    }`,
   groupedTagPanel: "grid gap-3",
   groupedTagSection: (theme: SiteTheme) =>
     `grid gap-2 border-b pb-3 last:border-b-0 last:pb-0 ${
@@ -900,128 +870,6 @@ export const scannerStyles = {
           ? "text-[#7A8864]"
           : "text-neutral-500"
     }`,
-} as const;
-
-export const priceStyles = {
-  shell: pageStyles.contentShell,
-  header: "grid gap-2",
-  title: (theme: SiteTheme) =>
-    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
-  intro: (theme: SiteTheme) =>
-    `max-w-2xl text-sm font-semibold leading-[1.5] ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-600"
-    }`,
-  panel: (theme: SiteTheme) =>
-    `grid gap-4 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
-  form: "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_auto] items-end gap-3 max-md:grid-cols-2 max-sm:grid-cols-1",
-  field: "grid gap-2",
-  label: "text-sm font-bold leading-tight",
-  input: controlStyles.formField,
-  primaryButton: controlStyles.primaryButton,
-  secondaryButton: controlStyles.secondaryButton,
-  statusError: (theme: SiteTheme) =>
-    `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
-      theme === "dark"
-        ? "border-red-400/30 bg-red-500/10 text-red-200"
-        : theme === "paletteLight"
-          ? "border-red-700/25 bg-red-700/10 text-red-800"
-          : "border-red-200 bg-red-50 text-red-700"
-    }`,
-  emptyState: (theme: SiteTheme) =>
-    `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel(theme)}`,
-  summaryGrid: "grid grid-cols-3 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1",
-  summaryCard: (theme: SiteTheme) =>
-    `grid gap-1 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
-  kicker: (theme: SiteTheme) =>
-    `text-xs font-extrabold uppercase leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
-    }`,
-  summaryValue: "text-2xl font-extrabold leading-tight",
-  summaryMeta: (theme: SiteTheme) =>
-    `text-xs font-bold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
-    }`,
-  metricGrid: "grid grid-cols-3 gap-3 max-md:grid-cols-1",
-  select: controlStyles.formField,
-  sectionTitle: "text-base font-extrabold leading-tight",
-  storeComparison: "grid gap-2",
-  chartFrame: (theme: SiteTheme) =>
-    `grid gap-2 rounded-md border p-3 ${
-      theme === "dark"
-        ? "border-white/[0.08] bg-white/[0.04]"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#E5D5BC]/35"
-          : "border-neutral-200 bg-neutral-50"
-    }`,
-  chartSvg: "h-44 w-full",
-  chartGridLine: (theme: SiteTheme) =>
-    theme === "dark"
-      ? "stroke-white/[0.16]"
-      : theme === "paletteLight"
-        ? "stroke-[#7A8864]/25"
-        : "stroke-neutral-300",
-  chartLine: (theme: SiteTheme) =>
-    theme === "dark"
-      ? "stroke-neutral-100 stroke-[4]"
-      : theme === "paletteLight"
-        ? "stroke-[#556145] stroke-[4]"
-        : "stroke-neutral-900 stroke-[4]",
-  chartPoint: (theme: SiteTheme) =>
-    theme === "dark"
-      ? "fill-neutral-100"
-      : theme === "paletteLight"
-        ? "fill-[#556145]"
-        : "fill-neutral-900",
-  chartCaption: (theme: SiteTheme) =>
-    `text-xs font-bold ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
-    }`,
-  grid: "grid gap-3",
-  ingredientGroup: (theme: SiteTheme) =>
-    `grid gap-3 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
-  ingredientHeader: "flex flex-wrap items-baseline justify-between gap-3",
-  ingredientName: "text-lg font-bold leading-tight",
-  latestPrice: (theme: SiteTheme) =>
-    `text-sm font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
-  priceRows: "grid gap-2",
-  priceRow: (theme: SiteTheme) =>
-    `grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold max-sm:grid-cols-1 max-sm:gap-1 ${
-      theme === "dark"
-        ? "bg-white/[0.05] text-neutral-200"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/45 text-[#556145]"
-          : "bg-neutral-100 text-neutral-700"
-    }`,
-  rowMain: "grid min-w-0 gap-1",
-  rowStore: "min-w-0 truncate font-bold",
-  rowNote: (theme: SiteTheme) =>
-    `min-w-0 truncate text-xs font-semibold ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
-    }`,
-  rowPrice:
-    "justify-self-end text-base font-extrabold max-sm:justify-self-start",
-  rowDate:
-    "justify-self-end text-xs font-bold opacity-70 max-sm:justify-self-start",
 } as const;
 
 export const nutritionStyles = {

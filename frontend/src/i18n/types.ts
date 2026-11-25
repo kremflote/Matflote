@@ -143,7 +143,6 @@ export type TranslationDictionary = {
     noIngredientsSelected: string;
     noRecipesSelected: string;
     noInstructions: string;
-    noPrice: string;
     noRecipesFound: string;
     noSidesAdded: string;
     nutrition: string;
@@ -165,7 +164,6 @@ export type TranslationDictionary = {
     omega6: string;
     cholesterolPer100g: string;
     cholesterol: string;
-    price: string;
     proteinPer100g: string;
     protein: string;
     recipes: string;
@@ -231,7 +229,6 @@ export type TranslationDictionary = {
     home: string;
     nutrition: string;
     planner: string;
-    prices: string;
     primary: string;
     scanner: string;
     settings: string;
@@ -262,35 +259,6 @@ export type TranslationDictionary = {
     referenceSourceLink: string;
     statusLabels: Record<string, string>;
     weekStart: string;
-  };
-  prices: {
-    addPrice: string;
-    addPricePoint: string;
-    average: string;
-    couldNotLoad: string;
-    couldNotSave: string;
-    date: string;
-    empty: string;
-    history: string;
-    ingredient: string;
-    latest: string;
-    lowest: string;
-    note: string;
-    notePlaceholder: string;
-    pageIntro: string;
-    pageTitle: string;
-    price: string;
-    priceInformation: string;
-    priceUnitSubtitle: string;
-    pricePlaceholder: string;
-    savePrice: string;
-    selectStore: string;
-    selectedIngredient: string;
-    store: string;
-    storeComparison: string;
-    storePlaceholder: string;
-    trackedIngredients: string;
-    trackedPrices: string;
   };
   scanner: {
     cameraPermissionDenied: string;
@@ -332,7 +300,6 @@ export type TranslationDictionary = {
     nameLabel: string;
     noCandidateSelected: string;
     noImage: string;
-    noPrice: string;
     noProductsFound: (ean: string) => string;
     nutritionSupplementedBy: (primary: string, supplement: string) => string;
     nutritionFromPrefix: string;
@@ -342,9 +309,6 @@ export type TranslationDictionary = {
     pageIntroAfterKassalapp: string;
     pageIntroBeforeKassalapp: string;
     pageTitle: string;
-    priceLabel: string;
-    storeLabel: string;
-    price: (price: number) => string;
     productImageLabel: string;
     protein: string;
     resultsLabel: string;
@@ -360,7 +324,6 @@ export type TranslationDictionary = {
     searching: string;
     selectTags: string;
     suggestedIngredient: string;
-    unitPrice: (price: number) => string;
     unknownBrand: string;
   };
   planner: {

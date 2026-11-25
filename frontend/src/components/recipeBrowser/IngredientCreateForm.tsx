@@ -1,9 +1,8 @@
 import { useCallback, useId, useState, type FormEvent } from "react";
-import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useRecipes, useStores } from "../../contexts";
+import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IIngredient, IngredientTag, NutritionDataSource } from "../../interfaces/IIngredient";
-import { brandService, imageUploadService, ingredientPriceService, ingredientService, ingredientTagCategoryService, storeService } from "../../services";
+import { brandService, imageUploadService, ingredientService, ingredientTagCategoryService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
-import { normalizePriceInput, todayInputValue } from "../../utils/priceFormatting";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../../constants/validation";
 import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../../utils/tagCatalog";
 import {
@@ -35,7 +34,6 @@ function IngredientCreateForm({
   const isEditing = initialIngredient !== null;
   const { t } = useLanguage();
   const { brands, refreshBrands } = useBrands();
-  const { stores, refreshStores } = useStores();
   const { ingredients, refreshIngredients } = useIngredients();
   const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
   const { refreshRecipes } = useRecipes();
@@ -104,11 +102,6 @@ function IngredientCreateForm({
   const [matvaretabellenFoodId, setMatvaretabellenFoodId] = useState<string | null>(initialIngredient?.matvaretabellenFoodId ?? null);
   const [nutritionMatchedName, setNutritionMatchedName] = useState<string | null>(initialIngredient?.nutritionMatchedName ?? null);
   const [nutritionMatchConfidence, setNutritionMatchConfidence] = useState<number | null>(initialIngredient?.nutritionMatchConfidence ?? null);
-  const [showPriceInformation, setShowPriceInformation] = useState(false);
-  const [priceStoreId, setPriceStoreId] = useState<number | null>(null);
-  const [priceValue, setPriceValue] = useState("");
-  const [priceDate, setPriceDate] = useState(todayInputValue());
-  const [priceNote, setPriceNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const ingredientVisibleTagCategories = getIngredientVisibleTagCategories(ingredientTagCategories);
@@ -145,15 +138,6 @@ function IngredientCreateForm({
       return;
     }
 
-    const parsedPricePointValue = nullableNumber(priceValue);
-    if (
-      showPriceInformation &&
-      (priceStoreId === null || parsedPricePointValue === null || parsedPricePointValue <= 0 || priceDate.trim().length === 0)
-    ) {
-      setError(t.prices.couldNotSave);
-      return;
-    }
-
     setIsSaving(true);
     setError(null);
 
@@ -166,7 +150,6 @@ function IngredientCreateForm({
         description: initialIngredient?.description ?? null,
         brandId,
         imageUrl: upload?.url ?? initialIngredient?.imageUrl ?? null,
-        price: initialIngredient?.price ?? null,
         tags: selectedTags,
         nutritionPer100: {
           calories: nullableNumber(calories),
@@ -198,23 +181,10 @@ function IngredientCreateForm({
         color: initialIngredient?.color ?? null,
       };
 
-      let ingredientId = initialIngredient?.ingredientId ?? null;
       if (isEditing) {
         await ingredientService.update(initialIngredient.ingredientId, request);
-        ingredientId = initialIngredient.ingredientId;
       } else {
-        const createdIngredient = await ingredientService.create(request);
-        ingredientId = createdIngredient.ingredientId;
-      }
-
-      if (showPriceInformation) {
-        await ingredientPriceService.create({
-          ingredientId: ingredientId!,
-          storeId: priceStoreId!,
-          price: parsedPricePointValue!,
-          date: priceDate,
-          note: priceNote.trim().length === 0 ? null : priceNote.trim(),
-        });
+        await ingredientService.create(request);
       }
 
       await refreshIngredients();
@@ -309,60 +279,6 @@ function IngredientCreateForm({
     />
   );
 
-  const priceInformationPanel = showPriceInformation && (
-    <section className={`${recipeBrowserStyles.ingredientPricePanel} ${recipeBrowserStyles.detailsPanel(theme)}`}>
-      <div className={recipeBrowserStyles.ingredientPriceGrid}>
-        <CreatableSelect
-          createLabel={t.common.createNew}
-          label={t.prices.store}
-          options={stores.map((store) => ({ id: store.storeId, name: store.name }))}
-          placeholder={t.prices.selectStore}
-          theme={theme}
-          value={priceStoreId}
-          onChange={setPriceStoreId}
-          onCreate={async (name) => {
-            const store = await storeService.create({ name });
-            await refreshStores();
-            return { id: store.storeId, name: store.name };
-          }}
-        />
-        <label className={recipeBrowserStyles.field}>
-          <span className={recipeBrowserStyles.label(theme)}>{t.prices.price}</span>
-          <input
-            className={recipeBrowserStyles.textField(theme)}
-            inputMode="decimal"
-            placeholder={t.prices.pricePlaceholder}
-            type="text"
-            value={priceValue}
-            onChange={(event) => setPriceValue(normalizePriceInput(event.target.value))}
-          />
-          <span className={recipeBrowserStyles.labelSubtitle(theme)}>{t.prices.priceUnitSubtitle}</span>
-        </label>
-      </div>
-      <div className={recipeBrowserStyles.ingredientPriceSecondaryGrid}>
-        <label className={recipeBrowserStyles.field}>
-          <span className={recipeBrowserStyles.label(theme)}>{t.prices.date}</span>
-          <input
-            className={recipeBrowserStyles.textField(theme)}
-            type="date"
-            value={priceDate}
-            onChange={(event) => setPriceDate(event.target.value)}
-          />
-        </label>
-        <label className={recipeBrowserStyles.field}>
-          <span className={recipeBrowserStyles.label(theme)}>{t.prices.note}</span>
-          <input
-            className={recipeBrowserStyles.textField(theme)}
-            maxLength={500}
-            placeholder={t.prices.notePlaceholder}
-            value={priceNote}
-            onChange={(event) => setPriceNote(event.target.value)}
-          />
-        </label>
-      </div>
-    </section>
-  );
-
   return (
     <form className={recipeBrowserStyles.form} onSubmit={submitIngredient}>
       <div className={recipeBrowserStyles.formBodyScrollArea}>
@@ -388,42 +304,26 @@ function IngredientCreateForm({
                 />
               </label>
 
-              <div className={recipeBrowserStyles.ingredientBrandPriceRow}>
-                <CreatableSelect
-                  createLabel={t.common.createNew}
-                  label={t.cookbook.brand}
-                  options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
-                  placeholder={t.cookbook.selectBrand}
-                  theme={theme}
-                  value={brandId}
-                  onChange={setBrandId}
-                  onCreate={async (name) => {
-                    const brand = await brandService.create({ name });
-                    await refreshBrands();
-                    return { id: brand.brandId, name: brand.name };
-                  }}
-                  onDeleteOption={async (option) => {
-                    await brandService.delete(option.id);
-                    await refreshBrands();
-                    await refreshIngredients();
-                    await refreshRecipes();
-                  }}
-                />
-
-                <section className={recipeBrowserStyles.ingredientPriceToggleField}>
-                  <span className={recipeBrowserStyles.label(theme)}>{t.prices.priceInformation}</span>
-                  <button
-                    aria-expanded={showPriceInformation}
-                    className={recipeBrowserStyles.ingredientPriceToggleButton(theme)}
-                    type="button"
-                    onClick={() => setShowPriceInformation((currentValue) => !currentValue)}
-                  >
-                    {showPriceInformation ? t.common.close : t.prices.addPrice}
-                  </button>
-                </section>
-              </div>
-
-              {priceInformationPanel}
+              <CreatableSelect
+                createLabel={t.common.createNew}
+                label={t.cookbook.brand}
+                options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
+                placeholder={t.cookbook.selectBrand}
+                theme={theme}
+                value={brandId}
+                onChange={setBrandId}
+                onCreate={async (name) => {
+                  const brand = await brandService.create({ name });
+                  await refreshBrands();
+                  return { id: brand.brandId, name: brand.name };
+                }}
+                onDeleteOption={async (option) => {
+                  await brandService.delete(option.id);
+                  await refreshBrands();
+                  await refreshIngredients();
+                  await refreshRecipes();
+                }}
+              />
 
               <section className={recipeBrowserStyles.field}>
                 <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.nutrition}</span>

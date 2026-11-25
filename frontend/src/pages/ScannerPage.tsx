@@ -3,15 +3,14 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEven
 import Modal from "../components/Modal";
 import SuccessToast from "../components/SuccessToast";
 import CreatableSelect from "../components/recipeBrowser/CreatableSelect";
-import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useStores } from "../contexts";
+import { useBrands, useIngredientTagCategories, useIngredients, useLanguage } from "../contexts";
 import type { IngredientTag, INutritionFacts, NutritionDataSource } from "../interfaces/IIngredient";
-import type { IBrand, IStore } from "../interfaces/ILookup";
+import type { IBrand } from "../interfaces/ILookup";
 import type { IMatvaretabellenCandidate, IProductLookupNutrition, IProductLookupResult } from "../interfaces/IProductLookup";
-import { brandService, imageUploadService, ingredientPriceService, ingredientService, ingredientTagCategoryService, productLookupService, storeService } from "../services";
+import { brandService, imageUploadService, ingredientService, ingredientTagCategoryService, productLookupService } from "../services";
 import { getApiAssetUrl } from "../services/apiClient";
 import { pageStyles, scannerStyles, type SiteTheme } from "../styles/appStyles";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../constants/validation";
-import { normalizePriceInput, todayInputValue } from "../utils/priceFormatting";
 import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../utils/tagCatalog";
 import {
   formatIngredientTagCategoryName,
@@ -34,8 +33,6 @@ type IngredientCandidate = {
   id: string;
   name: string;
   brandName: string;
-  storeName: string;
-  price: number | null;
   imageUrl: string | null;
   kassalappNutritionPer100: INutritionFacts | null;
   matvaretabellenNutritionPer100: INutritionFacts | null;
@@ -59,9 +56,6 @@ type IngredientDraft = {
   name: string;
   brandId: number | null;
   brandName: string;
-  storeName: string;
-  storeId: number | null;
-  price: string;
   imageUrl: string | null;
   imageFile: File | null;
   tags: IngredientTag[];
@@ -86,7 +80,7 @@ type IngredientDraft = {
 type MatvaretabellenCandidate = MatvaretabellenNutritionCandidate;
 
 type AutofillSource = Exclude<NutritionDataSource, "None">;
-type ScannerAutofillField = "name" | "brand" | "store" | "price" | "image" | "tags";
+type ScannerAutofillField = "name" | "brand" | "image" | "tags";
 
 const nutritionEditorKeys: (keyof NutritionEditorValues)[] = [
   "calories",
@@ -113,7 +107,6 @@ const nutritionEditorKeys: (keyof NutritionEditorValues)[] = [
 function ScannerPage({ theme }: ScannerPageProps) {
   const { t } = useLanguage();
   const { brands, refreshBrands } = useBrands();
-  const { stores } = useStores();
   const { refreshIngredients } = useIngredients();
   const [ean, setEan] = useState("");
   const [products, setProducts] = useState<IProductLookupResult[]>([]);
@@ -146,9 +139,9 @@ function ScannerPage({ theme }: ScannerPageProps) {
     }
 
     setSelectedCandidateId(firstCandidate.id);
-    setIngredientDraft(candidateToDraft(firstCandidate, stores, brands));
+    setIngredientDraft(candidateToDraft(firstCandidate, brands));
     setEditorError(null);
-  }, [candidates, stores]);
+  }, [candidates]);
 
   const lookupEan = useCallback(async (rawEan: string) => {
     const normalizedEan = rawEan.replace(/\D/g, "");
@@ -183,7 +176,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
 
   const selectCandidate = (candidate: IngredientCandidate) => {
     setSelectedCandidateId(candidate.id);
-    setIngredientDraft(candidateToDraft(candidate, stores, brands));
+    setIngredientDraft(candidateToDraft(candidate, brands));
     setEditorError(null);
     setIsEditorOpen(true);
   };
@@ -226,12 +219,11 @@ function ScannerPage({ theme }: ScannerPageProps) {
         ? null
         : await imageUploadService.upload(ingredientDraft.imageFile, "ingredients");
 
-      const createdIngredient = await ingredientService.create({
+      await ingredientService.create({
         ingredientName,
         description: null,
         brandId: brand?.brandId ?? null,
         imageUrl: uploadedImage?.url ?? ingredientDraft.imageUrl,
-        price: nullableNumber(ingredientDraft.price),
         tags: ingredientDraft.tags,
         nutritionPer100: withDerivedVitamins(ingredientDraft.nutritionPer100),
         nutritionSource: ingredientDraft.nutritionSource,
@@ -241,17 +233,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
         nutritionMatchConfidence: ingredientDraft.nutritionMatchConfidence,
         color: null,
       });
-
-      const scannedPrice = nullableNumber(ingredientDraft.price);
-      if (scannedPrice !== null && ingredientDraft.storeId !== null) {
-        await ingredientPriceService.create({
-          ingredientId: createdIngredient.ingredientId,
-          storeId: ingredientDraft.storeId,
-          price: scannedPrice,
-          date: todayInputValue(),
-          note: null,
-        });
-      }
 
       await refreshIngredients();
       setIsEditorOpen(false);
@@ -428,11 +409,9 @@ function ScannerPage({ theme }: ScannerPageProps) {
                     <CandidateImage candidate={candidate} theme={theme} />
                     <span className={scannerStyles.candidateTextStack}>
                       <span className={scannerStyles.candidateName}>{candidate.name}</span>
-                      <span className={scannerStyles.candidateMeta(theme)}>
-                        {[candidate.brandName, candidate.price === null ? null : t.scanner.price(candidate.price)]
-                          .filter(Boolean)
-                          .join(" / ")}
-                      </span>
+                      {candidate.brandName.length > 0 && (
+                        <span className={scannerStyles.candidateMeta(theme)}>{candidate.brandName}</span>
+                      )}
                     </span>
                   </button>
                 ))}
@@ -513,7 +492,6 @@ function IngredientDraftEditor({
   const { t } = useLanguage();
   const { brands, refreshBrands } = useBrands();
   const { ingredients, refreshIngredients } = useIngredients();
-  const { stores, refreshStores } = useStores();
   const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
   const imageInputId = useId();
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -635,46 +613,6 @@ function IngredientDraftEditor({
           }}
           onCreatedOptionSelected={(brand) => onChange(clearAutofillSource({ ...draft, brandId: brand.id, brandName: brand.name }, "brand"))}
         />
-        <CreatableSelect
-          createLabel={t.common.createNew}
-          fieldClassName={scannerStyles.field}
-          label={(
-            <FieldLabel
-              label={t.scanner.storeLabel}
-              theme={theme}
-            />
-          )}
-          helperClassName={scannerStyles.autofillReservedHint(theme)}
-          helperText={getAutofillSourceLabel(draft, "store", t.scanner.autofilledBy)}
-          labelClassName={scannerStyles.label}
-          options={stores.map((store) => ({ id: store.storeId, name: store.name }))}
-          placeholder={t.prices.selectStore}
-          theme={theme}
-          value={draft.storeId}
-          onChange={(storeId) => onChange(clearAutofillSource({ ...draft, storeId }, "store"))}
-          onCreate={async (name) => {
-            const store = await storeService.create({ name });
-            await refreshStores();
-            return { id: store.storeId, name: store.name };
-          }}
-        />
-        <label className={scannerStyles.priceField}>
-          <FieldLabel
-            label={t.scanner.priceLabel}
-            theme={theme}
-          />
-          <input
-            className={scannerStyles.input(theme)}
-            inputMode="decimal"
-            type="text"
-            value={draft.price}
-            onChange={(event) => onChange(clearAutofillSource({ ...draft, price: normalizePriceInput(event.target.value) }, "price"))}
-          />
-          <span className={scannerStyles.floatingLabelSubtitle(theme)}>{t.prices.priceUnitSubtitle}</span>
-          <span className={scannerStyles.autofillReservedHint(theme)}>
-            {getAutofillSourceLabel(draft, "price", t.scanner.autofilledBy) ?? "\u00A0"}
-          </span>
-        </label>
       </div>
 
       <section className={scannerStyles.field}>
@@ -1220,11 +1158,9 @@ function buildIngredientCandidates(products: IProductLookupResult[]): Ingredient
       const name = cleanIngredientName(product.name);
       const brandName = (product.brand ?? product.vendor ?? "").trim();
       const candidate: IngredientCandidate = {
-        id: `${product.ean}-${product.store?.name ?? "store"}-${index}`,
+        id: `${product.ean}-${index}`,
         name,
         brandName,
-        storeName: product.store?.name ?? "",
-        price: product.currentUnitPrice ?? product.currentPrice,
         imageUrl: product.imageUrl,
         kassalappNutritionPer100: toIngredientNutrition(product.kassalappNutritionPer100),
         matvaretabellenNutritionPer100: toIngredientNutrition(product.matvaretabellenNutritionPer100),
@@ -1268,14 +1204,11 @@ function toMatvaretabellenCandidate(candidate: IMatvaretabellenCandidate): Matva
   };
 }
 
-function candidateToDraft(candidate: IngredientCandidate, stores: IStore[], brands: IBrand[]): IngredientDraft {
+function candidateToDraft(candidate: IngredientCandidate, brands: IBrand[]): IngredientDraft {
   return {
     name: candidate.name,
     brandId: findBrandId(candidate.brandName, brands),
     brandName: candidate.brandName,
-    storeName: candidate.storeName,
-    storeId: findStoreId(candidate.storeName, stores),
-    price: numberToInputValue(candidate.price),
     imageUrl: candidate.imageUrl,
     imageFile: null,
     tags: candidate.tags,
@@ -1296,8 +1229,6 @@ function candidateToDraft(candidate: IngredientCandidate, stores: IStore[], bran
     autofillSources: {
       name: candidate.name.trim().length > 0 ? ["Kassalapp"] : undefined,
       brand: candidate.brandName.trim().length > 0 ? ["Kassalapp"] : undefined,
-      store: candidate.storeName.trim().length > 0 ? ["Kassalapp"] : undefined,
-      price: candidate.price !== null ? ["Kassalapp"] : undefined,
       image: candidate.imageUrl !== null ? ["Kassalapp"] : undefined,
     },
     nutritionAutofillSources: getNutritionAutofillSources(
@@ -1436,15 +1367,6 @@ function findBrandId(brandName: string, brands: IBrand[]) {
   }
 
   return brands.find((brand) => brand.name.toLowerCase() === normalizedBrandName)?.brandId ?? null;
-}
-
-function findStoreId(storeName: string, stores: IStore[]) {
-  const normalizedStoreName = storeName.trim().toLowerCase();
-  if (normalizedStoreName.length === 0) {
-    return null;
-  }
-
-  return stores.find((store) => store.name.toLowerCase() === normalizedStoreName)?.storeId ?? null;
 }
 
 function cleanIngredientName(name: string) {

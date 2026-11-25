@@ -43,7 +43,6 @@ public record SeedIngredientDto(
     string? Description,
     string? BrandName,
     string? ImageUrl,
-    decimal? Price,
     IReadOnlyCollection<string>? Tags,
     NutritionFacts? NutritionPer100,
     NutritionDataSource? NutritionSource,

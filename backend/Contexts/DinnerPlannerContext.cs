@@ -15,7 +15,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     public DbSet<ConversionRule> ConversionRules => Set<ConversionRule>();
     public DbSet<DataImportRun> DataImportRuns => Set<DataImportRun>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
-    public DbSet<IngredientPricePoint> IngredientPricePoints => Set<IngredientPricePoint>();
     public DbSet<IngredientTagCategory> IngredientTagCategories => Set<IngredientTagCategory>();
     public DbSet<IngredientTagDefinition> IngredientTagDefinitions => Set<IngredientTagDefinition>();
     public DbSet<IngredientTagAssignment> IngredientTagAssignments => Set<IngredientTagAssignment>();
@@ -23,7 +22,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     public DbSet<RecipeComponent> RecipeComponents => Set<RecipeComponent>();
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
     public DbSet<RecipeTagAssignment> RecipeTagAssignments => Set<RecipeTagAssignment>();
-    public DbSet<Store> Stores => Set<Store>();
     public DbSet<UploadedImage> UploadedImages => Set<UploadedImage>();
     public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
     public DbSet<MealPlanRecipe> MealPlanRecipes => Set<MealPlanRecipe>();
@@ -61,7 +59,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.Property(ingredient => ingredient.IngredientName).HasMaxLength(ValidationLimits.IngredientNameMaxLength);
             entity.Property(ingredient => ingredient.Description).HasMaxLength(600);
             entity.Property(ingredient => ingredient.ImageUrl).HasMaxLength(500);
-            entity.Property(ingredient => ingredient.Price).HasPrecision(10, 2);
             entity.Property(ingredient => ingredient.NutritionSource).HasConversion<string>().HasMaxLength(40);
             entity.Property(ingredient => ingredient.NutritionSourceLabel).HasMaxLength(160);
             entity.Property(ingredient => ingredient.MatvaretabellenFoodId).HasMaxLength(80);
@@ -145,12 +142,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.HasIndex(tag => tag.SystemKey).IsUnique();
         });
 
-        modelBuilder.Entity<Store>(entity =>
-        {
-            entity.Property(store => store.Name).HasMaxLength(120);
-            entity.HasIndex(store => store.Name).IsUnique();
-        });
-
         modelBuilder.Entity<UploadedImage>(entity =>
         {
             entity.Property(image => image.FileName).HasMaxLength(260);
@@ -173,31 +164,9 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.HasIndex(rule => rule.SortOrder);
         });
 
-        modelBuilder.Entity<IngredientPricePoint>(entity =>
-        {
-            entity.Property(pricePoint => pricePoint.Price).HasPrecision(10, 2);
-            entity.Property(pricePoint => pricePoint.Note).HasMaxLength(500);
-
-            entity.HasOne(pricePoint => pricePoint.Ingredient)
-                .WithMany()
-                .HasForeignKey(pricePoint => pricePoint.IngredientId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(pricePoint => pricePoint.Store)
-                .WithMany(store => store.PricePoints)
-                .HasForeignKey(pricePoint => pricePoint.StoreId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasIndex(pricePoint => new
-            {
-                pricePoint.IngredientId,
-                pricePoint.Date
-            });
-        });
-
         modelBuilder.Entity<Recipe>(entity =>
         {
-            entity.Property(recipe => recipe.Name).HasMaxLength(30);
+            entity.Property(recipe => recipe.Name).HasMaxLength(ValidationLimits.RecipeNameMaxLength);
             entity.Property(recipe => recipe.Description).HasMaxLength(600);
 
             entity.HasMany(recipe => recipe.Ingredients)
@@ -361,18 +330,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
 
     private static void SeedData(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Store>().HasData(
-            new { StoreId = 1, Name = "Rema 1000" },
-            new { StoreId = 2, Name = "Coop Mega" },
-            new { StoreId = 3, Name = "Coop Prix" },
-            new { StoreId = 4, Name = "Coop Obs" },
-            new { StoreId = 5, Name = "Coop Extra" },
-            new { StoreId = 6, Name = "Meny" },
-            new { StoreId = 7, Name = "Kiwi" },
-            new { StoreId = 8, Name = "Bunnpris" },
-            new { StoreId = 9, Name = "Europris" }
-        );
-
         modelBuilder.Entity<NutritionReferenceProfile>().HasData(CreateNutritionReferenceProfiles());
         modelBuilder.Entity<NutritionReferenceValue>().HasData(CreateNutritionReferenceValues());
 
@@ -493,7 +450,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 IngredientName = "Chicken breast",
                 Description = "Lean poultry cut with mild flavor. Useful as the main protein in bowls, salads, soups, and quick pan-fried dinners.",
                 BrandId = (int?)null,
-                Price = (decimal?)89.90m,
                 NutritionPer100_Calories = (int?)165,
                 NutritionPer100_CarbohydrateGrams = (decimal?)0m,
                 NutritionPer100_ProteinGrams = (decimal?)31m,
@@ -512,7 +468,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 IngredientName = "Garlic",
                 Description = "Aromatic vegetable used to build flavor in sauces, marinades, soups, stir fries, and roasted dishes.",
                 BrandId = (int?)null,
-                Price = (decimal?)14.90m,
                 NutritionPer100_Calories = (int?)149,
                 NutritionPer100_CarbohydrateGrams = (decimal?)33.1m,
                 NutritionPer100_ProteinGrams = (decimal?)6.4m,
@@ -531,7 +486,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 IngredientName = "Greek yogurt",
                 Description = "Thick cultured dairy product. Works as a base for cold sauces, dressings, marinades, and high-protein breakfasts.",
                 BrandId = (int?)null,
-                Price = (decimal?)34.90m,
                 NutritionPer100_Calories = (int?)97,
                 NutritionPer100_CarbohydrateGrams = (decimal?)3.6m,
                 NutritionPer100_ProteinGrams = (decimal?)9m,
@@ -550,7 +504,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 IngredientName = "Rice",
                 Description = "Neutral grain that works as a side or base for bowls, curries, stir fries, and meal prep portions.",
                 BrandId = (int?)null,
-                Price = (decimal?)39.90m,
                 NutritionPer100_Calories = (int?)130,
                 NutritionPer100_CarbohydrateGrams = (decimal?)28.2m,
                 NutritionPer100_ProteinGrams = (decimal?)2.7m,
@@ -569,7 +522,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 IngredientName = "Lemon",
                 Description = "Bright acidic fruit used for sauces, dressings, marinades, desserts, and finishing cooked dishes.",
                 BrandId = (int?)null,
-                Price = (decimal?)8.90m,
                 NutritionPer100_Calories = (int?)29,
                 NutritionPer100_CarbohydrateGrams = (decimal?)9.3m,
                 NutritionPer100_ProteinGrams = (decimal?)1.1m,
