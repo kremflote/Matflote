@@ -584,7 +584,8 @@ export const nb: TranslationDictionary = {
     openPlannerActions: "Åpne planleggerverktøy",
     plannedMealsCount: (planned, total) => `${planned} av ${total} planlagt`,
     portionsCount: (portions) => (portions === 1 ? "1 porsjon" : `${String(portions).replace(".", ",")} porsjoner`),
-    openMealSlot: "Åpne måltidsplass",
+    mealSlotLabel: (day, slot, meal) =>
+      meal === null ? `${day}, ${slot.toLowerCase()}: tom, legg til et måltid` : `${day}, ${slot.toLowerCase()}: ${meal}`,
     openRecipe: "Åpne oppskrift",
     plannerControls: "Planleggerkontroller",
     plannerTools: "Verktøy",

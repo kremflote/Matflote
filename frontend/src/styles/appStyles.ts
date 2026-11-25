@@ -1,8 +1,12 @@
 export type SiteTheme = "dark" | "light" | "paletteLight";
 
+// Contrast (WCAG): #7A8864 is 3.55:1 on #FAF7F2, so it is kept for borders and accents. Text in the
+// light theme uses oliveDark (#556145, 6.18:1 on #FAF7F2, 4.58:1 on champagne), and olive surfaces that
+// carry ivory text use oliveSurface (#64714F, 4.89:1). See styles/contrast.test.ts.
 export const colorPalette = {
   dustyBlue: "#A9BDD1",
   olive: "#7A8864",
+  oliveSurface: "#64714F",
   oliveDark: "#556145",
   oliveDeep: "#6A7658",
   stone: "#C8C0B5",
@@ -21,6 +25,7 @@ export const colorPaletteClasses = {
   background: {
     dustyBlue: "bg-[#A9BDD1]",
     olive: "bg-[#7A8864]",
+    oliveSurface: "bg-[#64714F]",
     oliveDark: "bg-[#556145]",
     oliveDeep: "bg-[#6A7658]",
     stone: "bg-[#C8C0B5]",
@@ -38,6 +43,7 @@ export const colorPaletteClasses = {
     dustyBlue: "border-[#A9BDD1]",
     olive: "border-[#7A8864]",
     oliveDark: "border-[#556145]",
+    oliveSurface: "border-[#64714F]",
     oliveDeep: "border-[#6A7658]",
     stone: "border-[#C8C0B5]",
     ingredientIcon: "border-[#F8F0D7]",
@@ -54,6 +60,7 @@ export const colorPaletteClasses = {
     dustyBlue: "text-[#A9BDD1]",
     olive: "text-[#7A8864]",
     oliveDark: "text-[#556145]",
+    oliveSurface: "text-[#64714F]",
     oliveDeep: "text-[#6A7658]",
     stone: "text-[#C8C0B5]",
     ingredientIcon: "text-[#F8F0D7]",
@@ -149,15 +156,15 @@ export const siteColorClasses = {
   paletteLight: {
     // A bar that stays under the fixed header on narrow screens, in the page colour.
     stickyBar: "max-[1100px]:bg-[#EAEBEB]/95 max-[1100px]:backdrop-blur-sm",
-    page: "bg-[#FAF7F2] text-[#7A8864] before:bg-[#A9BDD1]/20",
-    header: "border-[#7A8864]/35 bg-[#7A8864]",
+    page: "bg-[#FAF7F2] text-[#556145] before:bg-[#A9BDD1]/20",
+    header: "border-[#7A8864]/35 bg-[#64714F]",
     headerForeground: "text-[#FAF7F2]",
-    fixedHeader: "max-[1100px]:border-[#7A8864]/35 max-[1100px]:bg-[#7A8864]",
+    fixedHeader: "max-[1100px]:border-[#7A8864]/35 max-[1100px]:bg-[#64714F]",
     nav: "border-[#C8C0B5] bg-[#FAF7F2]/55",
-    bottomNav: "max-[1100px]:border-[#7A8864]/35 max-[1100px]:bg-[#7A8864]",
+    bottomNav: "max-[1100px]:border-[#7A8864]/35 max-[1100px]:bg-[#64714F]",
     control:
       "text-[#FAF7F2] hover:border-[#FAF7F2]/45 hover:bg-[#FAF7F2]/15 hover:text-[#FAF7F2]",
-    controlSelected: "border-[#FAF7F2]/70 bg-[#FAF7F2] text-[#7A8864]",
+    controlSelected: "border-[#FAF7F2]/70 bg-[#FAF7F2] text-[#556145]",
     plannerControl: `border-[#7A8864]/35 bg-[#FAF7F2]/35 text-[#556145] ${plannerControlHoverClasses.paletteLight}`,
     plannerTooltip: "border-[#7A8864] bg-[#FAF7F2] text-[#556145]",
     cookbookFilterButton:
@@ -169,15 +176,15 @@ export const siteColorClasses = {
     selectedThumbnailRing: "after:ring-[#9BCB4F]",
     plannerDateItem: "bg-[#C8C0B5]/70",
     plannerCounter: "border-[#C8C0B5] bg-[#E5D5BC]/60 text-[#556145]",
-    plannerCounterMuted: "text-[#7A8864]",
+    plannerCounterMuted: "text-[#556145]",
     plannerCounterAccent: "text-[#556145]",
-    plannerToggle: "border-[#7A8864]/35 bg-[#7A8864]",
+    plannerToggle: "border-[#7A8864]/35 bg-[#64714F]",
     plannerToggleSelected: "bg-[#FAF7F2] text-[#556145]",
-    plannerToggleIdle: "text-[#FAF7F2]/75 hover:text-[#FAF7F2]",
+    plannerToggleIdle: "text-[#FAF7F2] hover:text-[#FAF7F2]",
     switchTrack: "border-[#7A8864]/35 bg-[#556145]",
     switchThumb: "bg-[#FAF7F2] text-[#FFD64F]",
-    dayCell: "bg-[#7A8864] text-[#FAF7F2]",
-    mealHeaderCell: "bg-[#7A8864] text-[#FAF7F2]",
+    dayCell: "bg-[#64714F] text-[#FAF7F2]",
+    mealHeaderCell: "bg-[#64714F] text-[#FAF7F2]",
     focus: "focus-visible:outline-[#7A8864]",
   },
 } as const;
@@ -296,7 +303,7 @@ export const thumbnailStyles = {
   recipeTitleMicro:
     "truncate text-[10px] font-bold leading-tight text-[#FAF7F2]",
   recipeSubtitle: (theme: SiteTheme) =>
-    theme === "paletteLight" ? "text-[#FAF7F2]/75" : "text-neutral-300",
+    theme === "paletteLight" ? "text-[#FAF7F2]" : "text-neutral-300",
   recipeSubtitleLayout: "mt-0.5 truncate text-xs font-semibold leading-tight",
   recipeSubtitleLayoutCompact:
     "mt-0.5 truncate text-[10px] font-semibold leading-tight",
@@ -391,13 +398,13 @@ const autofillHintTextClasses = (theme: SiteTheme) =>
     theme === "dark"
       ? "text-neutral-400"
       : theme === "paletteLight"
-        ? "text-[#7A8864]"
+        ? "text-[#556145]"
         : "text-neutral-500"
   }`;
 
 export const controlStyles = {
   modalCloseButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-9 shrink-0 -translate-y-1 items-center justify-center ${radiusClasses.figma6} p-0 transition-colors max-sm:-translate-y-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5 max-sm:[&_svg]:h-3 max-sm:[&_svg]:w-3 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-9 w-9 shrink-0 -translate-y-1 items-center justify-center ${radiusClasses.figma6} p-0 transition-colors max-sm:h-11 max-sm:w-11 max-sm:-translate-y-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5 ${focusBase} ${siteColorClasses[theme].focus} ${
       theme === "dark"
         ? "bg-white/[0.08] text-neutral-200 hover:bg-white/[0.14]"
         : theme === "paletteLight"
@@ -409,7 +416,7 @@ export const controlStyles = {
       theme === "dark"
         ? "border-white/[0.12] bg-white/[0.14] text-white hover:bg-white/[0.2]"
         : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#7A8864] text-[#FAF7F2] hover:bg-[#6A7658]"
+          ? "border-[#7A8864]/35 bg-[#64714F] text-[#FAF7F2] hover:bg-[#556145]"
           : "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-700"
     }`,
   secondaryButton: (theme: SiteTheme) =>
@@ -522,7 +529,7 @@ export const settingsStyles = {
       theme === "dark"
         ? "text-neutral-300"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-600"
     }`,
   languagePanel: (theme: SiteTheme) =>
@@ -530,7 +537,7 @@ export const settingsStyles = {
   languagePanelTitle: "pl-2 text-sm font-bold leading-tight",
   languageOptions: "flex items-center gap-2",
   languageButton: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-10 min-w-20 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-10 min-w-20 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold transition-colors max-sm:h-11 ${focusBase} ${siteColorClasses[theme].focus} ${
       selected
         ? theme === "dark"
           ? "border-white/[0.18] bg-white/[0.12] text-white"
@@ -560,7 +567,7 @@ export const settingsStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   statusRow:
@@ -594,14 +601,14 @@ export const settingsStyles = {
           : "border-neutral-200 bg-white"
     }`,
   currentProviderLabel:
-    "text-[10px] font-extrabold uppercase leading-tight opacity-60",
+    "text-[10px] font-extrabold uppercase leading-tight",
   currentProviderValue:
     "mt-0.5 min-w-0 truncate text-sm font-bold leading-tight",
   systemGrid: "grid gap-4",
   systemRow: (theme: SiteTheme) =>
     `grid grid-cols-[10rem_minmax(0,1fr)] gap-4 rounded-md border px-4 py-2 text-sm max-sm:grid-cols-1 ${surfaceClasses.field(theme)}`,
   systemLabel: "font-bold",
-  systemValue: "min-w-0 break-words font-semibold opacity-80",
+  systemValue: "min-w-0 break-words font-semibold",
 } as const;
 
 export const scannerStyles = {
@@ -614,7 +621,7 @@ export const scannerStyles = {
       theme === "dark"
         ? "text-neutral-300"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-600"
     }`,
   introLink: (theme: SiteTheme) =>
@@ -645,7 +652,7 @@ export const scannerStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   nutritionSourceRow: "grid gap-1",
@@ -708,7 +715,7 @@ export const scannerStyles = {
       theme === "dark"
         ? "text-neutral-300"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-600"
     }`,
   statusError: (theme: SiteTheme) =>
@@ -736,9 +743,9 @@ export const scannerStyles = {
   productImageFallback: (theme: SiteTheme) =>
     `flex h-full w-full items-center justify-center px-2 text-center text-xs font-bold ${
       theme === "dark"
-        ? "text-neutral-500"
+        ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-400"
     }`,
   productMain: "grid min-w-0 content-start gap-2",
@@ -748,7 +755,7 @@ export const scannerStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   chipRow: "flex flex-wrap gap-2",
@@ -771,7 +778,7 @@ export const scannerStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   candidateList: "grid gap-2",
@@ -800,7 +807,7 @@ export const scannerStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
         : "text-neutral-500"
     }`,
   ingredientEditor: (theme: SiteTheme) =>
@@ -834,7 +841,7 @@ export const scannerStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   tagGrid: "grid grid-cols-2 gap-2",
@@ -906,7 +913,7 @@ export const scannerStyles = {
       theme === "dark"
         ? "text-neutral-300"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   matvareCandidateMacros: (theme: SiteTheme) =>
@@ -914,7 +921,7 @@ export const scannerStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
 } as const;
@@ -929,7 +936,7 @@ export const nutritionStyles = {
       theme === "dark"
         ? "text-neutral-300"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-600"
     }`,
   panel: (theme: SiteTheme) =>
@@ -977,7 +984,7 @@ export const nutritionStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   dailyGrid: "grid grid-cols-7 gap-2 max-[1100px]:grid-cols-4 max-sm:grid-cols-2",
@@ -989,7 +996,7 @@ export const nutritionStyles = {
           ? "border-[#C8C0B5] bg-[#E5D5BC]/45 text-[#556145]"
           : "border-neutral-200 bg-neutral-100 text-neutral-800"
     }`,
-  dailyDay: "text-xs font-bold uppercase opacity-70",
+  dailyDay: "text-xs font-bold uppercase",
   dailyCalories: (theme: SiteTheme) =>
     `text-base font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
   dailyAverage: (theme: SiteTheme) =>
@@ -1021,7 +1028,7 @@ export const nutritionStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   sourceText: (theme: SiteTheme) =>
@@ -1029,7 +1036,7 @@ export const nutritionStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   sourceLink: (theme: SiteTheme) =>
@@ -1048,7 +1055,7 @@ export const plannerControlsStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   datePrimary: (theme: SiteTheme) =>
@@ -1119,7 +1126,7 @@ export const prepHelperStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   closeButton: (theme: SiteTheme) => `${controlStyles.modalCloseButton(theme)} max-sm:hidden`,
@@ -1144,7 +1151,7 @@ export const prepHelperStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   emptyState: (theme: SiteTheme) =>
@@ -1321,13 +1328,13 @@ export const mealCalendarStyles = {
     `px-2 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText(theme)}`,
   monthDayCell: (theme: SiteTheme, muted: boolean, isToday: boolean) =>
     `group/day flex min-h-32 min-w-0 flex-col gap-1.5 ${radiusClasses.figma6} border p-1.5 transition-colors duration-150 max-[1100px]:min-h-0 max-[1100px]:flex-row max-[1100px]:items-start ${
-      muted ? "opacity-60 max-[1100px]:hidden" : ""
+      muted ? "border-dashed bg-transparent max-[1100px]:hidden" : ""
     } ${
       theme === "dark"
-        ? `${isToday ? "border-white/[0.32]" : "border-white/[0.08]"} bg-white/[0.035]`
+        ? `${isToday ? "border-white/[0.32]" : "border-white/[0.08]"} ${muted ? "" : "bg-white/[0.035]"}`
         : theme === "paletteLight"
-          ? `${isToday ? "border-[#556145]" : "border-[#C8C0B5]"} bg-[#FAF7F2]/70`
-          : `${isToday ? "border-neutral-900" : "border-neutral-200"} bg-white`
+          ? `${isToday ? "border-[#556145]" : "border-[#C8C0B5]"} ${muted ? "" : "bg-[#FAF7F2]/70"}`
+          : `${isToday ? "border-neutral-900" : "border-neutral-200"} ${muted ? "" : "bg-white"}`
     }`,
   monthDayNumberButton: (theme: SiteTheme, muted: boolean, isToday: boolean) =>
     `inline-flex h-7 min-w-7 items-center gap-1.5 self-start rounded-md px-1.5 text-sm font-extrabold leading-none disabled:cursor-default max-[1100px]:h-11 max-[1100px]:w-20 max-[1100px]:shrink-0 max-[1100px]:flex-col max-[1100px]:justify-center max-[1100px]:gap-0.5 ${focusBase} ${siteColorClasses[theme].focus} ${
@@ -1386,7 +1393,7 @@ export const plannerPickerStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   closeButton: (theme: SiteTheme) => `${controlStyles.modalCloseButton(theme)} max-sm:hidden`,
@@ -1563,7 +1570,7 @@ export const groceryExportStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   closeButton: controlStyles.modalCloseButton,
@@ -1584,9 +1591,9 @@ export const groceryExportStyles = {
       selected
         ? siteColorClasses[theme].plannerControl
         : theme === "dark"
-          ? "border-white/[0.08] bg-transparent text-neutral-500"
+          ? "border-white/[0.08] bg-transparent text-neutral-400"
           : theme === "paletteLight"
-            ? "border-[#7A8864]/20 bg-transparent text-[#7A8864]/55"
+            ? "border-[#7A8864]/20 bg-transparent text-[#556145]"
             : "border-neutral-200 bg-transparent text-neutral-500"
     }`,
   checkbox: (theme: SiteTheme, selected: boolean) =>
@@ -1595,7 +1602,7 @@ export const groceryExportStyles = {
         ? theme === "dark"
           ? "border-white bg-white text-neutral-950"
           : theme === "paletteLight"
-            ? "border-[#7A8864] bg-[#7A8864] text-[#FAF7F2]"
+            ? "border-[#7A8864] bg-[#64714F] text-[#FAF7F2]"
             : "border-neutral-900 bg-neutral-900 text-white"
         : theme === "dark"
           ? "border-white/[0.18] text-transparent"
@@ -1610,7 +1617,7 @@ export const groceryExportStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   itemAmount: "whitespace-nowrap text-xs font-extrabold",
@@ -1649,7 +1656,7 @@ export const groceryExportStyles = {
         ? theme === "dark"
           ? "border-emerald-300 bg-emerald-950 text-emerald-50 shadow-[inset_0_0_0_1px_rgba(110,231,183,0.75)]"
           : theme === "paletteLight"
-            ? "border-[#3C4A2E] bg-[#7A8864] text-[#FAF7F2] shadow-[inset_0_0_0_1px_#FAF7F2]"
+            ? "border-[#3C4A2E] bg-[#64714F] text-[#FAF7F2] shadow-[inset_0_0_0_1px_#FAF7F2]"
             : "border-emerald-900 bg-emerald-100 text-emerald-950 shadow-[inset_0_0_0_1px_#064E3B]"
         : theme === "dark"
           ? "border-white/[0.10] bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]"

@@ -9,6 +9,8 @@ import { getMainIngredientNames, getRecipeColorBarBackground, getRecipeTile } fr
 type MealSlotProps = {
   canUseDesktopInteractions: boolean;
   date: string;
+  /** The day in words ("Monday, November 30"), so each slot has its own accessible name. */
+  dateLabel: string;
   entry?: IMealPlanEntry;
   ingredientsById: Map<number, IIngredient>;
   isDisabled: boolean;
@@ -29,6 +31,7 @@ type MealSlotProps = {
 function MealSlot({
   canUseDesktopInteractions,
   date,
+  dateLabel,
   entry,
   ingredientsById,
   isDisabled,
@@ -107,7 +110,13 @@ function MealSlot({
       }}
     >
       <button
-        aria-label={t.planner.openMealSlot}
+        aria-label={t.planner.mealSlotLabel(
+          dateLabel,
+          slotLabel,
+          mainName === undefined
+            ? null
+            : [mainName, ...supplementaryNames].join(", "),
+        )}
         className={`${mealCalendarStyles.mealSlotButton} ${
           canDragMeal ? mealCalendarStyles.mealSlotDraggableButton : ""
         } ${isDisabled && !isLoading ? mealCalendarStyles.mealSlotUnavailable : ""}`}

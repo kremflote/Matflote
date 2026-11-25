@@ -22,6 +22,8 @@ afterEach(() => {
 });
 
 const renderPlanner = () => renderWithProviders(<PlannerPage theme="dark" />);
+// Each slot is named by its day and meal, for example "Wednesday, November 25, dinner: empty, add a meal".
+const mealSlotName = /, (breakfast|lunch|dinner): /;
 
 describe("PlannerPage week on opening (F6)", () => {
   it("opens on the current week even when an earlier visit viewed another week", async () => {
@@ -101,7 +103,7 @@ describe("PlannerPage when the meal plan cannot be loaded (F7)", () => {
     expect(alert.textContent).toContain("Could not load meal plan.");
     expect(alert.textContent).toContain("status 502");
     expect(alert.textContent).not.toContain("<");
-    const slots = screen.getAllByRole("button", { name: "Open meal slot" });
+    const slots = screen.getAllByRole("button", { name: mealSlotName });
     expect(slots).toHaveLength(21);
     expect(slots.every((slot) => (slot as HTMLButtonElement).disabled)).toBe(true);
     expect((screen.getByRole("button", { name: "Generate meal plan" }) as HTMLButtonElement).disabled).toBe(true);
@@ -111,7 +113,21 @@ describe("PlannerPage when the meal plan cannot be loaded (F7)", () => {
 
     await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
     expect(
-      screen.getAllByRole("button", { name: "Open meal slot" }).every((slot) => !(slot as HTMLButtonElement).disabled),
+      screen.getAllByRole("button", { name: mealSlotName }).every((slot) => !(slot as HTMLButtonElement).disabled),
     ).toBe(true);
+  });
+});
+
+describe("PlannerPage slot names (F22)", () => {
+  it("gives each of the 21 slots its own accessible name", async () => {
+    renderPlanner();
+
+    await waitFor(() =>
+      expect(screen.getAllByRole("button", { name: mealSlotName }).every((slot) => !(slot as HTMLButtonElement).disabled)).toBe(true),
+    );
+    const names = screen.getAllByRole("button", { name: mealSlotName }).map((slot) => slot.getAttribute("aria-label"));
+    expect(names).toHaveLength(21);
+    expect(new Set(names).size).toBe(21);
+    expect(names).toContain("Wednesday, November 25, dinner: empty, add a meal");
   });
 });

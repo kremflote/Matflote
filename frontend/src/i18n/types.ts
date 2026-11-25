@@ -428,7 +428,7 @@ export type TranslationDictionary = {
     today: string;
     plannedMealsCount: (planned: number, total: number) => string;
     portionsCount: (portions: number) => string;
-    openMealSlot: string;
+    mealSlotLabel: (day: string, slot: string, meal: string | null) => string;
     openRecipe: string;
     rangeNames: Record<PlannerViewMode, string>;
     recipeFallback: (id: number) => string;

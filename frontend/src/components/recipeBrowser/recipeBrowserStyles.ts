@@ -33,7 +33,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-700 hover:bg-neutral-300 hover:text-neutral-950"
         : theme === "paletteLight"
-          ? "text-[#7A8864] hover:bg-[#E5D5BC] hover:text-[#556145]"
+          ? "text-[#556145] hover:bg-[#E5D5BC] hover:text-[#556145]"
           : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
     }`,
   headerActions:
@@ -86,7 +86,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-400 hover:text-white"
         : theme === "paletteLight"
-          ? "text-[#7A8864] hover:text-[#556145]"
+          ? "text-[#556145] hover:text-[#556145]"
           : "text-neutral-500 hover:text-neutral-900"
     }`,
   ingredientPicker: (theme: SiteTheme) =>
@@ -98,7 +98,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "bg-white/[0.04] text-neutral-400"
         : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/45 text-[#7A8864]"
+          ? "bg-[#E5D5BC]/45 text-[#556145]"
           : "bg-neutral-100 text-neutral-500"
     }`,
   ingredientPickerList:
@@ -116,7 +116,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.08] bg-black/50"
         : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#7A8864]"
+          ? "border-[#7A8864]/35 bg-[#64714F]"
           : "border-neutral-300 bg-neutral-200"
     }`,
   modalModeOption: (theme: SiteTheme, selected: boolean) =>
@@ -130,7 +130,7 @@ export const recipeBrowserStyles = {
         : theme === "dark"
           ? "text-neutral-400 hover:text-white"
           : theme === "paletteLight"
-            ? "text-[#FAF7F2]/75 hover:text-[#FAF7F2]"
+            ? "text-[#FAF7F2] hover:text-[#FAF7F2]"
             : "text-neutral-600 hover:text-neutral-900"
     }`,
   modalControlsRow: "mt-4 grid w-full gap-3",
@@ -224,9 +224,9 @@ export const recipeBrowserStyles = {
   numberFieldSuffix: (theme: SiteTheme) =>
     `pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold ${
       theme === "dark"
-        ? "text-neutral-500"
+        ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   colorFieldButton: (theme: SiteTheme) =>
@@ -272,15 +272,15 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   inlineHint: (theme: SiteTheme) =>
     `ml-2 text-[10px] font-semibold ${
       theme === "dark"
-        ? "text-neutral-500"
+        ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   checkboxGrid:
@@ -301,7 +301,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "border-white/[0.10] text-neutral-400"
         : theme === "paletteLight"
-          ? "border-[#7A8864]/25 text-[#7A8864]"
+          ? "border-[#7A8864]/25 text-[#556145]"
           : "border-neutral-200 text-neutral-500"
     }`,
   groupedTagGrid:
@@ -347,7 +347,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-300"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-600"
     }`,
   conversionHelperSource: (theme: SiteTheme) =>
@@ -355,7 +355,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   conversionHelperSourceLink: (theme: SiteTheme) =>
@@ -394,9 +394,9 @@ export const recipeBrowserStyles = {
   conversionSource: "min-w-0 text-left",
   conversionArrow: (theme: SiteTheme) =>
     theme === "dark"
-      ? "text-neutral-500"
+      ? "text-neutral-400"
       : theme === "paletteLight"
-        ? "text-[#7A8864]"
+        ? "text-[#556145]"
         : "text-neutral-400",
   conversionTarget: "min-w-0 text-right",
   conversionRuleForm: "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-3 max-sm:grid-cols-1",
@@ -581,7 +581,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-500"
         : theme === "paletteLight"
-          ? "text-[#7A8864]/65"
+          ? "text-[#556145]"
           : "text-neutral-400"
     }`,
   checkbox: "h-4 w-4 rounded border-neutral-400 accent-neutral-500",
@@ -590,7 +590,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-300 hover:text-neutral-100 before:bg-white/[0.10] before:text-neutral-200"
         : theme === "paletteLight"
-          ? "text-[#556145] hover:text-[#7A8864] before:bg-[#7A8864] before:text-[#FAF7F2]"
+          ? "text-[#556145] hover:text-[#7A8864] before:bg-[#64714F] before:text-[#FAF7F2]"
           : "text-emerald-800 hover:text-emerald-950 before:bg-emerald-100 before:text-emerald-900"
     }`,
   tagCategorySelectRow:
@@ -649,7 +649,7 @@ export const recipeBrowserStyles = {
         : theme === "paletteLight"
           ? selected
             ? "border-[#7A8864]/45 bg-[#FAF7F2] text-[#556145]"
-            : "border-transparent bg-transparent text-[#7A8864]/70 hover:text-[#556145]"
+            : "border-transparent bg-transparent text-[#556145] hover:text-[#556145]"
           : selected
             ? "border-neutral-300 bg-white text-neutral-950"
             : "border-transparent bg-transparent text-neutral-500 hover:text-neutral-800"
@@ -681,9 +681,9 @@ export const recipeBrowserStyles = {
   manageTagSystemMeta: (theme: SiteTheme) =>
     `min-w-0 max-w-28 truncate justify-self-end text-xs font-semibold max-sm:max-w-24 ${
       theme === "dark"
-        ? "text-neutral-500"
+        ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]/65"
+          ? "text-[#556145]"
           : "text-neutral-400"
     }`,
   manageTagActionButton: (theme: SiteTheme) =>
@@ -700,7 +700,7 @@ export const recipeBrowserStyles = {
           theme === "dark"
             ? "text-neutral-400"
             : theme === "paletteLight"
-              ? "text-[#7A8864]"
+              ? "text-[#556145]"
               : "text-neutral-500"
         }`
       :
@@ -755,7 +755,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   detailText:
@@ -779,7 +779,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   detailIngredientSectionTitleButton: (theme: SiteTheme) =>
@@ -822,7 +822,7 @@ export const recipeBrowserStyles = {
   detailIngredientMetaRow:
     "grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2",
   detailIngredientAmount:
-    "min-w-0 truncate text-left text-xs font-semibold opacity-80",
+    "min-w-0 truncate text-left text-xs font-semibold",
   detailIngredientPreparation:
     "min-w-0 truncate text-right text-xs font-bold",
   ingredientDetailOverviewGrid: "grid grid-cols-2 gap-3",
@@ -850,7 +850,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   ingredientDetailMetaValue: "min-w-0 truncate",
@@ -870,13 +870,13 @@ export const recipeBrowserStyles = {
   nutritionGridGroup: "grid grid-cols-2 gap-2 max-sm:grid-cols-1",
   scaleLabel: "flex items-center gap-2",
   scaleField: "w-20",
-  scaleInput: "w-full pr-6",
+  scaleInput: "w-full pr-6 max-sm:h-11 max-sm:text-base",
   imageCropper:
     "relative grid gap-3 max-[1100px]:grid-cols-[5.5rem_minmax(0,8fr)] max-[1100px]:items-center max-sm:grid-cols-1 max-sm:items-start",
   hiddenFileInput: "sr-only",
   cropImage: "h-full w-full object-cover",
   cropFallback:
-    "flex h-full w-full items-center justify-center px-4 text-center text-sm font-semibold opacity-60",
+    "flex h-full w-full items-center justify-center px-4 text-center text-sm font-semibold",
   cropControls: "grid gap-3 max-sm:gap-2",
   cropConfirmButton: "max-sm:h-8 max-sm:min-w-0 max-sm:px-3 max-sm:text-xs",
   sliderField: "grid gap-1 text-xs font-bold",
@@ -928,7 +928,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-300"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   matvareCandidateMacros: (theme: SiteTheme) =>
@@ -936,7 +936,7 @@ export const recipeBrowserStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   nutritionSeparator: (theme: SiteTheme) =>

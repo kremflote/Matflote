@@ -517,7 +517,8 @@ export const en: TranslationDictionary = {
     openPlannerActions: "Open planner tools",
     plannedMealsCount: (planned, total) => `${planned} of ${total} planned`,
     portionsCount: (portions) => (portions === 1 ? "1 portion" : `${portions} portions`),
-    openMealSlot: "Open meal slot",
+    mealSlotLabel: (day, slot, meal) =>
+      meal === null ? `${day}, ${slot.toLowerCase()}: empty, add a meal` : `${day}, ${slot.toLowerCase()}: ${meal}`,
     openRecipe: "Open recipe",
     plannerControls: "Planner controls",
     plannerTools: "Tools",

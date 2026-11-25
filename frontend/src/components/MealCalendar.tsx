@@ -118,7 +118,7 @@ function MealCalendar({
             const isToday = dateKey === todayKeyForMonth;
             const isRevealed = revealedMonthDateKey === dateKey;
             const dayName = weekDayLabels[(date.getDay() + 6) % 7] ?? "";
-            const dateLabel = formatDayMonth(date, locale);
+            const longDate = formatLongDate(date, locale);
 
             return (
               <div
@@ -129,7 +129,7 @@ function MealCalendar({
                 {/* On touch screens a tap on the date shows the day's add buttons; a mouse reveals them on hover. */}
                 <button
                   aria-expanded={isRevealed}
-                  aria-label={t.planner.showAddMeals(`${dayName} ${dateLabel}`)}
+                  aria-label={t.planner.showAddMeals(formatLongDate(date, locale))}
                   className={mealCalendarStyles.monthDayNumberButton(theme, muted, isToday)}
                   disabled={isDisabled}
                   type="button"
@@ -141,6 +141,7 @@ function MealCalendar({
                 <div className={mealCalendarStyles.monthDayMeals}>
                   {mealSlots.map((slot) => (
                     <MonthMealSummary
+                      dateLabel={longDate}
                       entry={getEntryForSlot(dateKey, slot)}
                       isDisabled={isDisabled}
                       isRevealed={isRevealed}
@@ -239,6 +240,7 @@ function MealCalendar({
                   <MealSlot
                     canUseDesktopInteractions={canUseDesktopInteractions}
                     date={dateKey}
+                    dateLabel={formatLongDate(date, locale)}
                     entry={getEntryForSlot(dateKey, meal)}
                     ingredientsById={ingredientsById}
                     isDisabled={isDisabled}
@@ -315,6 +317,7 @@ function DayMealPreview({ entry, ingredientsById, recipesById, theme }: DayMealP
 }
 
 type MonthMealSummaryProps = {
+  dateLabel: string;
   entry?: IMealPlanEntry;
   ingredientsById: Map<number, IIngredient>;
   isDisabled: boolean;
@@ -327,7 +330,7 @@ type MonthMealSummaryProps = {
   t: ReturnType<typeof useLanguage>["t"];
 };
 
-function MonthMealSummary({ entry, ingredientsById, isDisabled, isRevealed, onClick, recipesById, slot, theme, t }: MonthMealSummaryProps) {
+function MonthMealSummary({ dateLabel, entry, ingredientsById, isDisabled, isRevealed, onClick, recipesById, slot, theme, t }: MonthMealSummaryProps) {
   const plannedRecipes = entry?.recipes ?? [];
   const sortedPlannedRecipes = plannedRecipes
     .slice()
@@ -342,7 +345,7 @@ function MonthMealSummary({ entry, ingredientsById, isDisabled, isRevealed, onCl
   if (mainRecipe === undefined) {
     return (
       <button
-        aria-label={t.planner.addMeal(slotLabel)}
+        aria-label={t.planner.mealSlotLabel(dateLabel, slotLabel, null)}
         className={mealCalendarStyles.monthAddButton(theme, isRevealed)}
         disabled={isDisabled}
         title={t.planner.addMeal(slotLabel)}
@@ -356,11 +359,12 @@ function MonthMealSummary({ entry, ingredientsById, isDisabled, isRevealed, onCl
 
   const label = recipe?.name ?? ingredient?.ingredientName ?? t.planner.recipeFallback(mainRecipe.recipeId ?? mainRecipe.ingredientId ?? 0);
   const title = t.planner.editMeal(slotLabel, label);
+  const accessibleName = t.planner.mealSlotLabel(dateLabel, slotLabel, `${label}${extraCount > 0 ? ` +${extraCount}` : ""}`);
   const color = recipe !== undefined ? getRecipeTile(recipe).colors[0] : (ingredient?.color ?? undefined);
 
   return (
     <button
-      aria-label={title}
+      aria-label={accessibleName}
       className={mealCalendarStyles.monthMealChip(theme)}
       disabled={isDisabled}
       title={title}
@@ -382,6 +386,10 @@ function toDateInputValue(date: Date) {
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function formatLongDate(date: Date, locale: string) {
+  return new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" }).format(date);
 }
 
 function formatDayMonth(date: Date, locale: string) {

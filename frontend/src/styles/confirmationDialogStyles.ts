@@ -39,7 +39,7 @@ export const confirmationDialogStyles = {
       theme === "dark"
         ? "text-neutral-400"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
+          ? "text-[#556145]"
           : "text-neutral-500"
     }`,
   actions: "flex flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap",
