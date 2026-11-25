@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { IIngredient, MeasurementUnit } from "../interfaces/IIngredient";
 import type { IMealPlanEntry } from "../interfaces/IMeal";
 import type { IngredientPreparation, IRecipe, IRecipeComponent } from "../interfaces/IRecipe";
-import { buildPrepHelperItems } from "./plannerPrepHelper";
+import { buildPrepHelperItems, getPrepIngredientTagNames } from "./plannerPrepHelper";
 
 const preparationLabels: Record<IngredientPreparation, string> = {
   None: "",
@@ -118,6 +118,26 @@ function build(entries: IMealPlanEntry[], recipes: IRecipe[], from = "2026-11-23
 
 describe("buildPrepHelperItems", () => {
   const onion = ingredient("Onion", "Vegetable");
+
+  it("finds produce by system key after the tag was renamed (F15)", () => {
+    const leek = ingredient("Leek", "Grønnsak");
+    const soup = recipe("Soup", 2, [[leek, 200, "Gram", "Sliced"]]);
+    const renamed = new Map([["Produce.Vegetable", "Grønnsak"]]);
+
+    const items = buildPrepHelperItems(
+      [meal("2026-11-24", [soup, 2])],
+      new Map([[soup.recipeId, soup]]),
+      "2026-11-23",
+      "2026-11-29",
+      preparationLabels,
+      actionLabels,
+      getPrepIngredientTagNames(renamed),
+    );
+
+    expect(items.map((item) => item.ingredientName)).toEqual(["Leek"]);
+    expect(getPrepIngredientTagNames(renamed)).toEqual(["Grønnsak", "Fruit", "Herb", "LeafyGreen"]);
+  });
+
   const carrot = ingredient("Carrot", "RootVegetable", "Vegetable");
   const parsley = ingredient("Parsley", "Herb");
   const lemon = ingredient("Lemon", "Fruit");

@@ -4,6 +4,7 @@ import type { MealRecipeRole } from "../../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
 import { ingredientTags } from "../recipeBrowser/formOptions";
 import { getRecipeAndComponentLines } from "../../utils/recipeComponents";
+import { getSystemTagName, systemTagKeys } from "../../utils/tagCatalog";
 
 export const mainProteinFilters: IngredientTag[] = ingredientTags.filter(
   (ingredientTag) =>
@@ -118,12 +119,15 @@ export function recipeHasIngredientTag(
   );
 }
 
-export function getSupplementaryRole(recipe: IRecipe): MealRecipeRole {
-  if (recipe.tags.includes("Sauce") || recipe.tags.includes("Dip")) {
+/** The role a recipe added beside the main dish gets, from its sauce, dip, side or salad tag (by system key). */
+export function getSupplementaryRole(recipe: IRecipe, systemTagNames: ReadonlyMap<string, string>): MealRecipeRole {
+  const hasTag = (systemKey: string) => recipe.tags.includes(getSystemTagName(systemTagNames, systemKey));
+
+  if (hasTag(systemTagKeys.sauce) || hasTag(systemTagKeys.dip)) {
     return "Sauce";
   }
 
-  if (recipe.tags.includes("Side") || recipe.tags.includes("Salad")) {
+  if (hasTag(systemTagKeys.side) || hasTag(systemTagKeys.salad)) {
     return "Side";
   }
 

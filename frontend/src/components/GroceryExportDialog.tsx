@@ -3,7 +3,13 @@ import { useIngredientTagCategories, useLanguage } from "../contexts";
 import type { IGroceryList, IGroceryListItem } from "../interfaces/IGroceryList";
 import { ApiError, appSettingsService, groceryListService } from "../services";
 import { groceryExportStyles, type SiteTheme } from "../styles/appStyles";
-import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../utils/tagCatalog";
+import {
+  buildSystemTagNameLookup,
+  getAllCategoryTagNames,
+  getIngredientVisibleTagCategories,
+  getSystemTagName,
+  systemTagKeys,
+} from "../utils/tagCatalog";
 import Modal from "./Modal";
 
 type GroceryExportDialogProps = {
@@ -25,8 +31,14 @@ function GroceryExportDialog({
   const { ingredientTagCategories } = useIngredientTagCategories();
   const titleId = useId();
   const descriptionId = useId();
-  const [defaultExcludedTags, setDefaultExcludedTags] = useState<string[]>(["Spice"]);
-  const [draftExcludedTags, setDraftExcludedTags] = useState<string[]>(["Spice"]);
+  // The household's saved rule; null until loaded, or when none is saved: then the spice tag is left out.
+  const [savedExcludedTags, setSavedExcludedTags] = useState<string[] | null>(null);
+  const spiceTagName = useMemo(
+    () => getSystemTagName(buildSystemTagNameLookup(ingredientTagCategories), systemTagKeys.spice),
+    [ingredientTagCategories],
+  );
+  const defaultExcludedTags = useMemo(() => savedExcludedTags ?? [spiceTagName], [savedExcludedTags, spiceTagName]);
+  const [draftExcludedTags, setDraftExcludedTags] = useState<string[]>([]);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isRulesSaving, setIsRulesSaving] = useState(false);
   const [rulesError, setRulesError] = useState<string | null>(null);
@@ -56,12 +68,10 @@ function GroceryExportDialog({
         }
 
         const tags = settings.shoppingListExport.defaultExcludedIngredientTags;
-        setDefaultExcludedTags(tags.length === 0 ? ["Spice"] : tags);
-        setDraftExcludedTags(tags.length === 0 ? ["Spice"] : tags);
+        setSavedExcludedTags(tags.length === 0 ? null : tags);
       } catch {
         if (!ignore) {
-          setDefaultExcludedTags(["Spice"]);
-          setDraftExcludedTags(["Spice"]);
+          setSavedExcludedTags(null);
         }
       }
     };
@@ -139,7 +149,7 @@ function GroceryExportDialog({
     try {
       const settings = await appSettingsService.updateGroceryExportRules(draftExcludedTags);
       const tags = settings.shoppingListExport.defaultExcludedIngredientTags;
-      setDefaultExcludedTags(tags);
+      setSavedExcludedTags(tags);
       setDraftExcludedTags(tags);
       setIsRulesOpen(false);
     } catch (error) {

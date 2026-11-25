@@ -43,7 +43,8 @@ import {
   type DinnerMinimums,
   type MealPlanGenerationIssue,
 } from "../utils/plannerGenerator";
-import { buildPrepHelperItems } from "../utils/plannerPrepHelper";
+import { buildPrepHelperItems, getPrepIngredientTagNames } from "../utils/plannerPrepHelper";
+import { buildSystemTagNameLookup } from "../utils/tagCatalog";
 
 type PlannerPageProps = {
   theme: SiteTheme;
@@ -169,8 +170,9 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
         prepRange.to,
         t.enums.ingredientPreparations,
         t.planner.prepActionLabels,
+        getPrepIngredientTagNames(buildSystemTagNameLookup(ingredientTagCategories)),
       ),
-    [mealPlanEntries, prepRange.from, prepRange.to, recipesById, t],
+    [ingredientTagCategories, mealPlanEntries, prepRange.from, prepRange.to, recipesById, t],
   );
 
   useEffect(() => {

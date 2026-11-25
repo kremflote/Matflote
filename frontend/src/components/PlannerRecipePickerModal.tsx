@@ -7,6 +7,7 @@ import type { IMealPlanEntry, MealSlot } from "../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
 import { plannerPickerStyles, type SiteTheme } from "../styles/appStyles";
+import { buildSystemTagNameLookup } from "../utils/tagCatalog";
 import { recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
 import {
   getSupplementaryRole,
@@ -463,7 +464,7 @@ function PlannerRecipePickerModal({
             return {
               recipeId: selection.recipeId,
               ingredientId: null,
-              role: recipe === undefined ? "Side" as const : getSupplementaryRole(recipe),
+              role: recipe === undefined ? "Side" as const : getSupplementaryRole(recipe, systemTagNames),
               sortOrder: index + 1,
               portions: selection.portions,
               amount: null,
@@ -796,20 +797,6 @@ function getInitialRecipeTagFilters(slot: MealSlot): RecipeTag[] {
   }
 
   return slot === "Dinner" ? ["Dinner"] : [];
-}
-
-function buildSystemTagNameLookup(categories: IIngredientTagCategory[]) {
-  const systemTagNames = new Map<string, string>();
-
-  for (const category of categories) {
-    for (const tag of category.tags) {
-      if (tag.systemKey !== null) {
-        systemTagNames.set(tag.systemKey, tag.name);
-      }
-    }
-  }
-
-  return systemTagNames;
 }
 
 function buildAvailableTagNames(

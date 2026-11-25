@@ -1,6 +1,6 @@
 import { useId, useMemo, useState } from "react";
 import ConfirmationDialog from "../ConfirmationDialog";
-import { useIngredients, useLanguage, useMealPlan, useRecipes } from "../../contexts";
+import { useIngredientTagCategories, useIngredients, useLanguage, useMealPlan, useRecipes } from "../../contexts";
 import type { IIngredient, IIngredientInUse } from "../../interfaces/IIngredient";
 import type { IRecipe } from "../../interfaces/IRecipe";
 import { getIngredientInUse, ingredientService, recipeService } from "../../services";
@@ -11,7 +11,7 @@ import IngredientDetailContent from "./IngredientDetailContent";
 import IngredientInUseDialog from "./IngredientInUseDialog";
 import RecipeCreateForm from "./RecipeCreateForm";
 import RecipeDetailContent from "./RecipeDetailContent";
-import { recipeTags } from "./formOptions";
+import { getAllCategoryTagNames, getRecipeVisibleTagCategories } from "../../utils/tagCatalog";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 import { toBrowserDetailKey, type BrowserDetail, type BrowserDetailKey } from "./types";
 
@@ -33,6 +33,12 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   const { recipes, refreshRecipes } = useRecipes();
   const { ingredients, refreshIngredients } = useIngredients();
   const { refreshMealPlan } = useMealPlan();
+  const { ingredientTagCategories } = useIngredientTagCategories();
+  // The header shows a recipe's tags from the categories used for recipes, custom ones included (F15).
+  const recipeTagNames = useMemo(
+    () => new Set(getAllCategoryTagNames(getRecipeVisibleTagCategories(ingredientTagCategories))),
+    [ingredientTagCategories],
+  );
   const [activeKey, setActiveKey] = useState(detail);
   const [detailHistory, setDetailHistory] = useState<BrowserDetailKey[]>([]);
   const [isEditingRecipe, setIsEditingRecipe] = useState(false);
@@ -186,7 +192,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
         <span>{activeDetail.recipe.name}</span>
         <span className={recipeBrowserStyles.detailHeaderTagList}>
           {activeDetail.recipe.tags
-            .filter((tag) => recipeTags.includes(tag))
+            .filter((tag) => recipeTagNames.size === 0 || recipeTagNames.has(tag))
             .map((tag) => (
               <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
                 {t.enums.recipeTags[tag] ?? tag}

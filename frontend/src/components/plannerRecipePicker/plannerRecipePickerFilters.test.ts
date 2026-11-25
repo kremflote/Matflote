@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { IRecipe } from "../../interfaces/IRecipe";
-import { matchesSelectedRecipeTags } from "./plannerRecipePickerFilters";
+import { getSupplementaryRole, matchesSelectedRecipeTags } from "./plannerRecipePickerFilters";
 
 const recipe = (tags: string[]) => ({ recipeId: 1, name: "Recipe", tags }) as unknown as IRecipe;
 
@@ -23,5 +23,25 @@ describe("matchesSelectedRecipeTags (F4)", () => {
 
   it("matches everything when nothing is selected", () => {
     expect(matchesSelectedRecipeTags(recipe([]), [])).toBe(true);
+  });
+});
+
+describe("getSupplementaryRole (F15)", () => {
+  it("uses the default tag names when no tag carries the key", () => {
+    const none = new Map<string, string>();
+    expect(getSupplementaryRole(recipe(["Dip"]), none)).toBe("Sauce");
+    expect(getSupplementaryRole(recipe(["Salad"]), none)).toBe("Side");
+    expect(getSupplementaryRole(recipe(["Dessert"]), none)).toBe("Extra");
+  });
+
+  it("follows a renamed tag by its system key", () => {
+    const renamed = new Map([
+      ["FoodRole.Sauce", "Saus"],
+      ["FoodRole.Side", "Tilbehør"],
+    ]);
+    expect(getSupplementaryRole(recipe(["Saus"]), renamed)).toBe("Sauce");
+    expect(getSupplementaryRole(recipe(["Tilbehør"]), renamed)).toBe("Side");
+    // The old English name no longer means anything once the tag is renamed.
+    expect(getSupplementaryRole(recipe(["Sauce"]), renamed)).toBe("Extra");
   });
 });
