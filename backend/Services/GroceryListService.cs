@@ -35,28 +35,17 @@ public class GroceryListService(DinnerPlannerContext context)
             .Where(entry => entry.Date >= from && entry.Date <= to)
             .ToListAsync(cancellationToken);
 
-        var allRecipes = await context.Recipes
-            .AsNoTracking()
-            .Include(recipe => recipe.Ingredients)
-                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                    .ThenInclude(ingredient => ingredient.Tags)
-                        .ThenInclude(tag => tag.TagDefinition)
-            .Include(recipe => recipe.Ingredients)
-                .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                    .ThenInclude(ingredient => ingredient.Brand)
-            .Include(recipe => recipe.Components)
-                .ThenInclude(component => component.ChildRecipe)
-                    .ThenInclude(childRecipe => childRecipe.Ingredients)
-                        .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                            .ThenInclude(ingredient => ingredient.Tags)
-                                .ThenInclude(tag => tag.TagDefinition)
-            .Include(recipe => recipe.Components)
-                .ThenInclude(component => component.ChildRecipe)
-                    .ThenInclude(childRecipe => childRecipe.Ingredients)
-                        .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
-                            .ThenInclude(ingredient => ingredient.Brand)
-            .ToListAsync(cancellationToken);
-        var recipesById = allRecipes.ToDictionary(recipe => recipe.RecipeId);
+        if (entries.Count == 0)
+        {
+            // Nothing planned: no need to look at a single recipe.
+            return new GroceryListDto(from, to, DateTimeOffset.UtcNow, []);
+        }
+
+        var plannedRecipeIds = entries
+            .SelectMany(entry => entry.Recipes)
+            .Where(item => item.RecipeId is not null)
+            .Select(item => item.RecipeId!.Value);
+        var recipesById = await LoadRecipesWithComponentsAsync(plannedRecipeIds, cancellationToken);
 
         var groceryRows = entries
             .SelectMany(entry => entry.Recipes)
@@ -136,6 +125,49 @@ public class GroceryListService(DinnerPlannerContext context)
             .ToList();
 
         return new GroceryListDto(from, to, DateTimeOffset.UtcNow, sections);
+    }
+
+    /// <summary>
+    /// Loads the planned recipes and every recipe their components reach, level by level, instead of the whole
+    /// cookbook (AUDIT P2).
+    /// </summary>
+    private async Task<Dictionary<int, Recipe>> LoadRecipesWithComponentsAsync(
+        IEnumerable<int> recipeIds,
+        CancellationToken cancellationToken)
+    {
+        var recipesById = new Dictionary<int, Recipe>();
+        var pending = recipeIds.ToHashSet();
+
+        while (pending.Count > 0)
+        {
+            var batch = pending.ToList();
+            var recipes = await context.Recipes
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Include(recipe => recipe.Ingredients)
+                    .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
+                        .ThenInclude(ingredient => ingredient.Tags)
+                            .ThenInclude(tag => tag.TagDefinition)
+                .Include(recipe => recipe.Ingredients)
+                    .ThenInclude(recipeIngredient => recipeIngredient.Ingredient)
+                        .ThenInclude(ingredient => ingredient.Brand)
+                .Include(recipe => recipe.Components)
+                .Where(recipe => batch.Contains(recipe.RecipeId))
+                .ToListAsync(cancellationToken);
+
+            foreach (var recipe in recipes)
+            {
+                recipesById[recipe.RecipeId] = recipe;
+            }
+
+            pending = recipes
+                .SelectMany(recipe => recipe.Components)
+                .Select(component => component.ChildRecipeId)
+                .Where(id => !recipesById.ContainsKey(id))
+                .ToHashSet();
+        }
+
+        return recipesById;
     }
 
     private static string GetSectionName(IEnumerable<string> tags)
