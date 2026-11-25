@@ -508,8 +508,7 @@ export const nb: TranslationDictionary = {
     actionExport: "Eksporter",
     actionGenerate: "Generer",
     actionPrep: "Prep",
-    addMeal: (slot) => `Legg til ${slot}`,
-    addMealLower: (slot) => `Legg til ${slot.toLowerCase()}`,
+    addMeal: (slot) => `Legg til ${slot.toLowerCase()}`,
     chooseMainDish: "Velg hovedrett",
     clearCurrent: (range) => `Tøm ${range}`,
     clearRange: (range) => `Tøm denne ${range}?`,
@@ -638,6 +637,7 @@ export const nb: TranslationDictionary = {
       );
       return `Valgt: ${selected.join(" + ")}`;
     },
+    showAddMeals: (day) => `Vis legg til-knapper for ${day}`,
     switchToView: (view) => `Bytt til ${view}`,
     weekLabel: (week) => `Uke ${week}`,
     yearLabel: (year) => `År ${year}`,

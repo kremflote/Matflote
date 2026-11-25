@@ -1309,58 +1309,58 @@ export const mealCalendarStyles = {
           ? "bg-[#E5D5BC] text-[#3C4A2E]"
           : "bg-neutral-100 text-neutral-800"
     }`,
-  monthGrid: `grid min-w-[840px] grid-cols-7 ${layoutClasses.calendarGap}`,
-  monthGridWithOffset: `grid min-w-[840px] grid-cols-7 ${layoutClasses.calendarGap} mt-3`,
+  // A month is a 7-column calendar on wide screens and a list of days on phones and tablets.
+  monthHeaderGrid: `mb-2 grid grid-cols-7 ${layoutClasses.calendarGap} max-[1100px]:hidden`,
+  monthGrid: `grid grid-cols-7 ${layoutClasses.calendarGap} max-[1100px]:grid-cols-1 max-[1100px]:gap-2`,
   monthHeaderCell: (theme: SiteTheme) =>
-    `flex h-9 items-center justify-center ${radiusClasses.figma6} text-center text-xs font-bold uppercase ${
+    `px-2 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText(theme)}`,
+  monthDayCell: (theme: SiteTheme, muted: boolean, isToday: boolean) =>
+    `group/day flex min-h-32 min-w-0 flex-col gap-1.5 ${radiusClasses.figma6} border p-1.5 transition-colors duration-150 max-[1100px]:min-h-0 max-[1100px]:flex-row max-[1100px]:items-start ${
+      muted ? "opacity-60 max-[1100px]:hidden" : ""
+    } ${
       theme === "dark"
-        ? "bg-black/30 text-white"
+        ? `${isToday ? "border-white/[0.32]" : "border-white/[0.08]"} bg-white/[0.035]`
         : theme === "paletteLight"
-          ? "bg-[#7A8864] text-[#FAF7F2]"
-          : "bg-black/20 text-white"
+          ? `${isToday ? "border-[#556145]" : "border-[#C8C0B5]"} bg-[#FAF7F2]/70`
+          : `${isToday ? "border-neutral-900" : "border-neutral-200"} bg-white`
     }`,
-  monthDayCell: (theme: SiteTheme, muted: boolean) =>
-    `min-h-32 ${radiusClasses.figma6} border p-2 transition-colors duration-150 max-sm:min-h-28 ${
-      muted
+  monthDayNumberButton: (theme: SiteTheme, muted: boolean, isToday: boolean) =>
+    `inline-flex h-7 min-w-7 items-center gap-1.5 self-start rounded-md px-1.5 text-sm font-extrabold leading-none disabled:cursor-default max-[1100px]:h-11 max-[1100px]:w-20 max-[1100px]:shrink-0 max-[1100px]:flex-col max-[1100px]:justify-center max-[1100px]:gap-0.5 ${focusBase} ${siteColorClasses[theme].focus} ${
+      isToday
         ? theme === "dark"
-          ? "border-white/[0.05] bg-white/[0.018]"
+          ? "bg-white text-neutral-950"
           : theme === "paletteLight"
-            ? "border-[#C8C0B5]/60 bg-[#FAF7F2]/40"
-            : "border-neutral-200/70 bg-neutral-50"
-        : theme === "dark"
-          ? "border-white/[0.08] bg-white/[0.035]"
-          : theme === "paletteLight"
-            ? "border-[#C8C0B5] bg-[#FAF7F2]/70"
-            : "border-neutral-200 bg-white"
+            ? "bg-[#556145] text-[#FAF7F2]"
+            : "bg-neutral-900 text-white"
+        : muted
+          ? plannerMutedText(theme)
+          : siteColorClasses[theme].plannerCounterAccent
     }`,
-  monthDayNumber: (theme: SiteTheme, muted: boolean) =>
-    `text-xs font-bold ${
-      muted
-        ? theme === "dark"
-          ? "text-neutral-600"
-          : theme === "paletteLight"
-            ? "text-[#7A8864]/60"
-            : "text-neutral-400"
-        : theme === "dark"
-          ? "text-neutral-300"
-          : theme === "paletteLight"
-            ? "text-[#556145]"
-            : "text-neutral-700"
+  monthDayName: "hidden text-[11px] font-extrabold uppercase tracking-wider max-[1100px]:block",
+  monthDayNumber: (isToday: boolean) => (isToday ? "font-black" : ""),
+  monthDayMeals: "grid min-w-0 flex-1 content-start gap-1",
+  monthMealChip: (theme: SiteTheme) =>
+    `flex min-h-7 min-w-0 items-center gap-1.5 ${radiusClasses.figma6} px-1.5 py-1 text-left text-xs font-bold leading-tight transition-colors disabled:cursor-not-allowed disabled:opacity-45 max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "bg-white/[0.10] text-neutral-50 hover:bg-white/[0.16]"
+        : theme === "paletteLight"
+          ? "bg-[#E5D5BC]/70 text-[#3C4A2E] hover:bg-[#E5D5BC]"
+          : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
     }`,
-  monthDayMeals: "mt-2 grid gap-1",
-  monthMealPill: (theme: SiteTheme, empty: boolean) =>
-    `min-w-0 truncate whitespace-nowrap text-left ${radiusClasses.figma6} border px-2 py-1 text-[10px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
-      empty
-        ? theme === "dark"
-          ? "border-white/[0.08] bg-transparent text-neutral-500 hover:bg-white/[0.06] hover:text-neutral-200"
-          : theme === "paletteLight"
-            ? "border-[#7A8864]/20 bg-transparent text-[#7A8864]/70 hover:bg-[#E5D5BC]/45 hover:text-[#556145]"
-            : "border-neutral-200 bg-transparent text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
-        : theme === "dark"
-          ? "border-white/[0.08] bg-white/[0.08] text-neutral-100 hover:bg-white/[0.12]"
-          : theme === "paletteLight"
-            ? "border-[#7A8864]/20 bg-[#E5D5BC]/55 text-[#556145] hover:bg-[#E5D5BC]/75"
-            : "border-neutral-200 bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+  monthMealChipDot: "h-3 w-1.5 shrink-0 rounded-full ring-1 ring-black/10",
+  monthMealChipText: "min-w-0 truncate",
+  // Hidden until the day is hovered or has focus (mouse), or its date was tapped (touch).
+  monthAddButton: (theme: SiteTheme, isRevealed: boolean) =>
+    `flex min-h-7 min-w-0 items-center gap-1 ${radiusClasses.figma6} border border-dashed px-1.5 py-1 text-left text-xs font-bold leading-tight transition-opacity disabled:cursor-not-allowed max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses[theme].focus} ${
+      isRevealed
+        ? "opacity-100"
+        : "opacity-0 focus-visible:opacity-100 group-hover/day:opacity-100 group-focus-within/day:opacity-100 [@media(hover:none)]:hidden"
+    } ${
+      theme === "dark"
+        ? "border-white/[0.20] text-neutral-200 hover:bg-white/[0.08]"
+        : theme === "paletteLight"
+          ? "border-[#7A8864]/55 text-[#556145] hover:bg-[#E5D5BC]/55"
+          : "border-neutral-300 text-neutral-700 hover:bg-neutral-100"
     }`,
 };
 

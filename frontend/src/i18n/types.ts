@@ -362,7 +362,6 @@ export type TranslationDictionary = {
     actionGenerate: string;
     actionPrep: string;
     addMeal: (slot: string) => string;
-    addMealLower: (slot: string) => string;
     chooseMainDish: string;
     clearCurrent: (range: string) => string;
     clearRange: (range: string) => string;
@@ -444,6 +443,7 @@ export type TranslationDictionary = {
     selectMainDescription: string;
     selectedCount: (count: number, max: number) => string;
     selectedMealSummary: (main: string | null, supplements: string[]) => string;
+    showAddMeals: (day: string) => string;
     switchToView: (view: string) => string;
     weekLabel: (week: number) => string;
     yearLabel: (year: string) => string;

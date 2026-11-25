@@ -442,8 +442,7 @@ export const en: TranslationDictionary = {
     actionExport: "Export",
     actionGenerate: "Generate",
     actionPrep: "Prep",
-    addMeal: (slot) => `Add ${slot}`,
-    addMealLower: (slot) => `Add ${slot.toLowerCase()}`,
+    addMeal: (slot) => `Add ${slot.toLowerCase()}`,
     chooseMainDish: "Choose main dish",
     clearCurrent: (range) => `Clear ${range}`,
     clearRange: (range) => `Clear this ${range}?`,
@@ -571,6 +570,7 @@ export const en: TranslationDictionary = {
       );
       return `Selected: ${selected.join(" + ")}`;
     },
+    showAddMeals: (day) => `Show add buttons for ${day}`,
     switchToView: (view) => `Switch to ${view}`,
     weekLabel: (week) => `Week ${week}`,
     yearLabel: (year) => `Year ${year}`,
