@@ -44,6 +44,7 @@ import {
   type MealPlanGenerationIssue,
 } from "../utils/plannerGenerator";
 import { buildPrepHelperItems, getPrepIngredientTagNames } from "../utils/plannerPrepHelper";
+import { useRouteDetail } from "../utils/hashRoute";
 import { buildSystemTagNameLookup } from "../utils/tagCatalog";
 
 type PlannerPageProps = {
@@ -83,7 +84,9 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     stripTime(getSessionDatePreference(sessionPreferenceKeys.plannerMonthAnchorDate, new Date())),
   );
   const [selectedSlot, setSelectedSlot] = useState<SelectedPlannerSlot | null>(null);
-  const [activeRecipeId, setActiveRecipeId] = useState<number | null>(null);
+  // An open recipe has an address (#/planner/recipe/12), so Back closes it and the link can be shared.
+  const { detail: routeDetail, openDetail, closeDetail } = useRouteDetail("weekPlanner");
+  const activeRecipeId = routeDetail?.kind === "recipe" ? routeDetail.id : null;
   const [draggedSlot, setDraggedSlot] = useState<SelectedPlannerSlot | null>(null);
   const [pendingMealMove, setPendingMealMove] = useState<PendingMealMove | null>(null);
   const [pendingMealDelete, setPendingMealDelete] = useState<SelectedPlannerSlot | null>(null);
@@ -506,7 +509,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           onDragEnd={() => setDraggedSlot(null)}
           onDragStart={(date, slot) => setDraggedSlot({ date, slot })}
           onDropOnSlot={handleMealDrop}
-          onOpenRecipe={(recipe) => setActiveRecipeId(recipe.recipeId)}
+          onOpenRecipe={(recipe) => openDetail({ kind: "recipe", id: recipe.recipeId })}
           onSlotClick={(date, slot) => setSelectedSlot({ date, slot })}
           recipesById={recipesById}
           theme={theme}
@@ -547,7 +550,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           detail={{ kind: "recipe", id: activeRecipeId }}
           key={activeRecipeId}
           theme={theme}
-          onClose={() => setActiveRecipeId(null)}
+          onClose={closeDetail}
         />
       )}
       {pendingPlannerAction !== null && (

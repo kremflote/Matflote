@@ -3,6 +3,7 @@ import Header, { type PageId } from "./components/Header";
 import CookbookPage from "./pages/CookbookPage";
 import PlannerPage from "./pages/PlannerPage";
 import { appStyles, type SiteTheme } from "./styles/appStyles";
+import { navigateTo, useHashRoute } from "./utils/hashRoute";
 import { getLocalPreference, localPreferenceKeys, setLocalPreference } from "./utils/localPreferences";
 
 // The first load carries only the planner and the cookbook; the other pages load when first opened.
@@ -14,9 +15,20 @@ const pageIds: PageId[] = ["weekPlanner", "cookbook", "scanner", "nutrition", "s
 const themes: SiteTheme[] = ["dark", "light", "paletteLight"];
 
 function App() {
-  const [activePage, setActivePage] = useState<PageId>(() =>
+  // The page comes from the address (#/planner, #/cookbook/recipe/12, ...). Without one, the page
+  // last used is opened and its address written, replacing the bare entry rather than adding one.
+  const route = useHashRoute();
+  const [storedPage] = useState<PageId>(() =>
     getLocalPreference(localPreferenceKeys.activePage, pageIds, "weekPlanner"),
   );
+  const activePage = route?.page ?? storedPage;
+  const setActivePage = (page: PageId) => navigateTo({ page, detail: null });
+
+  useEffect(() => {
+    if (route === null) {
+      navigateTo({ page: storedPage, detail: null }, { replace: true });
+    }
+  }, [route, storedPage]);
   const [theme, setTheme] = useState<SiteTheme>(() =>
     getLocalPreference(localPreferenceKeys.theme, themes, "dark"),
   );

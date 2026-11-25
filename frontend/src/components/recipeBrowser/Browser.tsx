@@ -17,7 +17,8 @@ import {
 } from "./browserFilterUtils";
 import IngredientPickerPopover, { FilterIcon } from "./IngredientFilterPopover";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
-import { toBrowserDetailKey, type BrowserDetail, type BrowserDetailKey, type BrowserMode } from "./types";
+import { useRouteDetail } from "../../utils/hashRoute";
+import { toBrowserDetailKey, type BrowserDetail, type BrowserMode } from "./types";
 
 type BrowserProps = {
   mode: BrowserMode;
@@ -39,7 +40,8 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
   const [selectedIngredientTags, setSelectedIngredientTags] = useState<IngredientTag[]>([]);
   const [selectedRecipeTags, setSelectedRecipeTags] = useState<RecipeTag[]>([]);
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
-  const [selectedDetailKey, setSelectedDetailKey] = useState<BrowserDetailKey | null>(null);
+  // The open recipe or ingredient is part of the address (#/cookbook/recipe/12), so Back closes it.
+  const { detail: selectedDetailKey, openDetail, closeDetail } = useRouteDetail("cookbook");
   const [ingredientPickerSearch, setIngredientPickerSearch] = useState("");
   const [ingredientPickerPosition, setIngredientPickerPosition] = useState<{ x: number; y: number } | null>(null);
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false);
@@ -90,11 +92,11 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
 
   const selectDetail = (detail: BrowserDetail | null) => {
     if (detail === null) {
-      setSelectedDetailKey(null);
+      closeDetail();
       return;
     }
 
-    setSelectedDetailKey(toBrowserDetailKey(detail));
+    openDetail(toBrowserDetailKey(detail));
   };
 
   const clearFilters = () => {
