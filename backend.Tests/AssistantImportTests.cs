@@ -78,7 +78,8 @@ public class AssistantImportTests(MatfloteFactory factory) : IClassFixture<Matfl
         // The automatically created ingredients are reported as created, with a warning.
         var automaticResult = result.Item("ingredients", "IM brand new spice");
         Assert.Equal("created", automaticResult.Status());
-        Assert.Contains(automaticResult.Strings("warnings"), warning => warning.Contains("no tags and no nutrition"));
+        Assert.Contains(automaticResult.Strings("warnings"), warning => warning.Contains("with no tags"));
+        Assert.Contains(automaticResult.Strings("warnings"), warning => warning.Contains("no nutrition data"));
 
         var document = await Document(Id(soup));
         Assert.Equal("IM lentil soup", document.GetProperty("name").GetString());

@@ -83,6 +83,7 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
   "onExistingRecipe": "skip",
   "onExistingIngredient": "skip",
   "createMissingIngredients": true,
+  "lookupNutrition": false,
   "ingredients": [
     {
       "name": "Red lentils",
@@ -116,6 +117,7 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
 | `onExistingRecipe` | What to do when a recipe with the same name exists: `skip` (default, leave it and warn), `update` (replace everything except its image), `error`. |
 | `onExistingIngredient` | For entries under `ingredients`: `skip` (default) or `update`. An update only changes the fields that are present, so it can add nutrition without touching tags. |
 | `createMissingIngredients` | Default `true`: a recipe line naming an unknown ingredient creates it, with no tags and no nutrition, and says so in a warning. Set `false` to get an error with suggestions instead. |
+| `lookupNutrition` | Default `false`. When `true`, every ingredient this request **creates** without `nutritionPer100` (defined under `ingredients` or created from a recipe line) is looked up by name in Matvaretabellen, the Norwegian food composition table, and the best match is attached if its confidence is at least 0.70. The result says what was matched (`nutritionMatch`), or warns when nothing matched well enough. Norwegian names match best ("Laks", not "Salmon"). Existing ingredients are never looked up. Works in a dry run too, so you can check the matches first. |
 | `ingredients` | Optional. Define ingredients fully (tags, nutrition per 100 g/ml, colour, brand) before recipes use them. Do this for anything new, otherwise the Nutrition page has gaps. |
 | `recipes[].id` | Optional. When present the recipe with that id is updated, which is how a recipe is renamed. |
 | `recipes[].ingredients[].brand` | Optional. Without it, the unbranded ingredient of that name is preferred. |
@@ -131,7 +133,13 @@ Response (`200`, or `422` when anything failed):
   "dryRun": false,
   "applied": true,
   "errors": [],
-  "ingredients": [{ "name": "Red lentils", "status": "created", "id": 41, "warnings": [], "errors": [] }],
+  "ingredients": [
+    { "name": "Red lentils", "status": "created", "id": 41, "warnings": [], "errors": [] },
+    {
+      "name": "Laks", "status": "created", "id": 42, "warnings": [], "errors": [],
+      "nutritionMatch": { "foodId": "05.123", "foodName": "Laks, oppdrett, rå", "confidence": 0.98, "url": "https://www.matvaretabellen.no/..." }
+    }
+  ],
   "recipes": [{ "name": "Red lentil soup", "status": "created", "id": 17, "warnings": [], "errors": [] }]
 }
 ```

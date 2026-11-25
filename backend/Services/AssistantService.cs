@@ -13,7 +13,8 @@ public class AssistantService(
     DinnerPlannerContext context,
     MealPlanWriter mealPlanWriter,
     PlanningPreferencesService planningPreferences,
-    AssistantWriteLogService writeLog)
+    AssistantWriteLogService writeLog,
+    MatvaretabellenNutritionLookupService matvaretabellen)
 {
     private const int DefaultHistoryDays = 56;
     private const int MaxHistoryDays = 366;
@@ -21,6 +22,12 @@ public class AssistantService(
     private const int MaxReadRangeDays = 366;
     private const int MaxSuggestions = 3;
     private const decimal MaxNutrientValue = 100_000m;
+
+    /// <summary>
+    /// The lowest Matvaretabellen confidence attached without a person looking at it. The search dialog in the web
+    /// app suggests from 0.52; values attached unattended need a clearer match.
+    /// </summary>
+    public const decimal NutritionMatchThreshold = 0.70m;
 
     private const string ModeSkip = "skip";
     private const string ModeUpdate = "update";
@@ -230,6 +237,19 @@ public class AssistantService(
             || recipeResults.Any(result => result.Errors.Count > 0);
         var applied = !dryRun && !hasErrors;
 
+        // Looked up for a dry run too, so it shows what would be attached; skipped for a request that is rejected anyway.
+        if ((request.LookupNutrition ?? false) && (dryRun || applied))
+        {
+            await LookUpNutritionAsync(ingredientResults, cancellationToken);
+        }
+        else
+        {
+            foreach (var result in ingredientResults.Where(result => result.Created is { NutritionPer100: null }))
+            {
+                result.Warnings.Add("It has no nutrition data, so the Nutrition page has a gap. Send nutritionPer100, or \"lookupNutrition\": true to look it up.");
+            }
+        }
+
         if (applied)
         {
             foreach (var change in pendingChanges)
@@ -318,6 +338,7 @@ public class AssistantService(
                 pendingChanges.Add(() => context.Ingredients.Add(ingredient));
                 result.Target = () => ingredient.IngredientId;
                 result.Status = ItemStatus.Create;
+                result.Created = ingredient;
                 AddSimilarIngredientWarning(result, name, catalog, ingredient);
                 continue;
             }
@@ -523,6 +544,55 @@ public class AssistantService(
         ReportComponentCycles(plans, storedRecipes, storedById);
     }
 
+    /// <summary>Attaches Matvaretabellen values to each ingredient this request creates without nutrition.</summary>
+    private async Task LookUpNutritionAsync(List<ItemResult> ingredientResults, CancellationToken cancellationToken)
+    {
+        foreach (var result in ingredientResults.Where(result => result.Created is { NutritionPer100: null } && result.Errors.Count == 0))
+        {
+            var ingredient = result.Created!;
+            var lookup = await matvaretabellen.FindMatchesAsync(ingredient.IngredientName, ingredient.Brand?.Name, null, null, cancellationToken);
+            var best = lookup.Candidates.OrderByDescending(candidate => candidate.Confidence).FirstOrDefault();
+            if (best is null || best.Confidence < NutritionMatchThreshold)
+            {
+                result.Warnings.Add(best is null
+                    ? "lookupNutrition: no Matvaretabellen match (or Matvaretabellen could not be reached); it has no nutrition data. Send nutritionPer100 to set it."
+                    : $"lookupNutrition: the closest Matvaretabellen food, \"{best.FoodName}\", matched with confidence {best.Confidence:0.00}, below {NutritionMatchThreshold:0.00}, so nothing was attached. Send nutritionPer100 to set it.");
+                continue;
+            }
+
+            ingredient.NutritionPer100 = ToNutritionFacts(best.Nutrition);
+            ingredient.NutritionSource = NutritionDataSource.Matvaretabellen;
+            ingredient.NutritionSourceLabel = "Matvaretabellen";
+            ingredient.MatvaretabellenFoodId = best.FoodId;
+            ingredient.NutritionMatchedName = best.FoodName;
+            ingredient.NutritionMatchConfidence = Math.Round(best.Confidence, 3);
+            result.NutritionMatch = new AssistantNutritionMatchDto(best.FoodId, best.FoodName, Math.Round(best.Confidence, 3), best.Url);
+        }
+    }
+
+    private static NutritionFacts ToNutritionFacts(ProductLookupNutritionDto nutrition) => new()
+    {
+        Calories = nutrition.Calories is null ? null : (int)Math.Round(nutrition.Calories.Value, MidpointRounding.AwayFromZero),
+        CarbohydrateGrams = nutrition.CarbohydrateGrams,
+        ProteinGrams = nutrition.ProteinGrams,
+        FatGrams = nutrition.FatGrams,
+        SaltGrams = nutrition.SaltGrams,
+        DietaryFiberGrams = nutrition.DietaryFiberGrams,
+        SaturatedFatGrams = nutrition.SaturatedFatGrams,
+        TransFatGrams = nutrition.TransFatGrams,
+        MonounsaturatedFatGrams = nutrition.MonounsaturatedFatGrams,
+        PolyunsaturatedFatGrams = nutrition.PolyunsaturatedFatGrams,
+        Omega3Grams = nutrition.Omega3Grams,
+        Omega6Grams = nutrition.Omega6Grams,
+        CholesterolMilligrams = nutrition.CholesterolMilligrams,
+        VitaminAMicrograms = nutrition.VitaminAMicrograms,
+        VitaminB9Micrograms = nutrition.VitaminB9Micrograms,
+        VitaminB12Micrograms = nutrition.VitaminB12Micrograms,
+        VitaminCMilligrams = nutrition.VitaminCMilligrams,
+        VitaminDMicrograms = nutrition.VitaminDMicrograms,
+        VitaminEMilligrams = nutrition.VitaminEMilligrams,
+    };
+
     private List<RecipeLinePlan> PlanRecipeLines(
         AssistantRecipeInput input,
         bool createMissingIngredients,
@@ -594,10 +664,11 @@ public class AssistantService(
                 var ingredientResult = new ItemResult(label)
                 {
                     Status = ItemStatus.Create,
-                    Target = () => created.IngredientId
+                    Target = () => created.IngredientId,
+                    Created = created
                 };
                 ingredientResult.Warnings.Add(
-                    $"Created automatically for recipe \"{Clean(input.Name)}\" with no tags and no nutrition data. Define it under \"ingredients\" to set them.{suggestionText}");
+                    $"Created automatically for recipe \"{Clean(input.Name)}\" with no tags. Define it under \"ingredients\" to set tags and nutrition.{suggestionText}");
                 ingredientResults.Add(ingredientResult);
             }
 
@@ -1432,6 +1503,9 @@ public class AssistantService(
         public Func<int>? Target { get; set; }
         public List<string> Warnings { get; } = [];
         public List<string> Errors { get; } = [];
+        /// <summary>The new ingredient this result creates, when it is an ingredient being created.</summary>
+        public Ingredient? Created { get; set; }
+        public AssistantNutritionMatchDto? NutritionMatch { get; set; }
 
         public AssistantItemResultDto ToDto(bool applied)
         {
@@ -1445,7 +1519,7 @@ public class AssistantService(
                     _ => "error"
                 };
             var id = Target?.Invoke();
-            return new AssistantItemResultDto(Name, status, id is null or 0 ? null : id, Warnings, Errors);
+            return new AssistantItemResultDto(Name, status, id is null or 0 ? null : id, Warnings, Errors, NutritionMatch);
         }
     }
 

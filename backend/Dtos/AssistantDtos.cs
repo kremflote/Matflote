@@ -106,6 +106,7 @@ public record AssistantImportRequest(
     string? OnExistingRecipe,
     string? OnExistingIngredient,
     bool? CreateMissingIngredients,
+    bool? LookupNutrition,
     IReadOnlyCollection<AssistantIngredientInput>? Ingredients,
     IReadOnlyCollection<AssistantRecipeInput>? Recipes
 );
@@ -189,7 +190,16 @@ public record AssistantItemResultDto(
     string Status,
     int? Id,
     IReadOnlyCollection<string> Warnings,
-    IReadOnlyCollection<string> Errors
+    IReadOnlyCollection<string> Errors,
+    // Set when "lookupNutrition" attached (or, in a dry run, would attach) Matvaretabellen values to a new ingredient.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] AssistantNutritionMatchDto? NutritionMatch
+);
+
+public record AssistantNutritionMatchDto(
+    string FoodId,
+    string FoodName,
+    decimal Confidence,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Url
 );
 
 // ---------- Meal plan (read range, write many) ----------
