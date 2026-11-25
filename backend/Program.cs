@@ -26,12 +26,15 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddDbContext<DinnerPlannerContext>(options =>
+builder.Services.AddSingleton<CatalogVersion>();
+builder.Services.AddSingleton<CatalogVersionInterceptor>();
+builder.Services.AddDbContext<DinnerPlannerContext>((services, options) =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DinnerPlanner")
         ?? "Data Source=dinnerplanner.db";
 
     options.UseSqlite(connectionString);
+    options.AddInterceptors(services.GetRequiredService<CatalogVersionInterceptor>());
 });
 
 builder.Services.AddControllers()

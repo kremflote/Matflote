@@ -3,6 +3,7 @@
 
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
+using DinnerPlanner.Api.Filters;
 using DinnerPlanner.Api.Models;
 using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ namespace DinnerPlanner.Api.Controllers;
 public class IngredientTagCategoriesController(DinnerPlannerContext context, TagCatalogService tagCatalog) : ControllerBase
 {
     [HttpGet]
+    [CatalogETag(CatalogGroup.Tags)]
     public async Task<ActionResult<IEnumerable<IngredientTagCategoryDto>>> GetCategories()
     {
         var categories = await context.IngredientTagCategories

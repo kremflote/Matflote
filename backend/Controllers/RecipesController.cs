@@ -3,6 +3,7 @@
 
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
+using DinnerPlanner.Api.Filters;
 using DinnerPlanner.Api.Models;
 using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ public class RecipesController(
     RecipePdfService recipePdfService) : ControllerBase
 {
     [HttpGet]
+    [CatalogETag(CatalogGroup.Recipes)]
     public async Task<ActionResult<IEnumerable<RecipeDto>>> GetRecipes()
     {
         var recipes = await RecipeDetails(asNoTracking: true)
