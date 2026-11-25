@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { useLanguage } from "../contexts";
 import type { SiteTheme } from "../styles/appStyles";
 import { confirmationDialogStyles } from "../styles/confirmationDialogStyles";
@@ -28,29 +28,11 @@ function ConfirmationDialog({
   const { t } = useLanguage();
   const titleId = useId();
   const bodyId = useId();
-  const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    cancelButtonRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCancel();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onCancel]);
-
   return (
     <Modal
       backdropClassName={confirmationDialogStyles.backdrop}
       bodyClassName={confirmationDialogStyles.bodyFrame}
       closeButtonClassName={confirmationDialogStyles.closeButton(theme)}
-      closeButtonRef={cancelButtonRef}
       closeLabel={t.common.close}
       describedBy={bodyId}
       footer={

@@ -150,23 +150,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
     return () => document.removeEventListener("pointerdown", handleOutsidePointerDown);
   }, [ingredientPickerPosition]);
 
-  useEffect(() => {
-    if (!isCategoryFilterOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setIsCategoryFilterOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isCategoryFilterOpen]);
-
   return (
     <>
       <header>

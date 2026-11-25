@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useIngredientTagCategories, useLanguage } from "../contexts";
 import type { IGroceryList, IGroceryListItem } from "../interfaces/IGroceryList";
 import { ApiError, appSettingsService, groceryListService } from "../services";
@@ -25,7 +25,6 @@ function GroceryExportDialog({
   const { ingredientTagCategories } = useIngredientTagCategories();
   const titleId = useId();
   const descriptionId = useId();
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const [defaultExcludedTags, setDefaultExcludedTags] = useState<string[]>(["Spice"]);
   const [draftExcludedTags, setDraftExcludedTags] = useState<string[]>(["Spice"]);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
@@ -70,21 +69,6 @@ function GroceryExportDialog({
       ignore = true;
     };
   }, []);
-
-  useEffect(() => {
-    closeButtonRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
 
   const selectedCount = selectedItemKeys.size;
   const itemCount = useMemo(
@@ -167,7 +151,6 @@ function GroceryExportDialog({
       backdropClassName={groceryExportStyles.modalBackdrop}
       bodyClassName={groceryExportStyles.bodyFrame}
       closeButtonClassName={groceryExportStyles.closeButton(theme)}
-      closeButtonRef={closeButtonRef}
       closeLabel={t.common.close}
       description={t.planner.groceryExportDescription}
       descriptionClassName={groceryExportStyles.subtitle(theme)}

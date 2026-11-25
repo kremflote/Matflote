@@ -46,23 +46,6 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
     setIsConfirmingDelete(false);
   }, [detail]);
 
-  useEffect(() => {
-    if (isConfirmingDelete) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isConfirmingDelete, onClose]);
-
   const navigateToDetail = (nextDetail: BrowserDetail) => {
     if (isSameDetail(activeDetail, nextDetail)) {
       return;

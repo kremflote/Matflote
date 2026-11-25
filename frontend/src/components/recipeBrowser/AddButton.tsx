@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { useLanguage } from "../../contexts";
 import type { SiteTheme } from "../../styles/appStyles";
 import Modal from "../Modal";
@@ -35,23 +35,6 @@ function AddButton({ target, theme }: AddButtonProps) {
       setSuccessMessage(t.common.ingredientAdded(ingredientName));
     }
   };
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        closeModal();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
 
   return (
     <>

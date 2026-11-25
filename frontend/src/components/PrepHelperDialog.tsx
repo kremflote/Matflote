@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react";
+import { useId } from "react";
 import { useLanguage } from "../contexts";
 import type { MeasurementUnit } from "../interfaces/IIngredient";
 import { prepHelperStyles, type SiteTheme } from "../styles/appStyles";
@@ -23,29 +23,11 @@ function PrepHelperDialog({
   const { t } = useLanguage();
   const titleId = useId();
   const descriptionId = useId();
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    closeButtonRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
   return (
     <Modal
       backdropClassName={prepHelperStyles.modalBackdrop}
       bodyClassName={prepHelperStyles.bodyFrame}
       closeButtonClassName={prepHelperStyles.closeButton(theme)}
-      closeButtonRef={closeButtonRef}
       closeLabel={t.common.close}
       description={t.planner.prepHelperDescription(from, to)}
       descriptionClassName={prepHelperStyles.subtitle(theme)}

@@ -121,7 +121,6 @@ function PlannerRecipePickerModal({
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const modalPanelRef = useRef<HTMLElement | null>(null);
   const ingredientFilterButtonRef = useRef<HTMLButtonElement | null>(null);
   const ingredientPickerRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -243,15 +242,6 @@ function PlannerRecipePickerModal({
     ].some((selection) => recipeById.get(selection.recipeId)?.tags.includes(breadTagName) === true);
 
   useEffect(() => {
-    const previouslyFocusedElement =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-
-    return () => {
-      previouslyFocusedElement?.focus();
-    };
-  }, []);
-
-  useEffect(() => {
     if (ingredientPickerPosition === null) {
       return;
     }
@@ -276,29 +266,6 @@ function PlannerRecipePickerModal({
 
     return () => document.removeEventListener("pointerdown", handleOutsidePointerDown);
   }, [ingredientPickerPosition]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        if (isCategoryFilterOpen) {
-          setIsCategoryFilterOpen(false);
-          return;
-        }
-
-        onClose();
-        return;
-      }
-
-      if (event.key === "Tab") {
-        trapFocus(event, modalPanelRef.current);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isCategoryFilterOpen, onClose]);
 
   const selectMainRecipe = (recipe: IRecipe, portions: number) => {
     setMainRecipeSelection({ recipeId: recipe.recipeId, portions });
@@ -595,7 +562,6 @@ function PlannerRecipePickerModal({
       footerClassName={plannerPickerStyles.footer}
       headerClassName={plannerPickerStyles.header}
       panelClassName={plannerPickerStyles.modalPanel(theme)}
-      ref={modalPanelRef}
       title={t.planner.chooseMainDish}
       titleClassName={plannerPickerStyles.title}
       titleId={titleId}
@@ -784,44 +750,6 @@ function PlannerRecipePickerModal({
 
     </Modal>
   );
-}
-
-const focusableSelector = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "[tabindex]:not([tabindex='-1'])",
-].join(",");
-
-function trapFocus(event: KeyboardEvent, container: HTMLElement | null) {
-  if (container === null) {
-    return;
-  }
-
-  const focusableElements = Array.from(
-    container.querySelectorAll<HTMLElement>(focusableSelector),
-  ).filter((element) => element.offsetParent !== null || element === document.activeElement);
-
-  if (focusableElements.length === 0) {
-    event.preventDefault();
-    return;
-  }
-
-  const firstElement = focusableElements[0];
-  const lastElement = focusableElements[focusableElements.length - 1];
-
-  if (event.shiftKey && document.activeElement === firstElement) {
-    event.preventDefault();
-    lastElement.focus();
-    return;
-  }
-
-  if (!event.shiftKey && document.activeElement === lastElement) {
-    event.preventDefault();
-    firstElement.focus();
-  }
 }
 
 function toSelectedRecipeItem(recipe: IRecipe, selection: SelectedPlannerRecipe): PlannerPickerSelectedItem {
