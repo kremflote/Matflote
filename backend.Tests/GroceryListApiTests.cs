@@ -88,9 +88,9 @@ public class GroceryListApiTests(MatfloteFactory factory) : IClassFixture<Matflo
         var list = await client.GetJson<GroceryListDto>($"/api/grocerylists/preview?from={monday:yyyy-MM-dd}&to={monday.AddDays(6):yyyy-MM-dd}");
         var items = list.Sections.SelectMany(section => section.Items).ToDictionary(item => item.IngredientName);
         // A component scales by its amount over the child's own ingredient total: dough 225/400, starter 50/100.
-        // Flour: 400 x 0.5625 + 90 x 0.5625 x 0.5 = 250.3125; yeast: 10 x 0.5625 x 0.5 = 2.8125.
-        Assert.Equal(250.3125m, items["GL2 flour"].Amount);
-        Assert.Equal(2.8125m, items["GL2 yeast"].Amount);
+        // Flour: 400 x 0.5625 + 90 x 0.5625 x 0.5 = 250.3125, rounded up to 260; yeast: 10 x 0.5625 x 0.5 = 2.8125, to 3.
+        Assert.Equal(260m, items["GL2 flour"].Amount);
+        Assert.Equal(3m, items["GL2 yeast"].Amount);
         Assert.Equal(5m, items["GL2 salt"].Amount);
     }
 
