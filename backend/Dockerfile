@@ -17,4 +17,9 @@ COPY --from=build /app/publish .
 
 EXPOSE 8080
 
+# The aspnet image has no curl or wget; the app asks its own /health instead (exit 0 when healthy).
+# Startup runs migrations first, so allow a slow first start on the Pi.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD ["dotnet", "backend.dll", "--healthcheck"]
+
 ENTRYPOINT ["dotnet", "backend.dll"]

@@ -8,6 +8,12 @@ using Microsoft.Extensions.FileProviders;
 using QuestPDF.Infrastructure;
 using System.Text.Json.Serialization;
 
+if (args is [HealthCheckCommand.Argument, ..])
+{
+    Environment.ExitCode = await HealthCheckCommand.RunAsync(args.ElementAtOrDefault(1));
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 QuestPDF.Settings.License = LicenseType.Community;
