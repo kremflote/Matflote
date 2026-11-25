@@ -198,7 +198,14 @@ public class SeedCatalogService(
         await ImportCatalogAsync(catalog, cancellationToken);
     }
 
-    public async Task ImportCatalogPackageStreamAsync(Stream stream, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Imports a package additively. With <paramref name="synchronizeTags"/> it also deletes every tag and tag category
+    /// the package does not name, which removes those tags from recipes and ingredients (AUDIT B3).
+    /// </summary>
+    public async Task ImportCatalogPackageStreamAsync(
+        Stream stream,
+        bool synchronizeTags = false,
+        CancellationToken cancellationToken = default)
     {
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
         var catalogEntry = archive.GetEntry("seed-catalog.json")
@@ -213,7 +220,7 @@ public class SeedCatalogService(
             throw new InvalidOperationException("Seed catalog file was empty or invalid.");
         }
 
-        await ImportCatalogAsync(catalog, cancellationToken, synchronizeTagCategories: true);
+        await ImportCatalogAsync(catalog, cancellationToken, synchronizeTagCategories: synchronizeTags);
     }
 
     public async Task<byte[]> BuildExportPackageAsync(CancellationToken cancellationToken = default)

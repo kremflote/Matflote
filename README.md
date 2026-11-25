@@ -118,6 +118,14 @@ curl.exe -i -X POST `
 
 The import is additive. Matching ingredients and recipes are left alone, so it is useful for seeding or moving curated data, not for replacing a whole household database.
 
+To make the tag list match the package instead, add `?syncTags=true`:
+
+```text
+POST /api/seed-catalog/import-package?syncTags=true
+```
+
+That deletes every tag and tag category the package does not name, and with them those tags on every recipe and ingredient. Without the parameter no tag is deleted. (Before this option existed, every package import synchronised tags.)
+
 Before it applies database migrations, the backend writes a copy of the database beside it, named like `dinnerplanner.db.20261125-120000.bak`, and keeps the newest five. Restoring one means stopping the backend, deleting `dinnerplanner.db-wal` and `dinnerplanner.db-shm` if present, and copying the `.bak` file over `dinnerplanner.db`.
 
 For a complete server backup, back up both Docker volumes.
