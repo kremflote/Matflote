@@ -48,3 +48,30 @@ public record IngredientDto(
     decimal? NutritionMatchConfidence,
     string? Color
 );
+
+/// <summary>A recipe that has a line for an ingredient.</summary>
+public record IngredientUseRecipeDto(int RecipeId, string Name);
+
+/// <summary>A planned meal that lists an ingredient directly.</summary>
+public record IngredientUseMealDto(int MealPlanEntryId, DateOnly Date, MealSlot Slot);
+
+/// <summary>
+/// The 409 body of DELETE /api/ingredients/{id} when the ingredient is still used. Repoint the uses with
+/// POST /api/ingredients/{id}/replace-with/{otherId}, or edit them, before deleting.
+/// </summary>
+public record IngredientInUseDto(
+    string Error,
+    IReadOnlyCollection<IngredientUseRecipeDto> Recipes,
+    IReadOnlyCollection<IngredientUseMealDto> MealPlanEntries
+);
+
+/// <summary>The result of replacing one ingredient with another everywhere and deleting the first.</summary>
+public record IngredientReplacementResultDto(
+    int DeletedIngredientId,
+    IngredientDto Replacement,
+    // Recipe lines that now point at the replacement.
+    int RecipeLinesMoved,
+    // Recipes that already had the replacement: the two lines were added into one.
+    int RecipeLinesMerged,
+    int MealPlanItemsMoved
+);

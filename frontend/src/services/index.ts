@@ -6,7 +6,7 @@ export { conversionRuleService } from "./conversionRuleService";
 export { imageUploadService } from "./imageUploadService";
 export { groceryListService } from "./groceryListService";
 export { ingredientTagCategoryService } from "./ingredientTagCategoryService";
-export { ingredientService } from "./ingredientService";
+export { getIngredientInUse, ingredientService } from "./ingredientService";
 export { mealPlanService } from "./mealPlanService";
 export { maintenanceService } from "./maintenanceService";
 export { nutritionService } from "./nutritionService";

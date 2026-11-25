@@ -1,3 +1,4 @@
+import type { MealSlot } from "./IMeal";
 import type { IBrand } from "./ILookup";
 
 export interface IIngredient {
@@ -17,6 +18,21 @@ export interface IIngredient {
   nutritionMatchedName: string | null;
   nutritionMatchConfidence: number | null;
   color: string | null;
+}
+
+/** The 409 body of DELETE /api/ingredients/{id}: what still uses the ingredient. */
+export interface IIngredientInUse {
+  error: string;
+  recipes: { recipeId: number; name: string }[];
+  mealPlanEntries: { mealPlanEntryId: number; date: string; slot: MealSlot }[];
+}
+
+export interface IIngredientReplacementResult {
+  deletedIngredientId: number;
+  replacement: IIngredient;
+  recipeLinesMoved: number;
+  recipeLinesMerged: number;
+  mealPlanItemsMoved: number;
 }
 
 export type KnownTag =

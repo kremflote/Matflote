@@ -5,11 +5,14 @@ export const API_BASE_URL =
 
 export class ApiError extends Error {
   readonly status: number;
+  /** The parsed JSON body of the response, when it sent one (a 409 lists what is in the way, for example). */
+  readonly body: unknown;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, body: unknown = null) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.body = body;
   }
 }
 
@@ -69,7 +72,8 @@ export async function sendRequest(input: string, init?: RequestInit) {
  * becomes a short message with the status, never the raw body.
  */
 export async function toApiError(response: Response) {
-  return new ApiError((await readServerMessage(response)) ?? getMessages().requestFailed(response.status), response.status);
+  const body = await readJsonBody(response);
+  return new ApiError(readServerMessage(body) ?? getMessages().requestFailed(response.status), response.status, body);
 }
 
 export function getApiAssetUrl(path: string | null) {
@@ -84,29 +88,32 @@ export function getApiAssetUrl(path: string | null) {
   return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-async function readServerMessage(response: Response): Promise<string | null> {
+async function readJsonBody(response: Response): Promise<unknown> {
   const contentType = response.headers.get("Content-Type") ?? "";
   if (!contentType.includes("json")) {
     return null;
   }
 
   try {
-    const body = (await response.json()) as unknown;
-    if (typeof body !== "object" || body === null) {
-      return null;
-    }
-
-    for (const key of ["error", "detail", "title"] as const) {
-      const value = (body as Record<string, unknown>)[key];
-      if (typeof value === "string" && value.trim().length > 0) {
-        return value;
-      }
-    }
-
-    return null;
+    return (await response.json()) as unknown;
   } catch (_error) {
     return null;
   }
+}
+
+function readServerMessage(body: unknown): string | null {
+  if (typeof body !== "object" || body === null) {
+    return null;
+  }
+
+  for (const key of ["error", "detail", "title"] as const) {
+    const value = (body as Record<string, unknown>)[key];
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value;
+    }
+  }
+
+  return null;
 }
 
 function getMessages() {

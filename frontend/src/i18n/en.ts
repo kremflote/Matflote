@@ -138,6 +138,21 @@ export const en: TranslationDictionary = {
     name: "Name",
     per100g: "per 100 g",
     removeIngredientBody: "This will delete the ingredient.",
+    ingredientInUseTitle: (name) => `${name} is in use`,
+    ingredientInUseBody: (recipeCount, mealCount) => {
+      const parts = [
+        recipeCount > 0 ? `${recipeCount} ${recipeCount === 1 ? "recipe" : "recipes"}` : null,
+        mealCount > 0 ? `${mealCount} planned ${mealCount === 1 ? "meal" : "meals"}` : null,
+      ].filter((part) => part !== null);
+      return `It is used by ${parts.join(" and ")}, so it was not removed. Choose an ingredient to use instead, and this one is removed.`;
+    },
+    ingredientInUseRecipes: "Recipes",
+    ingredientInUseMeals: "Planned meals",
+    replaceWith: "Replace with",
+    replaceWithPlaceholder: "Choose an ingredient",
+    replaceWithHelp: "A recipe that already has the chosen ingredient keeps one line with the two amounts added together.",
+    replaceAndRemove: "Replace and remove",
+    couldNotReplaceIngredient: "Could not replace the ingredient.",
     removeRecipeBody: "This will delete the recipe.",
     none: "None",
     noDescription: "No description yet.",

@@ -16,6 +16,7 @@ namespace DinnerPlanner.Api.Controllers;
 public class IngredientsController(
     DinnerPlannerContext context,
     TagCatalogService tagCatalog,
+    IngredientUsageService ingredientUsage,
     ImageThumbnails imageThumbnails) : ControllerBase
 {
     [HttpGet]
@@ -127,6 +128,7 @@ public class IngredientsController(
         return Ok(ToDto(updated!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
     }
 
+    /// <summary>Deletes an unused ingredient. One that recipes or planned meals use is refused with 409 and the list of uses.</summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteIngredient(int id)
     {
@@ -136,14 +138,51 @@ public class IngredientsController(
             return NotFound();
         }
 
-        var recipeIngredients = await context.RecipeIngredients
-            .Where(recipeIngredient => recipeIngredient.IngredientId == id)
-            .ToListAsync();
+        var uses = await ingredientUsage.FindUsesAsync(id, ingredient.IngredientName, HttpContext.RequestAborted);
+        if (uses.Recipes.Count > 0 || uses.MealPlanEntries.Count > 0)
+        {
+            return Conflict(uses);
+        }
 
-        context.RecipeIngredients.RemoveRange(recipeIngredients);
         context.Ingredients.Remove(ingredient);
         await context.SaveChangesAsync();
         return NoContent();
+    }
+
+    /// <summary>
+    /// Moves every recipe line and planned item from this ingredient to another one, then deletes this one.
+    /// A recipe that has both keeps one line with the amounts added together.
+    /// </summary>
+    [HttpPost("{id:int}/replace-with/{otherId:int}")]
+    public async Task<ActionResult<IngredientReplacementResultDto>> ReplaceWith(int id, int otherId)
+    {
+        if (id == otherId)
+        {
+            return BadRequest(new ApiErrorDto("An ingredient cannot replace itself."));
+        }
+
+        var source = await context.Ingredients.FindAsync(id);
+        var target = await context.Ingredients.FindAsync(otherId);
+        if (source is null || target is null)
+        {
+            return NotFound(new ApiErrorDto($"No ingredient has id {(source is null ? id : otherId)}."));
+        }
+
+        var (problems, moved, merged, mealItems) = await ingredientUsage.StageReplacementAsync(source, target, HttpContext.RequestAborted);
+        if (problems.Count > 0)
+        {
+            return Conflict(ApiErrorDto.From(problems));
+        }
+
+        await context.SaveChangesAsync();
+
+        var replacement = await LoadIngredient(otherId);
+        return Ok(new IngredientReplacementResultDto(
+            id,
+            ToDto(replacement!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)),
+            moved,
+            merged,
+            mealItems));
     }
 
     private async Task<bool> BrandExists(int? brandId) =>

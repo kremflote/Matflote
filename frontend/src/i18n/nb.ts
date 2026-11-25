@@ -137,6 +137,21 @@ export const nb: TranslationDictionary = {
     name: "Navn",
     per100g: "per 100 g",
     removeIngredientBody: "Dette sletter ingrediensen.",
+    ingredientInUseTitle: (name) => `${name} er i bruk`,
+    ingredientInUseBody: (recipeCount, mealCount) => {
+      const parts = [
+        recipeCount > 0 ? `${recipeCount} ${recipeCount === 1 ? "oppskrift" : "oppskrifter"}` : null,
+        mealCount > 0 ? `${mealCount} ${mealCount === 1 ? "planlagt måltid" : "planlagte måltider"}` : null,
+      ].filter((part) => part !== null);
+      return `Den brukes i ${parts.join(" og ")}, så den ble ikke fjernet. Velg en ingrediens som skal brukes i stedet, så fjernes denne.`;
+    },
+    ingredientInUseRecipes: "Oppskrifter",
+    ingredientInUseMeals: "Planlagte måltider",
+    replaceWith: "Erstatt med",
+    replaceWithPlaceholder: "Velg en ingrediens",
+    replaceWithHelp: "En oppskrift som allerede har den valgte ingrediensen, beholder én linje der mengdene er lagt sammen.",
+    replaceAndRemove: "Erstatt og fjern",
+    couldNotReplaceIngredient: "Kunne ikke erstatte ingrediensen.",
     removeRecipeBody: "Dette sletter oppskriften.",
     none: "Ingen",
     noDescription: "Ingen beskrivelse ennå.",

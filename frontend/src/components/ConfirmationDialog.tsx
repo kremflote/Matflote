@@ -8,6 +8,8 @@ type ConfirmationDialogProps = {
   body: ReactNode;
   confirmLabel?: string;
   isBusy?: boolean;
+  /** Disables the confirm button, for example until a required choice is made. */
+  isConfirmDisabled?: boolean;
   theme: SiteTheme;
   title: string;
   tone?: "danger" | "default";
@@ -19,6 +21,7 @@ function ConfirmationDialog({
   body,
   confirmLabel,
   isBusy = false,
+  isConfirmDisabled = false,
   theme,
   title,
   tone = "danger",
@@ -47,7 +50,7 @@ function ConfirmationDialog({
           </button>
           <button
             className={`${confirmationDialogStyles.confirmButton(theme, tone)} ${confirmationDialogStyles.actionButton}`}
-            disabled={isBusy}
+            disabled={isBusy || isConfirmDisabled}
             type="button"
             onClick={onConfirm}
           >

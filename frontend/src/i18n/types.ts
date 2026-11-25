@@ -153,6 +153,15 @@ export type TranslationDictionary = {
     name: string;
     per100g: string;
     removeIngredientBody: string;
+    ingredientInUseTitle: (name: string) => string;
+    ingredientInUseBody: (recipeCount: number, mealCount: number) => string;
+    ingredientInUseRecipes: string;
+    ingredientInUseMeals: string;
+    replaceWith: string;
+    replaceWithPlaceholder: string;
+    replaceWithHelp: string;
+    replaceAndRemove: string;
+    couldNotReplaceIngredient: string;
     removeRecipeBody: string;
     none: string;
     noDescription: string;

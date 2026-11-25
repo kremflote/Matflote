@@ -1,13 +1,14 @@
 import { useId, useMemo, useState } from "react";
 import ConfirmationDialog from "../ConfirmationDialog";
-import { useIngredients, useLanguage, useRecipes } from "../../contexts";
-import type { IIngredient } from "../../interfaces/IIngredient";
+import { useIngredients, useLanguage, useMealPlan, useRecipes } from "../../contexts";
+import type { IIngredient, IIngredientInUse } from "../../interfaces/IIngredient";
 import type { IRecipe } from "../../interfaces/IRecipe";
-import { ingredientService, recipeService } from "../../services";
+import { getIngredientInUse, ingredientService, recipeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
 import Modal from "../Modal";
 import IngredientCreateForm from "./IngredientCreateForm";
 import IngredientDetailContent from "./IngredientDetailContent";
+import IngredientInUseDialog from "./IngredientInUseDialog";
 import RecipeCreateForm from "./RecipeCreateForm";
 import RecipeDetailContent from "./RecipeDetailContent";
 import { recipeTags } from "./formOptions";
@@ -31,6 +32,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   const detailTitleId = useId();
   const { recipes, refreshRecipes } = useRecipes();
   const { ingredients, refreshIngredients } = useIngredients();
+  const { refreshMealPlan } = useMealPlan();
   const [activeKey, setActiveKey] = useState(detail);
   const [detailHistory, setDetailHistory] = useState<BrowserDetailKey[]>([]);
   const [isEditingRecipe, setIsEditingRecipe] = useState(false);
@@ -40,6 +42,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [ingredientInUse, setIngredientInUse] = useState<IIngredientInUse | null>(null);
   const activeDetail = useMemo(
     () => resolveDetail(activeKey, recipes, ingredients),
     [activeKey, ingredients, recipes],
@@ -116,6 +119,12 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
 
       onClose();
     } catch (caughtError) {
+      const uses = getIngredientInUse(caughtError);
+      if (uses !== null) {
+        setIngredientInUse(uses);
+        return;
+      }
+
       setDeleteError(caughtError instanceof Error ? caughtError.message : activeDetail.kind === "recipe" ? t.cookbook.couldNotRemoveRecipe : t.cookbook.couldNotRemoveIngredient);
     } finally {
       setIsDeleting(false);
@@ -285,6 +294,19 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
             title={t.common.removeNamed(getDetailName(activeDetail))}
             onCancel={() => setIsConfirmingDelete(false)}
             onConfirm={() => void handleRemove()}
+          />
+        )}
+        {ingredientInUse !== null && activeDetail.kind === "ingredient" && (
+          <IngredientInUseDialog
+            ingredient={activeDetail.ingredient}
+            ingredients={ingredients}
+            theme={theme}
+            uses={ingredientInUse}
+            onCancel={() => setIngredientInUse(null)}
+            onReplaced={async () => {
+              await Promise.all([refreshIngredients(), refreshRecipes(), refreshMealPlan()]);
+              onClose();
+            }}
           />
         )}
     </Modal>
