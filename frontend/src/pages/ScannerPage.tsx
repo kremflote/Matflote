@@ -1,7 +1,7 @@
-import type { IScannerControls } from "@zxing/browser";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import Modal from "../components/Modal";
 import SuccessToast from "../components/SuccessToast";
+import { useBarcodeScanner, type BarcodeScannerError } from "../hooks/useBarcodeScanner";
 import CreatableSelect from "../components/recipeBrowser/CreatableSelect";
 import { useBrands, useIngredientTagCategories, useIngredients, useLanguage } from "../contexts";
 import type { IngredientTag, INutritionFacts, NutritionDataSource } from "../interfaces/IIngredient";
@@ -114,7 +114,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingIngredient, setIsSavingIngredient] = useState(false);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<string | null>(null);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
@@ -124,8 +123,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const editorTitleId = useId();
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const scannerControlsRef = useRef<IScannerControls | null>(null);
-  const lastScannedEanRef = useRef<string | null>(null);
   const candidates = useMemo(() => buildIngredientCandidates(products), [products]);
 
   useEffect(() => {
@@ -246,64 +243,28 @@ function ScannerPage({ theme }: ScannerPageProps) {
     }
   };
 
-  const stopCamera = useCallback(() => {
-    scannerControlsRef.current?.stop();
-    scannerControlsRef.current = null;
-    setIsCameraOpen(false);
-  }, []);
-
-  const startCamera = async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setError(t.scanner.cameraUnsupported);
-      return;
-    }
-
-    setError(null);
-    setCameraStatus(t.scanner.scannerReady);
-    setIsCameraOpen(true);
-
-    try {
-      await new Promise<void>((resolve) => {
-        window.requestAnimationFrame(() => resolve());
-      });
-
-      if (videoRef.current === null) {
-        throw new Error("Scanner video element was not ready.");
-      }
-
-      const { BrowserMultiFormatReader } = await import("@zxing/browser");
-      const scanner = new BrowserMultiFormatReader();
-      const controls = await scanner.decodeFromVideoDevice(undefined, videoRef.current, (result) => {
-        const detectedEan = result?.getText().replace(/\D/g, "");
-        if (detectedEan === undefined || !/^(\d{8}|\d{13})$/.test(detectedEan)) {
-          return;
-        }
-
-        if (detectedEan !== lastScannedEanRef.current) {
-          lastScannedEanRef.current = detectedEan;
-          setEan(detectedEan);
-          setCameraStatus(t.scanner.scannerFound(detectedEan));
-          controls.stop();
-          scannerControlsRef.current = null;
-          setIsCameraOpen(false);
-          void lookupEan(detectedEan);
-        }
-      });
-
-      scannerControlsRef.current = controls;
-    } catch (caughtError) {
-      const errorName = caughtError instanceof DOMException ? caughtError.name : "";
-      setError(
-        errorName === "NotAllowedError" || errorName === "PermissionDeniedError"
-          ? t.scanner.cameraPermissionDenied
-          : t.scanner.cameraUnsupported
-      );
-      setCameraStatus(null);
-      stopCamera();
-    }
+  const handleBarcodeDetected = (detectedEan: string) => {
+    setEan(detectedEan);
+    setCameraStatus(t.scanner.scannerFound(detectedEan));
+    void lookupEan(detectedEan);
   };
 
-  useEffect(() => stopCamera, [stopCamera]);
+  const handleCameraError = (cameraError: BarcodeScannerError) => {
+    setError(cameraError === "permissionDenied" ? t.scanner.cameraPermissionDenied : t.scanner.cameraUnsupported);
+    setCameraStatus(null);
+  };
+
+  const { isOpen: isCameraOpen, start: startScanner, stop: stopCamera } = useBarcodeScanner({
+    videoRef,
+    onDetected: handleBarcodeDetected,
+    onError: handleCameraError,
+  });
+
+  const startCamera = () => {
+    setError(null);
+    setCameraStatus(t.scanner.scannerReady);
+    void startScanner();
+  };
 
   return (
     <main className={pageStyles.shell}>
