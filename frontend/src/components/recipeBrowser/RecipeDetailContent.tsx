@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useIngredients, useLanguage } from "../../contexts";
+import { formatRecipeIngredientAmount } from "./recipeAmountFormat";
 import type { IIngredient, INutritionFacts, MeasurementUnit } from "../../interfaces/IIngredient";
 import { getApiAssetUrl } from "../../services/apiClient";
 import { getThumbnailSrc } from "../../utils/imageThumbnail";
@@ -22,7 +23,7 @@ function RecipeDetailContent({
   onIngredientClick,
   onRecipeClick,
 }: RecipeDetailContentProps) {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const { ingredients } = useIngredients();
   // The recipe list carries slim ingredients; nutrition and the full ingredient come from the ingredient list.
   const ingredientsById = useMemo(
@@ -122,7 +123,7 @@ function RecipeDetailContent({
                     key={component.recipeId}
                     recipeId={component.recipeId}
                     title={component.name}
-                    titleLinkLabel={`${component.name} (${formatRecipeIngredientAmount(component.amount, component.unit, t.enums.measurementUnits)})`}
+                    titleLinkLabel={`${component.name} (${formatRecipeIngredientAmount(component.amount, component.unit, t.enums.measurementUnits, locale)})`}
                     theme={theme}
                     onIngredientClick={handleIngredientClick}
                     onRecipeClick={onRecipeClick}
@@ -173,7 +174,7 @@ function RecipeIngredientSection({
   onIngredientClick,
   onRecipeClick,
 }: RecipeIngredientSectionProps) {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
 
   return (
     <section className={recipeBrowserStyles.detailIngredientSection}>
@@ -230,6 +231,7 @@ function RecipeIngredientSection({
                       recipeIngredient.amount,
                       recipeIngredient.unit,
                       t.enums.measurementUnits,
+                      locale,
                       amountMultiplier,
                     )}
                   </span>
@@ -480,20 +482,6 @@ function parsePortionMultiplier(value: string, defaultPortions: number) {
 
 function formatPortionInputValue(value: number) {
   return Number.isInteger(value) ? value.toString() : value.toString();
-}
-
-function formatRecipeIngredientAmount(
-  amount: number | null,
-  unit: MeasurementUnit,
-  unitLabels: Record<MeasurementUnit, string>,
-  multiplier = 1,
-) {
-  if (amount === null) {
-    return unitLabels[unit];
-  }
-
-  const scaledAmount = Math.round(amount * multiplier);
-  return `${scaledAmount} ${unitLabels[unit].toLowerCase()}`;
 }
 
 export default RecipeDetailContent;
