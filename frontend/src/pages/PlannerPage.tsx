@@ -101,11 +101,11 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     mealPlanIsLoading,
     mealPlanIsSaving,
     initError,
-    loadedRange,
     applyMealPlanBatch,
     clearMealPlanRange,
     deleteMealPlanEntry,
     loadMealPlan,
+    prefetchMealPlan,
     saveMealPlanEntry,
   } = useMealPlan();
   const { recipes, recipeIsLoading } = useRecipes();
@@ -116,8 +116,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   const shouldShowMealSlotLoading =
     (mealPlanIsLoading && initError === null) ||
     recipeIsLoading ||
-    ingredientIsLoading ||
-    (loadedRange === null && initError === null);
+    ingredientIsLoading;
   const isMealPlanBusy = mealPlanIsLoading || mealPlanIsSaving;
 
   const visibleRange = useMemo(
@@ -165,8 +164,24 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   );
 
   useEffect(() => {
-    void loadMealPlan(visibleRange.from, visibleRange.to);
-  }, [loadMealPlan, visibleRange.from, visibleRange.to]);
+    let isCurrent = true;
+
+    void loadMealPlan(visibleRange.from, visibleRange.to).then(() => {
+      if (!isCurrent) {
+        return;
+      }
+
+      // The previous and next range are usually the next ones opened; have them ready.
+      for (const direction of [-1, 1] as const) {
+        const neighbour = getVisibleRange(addCalendarRange(anchorDate, viewMode, direction), viewMode);
+        void prefetchMealPlan(neighbour.from, neighbour.to);
+      }
+    });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [anchorDate, viewMode, loadMealPlan, prefetchMealPlan, visibleRange.from, visibleRange.to]);
 
   useEffect(() => {
     setLocalPreference(localPreferenceKeys.plannerViewMode, viewMode);

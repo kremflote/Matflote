@@ -8,8 +8,12 @@ export interface IMealPlanContext {
   /** True while a write is in flight. */
   mealPlanIsSaving: boolean;
   initError: string | null;
+  /** The requested range once it has data on screen, otherwise null. */
   loadedRange: IMealPlanRange | null;
+  /** Shows the range (from the cache at once when it was loaded before) and revalidates it. */
   loadMealPlan: (from: string, to: string) => Promise<void>;
+  /** Loads a range into the cache without showing it, unless it was loaded before. */
+  prefetchMealPlan: (from: string, to: string) => Promise<void>;
   refreshMealPlan: () => Promise<void>;
   /** Several changes in one request (generate, clear, move, swap); all of them or none. */
   applyMealPlanBatch: (request: MealPlanBatchRequest) => Promise<void>;
