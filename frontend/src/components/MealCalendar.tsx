@@ -271,6 +271,8 @@ function DayMealPreview({ entry, ingredientsById, recipesById, theme }: DayMealP
           alt=""
           className={mealCalendarStyles.dayPreviewImage}
           src={imageUrl}
+          loading="lazy"
+          decoding="async"
         />
       ) : (
         <span className={mealCalendarStyles.dayPreviewImageFallback(theme)} />

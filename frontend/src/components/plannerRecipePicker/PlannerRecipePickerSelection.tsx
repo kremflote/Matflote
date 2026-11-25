@@ -39,7 +39,7 @@ function PlannerRecipePickerSelection({
               {imageUrl === null ? (
                 <span className={plannerPickerStyles.selectedThumbnailFallback(theme)} />
               ) : (
-                <img alt="" className={plannerPickerStyles.selectedThumbnailImage} src={imageUrl} />
+                <img alt="" className={plannerPickerStyles.selectedThumbnailImage} src={imageUrl} decoding="async" />
               )}
             </span>
             <span className={plannerPickerStyles.selectedThumbnailAmount(theme)}>

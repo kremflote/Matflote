@@ -64,7 +64,7 @@ function IngredientThumbnail({
             {getInitials(ingredient.ingredientName)}
           </span>
         ) : (
-          <img className={thumbnailStyles.ingredientImage} src={imageUrl} alt="" />
+          <img className={thumbnailStyles.ingredientImage} src={imageUrl} alt="" loading="lazy" decoding="async" />
         )}
       </span>
       <span className={thumbnailStyles.ingredientContent}>

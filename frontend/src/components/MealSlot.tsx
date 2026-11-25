@@ -116,6 +116,8 @@ function MealSlot({
                       alt=""
                       className={mealCalendarStyles.mealSlotImage}
                       src={getApiAssetUrl(mainImageUrl) ?? undefined}
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <div className={mealCalendarStyles.mealSlotImageFallback(theme)} aria-hidden="true" />

@@ -100,7 +100,10 @@ app.UseDefaultFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(app.Services.GetRequiredService<ImageStoragePathProvider>().RootPath),
-    RequestPath = "/images"
+    RequestPath = "/images",
+    // Uploads get a new GUID name and are never changed in place, so browsers may keep them for a year.
+    OnPrepareResponse = context =>
+        context.Context.Response.Headers.CacheControl = "public, max-age=31536000, immutable"
 });
 app.UseStaticFiles();
 app.MapControllers();

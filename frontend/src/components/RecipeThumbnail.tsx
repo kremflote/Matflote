@@ -59,6 +59,7 @@ function RecipeThumbnail({
           src={imageUrl}
           alt={recipe.name}
           loading="lazy"
+          decoding="async"
         />
       ) : (
         <div className={thumbnailStyles.recipeImageFallback} aria-hidden="true" />
