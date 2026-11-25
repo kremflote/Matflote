@@ -180,6 +180,48 @@ Response (`200` or `422`): one row per affected slot with `status` `created`, `r
 
 `from` and `to` are optional: with neither, the current week (Monday to Sunday); with one, the seven days starting or ending on it. At most 366 days per read (`400` otherwise).
 
+## POST /api/assistant/meal-plan/undo
+
+Undoes the most recent `PUT /api/assistant/meal-plan` that has not been undone yet. The body is optional:
+
+```json
+{ "dryRun": false, "force": false }
+```
+
+- **What is put back.** Exactly the slots that write created, replaced or cleared (including slots removed by `clearRange`), each as it was just before the write. Slots it skipped (`fill` mode) or left `unchanged` are not touched, and neither is anything else in the week.
+- **Several writes.** Each call undoes one write, newest first: call it twice to undo the last two writes. An undo cannot itself be undone.
+- **Changed since.** If one of those slots was changed after the write (in the web app, say), nothing is undone and the response is `409`, with that slot marked `changed_since`. Send `"force": true` to put the old meals back anyway; the later change is then lost. A slot that is already back as it was before the write is not a conflict.
+- **Deleted recipes.** A recipe or ingredient deleted since cannot come back; the rest of that meal is restored and the slot gets a warning.
+- `404` when there is no meal plan write left to undo. Recipe imports are logged but cannot be undone.
+
+Response (`200`, `404` or `409`):
+
+```json
+{
+  "dryRun": false, "applied": true,
+  "undoneWriteId": 12, "undoneWriteSummary": "Meal plan 2026-11-30 to 2026-12-06: 5 created, 2 replaced.", "undoneWriteAt": "2026-11-25T18:00:00+00:00",
+  "errors": [],
+  "slots": [{ "date": "2026-11-30", "slot": "Dinner", "status": "restored", "items": ["Fish soup × 2"], "warnings": [] }]
+}
+```
+
+`status` is `restored` (the slot had a meal before the write), `cleared` (it was empty), `would_restore` / `would_clear` in a dry run, or `changed_since`.
+
+## GET /api/assistant/log
+
+The latest writes through this API, newest first (`?limit=`, default 10, at most 100). Dry runs and rejected requests are not logged. The web app shows them under Settings → Assistant activity, with an Undo button for the newest meal plan write.
+
+```json
+[
+  {
+    "id": 12, "at": "2026-11-25T18:00:00+00:00", "endpoint": "PUT /api/assistant/meal-plan",
+    "summary": "Meal plan 2026-11-30 to 2026-12-06: 5 created, 2 replaced.",
+    "counts": { "slotsCreated": 5, "slotsReplaced": 2 },
+    "canUndo": true, "isNextUndo": true, "from": "2026-11-30", "to": "2026-12-06"
+  }
+]
+```
+
 ## Checking the result
 
 These regular endpoints are useful after planning:

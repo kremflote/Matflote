@@ -9,7 +9,10 @@ namespace DinnerPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/assistant")]
-public class AssistantController(AssistantService assistantService, IWebHostEnvironment environment) : ControllerBase
+public class AssistantController(
+    AssistantService assistantService,
+    AssistantWriteLogService writeLog,
+    IWebHostEnvironment environment) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetGuide(CancellationToken cancellationToken)
@@ -83,6 +86,22 @@ public class AssistantController(AssistantService assistantService, IWebHostEnvi
             ? UnprocessableEntity(result)
             : Ok(result);
     }
+
+    /// <summary>Undoes the newest meal plan write that has not been undone yet. The body is optional.</summary>
+    [HttpPost("meal-plan/undo")]
+    public async Task<ActionResult<AssistantUndoResultDto>> UndoMealPlan(
+        [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] AssistantUndoRequest? request,
+        CancellationToken cancellationToken
+    )
+    {
+        var (statusCode, result) = await writeLog.UndoMealPlanAsync(request, cancellationToken);
+        return StatusCode(statusCode, result);
+    }
+
+    /// <summary>The latest assistant writes, newest first.</summary>
+    [HttpGet("log")]
+    public async Task<ActionResult<IReadOnlyCollection<AssistantWriteLogDto>>> GetLog([FromQuery] int? limit, CancellationToken cancellationToken) =>
+        Ok(await writeLog.ListAsync(limit, cancellationToken));
 
     private static bool HasErrors(IReadOnlyCollection<string> requestErrors, IEnumerable<IReadOnlyCollection<string>> itemErrors) =>
         requestErrors.Count > 0 || itemErrors.Any(errors => errors.Count > 0);

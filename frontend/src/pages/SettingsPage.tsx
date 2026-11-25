@@ -6,6 +6,7 @@ import {
   MaintenancePanel,
   type ExportSettingsForm,
 } from "../components/settings/SettingsPanels";
+import AssistantLogPanel from "../components/settings/AssistantLogPanel";
 import PlanningPreferencesPanel from "../components/settings/PlanningPreferencesPanel";
 import { useLanguage } from "../contexts";
 import type { IAppSettings } from "../interfaces/IAppSettings";
@@ -251,6 +252,7 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
           )}
         </div>
         <PlanningPreferencesPanel theme={theme} />
+        <AssistantLogPanel theme={theme} />
         <ExportSettingsPanel
           appSettings={appSettings}
           exportForm={exportForm}

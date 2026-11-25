@@ -538,6 +538,25 @@ export type TranslationDictionary = {
     couldNotLoad: string;
     couldNotSave: string;
   };
+  assistantLog: {
+    title: string;
+    body: string;
+    empty: string;
+    refresh: string;
+    undo: string;
+    undoing: string;
+    undoTitle: string;
+    undoBody: (summary: string) => string;
+    undone: string;
+    undoneAt: (time: string) => string;
+    undoFinished: (count: number) => string;
+    conflict: string;
+    undoAnyway: string;
+    couldNotLoad: string;
+    couldNotUndo: string;
+    endpoints: Record<string, string>;
+    counts: Record<string, ((count: number) => string) | undefined>;
+  };
   recipeRating: {
     title: string;
     help: string;

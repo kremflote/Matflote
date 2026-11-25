@@ -35,6 +35,41 @@ namespace backend.Migrations
                     b.ToTable("AppSettings");
                 });
 
+            modelBuilder.Entity("DinnerPlanner.Api.Models.AssistantWriteLog", b =>
+                {
+                    b.Property<int>("AssistantWriteLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Counts")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UndoState")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("UndoneAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AssistantWriteLogId");
+
+                    b.ToTable("AssistantWriteLogs");
+                });
+
             modelBuilder.Entity("DinnerPlanner.Api.Models.Brand", b =>
                 {
                     b.Property<int>("BrandId")

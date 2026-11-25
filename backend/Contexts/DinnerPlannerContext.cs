@@ -11,6 +11,7 @@ namespace DinnerPlanner.Api.Contexts;
 public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options) : DbContext(options)
 {
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+    public DbSet<AssistantWriteLog> AssistantWriteLogs => Set<AssistantWriteLog>();
     public DbSet<Brand> Brands => Set<Brand>();
     public DbSet<ConversionRule> ConversionRules => Set<ConversionRule>();
     public DbSet<DataImportRun> DataImportRuns => Set<DataImportRun>();
@@ -38,6 +39,13 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.HasKey(setting => setting.Key);
             entity.Property(setting => setting.Key).HasMaxLength(160);
             entity.Property(setting => setting.Value).HasMaxLength(8000);
+        });
+
+        modelBuilder.Entity<AssistantWriteLog>(entity =>
+        {
+            entity.Property(log => log.Endpoint).HasMaxLength(80);
+            entity.Property(log => log.Summary).HasMaxLength(AssistantWriteLogService.SummaryMaxLength);
+            entity.Property(log => log.Counts).HasMaxLength(1000);
         });
 
         modelBuilder.Entity<Brand>(entity =>

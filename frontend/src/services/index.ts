@@ -1,5 +1,6 @@
 export { ApiError, apiRequest } from "./apiClient";
 export { appSettingsService } from "./appSettingsService";
+export { assistantService } from "./assistantService";
 export { brandService } from "./brandService";
 export { conversionRuleService } from "./conversionRuleService";
 export { imageUploadService } from "./imageUploadService";

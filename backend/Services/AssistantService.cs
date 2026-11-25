@@ -9,7 +9,11 @@ using System.Globalization;
 
 namespace DinnerPlanner.Api.Services;
 
-public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealPlanWriter, PlanningPreferencesService planningPreferences)
+public class AssistantService(
+    DinnerPlannerContext context,
+    MealPlanWriter mealPlanWriter,
+    PlanningPreferencesService planningPreferences,
+    AssistantWriteLogService writeLog)
 {
     private const int DefaultHistoryDays = 56;
     private const int MaxHistoryDays = 366;
@@ -233,7 +237,20 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 change();
             }
 
+            writeLog.Add(
+                AssistantWriteLogService.ImportEndpoint,
+                DescribeImport(ingredientResults, recipeResults),
+                new Dictionary<string, int>
+                {
+                    ["recipesCreated"] = recipeResults.Count(result => result.Status == ItemStatus.Create),
+                    ["recipesUpdated"] = recipeResults.Count(result => result.Status == ItemStatus.Update),
+                    ["recipesSkipped"] = recipeResults.Count(result => result.Status == ItemStatus.Skip),
+                    ["ingredientsCreated"] = ingredientResults.Count(result => result.Status == ItemStatus.Create),
+                    ["ingredientsUpdated"] = ingredientResults.Count(result => result.Status == ItemStatus.Update),
+                    ["ingredientsSkipped"] = ingredientResults.Count(result => result.Status == ItemStatus.Skip),
+                });
             await context.SaveChangesAsync(cancellationToken);
+            await writeLog.PruneAsync(cancellationToken);
         }
 
         return new AssistantImportResultDto(
@@ -938,6 +955,8 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
         var results = new List<EntryResult>();
         var pendingChanges = new List<Action>();
         var requestedSlots = new HashSet<(DateOnly, MealSlot)>();
+        // Each slot this write changes, as it is now and as it will be, so the write can be undone.
+        var touchedSlots = new List<MealPlanUndoSlot>();
 
         foreach (var entryInput in entryInputs)
         {
@@ -985,6 +1004,7 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 result.Status = stored is null ? EntryStatus.Unchanged : EntryStatus.Clear;
                 if (stored is not null)
                 {
+                    touchedSlots.Add(new MealPlanUndoSlot(date, slot, MealSlotSnapshot.From(stored), null));
                     pendingChanges.Add(() => mealPlanWriter.Remove(stored));
                 }
 
@@ -992,6 +1012,7 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
             }
 
             result.Status = stored is null ? EntryStatus.Create : EntryStatus.Replace;
+            touchedSlots.Add(new MealPlanUndoSlot(date, slot, MealSlotSnapshot.From(stored), MealSlotSnapshot.From(notes, items)));
             pendingChanges.Add(() => mealPlanWriter.Upsert(stored, date, slot, notes, items));
         }
 
@@ -1004,6 +1025,7 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 .ThenBy(entry => entry.Slot))
             {
                 results.Add(new EntryResult(stored.Date, stored.Slot.ToString()) { Status = EntryStatus.Clear });
+                touchedSlots.Add(new MealPlanUndoSlot(stored.Date, stored.Slot, MealSlotSnapshot.From(stored), null));
                 pendingChanges.Add(() => mealPlanWriter.Remove(stored));
             }
         }
@@ -1017,7 +1039,19 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
                 change();
             }
 
+            writeLog.Add(
+                AssistantWriteLogService.MealPlanEndpoint,
+                DescribeMealPlanWrite(results, touchedSlots),
+                new Dictionary<string, int>
+                {
+                    ["slotsCreated"] = results.Count(result => result.Status == EntryStatus.Create),
+                    ["slotsReplaced"] = results.Count(result => result.Status == EntryStatus.Replace),
+                    ["slotsCleared"] = results.Count(result => result.Status == EntryStatus.Clear),
+                    ["slotsSkipped"] = results.Count(result => result.Status == EntryStatus.Skip),
+                },
+                new MealPlanUndoState(touchedSlots));
             await context.SaveChangesAsync(cancellationToken);
+            await writeLog.PruneAsync(cancellationToken);
         }
 
         return new AssistantMealPlanResultDto(
@@ -1159,6 +1193,57 @@ public class AssistantService(DinnerPlannerContext context, MealPlanWriter mealP
     }
 
     // ---------- Shared helpers ----------
+
+    private static string DescribeImport(List<ItemResult> ingredientResults, List<ItemResult> recipeResults)
+    {
+        var parts = new List<string>();
+        AddPart("Created recipes", recipeResults, ItemStatus.Create);
+        AddPart("updated recipes", recipeResults, ItemStatus.Update);
+        AddPart("created ingredients", ingredientResults, ItemStatus.Create);
+        AddPart("updated ingredients", ingredientResults, ItemStatus.Update);
+        if (parts.Count == 0)
+        {
+            return "No changes; everything already existed.";
+        }
+
+        var text = string.Join("; ", parts) + ".";
+        return char.ToUpperInvariant(text[0]) + text[1..];
+
+        void AddPart(string label, List<ItemResult> results, ItemStatus status)
+        {
+            var names = results.Where(result => result.Status == status).Select(result => result.Name).ToList();
+            if (names.Count > 0)
+            {
+                parts.Add($"{label} {string.Join(", ", names.Take(5))}{(names.Count > 5 ? $" and {names.Count - 5} more" : "")}");
+            }
+        }
+    }
+
+    private static string DescribeMealPlanWrite(List<EntryResult> results, List<MealPlanUndoSlot> touchedSlots)
+    {
+        var counts = new List<string>();
+        void AddCount(int count, string label)
+        {
+            if (count > 0)
+            {
+                counts.Add($"{count} {label}");
+            }
+        }
+
+        AddCount(results.Count(result => result.Status == EntryStatus.Create), "created");
+        AddCount(results.Count(result => result.Status == EntryStatus.Replace), "replaced");
+        AddCount(results.Count(result => result.Status == EntryStatus.Clear), "cleared");
+        AddCount(results.Count(result => result.Status == EntryStatus.Skip), "skipped");
+        if (touchedSlots.Count == 0)
+        {
+            return $"Meal plan unchanged ({(counts.Count == 0 ? "nothing to do" : string.Join(", ", counts))}).";
+        }
+
+        var first = touchedSlots.Min(slot => slot.Date);
+        var last = touchedSlots.Max(slot => slot.Date);
+        var range = first == last ? $"{first:yyyy-MM-dd}" : $"{first:yyyy-MM-dd} to {last:yyyy-MM-dd}";
+        return $"Meal plan {range}: {string.Join(", ", counts)}.";
+    }
 
     private static DateOnly StartOfWeek(DateOnly date) =>
         date.AddDays(-(((int)date.DayOfWeek + 6) % 7));

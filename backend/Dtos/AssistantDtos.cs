@@ -268,3 +268,45 @@ public record AssistantMealPlanEntryResultDto(
     IReadOnlyCollection<string> Warnings,
     IReadOnlyCollection<string> Errors
 );
+
+// ---------- Write log and undo ----------
+
+public record AssistantWriteLogDto(
+    int Id,
+    DateTimeOffset At,
+    string Endpoint,
+    string Summary,
+    IReadOnlyDictionary<string, int> Counts,
+    // A meal plan write that has not been undone.
+    bool CanUndo,
+    // The write that POST /api/assistant/meal-plan/undo would undo now.
+    bool IsNextUndo,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? UndoneAt,
+    // For meal plan writes: the first and last date it changed.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? From,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? To
+);
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public record AssistantUndoRequest(
+    bool? DryRun,
+    bool? Force
+);
+
+public record AssistantUndoResultDto(
+    bool DryRun,
+    bool Applied,
+    int? UndoneWriteId,
+    string? UndoneWriteSummary,
+    DateTimeOffset? UndoneWriteAt,
+    IReadOnlyCollection<string> Errors,
+    IReadOnlyCollection<AssistantUndoSlotDto> Slots
+);
+
+public record AssistantUndoSlotDto(
+    DateOnly Date,
+    string Slot,
+    string Status,
+    IReadOnlyCollection<string> Items,
+    IReadOnlyCollection<string> Warnings
+);
