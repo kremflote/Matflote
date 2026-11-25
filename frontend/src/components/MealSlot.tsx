@@ -10,6 +10,7 @@ type MealSlotProps = {
   date: string;
   entry?: IMealPlanEntry;
   ingredientsById: Map<number, IIngredient>;
+  isDisabled: boolean;
   isLoading: boolean;
   onClick: () => void;
   onDeleteRequest: (date: string, slot: MealSlotId) => void;
@@ -27,6 +28,7 @@ function MealSlot({
   date,
   entry,
   ingredientsById,
+  isDisabled,
   isLoading,
   onClick,
   onDeleteRequest,
@@ -56,7 +58,8 @@ function MealSlot({
   const mainImageSrc = getThumbnailSrc(mainItem?.recipe ?? mainItem?.ingredient);
   const mainRecipe = mainItem?.recipe;
   const hasMeal = plannedItems.length > 0;
-  const canDragMeal = canUseDesktopInteractions && hasMeal && !isLoading;
+  const isUnavailable = isLoading || isDisabled;
+  const canDragMeal = canUseDesktopInteractions && hasMeal && !isUnavailable;
 
   return (
     <div
@@ -86,9 +89,9 @@ function MealSlot({
         aria-label={t.planner.openMealSlot}
         className={`${mealCalendarStyles.mealSlotButton} ${
           canDragMeal ? mealCalendarStyles.mealSlotDraggableButton : ""
-        }`}
+        } ${isDisabled && !isLoading ? mealCalendarStyles.mealSlotUnavailable : ""}`}
         aria-busy={isLoading}
-        disabled={isLoading}
+        disabled={isUnavailable}
         draggable={canDragMeal}
         type="button"
         onClick={onClick}
@@ -168,7 +171,7 @@ function MealSlot({
           <div className={mealCalendarStyles.mealSlotInner(theme)} />
         )}
       </button>
-      {canUseDesktopInteractions && !isLoading && mainRecipe !== undefined && (
+      {canUseDesktopInteractions && !isUnavailable && mainRecipe !== undefined && (
         <button
           aria-label={t.planner.openRecipe}
           className={mealCalendarStyles.mealSlotOpenRecipeButton(theme)}

@@ -53,6 +53,13 @@ export type TranslationDictionary = {
     saving: string;
     search: string;
     systemTagMeta: string;
+    reload: string;
+    requestFailed: (status: number) => string;
+    retry: string;
+    retrying: string;
+    serverUnreachable: string;
+    somethingWentWrong: string;
+    somethingWentWrongBody: string;
     working: string;
   };
   browser: {

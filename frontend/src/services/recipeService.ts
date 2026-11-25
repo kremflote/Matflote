@@ -1,6 +1,6 @@
 import type { MeasurementUnit } from "../interfaces/IIngredient";
 import type { IngredientPreparation, IRecipe, RecipeTag } from "../interfaces/IRecipe";
-import { API_BASE_URL, ApiError, apiRequest } from "./apiClient";
+import { API_BASE_URL, apiRequest, sendRequest, toApiError } from "./apiClient";
 
 export interface RecipeRequest {
   name: string;
@@ -32,10 +32,10 @@ export const recipeService = {
   getAll: () => apiRequest<IRecipe[]>("/api/recipes"),
   getById: (id: number) => apiRequest<IRecipe>(`/api/recipes/${id}`),
   downloadPdf: async (id: number, language: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/recipes/${id}/pdf?language=${encodeURIComponent(language)}`);
+    const response = await sendRequest(`${API_BASE_URL}/api/recipes/${id}/pdf?language=${encodeURIComponent(language)}`);
 
     if (!response.ok) {
-      throw new ApiError(await response.text(), response.status);
+      throw await toApiError(response);
     }
 
     const blob = await response.blob();

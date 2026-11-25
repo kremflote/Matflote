@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import LoadErrorPanel from "../components/LoadErrorPanel";
 import MealCalendar from "../components/MealCalendar";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import GroceryExportDialog from "../components/GroceryExportDialog";
@@ -104,10 +105,11 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     deleteMealPlanEntry,
     loadMealPlan,
     prefetchMealPlan,
+    refreshMealPlan,
     saveMealPlanEntry,
   } = useMealPlan();
-  const { recipes, recipeIsLoading } = useRecipes();
-  const { ingredients, ingredientIsLoading } = useIngredients();
+  const { recipes, recipeIsLoading, initError: recipeLoadError, refreshRecipes } = useRecipes();
+  const { ingredients, ingredientIsLoading, initError: ingredientLoadError, refreshIngredients } = useIngredients();
   const { ingredientTagCategories } = useIngredientTagCategories();
   const anchorDate = viewMode === "week" ? weekAnchorDate : monthAnchorDate;
   // Skeletons only while the visible range has nothing to show yet; a save or a refresh keeps the slots on screen.
@@ -116,6 +118,15 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     recipeIsLoading ||
     ingredientIsLoading;
   const isMealPlanBusy = mealPlanIsLoading || mealPlanIsSaving;
+  // Until the week, its recipes and its ingredients have loaded, a slot that looks empty may not be.
+  const areSlotsDisabled = mealPlanIsLoading || recipeIsLoading || ingredientIsLoading;
+  const loadError = initError ?? recipeLoadError ?? ingredientLoadError;
+  const retryFailedLoads = () =>
+    Promise.all([
+      initError !== null ? refreshMealPlan() : undefined,
+      recipeLoadError !== null ? refreshRecipes() : undefined,
+      ingredientLoadError !== null ? refreshIngredients() : undefined,
+    ]);
 
   const visibleRange = useMemo(
     () => getVisibleRange(anchorDate, viewMode),
@@ -469,13 +480,21 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
         {plannerActionError !== null && (
           <p className={plannerControlsStyles.statusError(theme)}>{plannerActionError}</p>
         )}
+        {loadError !== null && (
+          <LoadErrorPanel
+            message={loadError}
+            theme={theme}
+            title={t.planner.couldNotLoadMealPlan}
+            onRetry={retryFailedLoads}
+          />
+        )}
         <MealCalendar
           anchorDate={anchorDate}
           dates={visibleDates}
           getEntryForSlot={getEntryForSlot}
+          isDisabled={areSlotsDisabled}
           isLoading={shouldShowMealSlotLoading}
           ingredientsById={ingredientsById}
-          loadError={initError === null ? null : t.planner.couldNotLoadMealPlan}
           mealSlots={visibleMealSlots}
           onDeleteSlot={(date, slot) => setPendingMealDelete({ date, slot })}
           onDragEnd={() => setDraggedSlot(null)}

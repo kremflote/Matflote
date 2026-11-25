@@ -97,13 +97,10 @@ export function MealPlanProvider({ children }: IProviderProps) {
   const runWrite = useCallback(async (write: () => Promise<void>) => {
     writeEpoch.current += 1;
     setSavingCount((count) => count + 1);
-    setInitError(null);
 
+    // A failed write is reported by the caller; initError is only about loading.
     try {
       await write();
-    } catch (error) {
-      setInitError(getErrorMessage(error));
-      throw error;
     } finally {
       writeEpoch.current += 1;
       setSavingCount((count) => count - 1);

@@ -16,9 +16,10 @@ type MealCalendarProps = {
   anchorDate: Date;
   dates: Date[];
   getEntryForSlot: (date: string, slot: MealSlotId) => IMealPlanEntry | undefined;
+  /** The plan is not known (still loading, or the load failed); slots cannot be opened. */
+  isDisabled: boolean;
   isLoading: boolean;
   ingredientsById: Map<number, IIngredient>;
-  loadError: string | null;
   mealSlots: MealSlotId[];
   onDeleteSlot: (date: string, slot: MealSlotId) => void;
   onDragEnd: () => void;
@@ -35,9 +36,9 @@ function MealCalendar({
   anchorDate,
   dates,
   getEntryForSlot,
+  isDisabled,
   isLoading,
   ingredientsById,
-  loadError,
   mealSlots,
   onDeleteSlot,
   onDragEnd,
@@ -119,6 +120,7 @@ function MealCalendar({
                   {mealSlots.map((slot) => (
                     <MonthMealSummary
                       entry={getEntryForSlot(dateKey, slot)}
+                      isDisabled={isDisabled}
                       ingredientsById={ingredientsById}
                       key={`${dateKey}-${slot}`}
                       onClick={() => onSlotClick(dateKey, slot)}
@@ -133,9 +135,6 @@ function MealCalendar({
             );
           })}
         </div>
-        {loadError !== null && (
-          <p className={mealCalendarStyles.mealSlotStatus(theme)}>{loadError}</p>
-        )}
       </section>
     );
   }
@@ -212,6 +211,7 @@ function MealCalendar({
                     date={dateKey}
                     entry={getEntryForSlot(dateKey, meal)}
                     ingredientsById={ingredientsById}
+                    isDisabled={isDisabled}
                     isLoading={isLoading}
                     key={`${dateKey}-${meal}`}
                     onDeleteRequest={onDeleteSlot}
@@ -230,9 +230,6 @@ function MealCalendar({
           );
         })}
       </div>
-      {loadError !== null && (
-        <p className={mealCalendarStyles.mealSlotStatus(theme)}>{loadError}</p>
-      )}
     </section>
   );
 }
@@ -284,6 +281,7 @@ function DayMealPreview({ entry, ingredientsById, recipesById, theme }: DayMealP
 type MonthMealSummaryProps = {
   entry?: IMealPlanEntry;
   ingredientsById: Map<number, IIngredient>;
+  isDisabled: boolean;
   onClick: () => void;
   recipesById: Map<number, IRecipe>;
   slot: MealSlotId;
@@ -291,7 +289,7 @@ type MonthMealSummaryProps = {
   t: ReturnType<typeof useLanguage>["t"];
 };
 
-function MonthMealSummary({ entry, ingredientsById, onClick, recipesById, slot, theme, t }: MonthMealSummaryProps) {
+function MonthMealSummary({ entry, ingredientsById, isDisabled, onClick, recipesById, slot, theme, t }: MonthMealSummaryProps) {
   const plannedRecipes = entry?.recipes ?? [];
   const sortedPlannedRecipes = plannedRecipes
     .slice()
@@ -311,6 +309,7 @@ function MonthMealSummary({ entry, ingredientsById, onClick, recipesById, slot, 
     <button
       aria-label={title}
       className={mealCalendarStyles.monthMealPill(theme, empty)}
+      disabled={isDisabled}
       title={title}
       type="button"
       onClick={onClick}

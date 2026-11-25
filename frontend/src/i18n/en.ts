@@ -35,6 +35,13 @@ export const en: TranslationDictionary = {
     saving: "Saving...",
     search: "search...",
     systemTagMeta: "Unmodifiable",
+    reload: "Reload",
+    requestFailed: (status) => `The server could not complete the request (status ${status}).`,
+    retry: "Retry",
+    retrying: "Retrying...",
+    serverUnreachable: "Could not reach the server. Check the connection and try again.",
+    somethingWentWrong: "Something went wrong",
+    somethingWentWrongBody: "The page stopped working. Reloading usually fixes it; your saved meals and recipes are not affected.",
     working: "Working...",
   },
   browser: {

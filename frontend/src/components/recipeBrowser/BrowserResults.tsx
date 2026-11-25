@@ -1,5 +1,6 @@
 import { useLanguage } from "../../contexts";
 import IngredientThumbnail from "../IngredientThumbnail";
+import LoadErrorPanel from "../LoadErrorPanel";
 import type { IIngredient } from "../../interfaces/IIngredient";
 import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
@@ -15,6 +16,8 @@ type BrowserResultsProps = {
   recipeError: string | null;
   recipeIsLoading: boolean;
   theme: SiteTheme;
+  onRetryIngredients: () => Promise<void>;
+  onRetryRecipes: () => Promise<void>;
   onSelectDetail: (detail: BrowserDetail) => void;
 };
 
@@ -27,6 +30,8 @@ function BrowserResults({
   recipeError,
   recipeIsLoading,
   theme,
+  onRetryIngredients,
+  onRetryRecipes,
   onSelectDetail,
 }: BrowserResultsProps) {
   const { t } = useLanguage();
@@ -36,27 +41,35 @@ function BrowserResults({
       return <EmptyState theme={theme} title={t.cookbook.loadingIngredients} body={t.cookbook.fetchingPantry} />;
     }
 
-    if (ingredientError !== null) {
-      return <EmptyState theme={theme} title={t.cookbook.couldNotLoadIngredients} body={ingredientError} />;
-    }
+    const errorPanel = ingredientError === null ? null : (
+      <LoadErrorPanel
+        message={ingredientError}
+        theme={theme}
+        title={t.cookbook.couldNotLoadIngredients}
+        onRetry={onRetryIngredients}
+      />
+    );
 
     if (filteredIngredients.length === 0) {
-      return <EmptyState theme={theme} title={t.cookbook.noIngredientsFound} body={t.cookbook.tryChangingSearch} />;
+      return errorPanel ?? <EmptyState theme={theme} title={t.cookbook.noIngredientsFound} body={t.cookbook.tryChangingSearch} />;
     }
 
     return (
-      <div className={recipeBrowserStyles.ingredientGridPanel(theme)}>
-        <div className={recipeBrowserStyles.ingredientGrid}>
-          {filteredIngredients.map((ingredient) => (
-            <IngredientThumbnail
-              ingredient={ingredient}
-              key={ingredient.ingredientId}
-              theme={theme}
-              onClick={() => onSelectDetail({ kind: "ingredient", ingredient })}
-            />
-          ))}
+      <>
+        {errorPanel}
+        <div className={recipeBrowserStyles.ingredientGridPanel(theme)}>
+          <div className={recipeBrowserStyles.ingredientGrid}>
+            {filteredIngredients.map((ingredient) => (
+              <IngredientThumbnail
+                ingredient={ingredient}
+                key={ingredient.ingredientId}
+                theme={theme}
+                onClick={() => onSelectDetail({ kind: "ingredient", ingredient })}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -64,20 +77,29 @@ function BrowserResults({
     return <EmptyState theme={theme} title={t.cookbook.loadingRecipes} body={t.cookbook.fetchingCookbook} />;
   }
 
-  if (recipeError !== null) {
-    return <EmptyState theme={theme} title={t.cookbook.couldNotLoadRecipes} body={recipeError} />;
-  }
+  // An error keeps whatever was loaded before on screen, below the message.
+  const errorPanel = recipeError === null ? null : (
+    <LoadErrorPanel
+      message={recipeError}
+      theme={theme}
+      title={t.cookbook.couldNotLoadRecipes}
+      onRetry={onRetryRecipes}
+    />
+  );
 
   if (filteredRecipes.length === 0) {
-    return <EmptyState theme={theme} title={t.cookbook.noRecipesFound} body={t.cookbook.tryChangingSearch} />;
+    return errorPanel ?? <EmptyState theme={theme} title={t.cookbook.noRecipesFound} body={t.cookbook.tryChangingSearch} />;
   }
 
   return (
-    <RecipeSelectionGrid
-      recipes={filteredRecipes}
-      theme={theme}
-      onSelect={(recipe) => onSelectDetail({ kind: "recipe", recipe })}
-    />
+    <>
+      {errorPanel}
+      <RecipeSelectionGrid
+        recipes={filteredRecipes}
+        theme={theme}
+        onSelect={(recipe) => onSelectDetail({ kind: "recipe", recipe })}
+      />
+    </>
   );
 }
 

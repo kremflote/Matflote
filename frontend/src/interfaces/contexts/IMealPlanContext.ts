@@ -7,6 +7,7 @@ export interface IMealPlanContext {
   mealPlanIsLoading: boolean;
   /** True while a write is in flight. */
   mealPlanIsSaving: boolean;
+  /** Why the requested range could not be loaded; null after a successful load. Writes never set it. */
   initError: string | null;
   /** The requested range once it has data on screen, otherwise null. */
   loadedRange: IMealPlanRange | null;

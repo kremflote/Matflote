@@ -341,6 +341,37 @@ export const toastStyles = {
     }`,
 } as const;
 
+export const loadErrorStyles = {
+  panel: (theme: SiteTheme) =>
+    `mb-4 flex items-center justify-between gap-4 ${radiusClasses.figma6} border px-4 py-3 max-sm:flex-col max-sm:items-stretch ${
+      theme === "dark"
+        ? "border-red-400/30 bg-red-500/10 text-red-100"
+        : theme === "paletteLight"
+          ? "border-red-700/30 bg-red-50 text-red-900"
+          : "border-red-200 bg-red-50 text-red-900"
+    }`,
+  text: "grid min-w-0 gap-1",
+  title: "text-sm font-extrabold leading-tight",
+  body: "text-sm font-semibold leading-snug opacity-90",
+  retryButton: (theme: SiteTheme) =>
+    `inline-flex h-10 shrink-0 items-center justify-center ${radiusClasses.figma6} border px-4 text-sm font-bold transition-colors disabled:cursor-wait disabled:opacity-60 ${focusBase} ${siteColorClasses[theme].focus} ${
+      theme === "dark"
+        ? "border-red-300/40 bg-red-950 text-red-50 hover:bg-red-900"
+        : "border-red-700/40 bg-white text-red-900 hover:bg-red-100"
+    }`,
+} as const;
+
+/** The page shown by the error boundary; it cannot rely on the theme, so it uses neutral colours. */
+export const errorBoundaryStyles = {
+  shell: "flex min-h-screen items-center justify-center bg-neutral-900 p-6 text-neutral-100",
+  panel: "grid w-full max-w-md gap-4 rounded-md border border-white/[0.12] bg-neutral-950 p-6",
+  title: "text-xl font-bold leading-tight",
+  body: "text-sm font-semibold leading-[1.5] text-neutral-300",
+  details: "max-h-32 overflow-auto rounded-md bg-black/40 p-3 text-xs text-neutral-400",
+  button:
+    "inline-flex h-10 items-center justify-center justify-self-start rounded-md border border-white/[0.16] bg-white/[0.08] px-4 text-sm font-bold text-neutral-100 hover:bg-white/[0.14] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+} as const;
+
 const autofillHintTextClasses = (theme: SiteTheme) =>
   `text-[10px] font-extrabold uppercase leading-tight ${
     theme === "dark"
@@ -1170,7 +1201,9 @@ export const mealCalendarStyles = {
     }`,
   mealSlotDropTarget: (theme: SiteTheme) =>
     `${theme === "dark" ? "data-[drag-active=true]:border-emerald-300/70" : theme === "paletteLight" ? "data-[drag-active=true]:border-[#7A8864]" : "data-[drag-active=true]:border-emerald-700"} data-[drag-active=true]:border-2`,
-  mealSlotButton: "flex h-full w-full cursor-pointer items-center justify-center text-left",
+  mealSlotButton: "flex h-full w-full cursor-pointer items-center justify-center text-left disabled:cursor-not-allowed",
+  // A slot whose plan could not be loaded: visibly not an empty, editable slot.
+  mealSlotUnavailable: "opacity-45",
   mealSlotDraggableButton: "min-[1101px]:cursor-grab min-[1101px]:active:cursor-grabbing",
   mealSlotDeleteButton: (theme: SiteTheme) =>
     `pointer-events-none absolute bottom-2 right-2 z-10 hidden h-8 w-8 items-center justify-center rounded-md border opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100 max-[1100px]:hidden ${focusBase} ${siteColorClasses[theme].focus} ${
@@ -1313,7 +1346,7 @@ export const mealCalendarStyles = {
     }`,
   monthDayMeals: "mt-2 grid gap-1",
   monthMealPill: (theme: SiteTheme, empty: boolean) =>
-    `min-w-0 truncate whitespace-nowrap text-left ${radiusClasses.figma6} border px-2 py-1 text-[10px] font-bold transition-colors ${
+    `min-w-0 truncate whitespace-nowrap text-left ${radiusClasses.figma6} border px-2 py-1 text-[10px] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
       empty
         ? theme === "dark"
           ? "border-white/[0.08] bg-transparent text-neutral-500 hover:bg-white/[0.06] hover:text-neutral-200"

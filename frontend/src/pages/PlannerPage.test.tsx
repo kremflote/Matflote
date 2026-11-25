@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders, stubFetch, stubMatchMedia } from "../test/appTestHarness";
 import PlannerPage from "./PlannerPage";
@@ -83,5 +83,35 @@ describe("PlannerPage week on opening (F6)", () => {
       getItem.mockRestore();
       setItem.mockRestore();
     }
+  });
+});
+
+describe("PlannerPage when the meal plan cannot be loaded (F7)", () => {
+  it("shows an error with Retry and keeps the slots disabled until the plan is known", async () => {
+    let backendUp = false;
+    stubFetch((url) =>
+      url.pathname === "/api/mealplans" && !backendUp
+        ? new Response("<html><body><h1>502 Bad Gateway</h1></body></html>", { status: 502, headers: { "Content-Type": "text/html" } })
+        : undefined,
+    );
+
+    renderPlanner();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain("Could not load meal plan.");
+    expect(alert.textContent).toContain("status 502");
+    expect(alert.textContent).not.toContain("<");
+    const slots = screen.getAllByRole("button", { name: "Open meal slot" });
+    expect(slots).toHaveLength(21);
+    expect(slots.every((slot) => (slot as HTMLButtonElement).disabled)).toBe(true);
+    expect((screen.getByRole("button", { name: "Generate meal plan" }) as HTMLButtonElement).disabled).toBe(true);
+
+    backendUp = true;
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+    expect(
+      screen.getAllByRole("button", { name: "Open meal slot" }).every((slot) => !(slot as HTMLButtonElement).disabled),
+    ).toBe(true);
   });
 });

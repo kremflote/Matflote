@@ -1,3 +1,5 @@
+import { getDocumentTranslations } from "../i18n";
+
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://localhost:5132" : "");
 
@@ -26,21 +28,48 @@ export async function apiRequest<TResponse>(
     headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await sendRequest(`${API_BASE_URL}${path}`, {
     ...options,
     headers,
     body: hasJsonBody ? JSON.stringify(options.body) : (options.body as BodyInit | undefined),
   });
 
   if (!response.ok) {
-    throw new ApiError(await getErrorMessage(response), response.status);
+    throw await toApiError(response);
   }
 
   if (response.status === 204) {
     return undefined as TResponse;
   }
 
-  return response.json() as Promise<TResponse>;
+  try {
+    return (await response.json()) as TResponse;
+  } catch (_error) {
+    // A 200 that is not JSON (an HTML page from a proxy, say) is a failure, not data.
+    throw new ApiError(getMessages().requestFailed(response.status), response.status);
+  }
+}
+
+/** fetch, with a network failure (server down, offline) turned into an ApiError with status 0. */
+export async function sendRequest(input: string, init?: RequestInit) {
+  try {
+    return await fetch(input, init);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
+
+    throw new ApiError(getMessages().serverUnreachable, 0);
+  }
+}
+
+/**
+ * The error for a failed response. The server's own message is used when it sent one as JSON
+ * (`{ "error": ... }` or ProblemDetails); anything else, such as a proxy's HTML error page,
+ * becomes a short message with the status, never the raw body.
+ */
+export async function toApiError(response: Response) {
+  return new ApiError((await readServerMessage(response)) ?? getMessages().requestFailed(response.status), response.status);
 }
 
 export function getApiAssetUrl(path: string | null) {
@@ -55,17 +84,31 @@ export function getApiAssetUrl(path: string | null) {
   return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-async function getErrorMessage(response: Response): Promise<string> {
+async function readServerMessage(response: Response): Promise<string | null> {
   const contentType = response.headers.get("Content-Type") ?? "";
-
-  if (contentType.includes("application/json")) {
-    const body = (await response.json()) as unknown;
-    if (typeof body === "object" && body !== null && "error" in body) {
-      return String(body.error);
-    }
-
-    return JSON.stringify(body);
+  if (!contentType.includes("json")) {
+    return null;
   }
 
-  return response.text();
+  try {
+    const body = (await response.json()) as unknown;
+    if (typeof body !== "object" || body === null) {
+      return null;
+    }
+
+    for (const key of ["error", "detail", "title"] as const) {
+      const value = (body as Record<string, unknown>)[key];
+      if (typeof value === "string" && value.trim().length > 0) {
+        return value;
+      }
+    }
+
+    return null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function getMessages() {
+  return getDocumentTranslations().common;
 }

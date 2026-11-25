@@ -32,11 +32,12 @@ type BrowserProps = {
 
 function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
   const { t } = useLanguage();
-  const { recipes, recipeIsLoading, initError: recipeError } = useRecipes();
+  const { recipes, recipeIsLoading, initError: recipeError, refreshRecipes } = useRecipes();
   const {
     ingredients,
     ingredientIsLoading,
     initError: ingredientError,
+    refreshIngredients,
   } = useIngredients();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIngredientTags, setSelectedIngredientTags] = useState<IngredientTag[]>([]);
@@ -324,6 +325,8 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             recipeError={recipeError}
             recipeIsLoading={recipeIsLoading}
             theme={theme}
+            onRetryIngredients={refreshIngredients}
+            onRetryRecipes={refreshRecipes}
             onSelectDetail={selectDetail}
           />
         </div>

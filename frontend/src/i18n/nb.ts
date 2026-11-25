@@ -34,6 +34,13 @@ export const nb: TranslationDictionary = {
     saving: "Lagrer...",
     search: "søk...",
     systemTagMeta: "Kan ikke endres",
+    reload: "Last inn på nytt",
+    requestFailed: (status) => `Serveren kunne ikke fullføre forespørselen (status ${status}).`,
+    retry: "Prøv igjen",
+    retrying: "Prøver igjen...",
+    serverUnreachable: "Fikk ikke kontakt med serveren. Sjekk tilkoblingen og prøv igjen.",
+    somethingWentWrong: "Noe gikk galt",
+    somethingWentWrongBody: "Siden sluttet å virke. Som regel hjelper det å laste inn på nytt; lagrede måltider og oppskrifter er ikke berørt.",
     working: "Jobber...",
   },
   browser: {
