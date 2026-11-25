@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useIngredients, useLanguage } from "../../contexts";
 import type { IIngredient, INutritionFacts, MeasurementUnit } from "../../interfaces/IIngredient";
 import { getApiAssetUrl } from "../../services/apiClient";
+import { getThumbnailSrc } from "../../utils/imageThumbnail";
 import type { SiteTheme } from "../../styles/appStyles";
 import { DetailSection, DetailText, DetailTextWithMeta, NutritionGrid } from "./detailComponents";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
@@ -209,7 +210,9 @@ function RecipeIngredientSection({
                   <img
                     alt=""
                     className={recipeBrowserStyles.detailIngredientImage}
-                    src={getApiAssetUrl(recipeIngredient.ingredient.imageUrl) ?? undefined}
+                    src={getThumbnailSrc(recipeIngredient.ingredient) ?? undefined}
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <span className={recipeBrowserStyles.detailIngredientImageFallback}>

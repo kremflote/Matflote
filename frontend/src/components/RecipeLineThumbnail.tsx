@@ -1,9 +1,10 @@
 import type { IRecipe } from "../interfaces/IRecipe";
-import { getApiAssetUrl } from "../services/apiClient";
+import { getThumbnailSrc } from "../utils/imageThumbnail";
 import { colorPalette, siteColorClasses, thumbnailStyles, type SiteTheme } from "../styles/appStyles";
 
 type RecipeLineThumbnailProps = {
   recipe: Pick<IRecipe, "name" | "imageUrl"> & {
+    thumbnailUrl?: string | null;
     subtitle?: string | null;
   };
   theme?: SiteTheme;
@@ -21,7 +22,7 @@ function RecipeLineThumbnail({
   className = "",
   onClick,
 }: RecipeLineThumbnailProps) {
-  const imageUrl = getApiAssetUrl(recipe.imageUrl);
+  const imageUrl = getThumbnailSrc(recipe);
   const compactClassName = mode === "compact" ? thumbnailStyles.ingredientShellCompact : "";
   const sharedClassName = `${thumbnailStyles.ingredientShell(theme)} ${compactClassName} ${className} ${
     selected ? thumbnailStyles.ingredientSelectedColorBorder(theme) : ""

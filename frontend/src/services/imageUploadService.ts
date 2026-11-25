@@ -1,8 +1,10 @@
+import { createThumbnail } from "../utils/imageThumbnail";
 import { apiRequest } from "./apiClient";
 
 export interface ImageUploadResponse {
   fileName: string;
   url: string;
+  thumbnailUrl: string | null;
 }
 
 export type ImageFolder = "general" | "ingredients" | "recipes";
@@ -18,8 +20,24 @@ export const imageUploadService = {
     const formData = new FormData();
     formData.append("file", uploadFile);
     formData.append("folder", folder);
+    // A small copy for grids and cards; the full image is only shown in detail views.
+    const thumbnail = await createThumbnail(uploadFile);
+    if (thumbnail !== null) {
+      formData.append("thumbnail", thumbnail);
+    }
 
     return apiRequest<ImageUploadResponse>("/api/imageuploads", {
+      method: "POST",
+      body: formData,
+    });
+  },
+  /** Stores a thumbnail for an image that is already in storage (and registers the image if needed). */
+  attachThumbnail: (imageUrl: string, thumbnail: File) => {
+    const formData = new FormData();
+    formData.append("imageUrl", imageUrl);
+    formData.append("thumbnail", thumbnail);
+
+    return apiRequest<ImageUploadResponse>("/api/imageuploads/thumbnail", {
       method: "POST",
       body: formData,
     });

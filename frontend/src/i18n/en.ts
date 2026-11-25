@@ -546,6 +546,15 @@ export const en: TranslationDictionary = {
     checkingImages: "Checking...",
     cleanupImages: "Clean up images",
     cleaningImages: "Cleaning...",
+    createThumbnails: "Create missing thumbnails",
+    creatingThumbnails: (done, total) => `Creating thumbnails ${done}/${total}...`,
+    couldNotCreateThumbnails: "Could not create thumbnails.",
+    thumbnailsFinished: (created, failed) =>
+      created === 0 && failed === 0
+        ? "Every image in use already has a thumbnail."
+        : `Created ${created} ${created === 1 ? "thumbnail" : "thumbnails"}.${
+            failed > 0 ? ` ${failed} ${failed === 1 ? "image" : "images"} could not be read.` : ""
+          }`,
     couldNotCheckImages: "Could not check images.",
     couldNotCleanupImages: "Could not clean up images.",
     couldNotImportSeedCatalog: "Could not import seed catalog.",

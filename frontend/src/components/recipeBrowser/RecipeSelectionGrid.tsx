@@ -36,6 +36,7 @@ function RecipeSelectionGrid({
             theme={theme}
             recipe={{
               imageUrl: recipe.imageUrl,
+              thumbnailUrl: recipe.thumbnailUrl,
               name: recipe.name,
               subtitle: getSubtitle?.(recipe) ?? recipe.tags.slice(0, 2).join(" · "),
             }}

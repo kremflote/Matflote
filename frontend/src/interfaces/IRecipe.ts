@@ -5,6 +5,8 @@ export interface IRecipe {
   recipeId: number;
   name: string;
   imageUrl: string | null;
+  /** A small version of the image for grids and cards; null until one has been made. */
+  thumbnailUrl: string | null;
   description: string | null;
   instructions: string | null;
   portions: number;
@@ -32,6 +34,7 @@ export interface IRecipeIngredientSummary {
   ingredientName: string;
   brand: IBrand | null;
   imageUrl: string | null;
+  thumbnailUrl: string | null;
   tags: IngredientTag[];
   color: string | null;
 }

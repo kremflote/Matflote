@@ -44,6 +44,8 @@ public record RecipeDto(
     int RecipeId,
     string Name,
     string? ImageUrl,
+    // A small version of the image for grids and cards; null when none has been made (use ImageUrl).
+    string? ThumbnailUrl,
     string? Description,
     string? Instructions,
     decimal Portions,
@@ -69,6 +71,7 @@ public record RecipeIngredientSummaryDto(
     string IngredientName,
     BrandDto? Brand,
     string? ImageUrl,
+    string? ThumbnailUrl,
     IReadOnlyCollection<string> Tags,
     string? Color
 );

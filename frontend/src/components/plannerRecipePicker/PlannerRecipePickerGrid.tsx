@@ -82,6 +82,7 @@ function PlannerRecipePickerGrid({
                 className={plannerPickerStyles.recipeCard(theme, visuallySelected)}
                 recipe={{
                   imageUrl: recipe.imageUrl,
+                  thumbnailUrl: recipe.thumbnailUrl,
                   name: recipe.name,
                   subtitle: recipe.tags.slice(0, 2).join(" · "),
                 }}

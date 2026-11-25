@@ -37,6 +37,8 @@ public record IngredientDto(
     int? BrandId,
     BrandDto? Brand,
     string? ImageUrl,
+    // A small version of the image for grids and cards; null when none has been made (use ImageUrl).
+    string? ThumbnailUrl,
     IReadOnlyCollection<string> Tags,
     NutritionFacts? NutritionPer100,
     NutritionDataSource NutritionSource,

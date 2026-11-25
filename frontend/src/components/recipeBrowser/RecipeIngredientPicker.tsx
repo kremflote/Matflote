@@ -344,6 +344,7 @@ function RecipeComponentPickerRow({
         className={recipeBrowserStyles.recipeIngredientThumbnailCompact}
         recipe={{
           imageUrl: recipe.imageUrl,
+          thumbnailUrl: recipe.thumbnailUrl,
           name: recipe.name,
           subtitle: recipeSubtitle,
         }}
@@ -426,6 +427,7 @@ export function SelectedRecipeComponentCapsules({
               className={recipeBrowserStyles.selectedIngredientThumbnail}
               recipe={{
                 imageUrl: recipe?.imageUrl ?? null,
+                thumbnailUrl: recipe?.thumbnailUrl ?? null,
                 name: recipe?.name ?? t.cookbook.recipeSingular,
                 subtitle: recipe === undefined ? "" : formatRecipeSubtitle(recipe),
               }}

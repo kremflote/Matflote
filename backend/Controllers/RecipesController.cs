@@ -16,7 +16,8 @@ namespace DinnerPlanner.Api.Controllers;
 public class RecipesController(
     DinnerPlannerContext context,
     TagCatalogService tagCatalog,
-    RecipePdfService recipePdfService) : ControllerBase
+    RecipePdfService recipePdfService,
+    ImageThumbnails imageThumbnails) : ControllerBase
 {
     [HttpGet]
     [CatalogETag(CatalogGroup.Recipes)]
@@ -26,7 +27,8 @@ public class RecipesController(
             .OrderBy(recipe => recipe.Name)
             .ToListAsync();
 
-        return Ok(recipes.Select(ToDto));
+        var thumbnails = await imageThumbnails.LoadAsync(HttpContext.RequestAborted);
+        return Ok(recipes.Select(recipe => ToDto(recipe, thumbnails)));
     }
 
     [HttpGet("{id:int}")]
@@ -35,7 +37,7 @@ public class RecipesController(
         var recipe = await RecipeDetails(asNoTracking: true)
             .FirstOrDefaultAsync(recipe => recipe.RecipeId == id);
 
-        return recipe is null ? NotFound() : Ok(ToDto(recipe));
+        return recipe is null ? NotFound() : Ok(ToDto(recipe, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
     }
 
     [HttpGet("{id:int}/pdf")]
@@ -78,7 +80,7 @@ public class RecipesController(
         await context.SaveChangesAsync();
 
         var created = await LoadRecipe(recipe.RecipeId);
-        return CreatedAtAction(nameof(GetRecipe), new { id = recipe.RecipeId }, ToDto(created!));
+        return CreatedAtAction(nameof(GetRecipe), new { id = recipe.RecipeId }, ToDto(created!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
     }
 
     [HttpPut("{id:int}")]
@@ -135,7 +137,7 @@ public class RecipesController(
         await context.SaveChangesAsync();
 
         var updated = await LoadRecipe(recipe.RecipeId);
-        return Ok(ToDto(updated!));
+        return Ok(ToDto(updated!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
     }
 
     [HttpDelete("{id:int}")]
@@ -245,14 +247,15 @@ public class RecipesController(
         return recipe;
     }
 
-    private static RecipeDto ToDto(Recipe recipe) => new(
+    private static RecipeDto ToDto(Recipe recipe, IReadOnlyDictionary<string, string> thumbnails) => new(
         recipe.RecipeId,
         recipe.Name,
         recipe.ImageUrl,
+        ImageThumbnails.Find(thumbnails, recipe.ImageUrl),
         recipe.Description,
         recipe.Instructions,
         recipe.Portions,
-        recipe.Ingredients.Select(ToDto).ToList(),
+        recipe.Ingredients.Select(line => ToDto(line, thumbnails)).ToList(),
         recipe.Tags.Select(recipeTag => recipeTag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
         recipe.Components
             .OrderBy(component => component.SortOrder)
@@ -392,9 +395,9 @@ public class RecipesController(
             })
             .ToList();
 
-    private static RecipeIngredientDto ToDto(RecipeIngredient recipeIngredient) => new(
+    private static RecipeIngredientDto ToDto(RecipeIngredient recipeIngredient, IReadOnlyDictionary<string, string> thumbnails) => new(
         recipeIngredient.RecipeIngredientId,
-        ToSummaryDto(recipeIngredient.Ingredient),
+        ToSummaryDto(recipeIngredient.Ingredient, thumbnails),
         recipeIngredient.Amount,
         recipeIngredient.Unit,
         recipeIngredient.Preparation
@@ -409,11 +412,12 @@ public class RecipesController(
         component.SortOrder
     );
 
-    private static RecipeIngredientSummaryDto ToSummaryDto(Ingredient ingredient) => new(
+    private static RecipeIngredientSummaryDto ToSummaryDto(Ingredient ingredient, IReadOnlyDictionary<string, string> thumbnails) => new(
         ingredient.IngredientId,
         ingredient.IngredientName,
         ingredient.Brand is null ? null : new BrandDto(ingredient.Brand.BrandId, ingredient.Brand.Name),
         ingredient.ImageUrl,
+        ImageThumbnails.Find(thumbnails, ingredient.ImageUrl),
         ingredient.Tags.Select(ingredientTag => ingredientTag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
         ingredient.Color
     );

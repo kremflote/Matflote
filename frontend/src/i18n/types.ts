@@ -424,6 +424,10 @@ export type TranslationDictionary = {
     checkingImages: string;
     cleanupImages: string;
     cleaningImages: string;
+    createThumbnails: string;
+    creatingThumbnails: (done: number, total: number) => string;
+    couldNotCreateThumbnails: string;
+    thumbnailsFinished: (created: number, failed: number) => string;
     couldNotCheckImages: string;
     couldNotCleanupImages: string;
     couldNotImportSeedCatalog: string;

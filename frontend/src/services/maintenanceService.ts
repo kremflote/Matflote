@@ -4,6 +4,9 @@ import { apiRequest } from "./apiClient";
 export const maintenanceService = {
   getImageCleanupReport: () =>
     apiRequest<IImageCleanupReport>("/api/maintenance/images/report"),
+  /** Images that recipes or ingredients use and that have no thumbnail yet. */
+  getImagesWithoutThumbnails: () =>
+    apiRequest<{ imageUrls: string[] }>("/api/maintenance/images/missing-thumbnails"),
   cleanupImages: () =>
     apiRequest<IImageCleanupReport>("/api/maintenance/images/cleanup", {
       method: "POST",

@@ -21,6 +21,14 @@ public sealed class ImageStoragePathProvider
 
     public string GetFolderPath(string folder) => Path.Combine(RootPath, folder);
 
+    /// <summary>The full path of a file in image storage, or null when the relative path leads outside it.</summary>
+    public string? ResolveFile(string relativePath)
+    {
+        var rootPath = Path.GetFullPath(RootPath);
+        var fullPath = Path.GetFullPath(Path.Combine(rootPath, relativePath));
+        return fullPath.StartsWith(rootPath + Path.DirectorySeparatorChar, StringComparison.Ordinal) ? fullPath : null;
+    }
+
     private static string ResolvePath(string contentRootPath, string? configuredPath, string defaultPath)
     {
         if (string.IsNullOrWhiteSpace(configuredPath))

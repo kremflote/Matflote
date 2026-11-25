@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 import type { IIngredient } from "../interfaces/IIngredient";
-import { getApiAssetUrl } from "../services/apiClient";
+import { getThumbnailSrc } from "../utils/imageThumbnail";
 import { colorPalette, siteColorClasses, thumbnailStyles, type SiteTheme } from "../styles/appStyles";
 
 type IngredientThumbnailProps = {
-  ingredient: Pick<IIngredient, "ingredientName" | "tags" | "brand" | "color" | "imageUrl">;
+  ingredient: Pick<IIngredient, "ingredientName" | "tags" | "brand" | "color" | "imageUrl"> & {
+    thumbnailUrl?: string | null;
+  };
   theme?: SiteTheme;
   selected?: boolean;
   selectedPresentation?: "outline" | "muted" | "colorBorder";
@@ -35,7 +37,7 @@ function IngredientThumbnail({
 }: IngredientThumbnailProps) {
   const brandName = ingredient.brand?.name ?? "";
   const tone = getIngredientTone(ingredient.color, theme);
-  const imageUrl = getApiAssetUrl(ingredient.imageUrl);
+  const imageUrl = getThumbnailSrc(ingredient);
   const selectedClassName =
     selectedPresentation === "colorBorder"
       ? thumbnailStyles.ingredientSelectedColorBorder(theme)

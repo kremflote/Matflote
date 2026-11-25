@@ -4,7 +4,7 @@ import type { IIngredient } from "../interfaces/IIngredient";
 import { mealCalendarStyles, type SiteTheme } from "../styles/appStyles";
 import type { IMealPlanEntry, MealSlot as MealSlotId, PlannerViewMode } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
-import { getApiAssetUrl } from "../services/apiClient";
+import { getThumbnailSrc } from "../utils/imageThumbnail";
 import {
   getLocalStringListPreference,
   localPreferenceKeys,
@@ -258,7 +258,7 @@ function DayMealPreview({ entry, ingredientsById, recipesById, theme }: DayMealP
     plannedRecipes.find((plannedRecipe) => plannedRecipe.role === "Main") ?? plannedRecipes[0];
   const recipe = mainRecipe?.recipeId === null || mainRecipe === undefined ? undefined : recipesById.get(mainRecipe.recipeId);
   const ingredient = mainRecipe?.ingredientId === null || mainRecipe === undefined ? undefined : ingredientsById.get(mainRecipe.ingredientId);
-  const imageUrl = getApiAssetUrl(recipe?.imageUrl ?? ingredient?.imageUrl ?? null);
+  const imageUrl = getThumbnailSrc(recipe ?? ingredient);
 
   if (recipe === undefined && ingredient === undefined) {
     return <span className={mealCalendarStyles.dayPreviewEmpty(theme)} />;

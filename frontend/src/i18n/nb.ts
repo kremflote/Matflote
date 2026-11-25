@@ -613,6 +613,15 @@ export const nb: TranslationDictionary = {
     checkingImages: "Sjekker...",
     cleanupImages: "Rydd bilder",
     cleaningImages: "Rydder...",
+    createThumbnails: "Lag manglende miniatyrbilder",
+    creatingThumbnails: (done, total) => `Lager miniatyrbilder ${done}/${total}...`,
+    couldNotCreateThumbnails: "Kunne ikke lage miniatyrbilder.",
+    thumbnailsFinished: (created, failed) =>
+      created === 0 && failed === 0
+        ? "Alle bilder i bruk har allerede miniatyrbilde."
+        : `Laget ${created} ${created === 1 ? "miniatyrbilde" : "miniatyrbilder"}.${
+            failed > 0 ? ` ${failed} ${failed === 1 ? "bilde" : "bilder"} kunne ikke leses.` : ""
+          }`,
     couldNotCheckImages: "Kunne ikke sjekke bilder.",
     couldNotCleanupImages: "Kunne ikke rydde bilder.",
     couldNotImportSeedCatalog: "Kunne ikke importere startkatalog.",

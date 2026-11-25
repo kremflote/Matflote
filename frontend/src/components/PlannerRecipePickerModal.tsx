@@ -828,6 +828,7 @@ function toSelectedRecipeItem(recipe: IRecipe, selection: SelectedPlannerRecipe)
   return {
     id: recipe.recipeId,
     imageUrl: recipe.imageUrl,
+    thumbnailUrl: recipe.thumbnailUrl,
     kind: "recipe",
     name: recipe.name,
     valueLabel: `${formatNumber(selection.portions)}x`,
@@ -842,6 +843,7 @@ function toSelectedIngredientItem(
   return {
     id: ingredient.ingredientId,
     imageUrl: ingredient.imageUrl,
+    thumbnailUrl: ingredient.thumbnailUrl,
     kind: "ingredient",
     name: ingredient.ingredientName,
     valueLabel: `${formatNumber(selection.amount)} ${unitLabels[selection.unit]}`,

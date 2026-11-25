@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import type { IRecipe } from "../interfaces/IRecipe";
-import { getApiAssetUrl } from "../services/apiClient";
+import { getThumbnailSrc } from "../utils/imageThumbnail";
 import { thumbnailStyles, type SiteTheme } from "../styles/appStyles";
 
 type RecipeThumbnailProps = {
   recipe: Pick<IRecipe, "name" | "imageUrl"> & {
+    thumbnailUrl?: string | null;
     subtitle?: string | null;
   };
   className?: string;
@@ -29,7 +30,7 @@ function RecipeThumbnail({
   onClick,
 }: RecipeThumbnailProps) {
   const subtitle = recipe.subtitle ?? "";
-  const imageUrl = getApiAssetUrl(recipe.imageUrl);
+  const imageUrl = getThumbnailSrc(recipe);
   const titleClassName =
     textScale === "micro"
       ? thumbnailStyles.recipeTitleMicro

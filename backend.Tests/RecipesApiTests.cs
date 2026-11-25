@@ -152,7 +152,7 @@ public class RecipesApiTests(MatfloteFactory factory) : IClassFixture<MatfloteFa
 
         var ingredient = json.GetProperty("ingredients")[0].GetProperty("ingredient");
         Assert.Equal(
-            ["brand", "color", "imageUrl", "ingredientId", "ingredientName", "tags"],
+            ["brand", "color", "imageUrl", "ingredientId", "ingredientName", "tags", "thumbnailUrl"],
             ingredient.EnumerateObject().Select(property => property.Name).Order());
         Assert.Equal("RT slim brand", ingredient.GetProperty("brand").GetProperty("name").GetString());
         Assert.Equal("/images/ingredients/flour.jpg", ingredient.GetProperty("imageUrl").GetString());

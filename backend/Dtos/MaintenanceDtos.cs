@@ -13,3 +13,7 @@ public record ImageCleanupItemDto(
     string RelativePath,
     long? SizeBytes
 );
+
+public record ImagesWithoutThumbnailsDto(
+    IReadOnlyCollection<string> ImageUrls
+);

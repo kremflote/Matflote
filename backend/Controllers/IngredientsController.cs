@@ -13,7 +13,10 @@ namespace DinnerPlanner.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class IngredientsController(DinnerPlannerContext context, TagCatalogService tagCatalog) : ControllerBase
+public class IngredientsController(
+    DinnerPlannerContext context,
+    TagCatalogService tagCatalog,
+    ImageThumbnails imageThumbnails) : ControllerBase
 {
     [HttpGet]
     [CatalogETag(CatalogGroup.Ingredients)]
@@ -27,7 +30,8 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
             .OrderBy(ingredient => ingredient.IngredientName)
             .ToListAsync();
 
-        return Ok(ingredients.Select(ToDto));
+        var thumbnails = await imageThumbnails.LoadAsync(HttpContext.RequestAborted);
+        return Ok(ingredients.Select(ingredient => ToDto(ingredient, thumbnails)));
     }
 
     [HttpGet("{id:int}")]
@@ -40,7 +44,7 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
                 .ThenInclude(tag => tag.TagDefinition)
             .FirstOrDefaultAsync(ingredient => ingredient.IngredientId == id);
 
-        return ingredient is null ? NotFound() : Ok(ToDto(ingredient));
+        return ingredient is null ? NotFound() : Ok(ToDto(ingredient, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
     }
 
     [HttpPost]
@@ -77,7 +81,7 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
         await context.SaveChangesAsync();
 
         var created = await LoadIngredient(ingredient.IngredientId);
-        return CreatedAtAction(nameof(GetIngredient), new { id = ingredient.IngredientId }, ToDto(created!));
+        return CreatedAtAction(nameof(GetIngredient), new { id = ingredient.IngredientId }, ToDto(created!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
     }
 
     [HttpPut("{id:int}")]
@@ -120,7 +124,7 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
         await context.SaveChangesAsync();
 
         var updated = await LoadIngredient(ingredient.IngredientId);
-        return Ok(ToDto(updated!));
+        return Ok(ToDto(updated!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
     }
 
     [HttpDelete("{id:int}")]
@@ -156,13 +160,14 @@ public class IngredientsController(DinnerPlannerContext context, TagCatalogServi
     private static NutritionDataSource NormalizeNutritionSource(NutritionFacts? nutrition, NutritionDataSource? source) =>
         nutrition is null ? NutritionDataSource.None : source ?? NutritionDataSource.Manual;
 
-    private static IngredientDto ToDto(Ingredient ingredient) => new(
+    private static IngredientDto ToDto(Ingredient ingredient, IReadOnlyDictionary<string, string> thumbnails) => new(
         ingredient.IngredientId,
         ingredient.IngredientName,
         ingredient.Description,
         ingredient.BrandId,
         ingredient.Brand is null ? null : new BrandDto(ingredient.Brand.BrandId, ingredient.Brand.Name),
         ingredient.ImageUrl,
+        ImageThumbnails.Find(thumbnails, ingredient.ImageUrl),
         ingredient.Tags.Select(ingredientTag => ingredientTag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
         ingredient.NutritionPer100,
         ingredient.NutritionSource,

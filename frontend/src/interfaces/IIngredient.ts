@@ -7,6 +7,8 @@ export interface IIngredient {
   brandId: number | null;
   brand: IBrand | null;
   imageUrl: string | null;
+  /** A small version of the image for grids and cards; null until one has been made. */
+  thumbnailUrl: string | null;
   tags: IngredientTag[];
   nutritionPer100: INutritionFacts | null;
   nutritionSource: NutritionDataSource;

@@ -151,6 +151,8 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.Property(image => image.Source).HasMaxLength(80);
             entity.Property(image => image.OriginalFileName).HasMaxLength(260);
             entity.Property(image => image.ContentType).HasMaxLength(120);
+            entity.Property(image => image.ThumbnailUrl).HasMaxLength(500);
+            entity.Property(image => image.ThumbnailRelativePath).HasMaxLength(500);
             entity.HasIndex(image => image.PublicUrl).IsUnique();
             entity.HasIndex(image => image.CreatedAt);
         });

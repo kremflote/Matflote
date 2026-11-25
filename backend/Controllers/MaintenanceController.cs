@@ -15,6 +15,10 @@ public class MaintenanceController(ImageMaintenanceService imageMaintenanceServi
     public async Task<ActionResult<ImageCleanupReportDto>> GetImageCleanupReport(CancellationToken cancellationToken) =>
         Ok(await imageMaintenanceService.GetReportAsync(cancellationToken));
 
+    [HttpGet("images/missing-thumbnails")]
+    public async Task<ActionResult<ImagesWithoutThumbnailsDto>> GetImagesWithoutThumbnails(CancellationToken cancellationToken) =>
+        Ok(await imageMaintenanceService.GetImagesWithoutThumbnailsAsync(cancellationToken));
+
     [HttpPost("images/cleanup")]
     public async Task<ActionResult<ImageCleanupReportDto>> CleanupImages(CancellationToken cancellationToken) =>
         Ok(await imageMaintenanceService.CleanupAsync(cancellationToken));

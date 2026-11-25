@@ -50,6 +50,7 @@ builder.Services.AddScoped<AssistantService>();
 builder.Services.AddScoped<VikunjaOptionsResolver>();
 builder.Services.AddScoped<GroceryListService>();
 builder.Services.AddScoped<ImageMaintenanceService>();
+builder.Services.AddScoped<ImageThumbnails>();
 builder.Services.AddScoped<MealPlanWriter>();
 builder.Services.AddScoped<NutritionReferenceImportService>();
 builder.Services.AddScoped<HelsedirektoratetNutritionReferenceParser>();
@@ -242,7 +243,7 @@ static async Task RecordSeedImageMetadataAsync(WebApplication app)
             Folder = Path.GetDirectoryName(relativePath)?.Replace('\\', '/') ?? "general",
             Source = "Seed",
             OriginalFileName = fileInfo.Name,
-            ContentType = GetContentType(fileInfo.Extension),
+            ContentType = ImageStorageUrls.GetContentType(fileInfo.Extension),
             SizeBytes = fileInfo.Length,
             CreatedAt = DateTimeOffset.UtcNow
         });
@@ -250,15 +251,6 @@ static async Task RecordSeedImageMetadataAsync(WebApplication app)
 
     await context.SaveChangesAsync();
 }
-
-static string? GetContentType(string extension) =>
-    extension.ToLowerInvariant() switch
-    {
-        ".jpg" or ".jpeg" => "image/jpeg",
-        ".png" => "image/png",
-        ".webp" => "image/webp",
-        _ => null
-    };
 
 // Lets WebApplicationFactory<Program> in backend.Tests reach the entry point of the top-level statements.
 public partial class Program;

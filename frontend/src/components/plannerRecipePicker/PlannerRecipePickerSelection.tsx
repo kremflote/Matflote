@@ -1,6 +1,6 @@
 import type { SiteTheme } from "../../styles/appStyles";
 import { plannerPickerStyles } from "../../styles/appStyles";
-import { getApiAssetUrl } from "../../services/apiClient";
+import { getThumbnailSrc } from "../../utils/imageThumbnail";
 
 type PlannerRecipePickerSelectionProps = {
   items: PlannerPickerSelectedItem[];
@@ -11,6 +11,7 @@ type PlannerRecipePickerSelectionProps = {
 export type PlannerPickerSelectedItem = {
   id: number;
   imageUrl: string | null;
+  thumbnailUrl: string | null;
   kind: "recipe" | "ingredient";
   name: string;
   valueLabel: string;
@@ -24,7 +25,7 @@ function PlannerRecipePickerSelection({
   return (
     <div className={plannerPickerStyles.selectedThumbnailList} aria-live="polite">
       {items.map((item) => {
-        const imageUrl = getApiAssetUrl(item.imageUrl);
+        const imageUrl = getThumbnailSrc(item);
 
         return (
           <button

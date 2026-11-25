@@ -2361,6 +2361,14 @@ namespace backend.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ThumbnailRelativePath")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("UploadedImageId");
 
                     b.HasIndex("CreatedAt");

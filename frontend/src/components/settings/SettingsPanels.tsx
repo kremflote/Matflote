@@ -4,6 +4,7 @@ import type { IImageCleanupReport } from "../../interfaces/IMaintenance";
 import { supportedLanguages } from "../../i18n";
 import { API_BASE_URL } from "../../services/apiClient";
 import { settingsStyles, type SiteTheme } from "../../styles/appStyles";
+import ThumbnailMaintenance from "./ThumbnailMaintenance";
 
 export type ExportSettingsForm = {
   helsedirektoratetBaseUrl: string;
@@ -395,6 +396,9 @@ export function MaintenancePanel({
         >
           {isCleaningImages ? t.settings.cleaningImages : t.settings.cleanupImages}
         </button>
+      </div>
+      <div className={settingsStyles.statusRow}>
+        <ThumbnailMaintenance theme={theme} />
       </div>
       {imageCleanupReport !== null && (
         <p className={settingsStyles.panelBody(theme)}>

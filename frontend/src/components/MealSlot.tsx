@@ -3,7 +3,7 @@ import type { IIngredient } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, MealSlot as MealSlotId } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
 import { mealCalendarStyles, type SiteTheme } from "../styles/appStyles";
-import { getApiAssetUrl } from "../services/apiClient";
+import { getThumbnailSrc } from "../utils/imageThumbnail";
 
 type MealSlotProps = {
   canUseDesktopInteractions: boolean;
@@ -53,7 +53,7 @@ function MealSlot({
   const visibleSupplementaryItems = supplementaryItems.slice(0, 3);
   const hiddenSupplementaryCount = Math.max(supplementaryItems.length - visibleSupplementaryItems.length, 0);
   const mainName = mainItem?.recipe?.name ?? mainItem?.ingredient?.ingredientName;
-  const mainImageUrl = mainItem?.recipe?.imageUrl ?? mainItem?.ingredient?.imageUrl ?? null;
+  const mainImageSrc = getThumbnailSrc(mainItem?.recipe ?? mainItem?.ingredient);
   const mainRecipe = mainItem?.recipe;
   const hasMeal = plannedItems.length > 0;
   const canDragMeal = canUseDesktopInteractions && hasMeal && !isLoading;
@@ -111,11 +111,11 @@ function MealSlot({
             {mainName !== undefined ? (
               <>
                 <div className={mealCalendarStyles.mealSlotImageFrame(theme)}>
-                  {getApiAssetUrl(mainImageUrl) ? (
+                  {mainImageSrc ? (
                     <img
                       alt=""
                       className={mealCalendarStyles.mealSlotImage}
-                      src={getApiAssetUrl(mainImageUrl) ?? undefined}
+                      src={mainImageSrc}
                       loading="lazy"
                       decoding="async"
                     />
