@@ -65,6 +65,7 @@ public record AssistantRecipeSummaryDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyCollection<string>? Components,
     int PlannedCount,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? LastPlanned,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? NextPlanned,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? Rating,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? RatingNote
 );

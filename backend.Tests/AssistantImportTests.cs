@@ -421,6 +421,17 @@ public class AssistantImportTests(MatfloteFactory factory) : IClassFixture<Matfl
     }
 
     [Fact]
+    public async Task A_new_ingredient_without_tags_is_created_with_a_warning()
+    {
+        var result = await client.Import(new { ingredients = new[] { new { name = "IM untagged", nutritionPer100 = new { calories = 10 } } } });
+
+        var item = result.Item("ingredients", "IM untagged");
+        Assert.Equal("created", item.Status());
+        Assert.Contains("It has no tags", string.Join(" ", item.Strings("warnings")));
+        Assert.DoesNotContain("no nutrition data", string.Join(" ", item.Strings("warnings")));
+    }
+
+    [Fact]
     public async Task A_misspelled_nutrient_is_rejected_with_400()
     {
         var response = await client.PostJson("/api/assistant/recipes", new { ingredients = new[] { new { name = "IM nutrient typo", nutritionPer100 = new { calories = 100, protienGrams = 3 } } } });

@@ -64,7 +64,8 @@ public class AssistantContextTests(MatfloteFactory factory) : IClassFixture<Matf
                 new { date = today.AddDays(-3), slot = "Dinner", items = new[] { new { recipe = "CX history dish" } } },
                 // Outside the default 56-day window: counted for lastPlanned only if it is the latest, which it is not.
                 new { date = today.AddDays(-100), slot = "Dinner", items = new[] { new { recipe = "CX history dish" } } },
-                // In the future: ignored by both numbers.
+                // In the future: ignored by both numbers, and reported as nextPlanned (the earliest of them).
+                new { date = today.AddDays(9), slot = "Dinner", items = new[] { new { recipe = "CX history dish" } } },
                 new { date = today.AddDays(5), slot = "Dinner", items = new[] { new { recipe = "CX history dish" } } },
             },
         });
@@ -73,12 +74,14 @@ public class AssistantContextTests(MatfloteFactory factory) : IClassFixture<Matf
         var planned = context.FindRecipe("CX history dish")!.Value;
         Assert.Equal(2, planned.GetProperty("plannedCount").GetInt32());
         Assert.Equal(today.AddDays(-3), DateOnly.Parse(planned.GetProperty("lastPlanned").GetString()!));
+        Assert.Equal(today.AddDays(5), DateOnly.Parse(planned.GetProperty("nextPlanned").GetString()!));
         Assert.Equal(["Dinner"], planned.Strings("tags"));
         Assert.Equal(["Rice"], planned.Strings("ingredients"));
 
         var never = context.FindRecipe("CX never planned")!.Value;
         Assert.Equal(0, never.GetProperty("plannedCount").GetInt32());
         Assert.False(never.TryGetProperty("lastPlanned", out _));
+        Assert.False(never.TryGetProperty("nextPlanned", out _));
 
         var wide = await client.GetJson<System.Text.Json.JsonElement>("/api/assistant/context?historyDays=200");
         Assert.Equal(3, wide.FindRecipe("CX history dish")!.Value.GetProperty("plannedCount").GetInt32());

@@ -81,14 +81,20 @@ public class AssistantService(
 
         var plannedDates = await context.MealPlanRecipes
             .AsNoTracking()
-            .Where(item => item.RecipeId != null && item.MealPlanEntry.Date <= today)
+            .Where(item => item.RecipeId != null)
             .Select(item => new { RecipeId = item.RecipeId!.Value, item.MealPlanEntry.Date })
             .ToListAsync(cancellationToken);
         var usageByRecipe = plannedDates
+            .Where(item => item.Date <= today)
             .GroupBy(item => item.RecipeId)
             .ToDictionary(
                 group => group.Key,
                 group => (Count: group.Count(item => item.Date >= historyStart), Last: group.Max(item => item.Date)));
+        // The first time each recipe is planned after today, so "not planned recently" can include the rest of this week.
+        var nextByRecipe = plannedDates
+            .Where(item => item.Date > today)
+            .GroupBy(item => item.RecipeId)
+            .ToDictionary(group => group.Key, group => group.Min(item => item.Date));
 
         return new AssistantContextDto(
             today,
@@ -137,6 +143,7 @@ public class AssistantService(
                             : recipe.Components.OrderBy(component => component.SortOrder).Select(component => component.ChildRecipe.Name).ToList(),
                         usage.Count,
                         usage.Count == 0 && usage.Last == default ? null : usage.Last,
+                        nextByRecipe.TryGetValue(recipe.RecipeId, out var next) ? next : null,
                         recipe.Rating,
                         recipe.RatingNote);
                 })
@@ -358,6 +365,10 @@ public class AssistantService(
                 result.Target = () => ingredient.IngredientId;
                 result.Status = ItemStatus.Create;
                 result.Created = ingredient;
+                if (ingredient.Tags.Count == 0)
+                {
+                    result.Warnings.Add("It has no tags, so filters, the shopping list's grouping and the planner's rules cannot see what it is. Send \"tags\".");
+                }
                 AddSimilarIngredientWarning(result, name, catalog, ingredient);
                 continue;
             }

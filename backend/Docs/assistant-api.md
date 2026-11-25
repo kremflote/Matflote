@@ -62,7 +62,7 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
     {
       "id": 8, "name": "Spaghetti bolognese", "portions": 4, "tags": ["Dinner", "Pasta"],
       "ingredients": ["Canned tomatoes", "Minced beef", "Spaghetti"],
-      "plannedCount": 2, "lastPlanned": "2026-11-24",
+      "plannedCount": 2, "lastPlanned": "2026-11-24", "nextPlanned": "2026-11-28",
       "rating": 4, "ratingNote": "Kids loved it"
     }
   ]
@@ -73,7 +73,7 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
 
 `planningPreferences` is what the household set under Settings → Planning preferences: how many people eat (use it as the `portions` of planned dinners), the minimum fish and chicken dinners per week (recipes tagged `Fish` / `Chicken`), tags and ingredients to avoid, how many weeks must pass before a dinner is planned again (`0` = no rule) and free-text notes. Follow them unless the person asks for something else.
 
-`serverDate` is the server's clock and may be in UTC. `lastPlanned` is the most recent date on or before `serverDate`; it is omitted for recipes that were never planned. Week plans run Monday to Sunday.
+`serverDate` is the server's clock and may be in UTC. `lastPlanned` is the most recent date on or before `serverDate`, and `nextPlanned` the first date after it; each is omitted when there is none. So a recipe "not planned in the last three weeks" before next Monday has no `lastPlanned` on or after next Monday − 21 days and no `nextPlanned` before next Monday. Week plans run Monday to Sunday.
 
 ## POST /api/assistant/recipes
 
@@ -117,9 +117,9 @@ Optional query: `historyDays` (default 56) — the window used for `plannedCount
 | --- | --- |
 | `onExistingRecipe` | What to do when a recipe with the same name exists: `skip` (default, leave it and warn), `update` (replace everything; the photo only if `imageUrl` is sent; never the household's rating), `error`. |
 | `onExistingIngredient` | For entries under `ingredients`: `skip` (default) or `update`. An update only changes the fields that are present, so it can add nutrition without touching tags. |
-| `createMissingIngredients` | Default `true`: a recipe line naming an unknown ingredient creates it, with no tags and no nutrition, and says so in a warning. Set `false` to get an error with suggestions instead. |
+| `createMissingIngredients` | Default `true`: a recipe line naming an unknown ingredient creates it, with no tags and no nutrition, and says so in a warning. Set `false` to get an error with suggestions instead, which makes sure every new ingredient is defined under `ingredients` with its tags. |
 | `lookupNutrition` | Default `false`. When `true`, every ingredient this request **creates** without `nutritionPer100` (defined under `ingredients` or created from a recipe line) is looked up by name in Matvaretabellen, the Norwegian food composition table, and the best match is attached if its confidence is at least 0.70. The result says what was matched (`nutritionMatch`), or warns when nothing matched well enough. Norwegian names match best ("Laks", not "Salmon"). Existing ingredients are never looked up. Works in a dry run too, so you can check the matches first. |
-| `ingredients` | Optional. Define ingredients fully (tags, nutrition per 100 g/ml, colour, brand) before recipes use them. Do this for anything new, otherwise the Nutrition page has gaps. |
+| `ingredients` | Optional. Define ingredients fully (tags, nutrition per 100 g/ml, colour, brand) before recipes use them. Do this for anything new, otherwise the Nutrition page has gaps. A new ingredient without tags or without nutrition is created with a warning. |
 | `recipes[].id` | Optional. When present the recipe with that id is updated, which is how a recipe is renamed. |
 | `recipes[].imageUrl` | Optional. An `http`/`https` address: the photo is downloaded into MATFLOTE (checked as JPEG, PNG or WebP by type and content, at most 5 MB, 15 second limit) and the recipe result's `imageUrl` gives its new `/images/...` path. A `/images/...` path from `GET /api/assistant/recipes/{id}` keeps that stored photo. `""` removes the photo. Left out: a new recipe has no photo and an update keeps the current one. A photo that cannot be fetched or is not an image is an error, so nothing is saved. Thumbnails for downloaded photos are made from the web app (Settings → Maintenance). |
 | `recipes[].ingredients[].brand` | Optional. Without it, the unbranded ingredient of that name is preferred. |
@@ -241,7 +241,12 @@ These regular endpoints are useful after planning:
 
 ## A typical session
 
-1. `GET /api/assistant/context`. Note what exists, which recipes were planned recently, and the tag names.
-2. If new recipes are needed, `POST /api/assistant/recipes` with `"dryRun": true`, fix whatever comes back, then post again without it.
-3. `PUT /api/assistant/meal-plan` for the week, with `clearRange` covering Monday to Sunday if the whole week is being replaced.
-4. `GET /api/grocerylists/preview` for the same range and report the plan and shopping list back to the person.
+`docs/agent-guide.md` in the repository is the short version for agents, with the house rules. In five requests:
+
+1. `GET /api/assistant/context`. Note what exists, which recipes were planned recently, the tag names and the planning preferences.
+2. If new recipes are needed, `POST /api/assistant/recipes` with `"dryRun": true` (and `"createMissingIngredients": false`); fix whatever comes back.
+3. The same request with `"dryRun": false`.
+4. `PUT /api/assistant/meal-plan` for the week with `"dryRun": true`, with `clearRange` covering Monday to Sunday if the whole week is being replaced. Any `would_replace` or `would_clear` row is a meal the household already planned: ask before going on.
+5. The same request with `"dryRun": false`.
+
+If the person wants the shopping list, `GET /api/grocerylists/preview` for the same range.
