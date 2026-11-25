@@ -140,30 +140,31 @@ function MealCalendar({
     );
   }
 
+  const todayKey = toDateInputValue(new Date());
+
   return (
     <section className={mealCalendarStyles.shell} aria-busy={isLoading} aria-label={t.planner.mealCalendar}>
-      {/* Meal labels are hidden for now.
-      <div className={mealCalendarStyles.grid}>
+      <div className={mealCalendarStyles.headerRow} aria-hidden="true">
         {mealSlots.map((meal) => (
-          <div
-            className={`${mealCalendarStyles.headerCell(theme)} ${mealCalendarStyles.headerCellSpan}`}
-            key={meal}
-          >
-            {meal}
+          <div className={mealCalendarStyles.headerLabel(theme)} key={meal}>
+            {t.enums.mealSlots[meal]}
           </div>
         ))}
       </div>
-      */}
 
       <div className={mealCalendarStyles.rows}>
         {dates.map((date, index) => {
           const dateKey = toDateInputValue(date);
+          const isToday = dateKey === todayKey;
           const isCollapsed = canCollapseDays && collapsedDateKeys.has(dateKey);
           const dayLabel = weekDayLabels[index] ?? "";
           const dayDate = formatDayMonth(date, locale);
+          const plannedEntries = mealSlots
+            .map((meal) => getEntryForSlot(dateKey, meal))
+            .filter((entry): entry is IMealPlanEntry => entry !== undefined && entry.recipes.length > 0);
 
           return (
-            <div className={mealCalendarStyles.row} key={dateKey}>
+            <div aria-current={isToday ? "date" : undefined} className={mealCalendarStyles.row} key={dateKey}>
               {canCollapseDays ? (
                 <button
                   aria-expanded={!isCollapsed}
@@ -172,7 +173,7 @@ function MealCalendar({
                       ? t.planner.expandDay(dayLabel, dayDate)
                       : t.planner.collapseDay(dayLabel, dayDate)
                   }
-                  className={mealCalendarStyles.dayCellButton(theme)}
+                  className={mealCalendarStyles.dayCellButton(theme, isToday)}
                   type="button"
                   onClick={() => toggleDay(dateKey)}
                 >
@@ -181,28 +182,34 @@ function MealCalendar({
                       <span className={mealCalendarStyles.dayToggleIcon(isCollapsed)} aria-hidden="true">
                         <ChevronIcon />
                       </span>
-                      <span className={mealCalendarStyles.dayLabel}>{dayLabel}</span>
+                      <span className={mealCalendarStyles.dayLabel(isToday)}>{dayLabel}</span>
                     </span>
-                    <span className={mealCalendarStyles.dayDate(theme)}>{dayDate}</span>
+                    <span className={mealCalendarStyles.dayDate(theme, isToday)}>{dayDate}</span>
+                    {isToday && <span className={mealCalendarStyles.todayBadge}>{t.planner.today}</span>}
                   </span>
-                  <span className={mealCalendarStyles.dayPreviewStrip} aria-hidden="true">
-                    {mealSlots.map((meal) => (
-                      <DayMealPreview
-                        entry={getEntryForSlot(dateKey, meal)}
-                        ingredientsById={ingredientsById}
-                        key={`${dateKey}-${meal}-preview`}
-                        recipesById={recipesById}
-                        theme={theme}
-                      />
-                    ))}
-                  </span>
+                  {/* A folded day shows what is planned in it; an open day shows the cards themselves. */}
+                  {isCollapsed && (
+                    <span className={mealCalendarStyles.dayPreviewStrip} aria-hidden="true">
+                      <span className={mealCalendarStyles.dayPreviewSummary(theme, isToday)}>
+                        {t.planner.plannedMealsCount(plannedEntries.length, mealSlots.length)}
+                      </span>
+                      {plannedEntries.map((entry) => (
+                        <DayMealPreview
+                          entry={entry}
+                          ingredientsById={ingredientsById}
+                          key={`${dateKey}-${entry.slot}-preview`}
+                          recipesById={recipesById}
+                          theme={theme}
+                        />
+                      ))}
+                    </span>
+                  )}
                 </button>
               ) : (
-                <div className={mealCalendarStyles.dayCell(theme)}>
-                  <span className={mealCalendarStyles.dayTitleGroup}>
-                    <span className={mealCalendarStyles.dayLabel}>{dayLabel}</span>
-                  </span>
-                  <span className={mealCalendarStyles.dayDate(theme)}>{dayDate}</span>
+                <div className={mealCalendarStyles.dayCell(theme, isToday)}>
+                  <span className={mealCalendarStyles.dayLabel(isToday)}>{dayLabel}</span>
+                  <span className={mealCalendarStyles.dayDate(theme, isToday)}>{dayDate}</span>
+                  {isToday && <span className={mealCalendarStyles.todayBadge}>{t.planner.today}</span>}
                 </div>
               )}
               <div className={mealCalendarStyles.dayMealGrid(isCollapsed)}>
@@ -214,6 +221,7 @@ function MealCalendar({
                     ingredientsById={ingredientsById}
                     isDisabled={isDisabled}
                     isLoading={isLoading}
+                    isToday={isToday}
                     key={`${dateKey}-${meal}`}
                     onDeleteRequest={onDeleteSlot}
                     onDragEnd={onDragEnd}
@@ -259,7 +267,7 @@ function DayMealPreview({ entry, ingredientsById, recipesById, theme }: DayMealP
   const imageUrl = getThumbnailSrc(recipe ?? ingredient);
 
   if (recipe === undefined && ingredient === undefined) {
-    return <span className={mealCalendarStyles.dayPreviewEmpty(theme)} />;
+    return null;
   }
 
   return (

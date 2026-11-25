@@ -427,6 +427,8 @@ export type TranslationDictionary = {
     previousRange: (range: string) => string;
     nextRange: (range: string) => string;
     today: string;
+    plannedMealsCount: (planned: number, total: number) => string;
+    portionsCount: (portions: number) => string;
     openMealSlot: string;
     openRecipe: string;
     rangeNames: Record<PlannerViewMode, string>;

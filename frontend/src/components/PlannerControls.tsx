@@ -227,7 +227,7 @@ function PlannerControls({
               onClick={() => runMobileAction(onClearRange)}
             >
               <ClearIcon />
-              <span className={plannerControlsStyles.actionButtonLabel}>
+              <span className={plannerControlsStyles.mobileActionButtonLabel}>
                 {isClearRangeRunning ? t.planner.clearing : t.planner.actionClear}
               </span>
             </button>
@@ -239,7 +239,7 @@ function PlannerControls({
               onClick={() => runMobileAction(onGenerateRange)}
             >
               <GenerateIcon />
-              <span className={plannerControlsStyles.actionButtonLabel}>
+              <span className={plannerControlsStyles.mobileActionButtonLabel}>
                 {isGenerateRangeRunning ? t.planner.generating : t.planner.actionGenerate}
               </span>
             </button>
@@ -251,7 +251,7 @@ function PlannerControls({
               onClick={() => runMobileAction(onOpenPrepHelper)}
             >
               <PrepIcon />
-              <span className={plannerControlsStyles.actionButtonLabel}>{t.planner.actionPrep}</span>
+              <span className={plannerControlsStyles.mobileActionButtonLabel}>{t.planner.actionPrep}</span>
             </button>
             <button
               aria-label={t.planner.exportGroceryList}
@@ -261,7 +261,7 @@ function PlannerControls({
               onClick={() => runMobileAction(onExportRange)}
             >
               <ExportIcon />
-              <span className={plannerControlsStyles.actionButtonLabel}>
+              <span className={plannerControlsStyles.mobileActionButtonLabel}>
                 {isExportRangeRunning ? t.planner.groceryExportLoading : t.planner.actionExport}
               </span>
             </button>

@@ -583,6 +583,8 @@ export const nb: TranslationDictionary = {
     nextRange: (range) => `Neste ${range}`,
     today: "I dag",
     openPlannerActions: "Åpne planleggerverktøy",
+    plannedMealsCount: (planned, total) => `${planned} av ${total} planlagt`,
+    portionsCount: (portions) => (portions === 1 ? "1 porsjon" : `${String(portions).replace(".", ",")} porsjoner`),
     openMealSlot: "Åpne måltidsplass",
     openRecipe: "Åpne oppskrift",
     plannerControls: "Planleggerkontroller",

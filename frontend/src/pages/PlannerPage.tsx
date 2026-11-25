@@ -454,7 +454,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
   };
 
   return (
-    <main className={pageStyles.shell}>
+    <main className={pageStyles.plannerShell}>
       {pageStyles.showColumnDebugOverlay && (
         <div className={pageStyles.columnDebugOverlay} aria-hidden="true">
           {Array.from({ length: 12 }, (_, index) => (

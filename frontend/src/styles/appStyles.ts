@@ -493,6 +493,7 @@ export const headerStyles = {
 export const pageStyles = {
   shell: `${layoutClasses.contentWidth} ${responsiveClasses.portablePagePadding} ${sizeClasses.portableBottomNavOffset} relative py-12`,
   contentShell: "grid w-full gap-6 max-[1100px]:pb-20",
+  plannerShell: `${layoutClasses.contentWidth} ${responsiveClasses.portablePagePadding} ${sizeClasses.portableBottomNavOffset} relative pb-12 pt-6`,
   showColumnDebugOverlay: false,
   columnDebugOverlay:
     "pointer-events-none absolute inset-y-0 left-0 right-0 grid grid-cols-12 gap-6 opacity-100",
@@ -1030,8 +1031,9 @@ export const nutritionStyles = {
 export const plannerControlsStyles = {
   viewport: "mx-auto w-full max-[1100px]:w-[min(100%,36rem)] max-sm:w-full",
   /* Keep the planner content aligned with the cookbook grid using the shared spacing scale. */
-  shell: `mb-8 grid w-full grid-cols-12 ${layoutClasses.gridGap} max-[1100px]:mb-6 max-[1100px]:grid-cols-1 max-[1100px]:gap-3`,
-  datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap}`,
+  // One row on wide screens (actions, week, view switch) so the whole week fits under it on a 900 px screen.
+  shell: `mb-5 grid w-full grid-cols-12 items-center ${layoutClasses.gridGap} max-[1100px]:mb-6 max-[1100px]:grid-cols-1 max-[1100px]:gap-3`,
+  datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap} min-[1101px]:gap-2`,
   // The year floats above the range label without increasing the top-control row height.
   dateYearRow: (theme: SiteTheme) =>
     `pointer-events-none absolute inset-x-0 -top-4 z-0 flex h-0 justify-center overflow-visible text-sm font-bold leading-none ${
@@ -1042,30 +1044,32 @@ export const plannerControlsStyles = {
           : "text-neutral-500"
     }`,
   datePrimary: (theme: SiteTheme) =>
-    `min-w-52 whitespace-nowrap text-center text-3xl font-bold leading-tight max-[1100px]:min-w-0 ${siteColorClasses[theme].plannerCounterAccent}`,
+    `min-w-36 whitespace-nowrap text-center text-3xl font-bold leading-tight max-[1100px]:min-w-0 ${siteColorClasses[theme].plannerCounterAccent}`,
   leftCell:
-    "order-2 col-span-8 flex items-center justify-start max-[1100px]:hidden",
+    "order-1 col-span-5 flex items-center justify-start max-[1100px]:hidden",
   centerCell:
-    "relative order-1 col-span-12 flex items-center justify-center max-[1100px]:col-span-1 max-[1100px]:min-w-0",
+    "relative order-2 col-span-4 flex items-center justify-center pt-3 max-[1100px]:order-1 max-[1100px]:col-span-1 max-[1100px]:min-w-0 max-[1100px]:pt-4",
   rightCell:
-    "order-2 col-span-4 flex items-center justify-end max-[1100px]:hidden",
+    "order-3 col-span-3 flex items-center justify-end max-[1100px]:hidden",
   counterActions: `grid w-full grid-cols-4 ${layoutClasses.calendarGap}`,
   actionSlotLeft: "min-w-0",
   actionSlotCenter: "min-w-0",
   actionSlotRight: "min-w-0",
   iconOnlyButton: (theme: SiteTheme) =>
-    `${sizeClasses.plannerControlHeight} group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-2 ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+    `${sizeClasses.plannerControlHeight} group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-1.5 ${radiusClasses.figma6} border px-2 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
   iconButton: (theme: SiteTheme) =>
     `${sizeClasses.plannerControlHeight} inline-flex aspect-square items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
-  nextAndTodayGroup: "relative inline-flex",
+  nextAndTodayGroup: "relative inline-flex min-[1101px]:gap-2",
   todayButton: (theme: SiteTheme) =>
-    `absolute left-full top-0 ml-2 ${sizeClasses.plannerControlHeight} inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+    `absolute left-full top-0 ml-2 min-[1101px]:static min-[1101px]:ml-0 ${sizeClasses.plannerControlHeight} inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
   buttonIcon: "h-4 w-4 shrink-0 fill-current",
-  actionButtonLabel: "min-w-0 truncate leading-none",
+  // Below 1440 px the four actions are icons with tooltips, so no label is cut off.
+  actionButtonLabel: "min-w-0 truncate leading-none max-[1439px]:sr-only",
+  mobileActionButtonLabel: "min-w-0 truncate leading-none",
   tooltip: (theme: SiteTheme) =>
     `pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold opacity-0 ${shadowClasses.subtle} transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${siteColorClasses[theme].plannerTooltip}`,
   viewToggle: (theme: SiteTheme) =>
-    segmentedToggleStyles.shell(theme, sizeClasses.thumbnailControlWidth),
+    segmentedToggleStyles.shell(theme, "w-full max-w-64"),
   viewToggleOption: (theme: SiteTheme, selected: boolean) =>
     segmentedToggleStyles.option(theme, selected),
   mobileControlRow: "hidden max-[1100px]:block",
@@ -1143,114 +1147,119 @@ export const prepHelperStyles = {
   secondaryButton: controlStyles.secondaryButton,
 } as const;
 
+const plannerMutedText = (theme: SiteTheme) =>
+  theme === "dark" ? "text-neutral-300" : theme === "paletteLight" ? "text-[#556145]" : "text-neutral-600";
+
 export const mealCalendarStyles = {
-  shell:
-    "flex w-full flex-col overflow-visible max-[1100px]:overflow-x-auto max-[1100px]:pb-24",
-  grid: `grid w-full min-w-[720px] grid-cols-12 ${layoutClasses.calendarGap} max-[1100px]:min-w-0 max-[1100px]:grid-cols-1`,
-  rows: `flex flex-col ${layoutClasses.calendarGap}`,
-  row: `relative min-h-36 min-w-[720px] max-[1100px]:grid max-[1100px]:min-h-0 max-[1100px]:min-w-0 max-[1100px]:gap-2`,
-  headerCell: (theme: SiteTheme) =>
-    `flex ${sizeClasses.mealCalendarHeaderHeight} items-center justify-center ${radiusClasses.figma6} text-center ${typographyClasses.mealHeaderLabel} ${siteColorClasses[theme].mealHeaderCell}`,
-  headerCellSpan: "col-span-4",
-  dayCell: (theme: SiteTheme) =>
-    `absolute right-full top-0 grid w-20 ${sizeClasses.mealCalendarCellHeight} grid-rows-[1fr_auto_auto_1fr] items-center justify-items-center border-0 bg-transparent p-0 max-[1100px]:static max-[1100px]:h-auto max-[1100px]:w-full max-[1100px]:grid-cols-[minmax(0,1fr)_auto] max-[1100px]:grid-rows-none max-[1100px]:justify-start max-[1100px]:justify-items-stretch max-[1100px]:gap-x-2 max-[1100px]:py-1 ${siteColorClasses[theme].plannerCounterAccent}`,
-  dayCellButton: (theme: SiteTheme) =>
-    `${mealCalendarStyles.dayCell(theme)} cursor-pointer transition-opacity hover:opacity-80 ${focusBase} ${siteColorClasses[theme].focus}`,
-  dayTitleGroup:
-    "row-start-2 flex items-center justify-center gap-1 max-[1100px]:row-auto",
+  shell: "flex w-full flex-col max-[1100px]:pb-8",
+  // Breakfast, lunch and dinner above the three columns; on narrow screens each card names its meal instead.
+  headerRow: `mb-2 grid grid-cols-3 ${layoutClasses.calendarGap} max-[1100px]:hidden`,
+  headerLabel: (theme: SiteTheme) =>
+    `px-1 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText(theme)}`,
+  rows: "flex flex-col gap-2 max-[1100px]:gap-4",
+  row: "relative max-[1100px]:grid max-[1100px]:gap-2",
+  dayCell: (theme: SiteTheme, isToday = false) =>
+    `absolute inset-y-0 right-full mr-2 flex w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-md border-0 p-0 max-[1100px]:static max-[1100px]:mr-0 max-[1100px]:min-h-11 max-[1100px]:w-full max-[1100px]:flex-row max-[1100px]:justify-between max-[1100px]:gap-2 max-[1100px]:px-2 max-[1100px]:py-1 ${
+      isToday
+        ? theme === "dark"
+          ? "bg-white/[0.12] text-white"
+          : theme === "paletteLight"
+            ? "bg-[#556145] text-[#FAF7F2]"
+            : "bg-neutral-900 text-white"
+        : siteColorClasses[theme].plannerCounterAccent
+    }`,
+  dayCellButton: (theme: SiteTheme, isToday = false) =>
+    `${mealCalendarStyles.dayCell(theme, isToday)} cursor-pointer transition-opacity hover:opacity-80 ${focusBase} ${siteColorClasses[theme].focus}`,
+  dayTitleGroup: "flex items-center justify-center gap-1",
   dayHeaderTextGroup:
-    "grid min-w-0 items-center justify-self-start justify-items-start max-[1100px]:flex max-[1100px]:items-center max-[1100px]:gap-1.5",
+    "flex flex-col items-center max-[1100px]:min-w-0 max-[1100px]:flex-row max-[1100px]:gap-1.5",
   dayToggleIcon: (collapsed: boolean) =>
     `flex h-5 w-5 items-center justify-center transition-transform ${
       collapsed ? "" : "rotate-90"
     }`,
   dayToggleSvg: "h-3.5 w-3.5 fill-current",
-  dayLabel: `${sizeClasses.dayLabelHeight} flex items-center justify-center text-center ${typographyClasses.dayLabel}`,
-  // Keeps the date close to the weekday while the weekday remains vertically centered to the meal slots.
-  dayDate: (theme: SiteTheme) =>
-    `row-start-3 mt-1 text-sm font-light leading-none max-[1100px]:row-auto max-[1100px]:mt-0 ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
-    }`,
-  dayPreviewStrip:
-    "hidden items-center justify-self-end gap-1.5 max-[1100px]:flex",
+  dayLabel: (isToday: boolean) =>
+    `text-xl leading-none tracking-normal ${isToday ? "font-extrabold" : "font-light"}`,
+  dayDate: (theme: SiteTheme, isToday = false) =>
+    `text-sm font-semibold leading-none ${isToday ? "" : plannerMutedText(theme)}`,
+  todayBadge: "text-[10px] font-extrabold uppercase leading-none tracking-wider",
+  // On phones a collapsed day shows small previews of its planned meals.
+  dayPreviewStrip: "flex items-center -space-x-1.5",
+  dayPreviewSummary: (theme: SiteTheme, isToday = false) =>
+    `mr-1 text-xs font-bold ${isToday ? "" : plannerMutedText(theme)}`,
   dayPreviewFilled: (theme: SiteTheme) =>
-    `block h-7 w-7 overflow-hidden ${radiusClasses.figma6} border ${shadowClasses.subtle} ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-white/[0.035]"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2]/70"
-          : "border-neutral-200 bg-white"
-    }`,
-  dayPreviewEmpty: (theme: SiteTheme) =>
-    `block h-7 w-7 ${radiusClasses.figma6} border border-dashed ${
-      theme === "dark"
-        ? "border-white/[0.14] bg-white/[0.035]"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#FAF7F2]/70"
-          : "border-neutral-300 bg-white"
+    `block h-8 w-8 overflow-hidden rounded-full border-2 ${
+      theme === "dark" ? "border-neutral-900" : theme === "paletteLight" ? "border-[#FAF7F2]" : "border-white"
     }`,
   dayPreviewImage: "h-full w-full object-cover",
   dayPreviewImageFallback: (theme: SiteTheme) =>
-    `block h-full w-full ${theme === "dark" ? "bg-neutral-800" : theme === "paletteLight" ? "bg-[#E5D5BC]/45" : "bg-neutral-100"}`,
+    `block h-full w-full ${theme === "dark" ? "bg-neutral-700" : theme === "paletteLight" ? "bg-[#C8C0B5]" : "bg-neutral-200"}`,
   dayMealGrid: (collapsed: boolean) =>
-    `${mealCalendarStyles.grid} ${collapsed ? "hidden" : ""}`,
-  mealSlot: (theme: SiteTheme) =>
-    `group/meal-slot relative col-span-4 flex ${sizeClasses.mealCalendarCellHeight} items-center justify-center ${radiusClasses.figma6} border transition-colors duration-150 max-[1100px]:col-span-1 max-[1100px]:h-32 max-sm:h-28 ${
+    `grid grid-cols-3 ${layoutClasses.calendarGap} max-[1100px]:grid-cols-1 max-[1100px]:gap-2 ${collapsed ? "hidden" : ""}`,
+  mealSlot: (theme: SiteTheme, isToday: boolean, roomForTouchActions: boolean) =>
+    `group/meal-slot relative flex ${radiusClasses.figma6} border transition-colors duration-150 ${
+      roomForTouchActions ? "min-h-24" : "h-[5.5rem] max-[1100px]:h-auto max-[1100px]:min-h-[5.5rem]"
+    } ${
       theme === "dark"
-        ? "border-white/[0.08] bg-white/[0.035] hover:bg-white/[0.06]"
+        ? `${isToday ? "border-white/[0.28]" : "border-white/[0.08]"} bg-white/[0.035] hover:bg-white/[0.06]`
         : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2]/70 hover:bg-[#E5D5BC]/45"
-          : "border-neutral-200 bg-white hover:bg-neutral-50"
+          ? `${isToday ? "border-[#556145]" : "border-[#C8C0B5]"} bg-[#FAF7F2]/70 hover:bg-[#E5D5BC]/45`
+          : `${isToday ? "border-neutral-900" : "border-neutral-200"} bg-white hover:bg-neutral-50`
     }`,
   mealSlotDropTarget: (theme: SiteTheme) =>
     `${theme === "dark" ? "data-[drag-active=true]:border-emerald-300/70" : theme === "paletteLight" ? "data-[drag-active=true]:border-[#7A8864]" : "data-[drag-active=true]:border-emerald-700"} data-[drag-active=true]:border-2`,
-  mealSlotButton: "flex h-full w-full cursor-pointer items-center justify-center text-left disabled:cursor-not-allowed",
+  mealSlotButton: `flex w-full min-w-0 cursor-pointer items-stretch rounded-md p-2 text-left disabled:cursor-not-allowed ${focusBase}`,
   // A slot whose plan could not be loaded: visibly not an empty, editable slot.
   mealSlotUnavailable: "opacity-45",
   mealSlotDraggableButton: "min-[1101px]:cursor-grab min-[1101px]:active:cursor-grabbing",
-  // On a desktop with a mouse the card's actions appear on hover; on touch screens they are always shown, over the image.
-  mealSlotDeleteButton: (theme: SiteTheme, revealOnHover: boolean) =>
-    `absolute z-10 h-8 w-8 items-center justify-center rounded-md border ${
-      revealOnHover
-        ? "pointer-events-none bottom-2 right-2 hidden opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100"
-        : "left-2 top-2 flex"
-    } ${focusBase} ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "border-red-400/35 bg-red-950 text-red-100 hover:bg-red-900"
-        : theme === "paletteLight"
-          ? "border-red-900/30 bg-red-900 text-[#FAF7F2] hover:bg-red-800"
-          : "border-red-800/30 bg-red-700 text-white hover:bg-red-800"
+  // With a mouse the card's actions appear on hover or when the card has keyboard focus (F22); on
+  // touch screens they are always shown, in a column at the card's right edge.
+  mealSlotActions: (revealOnHover: boolean) =>
+    revealOnHover
+      ? "pointer-events-none absolute right-1.5 top-1.5 z-10 flex gap-1 opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:opacity-100 group-focus-within/meal-slot:pointer-events-auto group-focus-within/meal-slot:opacity-100"
+      : "absolute inset-y-0 right-0 z-10 flex flex-col justify-center gap-1 p-1",
+  // Mouse: small solid buttons over the card. Touch: 44 px ghost buttons in the card's own column.
+  mealSlotActionButton: (theme: SiteTheme, compact: boolean) =>
+    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses[theme].focus} ${
+      compact
+        ? `h-8 w-8 shadow-sm ${
+            theme === "dark"
+              ? "border-white/[0.16] bg-neutral-950 text-neutral-100 hover:bg-neutral-900"
+              : theme === "paletteLight"
+                ? "border-[#7A8864]/45 bg-[#FAF7F2] text-[#556145] hover:bg-[#EFE6D8]"
+                : "border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50"
+          }`
+        : `h-11 w-11 border-transparent bg-transparent ${
+            theme === "dark" ? "text-neutral-200" : theme === "paletteLight" ? "text-[#556145]" : "text-neutral-700"
+          }`
     }`,
-  mealSlotOpenRecipeButton: (theme: SiteTheme, revealOnHover: boolean) =>
-    `absolute bottom-2 left-2 z-10 h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold shadow-sm max-sm:px-2 ${
-      revealOnHover
-        ? "pointer-events-none hidden opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:flex group-hover/meal-slot:opacity-100"
-        : "flex"
-    } ${focusBase} ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "border-white/[0.16] bg-neutral-950 text-neutral-100 hover:bg-neutral-900"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/45 bg-[#FAF7F2] text-[#556145] hover:bg-[#EFE6D8]"
-          : "border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50"
+  mealSlotDeleteButton: (theme: SiteTheme, compact: boolean) =>
+    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses[theme].focus} ${
+      compact
+        ? `h-8 w-8 shadow-sm ${
+            theme === "dark"
+              ? "border-red-400/35 bg-red-950 text-red-100 hover:bg-red-900"
+              : theme === "paletteLight"
+                ? "border-red-900/30 bg-red-900 text-[#FAF7F2] hover:bg-red-800"
+                : "border-red-800/30 bg-red-700 text-white hover:bg-red-800"
+          }`
+        : `h-11 w-11 border-transparent bg-transparent ${theme === "dark" ? "text-red-300" : "text-red-800"}`
     }`,
   mealSlotDeleteIcon: "h-4 w-4",
-  mealSlotInner: (theme: SiteTheme) =>
-    `${sizeClasses.mealSlotPlaceholder} ${radiusClasses.figma6} border border-dashed ${
+  mealSlotEmpty: (theme: SiteTheme) =>
+    `m-auto inline-flex items-center gap-1.5 rounded-md border border-dashed px-3 py-1.5 text-sm font-bold ${
       theme === "dark"
-        ? "border-white/[0.14]"
+        ? "border-white/[0.18] text-neutral-300"
         : theme === "paletteLight"
-          ? "border-[#7A8864]/35"
-          : "border-neutral-300"
+          ? "border-[#7A8864]/45 text-[#556145]"
+          : "border-neutral-300 text-neutral-600"
     }`,
+  mealSlotEmptyPlus: "text-base leading-none",
   mealSlotContent: (hasImage: boolean) =>
-    `grid ${sizeClasses.mealSlotContentInset} ${hasImage ? "grid-cols-2" : "grid-cols-[0.375rem_minmax(0,1fr)]"} overflow-hidden ${radiusClasses.figma6}`,
-  mealSlotColorBar: "h-full w-full rounded-l-md",
+    `grid w-full min-w-0 gap-2.5 ${hasImage ? "grid-cols-[4.5rem_minmax(0,1fr)]" : "grid-cols-[0.375rem_minmax(0,1fr)] gap-2"}`,
+  mealSlotColorBar: "block w-1.5 rounded-full",
   mealSlotImageFrame: (theme: SiteTheme) =>
-    `h-full w-full overflow-hidden rounded-l-md ${
+    `block h-[4.5rem] w-[4.5rem] self-center overflow-hidden rounded-md ${
       theme === "dark"
         ? "bg-neutral-800"
         : theme === "paletteLight"
@@ -1258,18 +1267,15 @@ export const mealCalendarStyles = {
           : "bg-neutral-100"
     }`,
   mealSlotImage: "h-full w-full object-cover",
-  mealSlotImageFallback: (theme: SiteTheme) =>
-    `h-full w-full ${theme === "dark" ? "bg-neutral-800" : theme === "paletteLight" ? "bg-[#E5D5BC]/45" : "bg-neutral-100"}`,
   mealSlotSkeletonImage: (theme: SiteTheme) =>
-    `h-full w-full animate-pulse rounded-l-md ${
+    `block h-[4.5rem] w-[4.5rem] animate-pulse rounded-md ${
       theme === "dark"
         ? "bg-white/[0.08]"
         : theme === "paletteLight"
           ? "bg-[#C8C0B5]/65"
           : "bg-neutral-200"
     }`,
-  mealSlotSkeletonDetails:
-    "grid min-w-0 content-start gap-2 px-3 pb-3 pt-2 max-sm:px-2 max-sm:pb-2 max-sm:pt-1.5",
+  mealSlotSkeletonDetails: "grid min-w-0 content-start gap-2 pt-1",
   mealSlotSkeletonLine: (theme: SiteTheme, width: "short" | "title") =>
     `block h-3 animate-pulse rounded-full ${
       width === "title" ? "w-4/5" : "w-1/2"
@@ -1280,53 +1286,28 @@ export const mealCalendarStyles = {
           ? "bg-[#7A8864]/28"
           : "bg-neutral-300"
     }`,
-  mealSlotSkeletonChips: "mt-1 flex flex-wrap gap-1.5",
-  mealSlotSkeletonChip: (theme: SiteTheme) =>
-    `block h-5 w-14 animate-pulse rounded-md ${
-      theme === "dark"
-        ? "bg-white/[0.08]"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]"
-          : "bg-neutral-200"
-    }`,
-  mealSlotDetails:
-    "relative grid min-h-0 min-w-0 content-start gap-1.5 overflow-hidden px-3 pb-7 pt-2 max-sm:px-2 max-sm:pb-6 max-sm:pt-1.5",
+  mealSlotDetails: (roomForTouchActions: boolean) =>
+    `flex min-w-0 flex-col justify-between gap-1 ${roomForTouchActions ? "pr-12" : ""}`,
+  mealSlotEyebrow: (theme: SiteTheme) =>
+    `hidden text-[11px] font-extrabold uppercase leading-none tracking-wider max-[1100px]:block ${plannerMutedText(theme)}`,
   mealSlotTitle: (theme: SiteTheme) =>
-    `min-w-0 overflow-hidden break-words text-left text-base font-bold leading-tight [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] max-sm:text-sm ${
+    `min-w-0 overflow-hidden break-words text-[15px] font-bold leading-tight [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] ${
       theme === "dark"
-        ? "text-neutral-100"
+        ? "text-neutral-50"
         : theme === "paletteLight"
-          ? "text-[#556145]"
+          ? "text-[#3C4A2E]"
           : "text-neutral-900"
     }`,
-  mealSlotIngredients: (theme: SiteTheme) =>
-    `min-w-0 truncate text-xs font-semibold leading-snug ${
-      theme === "dark" ? "text-neutral-300" : theme === "paletteLight" ? "text-[#556145]/90" : "text-neutral-600"
-    }`,
-  mealSlotRecipeList: "flex min-w-0 flex-wrap items-start gap-1.5 overflow-hidden",
+  mealSlotMetaRow: "flex min-w-0 items-center gap-2",
+  mealSlotSecondary: (theme: SiteTheme) =>
+    `min-w-0 flex-1 truncate text-xs font-semibold leading-snug ${plannerMutedText(theme)}`,
   mealSlotPortions: (theme: SiteTheme) =>
-    `absolute bottom-2 right-3 text-xs font-black max-sm:right-2 max-sm:text-[11px] ${
+    `shrink-0 rounded-md px-1.5 py-0.5 text-xs font-extrabold leading-tight ${
       theme === "dark"
-        ? "text-neutral-300"
+        ? "bg-white/[0.10] text-neutral-50"
         : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-600"
-    }`,
-  mealSlotRecipe: (theme: SiteTheme) =>
-    `max-w-full truncate rounded-md border px-2 py-1 text-xs font-bold leading-none max-sm:text-[11px] ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-white/[0.08] text-neutral-100"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/25 bg-[#E5D5BC]/55 text-[#556145]"
-          : "border-neutral-200 bg-neutral-100 text-neutral-800"
-    }`,
-  mealSlotStatus: (theme: SiteTheme) =>
-    `text-center text-xs font-bold ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#7A8864]"
-          : "text-neutral-500"
+          ? "bg-[#E5D5BC] text-[#3C4A2E]"
+          : "bg-neutral-100 text-neutral-800"
     }`,
   monthGrid: `grid min-w-[840px] grid-cols-7 ${layoutClasses.calendarGap}`,
   monthGridWithOffset: `grid min-w-[840px] grid-cols-7 ${layoutClasses.calendarGap} mt-3`,
