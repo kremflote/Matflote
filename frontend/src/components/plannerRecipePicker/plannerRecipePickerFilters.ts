@@ -58,12 +58,21 @@ export function matchesSelectedIngredientTags(
   return selectedIngredientTags.every((ingredientTag) => recipeHasIngredientTag(recipe, ingredientTag, recipesById));
 }
 
-export function matchesSelectedRecipeTags(recipe: IRecipe, selectedRecipeTags: RecipeTag[]) {
-  if (selectedRecipeTags.length === 0) {
-    return true;
-  }
+/** Meal-time tags are alternatives: a lunch slot offers recipes tagged Lunch or Dinner. */
+export const mealTimeRecipeTags: readonly RecipeTag[] = ["Breakfast", "Lunch", "Dinner"];
 
-  return selectedRecipeTags.every((recipeTag) => recipe.tags.includes(recipeTag));
+/**
+ * A recipe matches when it has at least one of the selected meal-time tags (if any are selected)
+ * and every other selected tag.
+ */
+export function matchesSelectedRecipeTags(recipe: IRecipe, selectedRecipeTags: RecipeTag[]) {
+  const selectedMealTimeTags = selectedRecipeTags.filter((recipeTag) => mealTimeRecipeTags.includes(recipeTag));
+  const otherSelectedTags = selectedRecipeTags.filter((recipeTag) => !mealTimeRecipeTags.includes(recipeTag));
+
+  return (
+    (selectedMealTimeTags.length === 0 || selectedMealTimeTags.some((recipeTag) => recipe.tags.includes(recipeTag))) &&
+    otherSelectedTags.every((recipeTag) => recipe.tags.includes(recipeTag))
+  );
 }
 
 export function matchesSearch(recipe: IRecipe, searchTerm: string) {
