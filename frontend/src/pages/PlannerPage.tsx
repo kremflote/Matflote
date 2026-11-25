@@ -11,7 +11,6 @@ import { useIngredientTagCategories, useIngredients, useLanguage, useMealPlan, u
 import type { IGroceryList } from "../interfaces/IGroceryList";
 import type { MeasurementUnit } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, IMealPlanRecipe, MealSlot, PlannerViewMode } from "../interfaces/IMeal";
-import type { IRecipe } from "../interfaces/IRecipe";
 import { groceryListService } from "../services";
 import type { MealPlanEntryRequest, MealPlanRecipeRequest } from "../services/mealPlanService";
 import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
@@ -81,7 +80,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
     stripTime(getSessionDatePreference(sessionPreferenceKeys.plannerMonthAnchorDate, new Date())),
   );
   const [selectedSlot, setSelectedSlot] = useState<SelectedPlannerSlot | null>(null);
-  const [activeRecipeDetail, setActiveRecipeDetail] = useState<IRecipe | null>(null);
+  const [activeRecipeId, setActiveRecipeId] = useState<number | null>(null);
   const [draggedSlot, setDraggedSlot] = useState<SelectedPlannerSlot | null>(null);
   const [pendingMealMove, setPendingMealMove] = useState<PendingMealMove | null>(null);
   const [pendingMealDelete, setPendingMealDelete] = useState<SelectedPlannerSlot | null>(null);
@@ -500,7 +499,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           onDragEnd={() => setDraggedSlot(null)}
           onDragStart={(date, slot) => setDraggedSlot({ date, slot })}
           onDropOnSlot={handleMealDrop}
-          onOpenRecipe={setActiveRecipeDetail}
+          onOpenRecipe={(recipe) => setActiveRecipeId(recipe.recipeId)}
           onSlotClick={(date, slot) => setSelectedSlot({ date, slot })}
           recipesById={recipesById}
           theme={theme}
@@ -536,11 +535,12 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           onClose={() => setIsPrepHelperOpen(false)}
         />
       )}
-      {activeRecipeDetail !== null && (
+      {activeRecipeId !== null && (
         <BrowserDetailModal
-          detail={{ kind: "recipe", recipe: activeRecipeDetail }}
+          detail={{ kind: "recipe", id: activeRecipeId }}
+          key={activeRecipeId}
           theme={theme}
-          onClose={() => setActiveRecipeDetail(null)}
+          onClose={() => setActiveRecipeId(null)}
         />
       )}
       {pendingPlannerAction !== null && (

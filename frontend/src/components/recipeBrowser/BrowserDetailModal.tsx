@@ -1,6 +1,8 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import ConfirmationDialog from "../ConfirmationDialog";
 import { useIngredients, useLanguage, useRecipes } from "../../contexts";
+import type { IIngredient } from "../../interfaces/IIngredient";
+import type { IRecipe } from "../../interfaces/IRecipe";
 import { ingredientService, recipeService } from "../../services";
 import type { SiteTheme } from "../../styles/appStyles";
 import Modal from "../Modal";
@@ -10,10 +12,14 @@ import RecipeCreateForm from "./RecipeCreateForm";
 import RecipeDetailContent from "./RecipeDetailContent";
 import { recipeTags } from "./formOptions";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
-import type { BrowserDetail } from "./types";
+import { toBrowserDetailKey, type BrowserDetail, type BrowserDetailKey } from "./types";
 
 type BrowserDetailModalProps = {
-  detail: BrowserDetail;
+  /**
+   * What to show, by id; the current recipe or ingredient is looked up in the lists, so a refresh
+   * keeps an open edit form. Give the modal a `key` from this so opening another one starts afresh.
+   */
+  detail: BrowserDetailKey;
   theme: SiteTheme;
   onClose: () => void;
 };
@@ -24,9 +30,9 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   const editTitleId = useId();
   const detailTitleId = useId();
   const { recipes, refreshRecipes } = useRecipes();
-  const { refreshIngredients } = useIngredients();
-  const [activeDetail, setActiveDetail] = useState(detail);
-  const [detailHistory, setDetailHistory] = useState<BrowserDetail[]>([]);
+  const { ingredients, refreshIngredients } = useIngredients();
+  const [activeKey, setActiveKey] = useState(detail);
+  const [detailHistory, setDetailHistory] = useState<BrowserDetailKey[]>([]);
   const [isEditingRecipe, setIsEditingRecipe] = useState(false);
   const [isEditingIngredient, setIsEditingIngredient] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -34,25 +40,19 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-
-  useEffect(() => {
-    setActiveDetail(detail);
-    setDetailHistory([]);
-    setIsEditingRecipe(false);
-    setIsEditingIngredient(false);
-    setDeleteError(null);
-    setPdfError(null);
-    setIsExportingPdf(false);
-    setIsConfirmingDelete(false);
-  }, [detail]);
+  const activeDetail = useMemo(
+    () => resolveDetail(activeKey, recipes, ingredients),
+    [activeKey, ingredients, recipes],
+  );
 
   const navigateToDetail = (nextDetail: BrowserDetail) => {
-    if (isSameDetail(activeDetail, nextDetail)) {
+    const nextKey = toBrowserDetailKey(nextDetail);
+    if (isSameDetail(activeKey, nextKey)) {
       return;
     }
 
-    setDetailHistory((currentHistory) => [...currentHistory, activeDetail]);
-    setActiveDetail(nextDetail);
+    setDetailHistory((currentHistory) => [...currentHistory, activeKey]);
+    setActiveKey(nextKey);
     setIsEditingRecipe(false);
     setIsEditingIngredient(false);
     setDeleteError(null);
@@ -68,7 +68,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
         return currentHistory;
       }
 
-      setActiveDetail(previousDetail);
+      setActiveKey(previousDetail);
       setIsEditingRecipe(false);
       setIsEditingIngredient(false);
       setDeleteError(null);
@@ -77,6 +77,11 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
       return currentHistory.slice(0, -1);
     });
   };
+
+  // Removed elsewhere, or not loaded: there is nothing to show.
+  if (activeDetail === null) {
+    return null;
+  }
 
   const handleExportPdf = async () => {
     if (activeDetail.kind !== "recipe" || isExportingPdf) {
@@ -288,12 +293,22 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   );
 }
 
-function isSameDetail(first: BrowserDetail, second: BrowserDetail) {
-  if (first.kind === "recipe") {
-    return second.kind === "recipe" && first.recipe.recipeId === second.recipe.recipeId;
+function isSameDetail(first: BrowserDetailKey, second: BrowserDetailKey) {
+  return first.kind === second.kind && first.id === second.id;
+}
+
+function resolveDetail(
+  key: BrowserDetailKey,
+  recipes: IRecipe[],
+  ingredients: IIngredient[],
+): BrowserDetail | null {
+  if (key.kind === "recipe") {
+    const recipe = recipes.find((item) => item.recipeId === key.id);
+    return recipe === undefined ? null : { kind: "recipe", recipe };
   }
 
-  return second.kind === "ingredient" && first.ingredient.ingredientId === second.ingredient.ingredientId;
+  const ingredient = ingredients.find((item) => item.ingredientId === key.id);
+  return ingredient === undefined ? null : { kind: "ingredient", ingredient };
 }
 
 function getDetailName(detail: BrowserDetail) {

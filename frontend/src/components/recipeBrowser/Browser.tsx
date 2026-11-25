@@ -17,11 +17,7 @@ import {
 } from "./browserFilterUtils";
 import IngredientPickerPopover, { FilterIcon } from "./IngredientFilterPopover";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
-import type { BrowserDetail, BrowserMode } from "./types";
-
-type BrowserDetailKey =
-  | { id: number; kind: "ingredient" }
-  | { id: number; kind: "recipe" };
+import { toBrowserDetailKey, type BrowserDetail, type BrowserDetailKey, type BrowserMode } from "./types";
 
 type BrowserProps = {
   mode: BrowserMode;
@@ -92,31 +88,13 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
     [ingredients, ingredientPickerSearch],
   );
 
-  const selectedDetail = useMemo<BrowserDetail | null>(() => {
-    if (selectedDetailKey === null) {
-      return null;
-    }
-
-    if (selectedDetailKey.kind === "recipe") {
-      const recipe = recipes.find((item) => item.recipeId === selectedDetailKey.id);
-      return recipe === undefined ? null : { kind: "recipe", recipe };
-    }
-
-    const ingredient = ingredients.find((item) => item.ingredientId === selectedDetailKey.id);
-    return ingredient === undefined ? null : { kind: "ingredient", ingredient };
-  }, [ingredients, recipes, selectedDetailKey]);
-
   const selectDetail = (detail: BrowserDetail | null) => {
     if (detail === null) {
       setSelectedDetailKey(null);
       return;
     }
 
-    setSelectedDetailKey(
-      detail.kind === "recipe"
-        ? { kind: "recipe", id: detail.recipe.recipeId }
-        : { kind: "ingredient", id: detail.ingredient.ingredientId },
-    );
+    setSelectedDetailKey(toBrowserDetailKey(detail));
   };
 
   const clearFilters = () => {
@@ -338,9 +316,10 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
         </div>
       </div>
 
-      {selectedDetail !== null && (
+      {selectedDetailKey !== null && (
         <BrowserDetailModal
-          detail={selectedDetail}
+          detail={selectedDetailKey}
+          key={`${selectedDetailKey.kind}-${selectedDetailKey.id}`}
           theme={theme}
           onClose={() => selectDetail(null)}
         />
