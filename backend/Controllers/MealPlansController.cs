@@ -54,6 +54,12 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
     [HttpPost]
     public async Task<ActionResult<MealPlanEntryDto>> CreateMealPlanEntry(MealPlanEntryRequest request)
     {
+        // An entry without items would only occupy the slot (AUDIT B5).
+        if (request.Recipes.Count == 0)
+        {
+            return BadRequest(new ApiErrorDto("A meal needs at least one recipe or ingredient in \"recipes\"."));
+        }
+
         if (await EntryExists(request.Date, request.Slot))
         {
             return Conflict("A meal plan entry already exists for that date and slot.");
@@ -72,6 +78,7 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
         return CreatedAtAction(nameof(GetMealPlanEntry), new { id = entry.MealPlanEntryId }, ToDto(created!));
     }
 
+    /// <summary>Replaces an entry. An entry with no items is deleted and the answer is 204 No Content.</summary>
     [HttpPut("{id:int}")]
     public async Task<ActionResult<MealPlanEntryDto>> UpdateMealPlanEntry(int id, MealPlanEntryRequest request)
     {
@@ -82,6 +89,13 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
         if (entry is null)
         {
             return NotFound();
+        }
+
+        if (request.Recipes.Count == 0)
+        {
+            writer.Remove(entry);
+            await context.SaveChangesAsync();
+            return NoContent();
         }
 
         if (await EntryExists(request.Date, request.Slot, id))

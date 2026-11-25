@@ -110,9 +110,12 @@ export function MealPlanProvider({ children }: IProviderProps) {
   const saveMealPlanEntry = useCallback(
     (id: number | null, entry: MealPlanEntryRequest) =>
       runWrite(async () => {
-        if (id !== null && entry.recipes.length === 0) {
-          await mealPlanService.delete(id);
-          setCache((current) => removeEntry(current, id));
+        if (entry.recipes.length === 0) {
+          // The API refuses an empty new meal, and an empty existing one is simply removed.
+          if (id !== null) {
+            await mealPlanService.delete(id);
+            setCache((current) => removeEntry(current, id));
+          }
           return;
         }
 
