@@ -6,17 +6,15 @@ import {
   MaintenancePanel,
   type ExportSettingsForm,
 } from "../components/settings/SettingsPanels";
+import AssistantLogPanel from "../components/settings/AssistantLogPanel";
+import PlanningPreferencesPanel from "../components/settings/PlanningPreferencesPanel";
 import { useLanguage } from "../contexts";
 import type { IAppSettings } from "../interfaces/IAppSettings";
 import type { IImageCleanupReport } from "../interfaces/IMaintenance";
 import { ApiError, appSettingsService, maintenanceService, nutritionService } from "../services";
-import { pageStyles, settingsStyles, type SiteTheme } from "../styles/appStyles";
+import { pageStyles, settingsStyles } from "../styles/appStyles";
 
-type SettingsPageProps = {
-  theme: SiteTheme;
-};
-
-const SettingsPage = ({ theme }: SettingsPageProps) => {
+const SettingsPage = () => {
   const { t } = useLanguage();
   const [appSettings, setAppSettings] = useState<IAppSettings | null>(null);
   const [exportForm, setExportForm] = useState<ExportSettingsForm>({
@@ -242,13 +240,15 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
   return (
     <main className={pageStyles.shell}>
       <section className={settingsStyles.shell}>
-        <h1 className={settingsStyles.title(theme)}>{t.settings.pageTitle}</h1>
+        <h1 className={settingsStyles.title}>{t.settings.pageTitle}</h1>
         <div className={settingsStyles.quickSettingsRow}>
-          <LanguageSettingsPanel theme={theme} />
+          <LanguageSettingsPanel />
           {appSettings !== null && (
-            <CurrentProviderSummary appSettings={appSettings} theme={theme} />
+            <CurrentProviderSummary appSettings={appSettings} />
           )}
         </div>
+        <PlanningPreferencesPanel />
+        <AssistantLogPanel />
         <ExportSettingsPanel
           appSettings={appSettings}
           exportForm={exportForm}
@@ -259,7 +259,6 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
           isUpdatingNutritionReferences={isUpdatingNutritionReferences}
           settingsError={settingsError}
           settingsSuccess={settingsSuccess}
-          theme={theme}
           onChange={setExportForm}
           onSave={() => void saveExportSettings()}
           onTestKassalappConnection={() => void testKassalappConnection()}
@@ -271,7 +270,6 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
           isCleaningImages={isCleaningImages}
           isImportingSeedCatalog={isImportingSeedCatalog}
           isLoadingImageReport={isLoadingImageReport}
-          theme={theme}
           onCleanupImages={() => void cleanupImages()}
           onImportSeedCatalog={(file) => void importSeedCatalog(file)}
           onLoadImageReport={() => void loadImageCleanupReport()}

@@ -1,4 +1,4 @@
-// MATFLOTE: Provides lightweight duplicate-name checks for lookup values like brands and stores.
+// MATFLOTE: Provides lightweight duplicate-name checks for lookup values like brands and tag categories.
 // Note: The comparison is intentionally simple so similar but valid Norwegian names are not blocked too aggressively.
 
 using System.Globalization;

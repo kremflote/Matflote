@@ -1,6 +1,3 @@
-// MATFLOTE: EF Core entity/model for UploadedImage data stored by MATFLOTE.
-// Note: Navigation properties are initialized to empty collections so controllers can safely add related rows without null checks.
-
 using System.ComponentModel.DataAnnotations;
 
 namespace DinnerPlanner.Api.Models;
@@ -18,4 +15,8 @@ public class UploadedImage
     public string? ContentType { get; set; }
     public long SizeBytes { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>A small JPEG of the same picture for grids and cards; null until one has been made.</summary>
+    public string? ThumbnailUrl { get; set; }
+    public string? ThumbnailRelativePath { get; set; }
 }

@@ -11,11 +11,11 @@ namespace DinnerPlanner.Api.Contexts;
 public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options) : DbContext(options)
 {
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+    public DbSet<AssistantWriteLog> AssistantWriteLogs => Set<AssistantWriteLog>();
     public DbSet<Brand> Brands => Set<Brand>();
     public DbSet<ConversionRule> ConversionRules => Set<ConversionRule>();
     public DbSet<DataImportRun> DataImportRuns => Set<DataImportRun>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
-    public DbSet<IngredientPricePoint> IngredientPricePoints => Set<IngredientPricePoint>();
     public DbSet<IngredientTagCategory> IngredientTagCategories => Set<IngredientTagCategory>();
     public DbSet<IngredientTagDefinition> IngredientTagDefinitions => Set<IngredientTagDefinition>();
     public DbSet<IngredientTagAssignment> IngredientTagAssignments => Set<IngredientTagAssignment>();
@@ -23,7 +23,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
     public DbSet<RecipeComponent> RecipeComponents => Set<RecipeComponent>();
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
     public DbSet<RecipeTagAssignment> RecipeTagAssignments => Set<RecipeTagAssignment>();
-    public DbSet<Store> Stores => Set<Store>();
     public DbSet<UploadedImage> UploadedImages => Set<UploadedImage>();
     public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
     public DbSet<MealPlanRecipe> MealPlanRecipes => Set<MealPlanRecipe>();
@@ -40,6 +39,13 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.HasKey(setting => setting.Key);
             entity.Property(setting => setting.Key).HasMaxLength(160);
             entity.Property(setting => setting.Value).HasMaxLength(8000);
+        });
+
+        modelBuilder.Entity<AssistantWriteLog>(entity =>
+        {
+            entity.Property(log => log.Endpoint).HasMaxLength(80);
+            entity.Property(log => log.Summary).HasMaxLength(AssistantWriteLogService.SummaryMaxLength);
+            entity.Property(log => log.Counts).HasMaxLength(1000);
         });
 
         modelBuilder.Entity<Brand>(entity =>
@@ -61,7 +67,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.Property(ingredient => ingredient.IngredientName).HasMaxLength(ValidationLimits.IngredientNameMaxLength);
             entity.Property(ingredient => ingredient.Description).HasMaxLength(600);
             entity.Property(ingredient => ingredient.ImageUrl).HasMaxLength(500);
-            entity.Property(ingredient => ingredient.Price).HasPrecision(10, 2);
             entity.Property(ingredient => ingredient.NutritionSource).HasConversion<string>().HasMaxLength(40);
             entity.Property(ingredient => ingredient.NutritionSourceLabel).HasMaxLength(160);
             entity.Property(ingredient => ingredient.MatvaretabellenFoodId).HasMaxLength(80);
@@ -91,18 +96,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 nutrition.Property(value => value.VitaminCMilligrams).HasPrecision(8, 2);
                 nutrition.Property(value => value.VitaminDMicrograms).HasPrecision(8, 2);
                 nutrition.Property(value => value.VitaminEMilligrams).HasPrecision(8, 2);
-                nutrition.Property(value => value.VitaminKMicrograms).HasPrecision(8, 2);
-                nutrition.Property(value => value.CholineMilligrams).HasPrecision(8, 2);
-                nutrition.Property(value => value.Vitamins)
-                    .HasConversion(
-                        vitamins => string.Join(",", vitamins.Select(vitamin => vitamin.ToString())),
-                        value => ParseVitamins(value)
-                    )
-                    .Metadata.SetValueComparer(new ValueComparer<List<Vitamin>>(
-                        (first, second) => first != null && second != null && first.SequenceEqual(second),
-                        vitamins => vitamins.Aggregate(0, (hash, vitamin) => HashCode.Combine(hash, vitamin.GetHashCode())),
-                        vitamins => vitamins.ToList()
-                    ));
             });
         });
 
@@ -145,12 +138,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.HasIndex(tag => tag.SystemKey).IsUnique();
         });
 
-        modelBuilder.Entity<Store>(entity =>
-        {
-            entity.Property(store => store.Name).HasMaxLength(120);
-            entity.HasIndex(store => store.Name).IsUnique();
-        });
-
         modelBuilder.Entity<UploadedImage>(entity =>
         {
             entity.Property(image => image.FileName).HasMaxLength(260);
@@ -160,6 +147,8 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.Property(image => image.Source).HasMaxLength(80);
             entity.Property(image => image.OriginalFileName).HasMaxLength(260);
             entity.Property(image => image.ContentType).HasMaxLength(120);
+            entity.Property(image => image.ThumbnailUrl).HasMaxLength(500);
+            entity.Property(image => image.ThumbnailRelativePath).HasMaxLength(500);
             entity.HasIndex(image => image.PublicUrl).IsUnique();
             entity.HasIndex(image => image.CreatedAt);
         });
@@ -173,32 +162,11 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             entity.HasIndex(rule => rule.SortOrder);
         });
 
-        modelBuilder.Entity<IngredientPricePoint>(entity =>
-        {
-            entity.Property(pricePoint => pricePoint.Price).HasPrecision(10, 2);
-            entity.Property(pricePoint => pricePoint.Note).HasMaxLength(500);
-
-            entity.HasOne(pricePoint => pricePoint.Ingredient)
-                .WithMany()
-                .HasForeignKey(pricePoint => pricePoint.IngredientId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(pricePoint => pricePoint.Store)
-                .WithMany(store => store.PricePoints)
-                .HasForeignKey(pricePoint => pricePoint.StoreId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            entity.HasIndex(pricePoint => new
-            {
-                pricePoint.IngredientId,
-                pricePoint.Date
-            });
-        });
-
         modelBuilder.Entity<Recipe>(entity =>
         {
-            entity.Property(recipe => recipe.Name).HasMaxLength(30);
+            entity.Property(recipe => recipe.Name).HasMaxLength(ValidationLimits.RecipeNameMaxLength);
             entity.Property(recipe => recipe.Description).HasMaxLength(600);
+            entity.Property(recipe => recipe.RatingNote).HasMaxLength(ValidationLimits.RatingNoteMaxLength);
 
             entity.HasMany(recipe => recipe.Ingredients)
                 .WithOne(recipeIngredient => recipeIngredient.Recipe)
@@ -361,18 +329,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
 
     private static void SeedData(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Store>().HasData(
-            new { StoreId = 1, Name = "Rema 1000" },
-            new { StoreId = 2, Name = "Coop Mega" },
-            new { StoreId = 3, Name = "Coop Prix" },
-            new { StoreId = 4, Name = "Coop Obs" },
-            new { StoreId = 5, Name = "Coop Extra" },
-            new { StoreId = 6, Name = "Meny" },
-            new { StoreId = 7, Name = "Kiwi" },
-            new { StoreId = 8, Name = "Bunnpris" },
-            new { StoreId = 9, Name = "Europris" }
-        );
-
         modelBuilder.Entity<NutritionReferenceProfile>().HasData(CreateNutritionReferenceProfiles());
         modelBuilder.Entity<NutritionReferenceValue>().HasData(CreateNutritionReferenceValues());
 
@@ -485,229 +441,7 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             new { IngredientTagDefinitionId = 17, Name = "Dip", IngredientTagCategoryId = 3, SortOrder = 500 },
             new { IngredientTagDefinitionId = 19, Name = "Frozen", IngredientTagCategoryId = 3, SortOrder = 600 }
         );
-
-        modelBuilder.Entity<Ingredient>().HasData(
-            new
-            {
-                IngredientId = 1,
-                IngredientName = "Chicken breast",
-                Description = "Lean poultry cut with mild flavor. Useful as the main protein in bowls, salads, soups, and quick pan-fried dinners.",
-                BrandId = (int?)null,
-                Price = (decimal?)89.90m,
-                NutritionPer100_Calories = (int?)165,
-                NutritionPer100_CarbohydrateGrams = (decimal?)0m,
-                NutritionPer100_ProteinGrams = (decimal?)31m,
-                NutritionPer100_SaltGrams = (decimal?)0.18m,
-                NutritionPer100_DietaryFiberGrams = (decimal?)0m,
-                NutritionPer100_SaturatedFatGrams = (decimal?)1m,
-                NutritionPer100_MonounsaturatedFatGrams = (decimal?)1.2m,
-                NutritionPer100_PolyunsaturatedFatGrams = (decimal?)0.8m,
-                NutritionPer100_Vitamins = "VitaminB12",
-                NutritionSource = NutritionDataSource.Manual,
-                Color = "#f6d4b8"
-            },
-            new
-            {
-                IngredientId = 2,
-                IngredientName = "Garlic",
-                Description = "Aromatic vegetable used to build flavor in sauces, marinades, soups, stir fries, and roasted dishes.",
-                BrandId = (int?)null,
-                Price = (decimal?)14.90m,
-                NutritionPer100_Calories = (int?)149,
-                NutritionPer100_CarbohydrateGrams = (decimal?)33.1m,
-                NutritionPer100_ProteinGrams = (decimal?)6.4m,
-                NutritionPer100_SaltGrams = (decimal?)0.04m,
-                NutritionPer100_DietaryFiberGrams = (decimal?)2.1m,
-                NutritionPer100_SaturatedFatGrams = (decimal?)0.1m,
-                NutritionPer100_MonounsaturatedFatGrams = (decimal?)0m,
-                NutritionPer100_PolyunsaturatedFatGrams = (decimal?)0.2m,
-                NutritionPer100_Vitamins = "VitaminC",
-                NutritionSource = NutritionDataSource.Manual,
-                Color = "#f4ead2"
-            },
-            new
-            {
-                IngredientId = 3,
-                IngredientName = "Greek yogurt",
-                Description = "Thick cultured dairy product. Works as a base for cold sauces, dressings, marinades, and high-protein breakfasts.",
-                BrandId = (int?)null,
-                Price = (decimal?)34.90m,
-                NutritionPer100_Calories = (int?)97,
-                NutritionPer100_CarbohydrateGrams = (decimal?)3.6m,
-                NutritionPer100_ProteinGrams = (decimal?)9m,
-                NutritionPer100_SaltGrams = (decimal?)0.1m,
-                NutritionPer100_DietaryFiberGrams = (decimal?)0m,
-                NutritionPer100_SaturatedFatGrams = (decimal?)1.6m,
-                NutritionPer100_MonounsaturatedFatGrams = (decimal?)0.7m,
-                NutritionPer100_PolyunsaturatedFatGrams = (decimal?)0.1m,
-                NutritionPer100_Vitamins = "VitaminB12",
-                NutritionSource = NutritionDataSource.Manual,
-                Color = "#fff7ef"
-            },
-            new
-            {
-                IngredientId = 4,
-                IngredientName = "Rice",
-                Description = "Neutral grain that works as a side or base for bowls, curries, stir fries, and meal prep portions.",
-                BrandId = (int?)null,
-                Price = (decimal?)39.90m,
-                NutritionPer100_Calories = (int?)130,
-                NutritionPer100_CarbohydrateGrams = (decimal?)28.2m,
-                NutritionPer100_ProteinGrams = (decimal?)2.7m,
-                NutritionPer100_SaltGrams = (decimal?)0.01m,
-                NutritionPer100_DietaryFiberGrams = (decimal?)0.4m,
-                NutritionPer100_SaturatedFatGrams = (decimal?)0.1m,
-                NutritionPer100_MonounsaturatedFatGrams = (decimal?)0.1m,
-                NutritionPer100_PolyunsaturatedFatGrams = (decimal?)0.1m,
-                NutritionPer100_Vitamins = "",
-                NutritionSource = NutritionDataSource.Manual,
-                Color = "#f6f0df"
-            },
-            new
-            {
-                IngredientId = 5,
-                IngredientName = "Lemon",
-                Description = "Bright acidic fruit used for sauces, dressings, marinades, desserts, and finishing cooked dishes.",
-                BrandId = (int?)null,
-                Price = (decimal?)8.90m,
-                NutritionPer100_Calories = (int?)29,
-                NutritionPer100_CarbohydrateGrams = (decimal?)9.3m,
-                NutritionPer100_ProteinGrams = (decimal?)1.1m,
-                NutritionPer100_SaltGrams = (decimal?)0m,
-                NutritionPer100_DietaryFiberGrams = (decimal?)2.8m,
-                NutritionPer100_SaturatedFatGrams = (decimal?)0m,
-                NutritionPer100_MonounsaturatedFatGrams = (decimal?)0m,
-                NutritionPer100_PolyunsaturatedFatGrams = (decimal?)0.1m,
-                NutritionPer100_Vitamins = "VitaminC",
-                NutritionSource = NutritionDataSource.Manual,
-                Color = "#f9dc5c"
-            }
-        );
-
-        modelBuilder.Entity<IngredientTagAssignment>().HasData(
-            new
-            {
-                IngredientId = 1,
-                IngredientTagDefinitionId = 7
-            },
-            new
-            {
-                IngredientId = 2,
-                IngredientTagDefinitionId = 1
-            },
-            new
-            {
-                IngredientId = 3,
-                IngredientTagDefinitionId = 12
-            },
-            new
-            {
-                IngredientId = 4,
-                IngredientTagDefinitionId = 13
-            },
-            new
-            {
-                IngredientId = 5,
-                IngredientTagDefinitionId = 2
-            }
-        );
-
-        modelBuilder.Entity<Recipe>().HasData(new
-        {
-            RecipeId = 1,
-            Name = "Garlic yogurt sauce",
-            ImageUrl = "/images/recipes/garlic-yogurt-sauce.png",
-            Description = "Cold yogurt sauce with grated garlic and lemon. Best with chicken bowls, grilled meat, roasted vegetables, and rice.",
-            Instructions = "Grate the garlic finely. Stir garlic, lemon juice, and a little lemon zest into the yogurt. Season with salt and let it rest for at least 10 minutes before serving.",
-            Portions = 1m
-        });
-
-        modelBuilder.Entity<Recipe>().HasData(new
-        {
-            RecipeId = 2,
-            Name = "Chicken rice bowl",
-            ImageUrl = "/images/recipes/chicken-rice-bowl.png",
-            Description = "Weeknight bowl with pan-fried chicken, steamed rice, and fresh garlic yogurt sauce. Good as dinner and easy to scale for meal prep.",
-            Instructions = "Rinse the rice and cook until tender. Slice the chicken breast, season lightly, and fry in a hot pan until cooked through. Spoon rice into bowls, add chicken, and finish with garlic yogurt sauce.",
-            Portions = 1m
-        });
-
-        modelBuilder.Entity<RecipeIngredient>().HasData(
-            new
-            {
-                RecipeIngredientId = 1,
-                RecipeId = 1,
-                IngredientId = 3,
-                Amount = (decimal?)200m,
-                Unit = MeasurementUnit.Gram
-            },
-            new
-            {
-                RecipeIngredientId = 2,
-                RecipeId = 1,
-                IngredientId = 2,
-                Amount = (decimal?)3m,
-                Unit = MeasurementUnit.Gram
-            },
-            new
-            {
-                RecipeIngredientId = 3,
-                RecipeId = 1,
-                IngredientId = 5,
-                Amount = (decimal?)30m,
-                Unit = MeasurementUnit.Gram
-            },
-            new
-            {
-                RecipeIngredientId = 4,
-                RecipeId = 2,
-                IngredientId = 1,
-                Amount = (decimal?)400m,
-                Unit = MeasurementUnit.Gram
-            },
-            new
-            {
-                RecipeIngredientId = 5,
-                RecipeId = 2,
-                IngredientId = 4,
-                Amount = (decimal?)250m,
-                Unit = MeasurementUnit.Gram
-            },
-            new
-            {
-                RecipeIngredientId = 6,
-                RecipeId = 3,
-                IngredientId = 4,
-                Amount = (decimal?)250m,
-                Unit = MeasurementUnit.Gram
-            }
-        );
-
-        modelBuilder.Entity<Recipe>().HasData(new
-        {
-            RecipeId = 3,
-            Name = "Steamed rice",
-            ImageUrl = (string?)null,
-            Description = "Plain steamed rice for bowls, curries, stir fries, and saucy dishes.",
-            Instructions = "Rinse the rice until the water runs mostly clear. Cook with the correct amount of water, then rest covered for 5 minutes before fluffing.",
-            Portions = 1m
-        });
     }
-
-    private static List<Vitamin> ParseVitamins(string? value) =>
-        string.IsNullOrWhiteSpace(value)
-            ? []
-            : value
-                .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(vitaminName =>
-                    Enum.TryParse(vitaminName, out Vitamin vitamin)
-                        ? (Vitamin?)vitamin
-                        : null
-                )
-                .Where(vitamin => vitamin.HasValue)
-                .Select(vitamin => vitamin!.Value)
-                .Distinct()
-                .ToList();
 
     private static IReadOnlyCollection<object> CreateNutritionReferenceProfiles()
     {

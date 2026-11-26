@@ -1,119 +1,24 @@
-import type { IScannerControls } from "@zxing/browser";
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
+import { useId, useMemo, useRef, useState, type FormEvent } from "react";
 import Modal from "../components/Modal";
 import SuccessToast from "../components/SuccessToast";
-import CreatableSelect from "../components/recipeBrowser/CreatableSelect";
-import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useStores } from "../contexts";
-import type { IngredientTag, INutritionFacts, NutritionDataSource } from "../interfaces/IIngredient";
-import type { IBrand, IStore } from "../interfaces/ILookup";
-import type { IMatvaretabellenCandidate, IProductLookupNutrition, IProductLookupResult } from "../interfaces/IProductLookup";
-import { brandService, imageUploadService, ingredientPriceService, ingredientService, ingredientTagCategoryService, productLookupService, storeService } from "../services";
+import { useBarcodeScanner, type BarcodeScannerError } from "../hooks/useBarcodeScanner";
+import { useBrands, useIngredients, useLanguage } from "../contexts";
+import type { IProductLookupResult } from "../interfaces/IProductLookup";
+import { brandService, imageUploadService, ingredientService, productLookupService } from "../services";
 import { getApiAssetUrl } from "../services/apiClient";
-import { pageStyles, scannerStyles, type SiteTheme } from "../styles/appStyles";
+import { pageStyles, scannerStyles } from "../styles/appStyles";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../constants/validation";
-import { normalizePriceInput, todayInputValue } from "../utils/priceFormatting";
-import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../utils/tagCatalog";
 import {
-  formatIngredientTagCategoryName,
-  getIngredientTagGroupsWithCustomTags,
-} from "../components/recipeBrowser/formOptions";
-import { GroupedCheckboxPanel } from "../components/recipeBrowser/BrowserFilterGroups";
-import { recipeBrowserStyles } from "../components/recipeBrowser/recipeBrowserStyles";
-import IngredientTagCreateDialog from "../components/recipeBrowser/IngredientTagCreateDialog";
-import MatvaretabellenSearchDialog, {
-  MatvaretabellenCandidateList,
-  type MatvaretabellenNutritionCandidate,
-} from "../components/recipeBrowser/MatvaretabellenSearchDialog";
-import NutritionEditor, { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "../components/recipeBrowser/NutritionEditor";
+  type IngredientCandidate,
+  type IngredientDraft,
+  buildIngredientCandidates,
+  candidateToDraft,
+} from "./scanner/scannerDraft";
+import { IngredientDraftEditor } from "./scanner/IngredientDraftEditor";
 
-type ScannerPageProps = {
-  theme: SiteTheme;
-};
-
-type IngredientCandidate = {
-  id: string;
-  name: string;
-  brandName: string;
-  storeName: string;
-  price: number | null;
-  imageUrl: string | null;
-  kassalappNutritionPer100: INutritionFacts | null;
-  matvaretabellenNutritionPer100: INutritionFacts | null;
-  nutritionPer100: INutritionFacts | null;
-  nutritionSource: NutritionDataSource;
-  nutritionSupplementSource: NutritionDataSource | null;
-  matvaretabellenSupplementAttempted: boolean;
-  matvaretabellenSupplementStatus: "NotAttempted" | "Matched" | "NoMatch";
-  matvaretabellenCandidates: MatvaretabellenCandidate[];
-  nutritionSourceLabel: string | null;
-  kassalappUrl: string | null;
-  matvaretabellenFoodId: string | null;
-  matvaretabellenUrl: string | null;
-  nutritionMatchedName: string | null;
-  nutritionMatchConfidence: number | null;
-  tags: IngredientTag[];
-  product: IProductLookupResult;
-};
-
-type IngredientDraft = {
-  name: string;
-  brandId: number | null;
-  brandName: string;
-  storeName: string;
-  storeId: number | null;
-  price: string;
-  imageUrl: string | null;
-  imageFile: File | null;
-  tags: IngredientTag[];
-  kassalappNutritionPer100: INutritionFacts | null;
-  matvaretabellenNutritionPer100: INutritionFacts | null;
-  nutritionPer100: INutritionFacts | null;
-  nutritionSource: NutritionDataSource;
-  nutritionSupplementSource: NutritionDataSource | null;
-  matvaretabellenSupplementAttempted: boolean;
-  matvaretabellenSupplementStatus: "NotAttempted" | "Matched" | "NoMatch";
-  matvaretabellenCandidates: MatvaretabellenCandidate[];
-  nutritionSourceLabel: string | null;
-  kassalappUrl: string | null;
-  matvaretabellenFoodId: string | null;
-  matvaretabellenUrl: string | null;
-  nutritionMatchedName: string | null;
-  nutritionMatchConfidence: number | null;
-  autofillSources: Partial<Record<ScannerAutofillField, AutofillSource[]>>;
-  nutritionAutofillSources: Partial<Record<keyof NutritionEditorValues, AutofillSource>>;
-};
-
-type MatvaretabellenCandidate = MatvaretabellenNutritionCandidate;
-
-type AutofillSource = Exclude<NutritionDataSource, "None">;
-type ScannerAutofillField = "name" | "brand" | "store" | "price" | "image" | "tags";
-
-const nutritionEditorKeys: (keyof NutritionEditorValues)[] = [
-  "calories",
-  "carbohydrateGrams",
-  "proteinGrams",
-  "fatGrams",
-  "saltGrams",
-  "dietaryFiberGrams",
-  "saturatedFatGrams",
-  "transFatGrams",
-  "monounsaturatedFatGrams",
-  "polyunsaturatedFatGrams",
-  "omega3Grams",
-  "omega6Grams",
-  "cholesterolMilligrams",
-  "vitaminAMicrograms",
-  "vitaminB9Micrograms",
-  "vitaminB12Micrograms",
-  "vitaminCMilligrams",
-  "vitaminDMicrograms",
-  "vitaminEMilligrams",
-];
-
-function ScannerPage({ theme }: ScannerPageProps) {
+function ScannerPage() {
   const { t } = useLanguage();
   const { brands, refreshBrands } = useBrands();
-  const { stores } = useStores();
   const { refreshIngredients } = useIngredients();
   const [ean, setEan] = useState("");
   const [products, setProducts] = useState<IProductLookupResult[]>([]);
@@ -121,7 +26,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingIngredient, setIsSavingIngredient] = useState(false);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<string | null>(null);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
@@ -131,42 +35,42 @@ function ScannerPage({ theme }: ScannerPageProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const editorTitleId = useId();
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const scannerControlsRef = useRef<IScannerControls | null>(null);
-  const lastScannedEanRef = useRef<string | null>(null);
   const candidates = useMemo(() => buildIngredientCandidates(products), [products]);
 
-  useEffect(() => {
-    const firstCandidate = candidates[0];
+  // New lookup results preselect their first candidate (or clear the editor when there are none).
+  const showProducts = (nextProducts: IProductLookupResult[]) => {
+    setProducts(nextProducts);
+    const firstCandidate = buildIngredientCandidates(nextProducts)[0];
+    setEditorError(null);
+
     if (firstCandidate === undefined) {
       setSelectedCandidateId(null);
       setIngredientDraft(null);
       setIsEditorOpen(false);
-      setEditorError(null);
       return;
     }
 
     setSelectedCandidateId(firstCandidate.id);
-    setIngredientDraft(candidateToDraft(firstCandidate, stores, brands));
-    setEditorError(null);
-  }, [candidates, stores]);
+    setIngredientDraft(candidateToDraft(firstCandidate, brands));
+  };
 
-  const lookupEan = useCallback(async (rawEan: string) => {
+  const lookupEan = async (rawEan: string) => {
     const normalizedEan = rawEan.replace(/\D/g, "");
     if (!/^(\d{8}|\d{13})$/.test(normalizedEan)) {
       setError(t.scanner.invalidEan);
-      setProducts([]);
+      showProducts([]);
       setLookedUpEan(null);
       return false;
     }
 
     setIsLoading(true);
     setError(null);
-    setProducts([]);
+    showProducts([]);
     setLookedUpEan(normalizedEan);
 
     try {
       const response = await productLookupService.lookupByEan(normalizedEan);
-      setProducts(response.products);
+      showProducts(response.products);
       return true;
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : t.scanner.lookupFailed);
@@ -174,7 +78,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [t.scanner.invalidEan, t.scanner.lookupFailed]);
+  };
 
   const lookupProduct = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -183,7 +87,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
 
   const selectCandidate = (candidate: IngredientCandidate) => {
     setSelectedCandidateId(candidate.id);
-    setIngredientDraft(candidateToDraft(candidate, stores, brands));
+    setIngredientDraft(candidateToDraft(candidate, brands));
     setEditorError(null);
     setIsEditorOpen(true);
   };
@@ -226,14 +130,13 @@ function ScannerPage({ theme }: ScannerPageProps) {
         ? null
         : await imageUploadService.upload(ingredientDraft.imageFile, "ingredients");
 
-      const createdIngredient = await ingredientService.create({
+      await ingredientService.create({
         ingredientName,
         description: null,
         brandId: brand?.brandId ?? null,
         imageUrl: uploadedImage?.url ?? ingredientDraft.imageUrl,
-        price: nullableNumber(ingredientDraft.price),
         tags: ingredientDraft.tags,
-        nutritionPer100: withDerivedVitamins(ingredientDraft.nutritionPer100),
+        nutritionPer100: ingredientDraft.nutritionPer100,
         nutritionSource: ingredientDraft.nutritionSource,
         nutritionSourceLabel: ingredientDraft.nutritionSourceLabel,
         matvaretabellenFoodId: ingredientDraft.matvaretabellenFoodId,
@@ -241,17 +144,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
         nutritionMatchConfidence: ingredientDraft.nutritionMatchConfidence,
         color: null,
       });
-
-      const scannedPrice = nullableNumber(ingredientDraft.price);
-      if (scannedPrice !== null && ingredientDraft.storeId !== null) {
-        await ingredientPriceService.create({
-          ingredientId: createdIngredient.ingredientId,
-          storeId: ingredientDraft.storeId,
-          price: scannedPrice,
-          date: todayInputValue(),
-          note: null,
-        });
-      }
 
       await refreshIngredients();
       setIsEditorOpen(false);
@@ -265,73 +157,37 @@ function ScannerPage({ theme }: ScannerPageProps) {
     }
   };
 
-  const stopCamera = useCallback(() => {
-    scannerControlsRef.current?.stop();
-    scannerControlsRef.current = null;
-    setIsCameraOpen(false);
-  }, []);
-
-  const startCamera = async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setError(t.scanner.cameraUnsupported);
-      return;
-    }
-
-    setError(null);
-    setCameraStatus(t.scanner.scannerReady);
-    setIsCameraOpen(true);
-
-    try {
-      await new Promise<void>((resolve) => {
-        window.requestAnimationFrame(() => resolve());
-      });
-
-      if (videoRef.current === null) {
-        throw new Error("Scanner video element was not ready.");
-      }
-
-      const { BrowserMultiFormatReader } = await import("@zxing/browser");
-      const scanner = new BrowserMultiFormatReader();
-      const controls = await scanner.decodeFromVideoDevice(undefined, videoRef.current, (result) => {
-        const detectedEan = result?.getText().replace(/\D/g, "");
-        if (detectedEan === undefined || !/^(\d{8}|\d{13})$/.test(detectedEan)) {
-          return;
-        }
-
-        if (detectedEan !== lastScannedEanRef.current) {
-          lastScannedEanRef.current = detectedEan;
-          setEan(detectedEan);
-          setCameraStatus(t.scanner.scannerFound(detectedEan));
-          controls.stop();
-          scannerControlsRef.current = null;
-          setIsCameraOpen(false);
-          void lookupEan(detectedEan);
-        }
-      });
-
-      scannerControlsRef.current = controls;
-    } catch (caughtError) {
-      const errorName = caughtError instanceof DOMException ? caughtError.name : "";
-      setError(
-        errorName === "NotAllowedError" || errorName === "PermissionDeniedError"
-          ? t.scanner.cameraPermissionDenied
-          : t.scanner.cameraUnsupported
-      );
-      setCameraStatus(null);
-      stopCamera();
-    }
+  const handleBarcodeDetected = (detectedEan: string) => {
+    setEan(detectedEan);
+    setCameraStatus(t.scanner.scannerFound(detectedEan));
+    void lookupEan(detectedEan);
   };
 
-  useEffect(() => stopCamera, [stopCamera]);
+  const handleCameraError = (cameraError: BarcodeScannerError) => {
+    setError(cameraError === "permissionDenied" ? t.scanner.cameraPermissionDenied : t.scanner.cameraUnsupported);
+    setCameraStatus(null);
+  };
+
+  const { isOpen: isCameraOpen, start: startScanner, stop: stopCamera } = useBarcodeScanner({
+    videoRef,
+    onDetected: handleBarcodeDetected,
+    onError: handleCameraError,
+  });
+
+  const startCamera = () => {
+    setError(null);
+    setCameraStatus(t.scanner.scannerReady);
+    void startScanner();
+  };
 
   return (
     <main className={pageStyles.shell}>
       <section className={scannerStyles.shell}>
         <header className={scannerStyles.header}>
-          <h1 className={scannerStyles.title(theme)}>{t.scanner.pageTitle}</h1>
-          <p className={scannerStyles.intro(theme)}>
+          <h1 className={scannerStyles.title}>{t.scanner.pageTitle}</h1>
+          <p className={scannerStyles.intro}>
             {t.scanner.pageIntroBeforeKassalapp}
-            <a className={scannerStyles.introLink(theme)} href="https://kassal.app/" rel="noreferrer" target="_blank">
+            <a className={scannerStyles.introLink} href="https://kassal.app/" rel="noreferrer" target="_blank">
               Kassalapp
             </a>
             {t.scanner.pageIntroAfterKassalapp}
@@ -339,12 +195,12 @@ function ScannerPage({ theme }: ScannerPageProps) {
         </header>
 
         <div className={scannerStyles.scannerSurface}>
-          <section className={scannerStyles.panel(theme)}>
-            <div className={scannerStyles.desktopScannerHint(theme)}>{t.scanner.mobileOnly}</div>
+          <section className={scannerStyles.panel}>
+            <div className={scannerStyles.desktopScannerHint}>{t.scanner.mobileOnly}</div>
 
             <div className={scannerStyles.scannerActions}>
               <button
-                className={scannerStyles.cameraButton(theme)}
+                className={scannerStyles.cameraButton}
                 disabled={isLoading}
                 onClick={isCameraOpen ? stopCamera : startCamera}
                 type="button"
@@ -353,7 +209,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
               </button>
               <button
                 aria-expanded={isManualEntryOpen}
-                className={scannerStyles.manualEntryButton(theme)}
+                className={scannerStyles.manualEntryButton}
                 type="button"
                 onClick={() => setIsManualEntryOpen((currentValue) => !currentValue)}
               >
@@ -361,7 +217,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
               </button>
             </div>
             {cameraStatus !== null && (
-              <span className={scannerStyles.cameraStatus(theme)}>
+              <span className={scannerStyles.cameraStatus}>
                 {cameraStatus}
               </span>
             )}
@@ -369,7 +225,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
               <label className={scannerStyles.field}>
                 <span className={scannerStyles.label}>{t.scanner.eanLabel}</span>
                 <input
-                  className={scannerStyles.input(theme)}
+                  className={scannerStyles.input}
                   inputMode="numeric"
                   pattern="[0-9]*"
                   placeholder={t.scanner.eanPlaceholder}
@@ -378,7 +234,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
                 />
               </label>
               <button
-                className={scannerStyles.submitButton(theme)}
+                className={scannerStyles.submitButton}
                 disabled={isLoading}
                 type="submit"
               >
@@ -387,7 +243,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
             </form>
 
             {isCameraOpen && (
-              <div className={scannerStyles.cameraFrame(theme)}>
+              <div className={scannerStyles.cameraFrame}>
                 <video
                   className={scannerStyles.cameraVideo}
                   muted
@@ -398,15 +254,15 @@ function ScannerPage({ theme }: ScannerPageProps) {
               </div>
             )}
 
-            {error !== null && <p className={scannerStyles.statusError(theme)}>{error}</p>}
+            {error !== null && <p className={scannerStyles.statusError}>{error}</p>}
           </section>
 
           {isLoading && (
-            <div className={scannerStyles.emptyState(theme)}>{t.scanner.searching}</div>
+            <div className={scannerStyles.emptyState}>{t.scanner.searching}</div>
           )}
 
           {!isLoading && lookedUpEan !== null && products.length === 0 && error === null && (
-            <div className={scannerStyles.emptyState(theme)}>
+            <div className={scannerStyles.emptyState}>
               {t.scanner.noProductsFound(lookedUpEan)}
             </div>
           )}
@@ -415,24 +271,22 @@ function ScannerPage({ theme }: ScannerPageProps) {
             <section className={scannerStyles.candidateSection}>
               <div className={scannerStyles.candidateHeader}>
                 <h2 className={scannerStyles.candidateTitle}>{t.scanner.scanCandidatesTitle}</h2>
-                <span className={scannerStyles.candidateSubtitle(theme)}>{t.scanner.scanCandidatesHelp}</span>
+                <span className={scannerStyles.candidateSubtitle}>{t.scanner.scanCandidatesHelp}</span>
               </div>
               <div className={scannerStyles.candidateList}>
                 {candidates.map((candidate) => (
                   <button
-                    className={scannerStyles.candidateButton(theme, candidate.id === selectedCandidateId)}
+                    className={scannerStyles.candidateButton(candidate.id === selectedCandidateId)}
                     key={candidate.id}
                     type="button"
                     onClick={() => selectCandidate(candidate)}
                   >
-                    <CandidateImage candidate={candidate} theme={theme} />
+                    <CandidateImage candidate={candidate} />
                     <span className={scannerStyles.candidateTextStack}>
                       <span className={scannerStyles.candidateName}>{candidate.name}</span>
-                      <span className={scannerStyles.candidateMeta(theme)}>
-                        {[candidate.brandName, candidate.price === null ? null : t.scanner.price(candidate.price)]
-                          .filter(Boolean)
-                          .join(" / ")}
-                      </span>
+                      {candidate.brandName.length > 0 && (
+                        <span className={scannerStyles.candidateMeta}>{candidate.brandName}</span>
+                      )}
                     </span>
                   </button>
                 ))}
@@ -446,12 +300,12 @@ function ScannerPage({ theme }: ScannerPageProps) {
         <Modal
           backdropClassName={scannerStyles.editorModalBackdrop}
           bodyClassName={scannerStyles.editorModalBody}
-          closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
+          closeButtonClassName={scannerStyles.editorModalCloseButton}
           closeLabel={t.common.close}
           footer={(
             <>
               <button
-                className={`${scannerStyles.manualEntryButton(theme)} ${scannerStyles.editorModalActionButton}`}
+                className={`${scannerStyles.manualEntryButton} ${scannerStyles.editorModalActionButton}`}
                 disabled={isSavingIngredient}
                 type="button"
                 onClick={() => setIsEditorOpen(false)}
@@ -459,7 +313,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
                 {t.common.cancel}
               </button>
               <button
-                className={`${scannerStyles.saveButton(theme)} ${scannerStyles.editorModalActionButton}`}
+                className={`${scannerStyles.saveButton} ${scannerStyles.editorModalActionButton}`}
                 disabled={isSavingIngredient}
                 type="button"
                 onClick={() => void saveIngredient()}
@@ -467,13 +321,13 @@ function ScannerPage({ theme }: ScannerPageProps) {
                 {isSavingIngredient ? t.scanner.savingIngredient : t.scanner.saveIngredient}
               </button>
               {editorError !== null && (
-                <p className={scannerStyles.editorModalError(theme)}>{editorError}</p>
+                <p className={scannerStyles.editorModalError}>{editorError}</p>
               )}
             </>
           )}
-          footerClassName={scannerStyles.editorModalFooter(theme)}
+          footerClassName={scannerStyles.editorModalFooter}
           headerClassName={scannerStyles.editorModalHeader}
-          panelClassName={scannerStyles.editorModalPanel(theme)}
+          panelClassName={scannerStyles.editorModalPanel}
           title={ingredientDraft.name || t.scanner.suggestedIngredient}
           titleClassName={scannerStyles.editorModalTitle}
           titleId={editorTitleId}
@@ -481,7 +335,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
         >
           <IngredientDraftEditor
             draft={ingredientDraft}
-            theme={theme}
             onChange={(nextDraft) => {
               setIngredientDraft(nextDraft);
               setEditorError(null);
@@ -493,7 +346,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
         <SuccessToast
           closeLabel={t.common.close}
           message={successMessage}
-          theme={theme}
           onClose={() => setSuccessMessage(null)}
         />
       )}
@@ -501,1052 +353,19 @@ function ScannerPage({ theme }: ScannerPageProps) {
   );
 }
 
-function IngredientDraftEditor({
-  draft,
-  theme,
-  onChange,
-}: {
-  draft: IngredientDraft;
-  theme: SiteTheme;
-  onChange: (draft: IngredientDraft) => void;
-}) {
-  const { t } = useLanguage();
-  const { brands, refreshBrands } = useBrands();
-  const { ingredients, refreshIngredients } = useIngredients();
-  const { stores, refreshStores } = useStores();
-  const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
-  const imageInputId = useId();
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [isTagCreateOpen, setIsTagCreateOpen] = useState(false);
-  const [isMatvarePickerOpen, setIsMatvarePickerOpen] = useState(false);
-  const [isMatvareSearchOpen, setIsMatvareSearchOpen] = useState(false);
-  const [isAutofillInfoOpen, setIsAutofillInfoOpen] = useState(false);
-  const [showNutrition, setShowNutrition] = useState(false);
-  const imageUrl = getApiAssetUrl(imagePreviewUrl ?? draft.imageUrl);
-  const ingredientVisibleTagCategories = getIngredientVisibleTagCategories(ingredientTagCategories);
-  const knownIngredientTags = getAllCategoryTagNames(ingredientTagCategories) as IngredientTag[];
-  const existingCustomTags = ingredients
-    .flatMap((ingredient) => ingredient.tags)
-    .filter((tag) => !knownIngredientTags.includes(tag));
-  const customTags = Array.from(new Set([
-    ...existingCustomTags,
-    ...draft.tags.filter((tag) => !knownIngredientTags.includes(tag)),
-  ]));
-  const groupedTags = getIngredientTagGroupsWithCustomTags(customTags, "pantry", ingredientVisibleTagCategories);
-  const groupLabels = Object.fromEntries(
-    ingredientVisibleTagCategories.map((category) => [
-      category.ingredientTagCategoryId.toString(),
-      formatIngredientTagCategoryName(category.name, t.filters.ingredientTagGroups),
-    ]),
-  );
-  const nutritionValues = nutritionToEditorValues(draft.nutritionPer100);
-  const nutritionSource = getNutritionSource(
-    draft,
-    t.scanner.nutritionSources,
-  );
-  const nutritionFieldSubtitles = getNutritionFieldSubtitles(draft, t.scanner.autofilledBy);
-  const hasMatvaretabellenSupplement = draft.matvaretabellenNutritionPer100 !== null;
-  const showMatvaretabellenFailedMessage = draft.matvaretabellenSupplementAttempted
-    && draft.matvaretabellenSupplementStatus === "NoMatch"
-    && !hasMatvaretabellenSupplement;
-
-  useEffect(() => {
-    if (draft.imageFile === null) {
-      setImagePreviewUrl(null);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(draft.imageFile);
-    setImagePreviewUrl(objectUrl);
-
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [draft.imageFile]);
-
-  return (
-    <section className={scannerStyles.ingredientEditor(theme)}>
-      <div className={scannerStyles.editorImageRow}>
-        <input
-          accept="image/jpeg,image/png,image/webp"
-          className={scannerStyles.hiddenFileInput}
-          id={imageInputId}
-          type="file"
-          onChange={(event) => onChange(clearAutofillSource({ ...draft, imageFile: event.target.files?.[0] ?? null }, "image"))}
-        />
-        <FieldLabel
-          className={scannerStyles.editorImageLabel}
-          label={t.scanner.productImageLabel}
-          theme={theme}
-        />
-        <div className={scannerStyles.editorImageFrame(theme)}>
-          {imageUrl === null ? (
-            <div className={scannerStyles.productImageFallback(theme)}>{t.scanner.noImage}</div>
-          ) : (
-            <img className={scannerStyles.productImage} src={imageUrl} alt="" />
-          )}
-        </div>
-        <label className={scannerStyles.editorImageButton(theme)} htmlFor={imageInputId}>
-          {t.scanner.chooseImage}
-        </label>
-        <span className={`${scannerStyles.autofillReservedHint(theme)} col-span-2`}>
-          {getAutofillSourceLabel(draft, "image", t.scanner.autofilledBy) ?? "\u00A0"}
-        </span>
-      </div>
-
-      <div className={scannerStyles.compactFormGrid}>
-        <label className={scannerStyles.field}>
-          <FieldLabel
-            hint={`${draft.name.length}/${INGREDIENT_NAME_MAX_LENGTH}`}
-            label={t.scanner.nameLabel}
-            theme={theme}
-          />
-          <input
-            className={scannerStyles.input(theme)}
-            value={draft.name}
-            onChange={(event) => onChange(clearAutofillSource({ ...draft, name: event.target.value }, "name"))}
-          />
-          <span className={scannerStyles.autofillReservedHint(theme)}>
-            {getAutofillSourceLabel(draft, "name", t.scanner.autofilledBy) ?? "\u00A0"}
-          </span>
-        </label>
-        <CreatableSelect
-          createLabel={t.common.createNew}
-          fieldClassName={scannerStyles.field}
-          label={(
-            <FieldLabel
-              label={t.scanner.brandLabel}
-              theme={theme}
-            />
-          )}
-          helperClassName={scannerStyles.autofillReservedHint(theme)}
-          helperText={getAutofillSourceLabel(draft, "brand", t.scanner.autofilledBy)}
-          labelClassName={scannerStyles.label}
-          options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
-          placeholder={t.cookbook.selectBrand}
-          theme={theme}
-          value={draft.brandId}
-          onChange={(brandId) => {
-            const brandName = brands.find((brand) => brand.brandId === brandId)?.name ?? "";
-            onChange(clearAutofillSource({ ...draft, brandId, brandName }, "brand"));
-          }}
-          onCreate={async (name) => {
-            const brand = await brandService.create({ name });
-            await refreshBrands();
-            return { id: brand.brandId, name: brand.name };
-          }}
-          onCreatedOptionSelected={(brand) => onChange(clearAutofillSource({ ...draft, brandId: brand.id, brandName: brand.name }, "brand"))}
-        />
-        <CreatableSelect
-          createLabel={t.common.createNew}
-          fieldClassName={scannerStyles.field}
-          label={(
-            <FieldLabel
-              label={t.scanner.storeLabel}
-              theme={theme}
-            />
-          )}
-          helperClassName={scannerStyles.autofillReservedHint(theme)}
-          helperText={getAutofillSourceLabel(draft, "store", t.scanner.autofilledBy)}
-          labelClassName={scannerStyles.label}
-          options={stores.map((store) => ({ id: store.storeId, name: store.name }))}
-          placeholder={t.prices.selectStore}
-          theme={theme}
-          value={draft.storeId}
-          onChange={(storeId) => onChange(clearAutofillSource({ ...draft, storeId }, "store"))}
-          onCreate={async (name) => {
-            const store = await storeService.create({ name });
-            await refreshStores();
-            return { id: store.storeId, name: store.name };
-          }}
-        />
-        <label className={scannerStyles.priceField}>
-          <FieldLabel
-            label={t.scanner.priceLabel}
-            theme={theme}
-          />
-          <input
-            className={scannerStyles.input(theme)}
-            inputMode="decimal"
-            type="text"
-            value={draft.price}
-            onChange={(event) => onChange(clearAutofillSource({ ...draft, price: normalizePriceInput(event.target.value) }, "price"))}
-          />
-          <span className={scannerStyles.floatingLabelSubtitle(theme)}>{t.prices.priceUnitSubtitle}</span>
-          <span className={scannerStyles.autofillReservedHint(theme)}>
-            {getAutofillSourceLabel(draft, "price", t.scanner.autofilledBy) ?? "\u00A0"}
-          </span>
-        </label>
-      </div>
-
-      <section className={scannerStyles.field}>
-        <span className={scannerStyles.label}>{t.cookbook.nutrition}</span>
-        <div className={scannerStyles.nutritionSourceRow}>
-          {nutritionSource.primary === null ? (
-            <span className={scannerStyles.nutritionSourcePrimaryLine}>
-              <span className={scannerStyles.nutritionSourceText(theme)}>{nutritionSource.text}</span>
-              <button
-                className={scannerStyles.sourceActionButton(theme)}
-                type="button"
-                onClick={() => setIsMatvareSearchOpen(true)}
-              >
-                {t.scanner.searchAndFillMatvaretabellen}
-              </button>
-            </span>
-          ) : (
-            <div className={scannerStyles.nutritionSourceText(theme)}>
-              <span className={scannerStyles.nutritionSourcePrimaryLine}>
-                <span className={scannerStyles.nutritionSourceLine}>
-                  <span>{t.scanner.nutritionFromPrefix}</span>
-                  <NutritionSourceAnchor source={nutritionSource.primary} theme={theme} />
-                </span>
-                <span className={scannerStyles.nutritionSourceActions}>
-                  <button
-                    className={scannerStyles.sourceActionButton(theme)}
-                    type="button"
-                    onClick={() => setIsMatvareSearchOpen(true)}
-                  >
-                    {t.scanner.searchAndFillMatvaretabellen}
-                  </button>
-                  {nutritionSource.supplement === null ? (
-                    <NutritionSourceActions
-                      hasMatvaretabellenSupplement={hasMatvaretabellenSupplement}
-                      hasMatvaretabellenCandidates={draft.matvaretabellenCandidates.length > 0}
-                      theme={theme}
-                      onChangeMatvaretabellen={() => setIsMatvarePickerOpen(true)}
-                      onInfo={() => setIsAutofillInfoOpen(true)}
-                      onRemoveMatvaretabellen={() => onChange(removeMatvaretabellenSupplement(draft))}
-                    />
-                  ) : null}
-                </span>
-              </span>
-              {nutritionSource.supplement !== null ? (
-                <span className={scannerStyles.nutritionSourceSupplementLine}>
-                  <span className={scannerStyles.nutritionSourceLine}>
-                    <span>{t.scanner.nutritionSupplementedByPrefix}</span>
-                    <NutritionSourceAnchor source={nutritionSource.supplement} theme={theme} />
-                  </span>
-                  <NutritionSourceActions
-                    hasMatvaretabellenSupplement={hasMatvaretabellenSupplement}
-                    hasMatvaretabellenCandidates={draft.matvaretabellenCandidates.length > 0}
-                    theme={theme}
-                    onChangeMatvaretabellen={() => setIsMatvarePickerOpen(true)}
-                    onInfo={() => setIsAutofillInfoOpen(true)}
-                    onRemoveMatvaretabellen={() => onChange(removeMatvaretabellenSupplement(draft))}
-                  />
-                </span>
-              ) : null}
-            </div>
-          )}
-        </div>
-        {showMatvaretabellenFailedMessage && (
-          <div className={scannerStyles.nutritionSupplementWarningRow(theme)}>
-            <span>
-              {draft.matvaretabellenCandidates.length > 0
-                ? t.scanner.matvaretabellenNoMatchFound
-                : t.scanner.matvaretabellenSupplementFailed}
-            </span>
-            {draft.matvaretabellenCandidates.length > 0 && (
-              <button
-                className={scannerStyles.sourceActionButton(theme)}
-                type="button"
-                onClick={() => setIsMatvarePickerOpen(true)}
-              >
-                {t.scanner.chooseMatvaretabellenSuggested}
-              </button>
-            )}
-          </div>
-        )}
-        <button
-          aria-expanded={showNutrition}
-          className={recipeBrowserStyles.detailsToggleFull(theme)}
-          type="button"
-          onClick={() => setShowNutrition((currentValue) => !currentValue)}
-        >
-          {showNutrition ? t.cookbook.hideNutrition : t.cookbook.addNutrition}
-        </button>
-        {showNutrition && (
-          <NutritionEditor
-            fieldSubtitleClassName={scannerStyles.autofillReservedHint(theme)}
-            fieldSubtitles={nutritionFieldSubtitles}
-            theme={theme}
-            values={nutritionValues}
-            onChange={(key, value) => onChange(clearNutritionAutofillSource(updateNutritionDraft(draft, key, value), key))}
-          />
-        )}
-      </section>
-
-      <section className={scannerStyles.field}>
-          <FieldLabel
-            label={t.scanner.selectTags}
-            theme={theme}
-          />
-        <GroupedCheckboxPanel
-          addActionLabel={t.common.manageTags}
-          formatValue={(value) => t.enums.ingredientTags[value] ?? value}
-          groupLabels={groupLabels}
-          groups={groupedTags}
-          panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
-          selectedValues={draft.tags}
-          theme={theme}
-          onAddTag={() => setIsTagCreateOpen(true)}
-          onToggle={(tag) => onChange(clearAutofillSource({ ...draft, tags: toggleValue(draft.tags, tag) }, "tags"))}
-        />
-        <span className={scannerStyles.autofillReservedHint(theme)}>
-          {getAutofillSourceLabel(draft, "tags", t.scanner.autofilledBy) ?? "\u00A0"}
-        </span>
-      </section>
-      {isTagCreateOpen && (
-        <IngredientTagCreateDialog
-          categories={ingredientTagCategories}
-          existingTags={[...knownIngredientTags, ...customTags]}
-          initialMode="ingredients"
-          theme={theme}
-          onCancel={() => setIsTagCreateOpen(false)}
-          onCreate={async (tag, categoryId) => {
-            await ingredientTagCategoryService.createTag(categoryId, { name: tag });
-            await refreshIngredientTagCategories();
-            onChange(clearAutofillSource({ ...draft, tags: draft.tags.includes(tag) ? draft.tags : [...draft.tags, tag] }, "tags"));
-            setIsTagCreateOpen(false);
-          }}
-          onCreateCategory={async (name, mode) => {
-            const category = await ingredientTagCategoryService.create({
-              name,
-              showForIngredients: mode === "ingredients",
-              showForRecipes: mode === "recipes",
-            });
-            await refreshIngredientTagCategories();
-            return {
-              id: category.ingredientTagCategoryId,
-              name: category.name,
-              showForIngredients: category.showForIngredients,
-              showForRecipes: category.showForRecipes,
-            };
-          }}
-          onUpdateCategory={async (category) => {
-            await ingredientTagCategoryService.update(category.id, {
-              name: category.name,
-              showForIngredients: category.showForIngredients,
-              showForRecipes: category.showForRecipes,
-            });
-            await refreshIngredientTagCategories();
-          }}
-          onDeleteCategory={async (category) => {
-            await ingredientTagCategoryService.delete(category.id);
-            await refreshIngredientTagCategories();
-            await refreshIngredients();
-          }}
-          onUpdateTag={async (tagName, nextName) => {
-            await ingredientTagCategoryService.updateTag(tagName, { name: nextName });
-            await refreshIngredientTagCategories();
-            await refreshIngredients();
-          }}
-          onDeleteTag={async (tagName) => {
-            await ingredientTagCategoryService.deleteTag(tagName);
-            await refreshIngredientTagCategories();
-            await refreshIngredients();
-          }}
-          onMoveCategory={async (categoryId, direction) => {
-            await ingredientTagCategoryService.move(categoryId, direction);
-            await refreshIngredientTagCategories();
-          }}
-          onMoveTag={async (tagId, direction) => {
-            await ingredientTagCategoryService.moveTag(tagId, direction);
-            await refreshIngredientTagCategories();
-          }}
-        />
-      )}
-      {isMatvarePickerOpen && (
-        <MatvaretabellenCandidateModal
-          candidates={draft.matvaretabellenCandidates}
-          theme={theme}
-          onCancel={() => setIsMatvarePickerOpen(false)}
-          onSelect={(candidate) => {
-            onChange(applyMatvaretabellenCandidate(draft, candidate));
-            setIsMatvarePickerOpen(false);
-          }}
-        />
-      )}
-      {isMatvareSearchOpen && (
-        <MatvaretabellenSearchDialog
-          initialQuery={draft.name}
-          theme={theme}
-          onCancel={() => setIsMatvareSearchOpen(false)}
-          onSelect={(candidate, candidates) => {
-            onChange(applyMatvaretabellenCandidate({
-              ...draft,
-              matvaretabellenCandidates: candidates,
-            }, candidate));
-            setIsMatvareSearchOpen(false);
-          }}
-        />
-      )}
-      {isAutofillInfoOpen && (
-        <ScannerAutofillInfoModal
-          theme={theme}
-          onClose={() => setIsAutofillInfoOpen(false)}
-        />
-      )}
-    </section>
-  );
-}
-
-function FieldLabel({
-  className,
-  hint,
-  label,
-  theme,
-}: {
-  className?: string;
-  hint?: string;
-  label: string;
-  theme: SiteTheme;
-}) {
-  return (
-    <span className={`${scannerStyles.labelRow} ${className ?? ""}`.trim()}>
-      <span className={scannerStyles.label}>{label}</span>
-      {hint !== undefined && (
-        <span className={recipeBrowserStyles.inlineHint(theme)}>{hint}</span>
-      )}
-    </span>
-  );
-}
-
-function NutritionSourceAnchor({
-  source,
-  theme,
-}: {
-  source: NutritionSourceLink;
-  theme: SiteTheme;
-}) {
-  if (source.url === null) {
-    return <span>{source.label}</span>;
-  }
-
-  return (
-    <a
-      className={scannerStyles.nutritionSourceLink(theme)}
-      href={source.url}
-      rel="noreferrer"
-      target="_blank"
-    >
-      {source.label}
-    </a>
-  );
-}
-
-function NutritionSourceActions({
-  hasMatvaretabellenCandidates,
-  hasMatvaretabellenSupplement,
-  theme,
-  onChangeMatvaretabellen,
-  onInfo,
-  onRemoveMatvaretabellen,
-}: {
-  hasMatvaretabellenCandidates: boolean;
-  hasMatvaretabellenSupplement: boolean;
-  theme: SiteTheme;
-  onChangeMatvaretabellen: () => void;
-  onInfo: () => void;
-  onRemoveMatvaretabellen: () => void;
-}) {
-  const { t } = useLanguage();
-
-  return (
-    <span className={scannerStyles.nutritionSourceActions}>
-      {hasMatvaretabellenSupplement && hasMatvaretabellenCandidates && (
-        <button
-          className={scannerStyles.sourceActionButton(theme)}
-          type="button"
-          onClick={onChangeMatvaretabellen}
-        >
-          {t.scanner.changeMatvaretabellen}
-        </button>
-      )}
-      {hasMatvaretabellenSupplement && (
-        <button
-          className={scannerStyles.sourceActionButton(theme)}
-          type="button"
-          onClick={onRemoveMatvaretabellen}
-        >
-          {t.common.remove}
-        </button>
-      )}
-      <button
-        className={scannerStyles.sourceActionButton(theme)}
-        type="button"
-        onClick={onInfo}
-      >
-        {t.scanner.autofillInfoButton}
-      </button>
-    </span>
-  );
-}
-
-function ScannerAutofillInfoModal({
-  theme,
-  onClose,
-}: {
-  theme: SiteTheme;
-  onClose: () => void;
-}) {
-  const { t } = useLanguage();
-
-  return (
-    <Modal
-      backdropClassName={scannerStyles.editorModalBackdrop}
-      bodyClassName={scannerStyles.infoModalBody}
-      closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
-      closeLabel={t.common.close}
-      footer={(
-        <button
-          className={scannerStyles.saveButton(theme)}
-          type="button"
-          onClick={onClose}
-        >
-          {t.common.close}
-        </button>
-      )}
-      footerClassName={scannerStyles.editorModalFooter(theme)}
-      headerClassName={scannerStyles.editorModalHeader}
-      panelClassName={scannerStyles.infoModalPanel(theme)}
-      title={t.scanner.autofillInfoTitle}
-      titleClassName={scannerStyles.editorModalTitle}
-      onClose={onClose}
-    >
-      <p className={scannerStyles.infoText(theme)}>{t.scanner.autofillInfoIntro}</p>
-      <ul className={scannerStyles.infoList(theme)}>
-        {t.scanner.autofillInfoSteps.map((step) => (
-          <li key={step}>{step}</li>
-        ))}
-      </ul>
-    </Modal>
-  );
-}
-
-function MatvaretabellenCandidateModal({
-  candidates,
-  theme,
-  onCancel,
-  onSelect,
-}: {
-  candidates: MatvaretabellenCandidate[];
-  theme: SiteTheme;
-  onCancel: () => void;
-  onSelect: (candidate: MatvaretabellenCandidate) => void;
-}) {
-  const { t } = useLanguage();
-  const titleId = useId();
-
-  return (
-    <Modal
-      backdropClassName={scannerStyles.editorModalBackdrop}
-      bodyClassName={scannerStyles.matvareCandidateModalBody}
-      closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
-      closeLabel={t.common.close}
-      footer={(
-        <button className={scannerStyles.manualEntryButton(theme)} type="button" onClick={onCancel}>
-          {t.common.cancel}
-        </button>
-      )}
-      footerClassName={scannerStyles.editorModalFooter(theme)}
-      headerClassName={scannerStyles.editorModalHeader}
-      panelClassName={scannerStyles.matvareCandidateModalPanel(theme)}
-      title={t.scanner.chooseMatvaretabellenEntry}
-      titleClassName={scannerStyles.editorModalTitle}
-      titleId={titleId}
-      onClose={onCancel}
-    >
-      <MatvaretabellenCandidateList
-        candidates={candidates}
-        theme={theme}
-        onSelect={onSelect}
-      />
-    </Modal>
-  );
-}
-
-function updateNutritionDraft(draft: IngredientDraft, key: keyof NutritionEditorValues, value: string): IngredientDraft {
-  return {
-    ...draft,
-    nutritionPer100: {
-      ...emptyNutritionFacts(),
-      ...draft.nutritionPer100,
-      [key]: nullableNumber(value),
-    },
-  };
-}
-
-function clearNutritionAutofillSource(draft: IngredientDraft, key: keyof NutritionEditorValues): IngredientDraft {
-  if (draft.nutritionAutofillSources[key] === undefined) {
-    return draft;
-  }
-
-  const { [key]: _removedField, ...nutritionAutofillSources } = draft.nutritionAutofillSources;
-  return { ...draft, nutritionAutofillSources };
-}
-
-function applyMatvaretabellenCandidate(
-  draft: IngredientDraft,
-  candidate: MatvaretabellenCandidate,
-): IngredientDraft {
-  const mergedNutrition = mergeNutrition(draft.kassalappNutritionPer100, candidate.nutrition);
-  return {
-    ...draft,
-    matvaretabellenNutritionPer100: candidate.nutrition,
-    nutritionPer100: mergedNutrition.nutrition,
-    nutritionSource: draft.kassalappNutritionPer100 === null ? "Matvaretabellen" : "Kassalapp",
-    nutritionSupplementSource: draft.kassalappNutritionPer100 !== null && mergedNutrition.usedSupplement ? "Matvaretabellen" : null,
-    matvaretabellenSupplementAttempted: true,
-    matvaretabellenSupplementStatus: "Matched",
-    nutritionSourceLabel: draft.kassalappNutritionPer100 === null ? "Matvaretabellen" : "Kassalapp",
-    matvaretabellenFoodId: candidate.foodId,
-    matvaretabellenUrl: candidate.url,
-    nutritionMatchedName: candidate.foodName,
-    nutritionMatchConfidence: candidate.confidence,
-    autofillSources: {
-      ...draft.autofillSources,
-    },
-    nutritionAutofillSources: getNutritionAutofillSources(draft.kassalappNutritionPer100, candidate.nutrition),
-  };
-}
-
-function removeMatvaretabellenSupplement(draft: IngredientDraft): IngredientDraft {
-  return {
-    ...draft,
-    matvaretabellenNutritionPer100: null,
-    nutritionPer100: draft.kassalappNutritionPer100,
-    nutritionSource: draft.kassalappNutritionPer100 === null ? "None" : "Kassalapp",
-    nutritionSupplementSource: null,
-    matvaretabellenSupplementStatus: draft.matvaretabellenSupplementAttempted ? "NoMatch" : "NotAttempted",
-    nutritionSourceLabel: draft.kassalappNutritionPer100 === null ? null : "Kassalapp",
-    matvaretabellenFoodId: null,
-    matvaretabellenUrl: null,
-    nutritionMatchedName: null,
-    nutritionMatchConfidence: null,
-    autofillSources: {
-      ...draft.autofillSources,
-    },
-    nutritionAutofillSources: getNutritionAutofillSources(draft.kassalappNutritionPer100, null),
-  };
-}
-
-function mergeNutrition(primary: INutritionFacts | null, supplement: INutritionFacts | null) {
-  if (primary === null) {
-    return { nutrition: supplement, usedSupplement: supplement !== null };
-  }
-
-  if (supplement === null) {
-    return { nutrition: primary, usedSupplement: false };
-  }
-
-  const nutrition: INutritionFacts = {
-    calories: primary.calories ?? supplement.calories,
-    carbohydrateGrams: primary.carbohydrateGrams ?? supplement.carbohydrateGrams,
-    proteinGrams: primary.proteinGrams ?? supplement.proteinGrams,
-    fatGrams: primary.fatGrams ?? supplement.fatGrams,
-    saltGrams: primary.saltGrams ?? supplement.saltGrams,
-    dietaryFiberGrams: primary.dietaryFiberGrams ?? supplement.dietaryFiberGrams,
-    saturatedFatGrams: primary.saturatedFatGrams ?? supplement.saturatedFatGrams,
-    transFatGrams: primary.transFatGrams ?? supplement.transFatGrams,
-    monounsaturatedFatGrams: primary.monounsaturatedFatGrams ?? supplement.monounsaturatedFatGrams,
-    polyunsaturatedFatGrams: primary.polyunsaturatedFatGrams ?? supplement.polyunsaturatedFatGrams,
-    omega3Grams: primary.omega3Grams ?? supplement.omega3Grams,
-    omega6Grams: primary.omega6Grams ?? supplement.omega6Grams,
-    cholesterolMilligrams: primary.cholesterolMilligrams ?? supplement.cholesterolMilligrams,
-    vitaminAMicrograms: primary.vitaminAMicrograms ?? supplement.vitaminAMicrograms,
-    vitaminB9Micrograms: primary.vitaminB9Micrograms ?? supplement.vitaminB9Micrograms,
-    vitaminB12Micrograms: primary.vitaminB12Micrograms ?? supplement.vitaminB12Micrograms,
-    vitaminCMilligrams: primary.vitaminCMilligrams ?? supplement.vitaminCMilligrams,
-    vitaminDMicrograms: primary.vitaminDMicrograms ?? supplement.vitaminDMicrograms,
-    vitaminEMilligrams: primary.vitaminEMilligrams ?? supplement.vitaminEMilligrams,
-    vitamins: primary.vitamins,
-  };
-
-  return { nutrition, usedSupplement: hasSupplementFilledMissingValue(primary, supplement) };
-}
-
-function hasSupplementFilledMissingValue(primary: INutritionFacts, supplement: INutritionFacts) {
-  return (primary.calories === null && supplement.calories !== null)
-    || (primary.carbohydrateGrams === null && supplement.carbohydrateGrams !== null)
-    || (primary.proteinGrams === null && supplement.proteinGrams !== null)
-    || (primary.fatGrams === null && supplement.fatGrams !== null)
-    || (primary.saltGrams === null && supplement.saltGrams !== null)
-    || (primary.dietaryFiberGrams === null && supplement.dietaryFiberGrams !== null)
-    || (primary.saturatedFatGrams === null && supplement.saturatedFatGrams !== null)
-    || (primary.transFatGrams === null && supplement.transFatGrams !== null)
-    || (primary.monounsaturatedFatGrams === null && supplement.monounsaturatedFatGrams !== null)
-    || (primary.polyunsaturatedFatGrams === null && supplement.polyunsaturatedFatGrams !== null)
-    || (primary.omega3Grams === null && supplement.omega3Grams !== null)
-    || (primary.omega6Grams === null && supplement.omega6Grams !== null)
-    || (primary.cholesterolMilligrams === null && supplement.cholesterolMilligrams !== null)
-    || (primary.vitaminAMicrograms === null && supplement.vitaminAMicrograms !== null)
-    || (primary.vitaminB9Micrograms === null && supplement.vitaminB9Micrograms !== null)
-    || (primary.vitaminB12Micrograms === null && supplement.vitaminB12Micrograms !== null)
-    || (primary.vitaminCMilligrams === null && supplement.vitaminCMilligrams !== null)
-    || (primary.vitaminDMicrograms === null && supplement.vitaminDMicrograms !== null)
-    || (primary.vitaminEMilligrams === null && supplement.vitaminEMilligrams !== null);
-}
-
-function withDerivedVitamins(nutrition: INutritionFacts | null): INutritionFacts | null {
-  if (nutrition === null) {
-    return null;
-  }
-
-  const values = nutritionToEditorValues(nutrition);
-  return {
-    ...nutrition,
-    vitamins: deriveVitaminsFromNutritionValues(values),
-  };
-}
-
-function CandidateImage({ candidate, theme }: { candidate: IngredientCandidate; theme: SiteTheme }) {
+function CandidateImage({ candidate }: { candidate: IngredientCandidate; }) {
   const { t } = useLanguage();
   const imageUrl = getApiAssetUrl(candidate.imageUrl);
 
   return (
-    <span className={scannerStyles.candidateImageFrame(theme)}>
+    <span className={scannerStyles.candidateImageFrame}>
       {imageUrl === null ? (
-        <span className={scannerStyles.productImageFallback(theme)}>{t.scanner.noImage}</span>
+        <span className={scannerStyles.productImageFallback}>{t.scanner.noImage}</span>
       ) : (
         <img className={scannerStyles.productImage} src={imageUrl} alt="" />
       )}
     </span>
   );
-}
-
-function buildIngredientCandidates(products: IProductLookupResult[]): IngredientCandidate[] {
-  const seen = new Set<string>();
-  return products
-    .map((product, index) => {
-      const name = cleanIngredientName(product.name);
-      const brandName = (product.brand ?? product.vendor ?? "").trim();
-      const candidate: IngredientCandidate = {
-        id: `${product.ean}-${product.store?.name ?? "store"}-${index}`,
-        name,
-        brandName,
-        storeName: product.store?.name ?? "",
-        price: product.currentUnitPrice ?? product.currentPrice,
-        imageUrl: product.imageUrl,
-        kassalappNutritionPer100: toIngredientNutrition(product.kassalappNutritionPer100),
-        matvaretabellenNutritionPer100: toIngredientNutrition(product.matvaretabellenNutritionPer100),
-        nutritionPer100: toIngredientNutrition(product.nutritionPer100),
-        nutritionSource: product.nutritionSource,
-        nutritionSupplementSource: product.nutritionSupplementSource,
-        matvaretabellenSupplementAttempted: product.matvaretabellenSupplementAttempted,
-        matvaretabellenSupplementStatus: product.matvaretabellenSupplementStatus,
-        matvaretabellenCandidates: product.matvaretabellenCandidates.map(toMatvaretabellenCandidate),
-        nutritionSourceLabel: product.nutritionSourceLabel,
-        kassalappUrl: product.kassalappUrl,
-        matvaretabellenFoodId: product.matvaretabellenFoodId,
-        matvaretabellenUrl: product.matvaretabellenUrl,
-        nutritionMatchedName: product.nutritionMatchedName,
-        nutritionMatchConfidence: product.nutritionMatchConfidence,
-        tags: [],
-        product,
-      };
-
-      return candidate;
-    })
-    .filter((candidate) => {
-      const key = `${candidate.name.toLowerCase()}|${candidate.brandName.toLowerCase()}`;
-      if (seen.has(key)) {
-        return false;
-      }
-
-      seen.add(key);
-      return true;
-    })
-    .slice(0, 6);
-}
-
-function toMatvaretabellenCandidate(candidate: IMatvaretabellenCandidate): MatvaretabellenCandidate {
-  return {
-    foodId: candidate.foodId,
-    foodName: candidate.foodName,
-    url: candidate.url,
-    confidence: candidate.confidence,
-    nutrition: toIngredientNutrition(candidate.nutrition) ?? emptyNutritionFacts(),
-  };
-}
-
-function candidateToDraft(candidate: IngredientCandidate, stores: IStore[], brands: IBrand[]): IngredientDraft {
-  return {
-    name: candidate.name,
-    brandId: findBrandId(candidate.brandName, brands),
-    brandName: candidate.brandName,
-    storeName: candidate.storeName,
-    storeId: findStoreId(candidate.storeName, stores),
-    price: numberToInputValue(candidate.price),
-    imageUrl: candidate.imageUrl,
-    imageFile: null,
-    tags: candidate.tags,
-    kassalappNutritionPer100: candidate.kassalappNutritionPer100,
-    matvaretabellenNutritionPer100: candidate.matvaretabellenNutritionPer100,
-    nutritionPer100: candidate.nutritionPer100,
-    nutritionSource: candidate.nutritionSource,
-    nutritionSupplementSource: candidate.nutritionSupplementSource,
-    matvaretabellenSupplementAttempted: candidate.matvaretabellenSupplementAttempted,
-    matvaretabellenSupplementStatus: candidate.matvaretabellenSupplementStatus,
-    matvaretabellenCandidates: candidate.matvaretabellenCandidates,
-    nutritionSourceLabel: candidate.nutritionSourceLabel,
-    kassalappUrl: candidate.kassalappUrl,
-    matvaretabellenFoodId: candidate.matvaretabellenFoodId,
-    matvaretabellenUrl: candidate.matvaretabellenUrl,
-    nutritionMatchedName: candidate.nutritionMatchedName,
-    nutritionMatchConfidence: candidate.nutritionMatchConfidence,
-    autofillSources: {
-      name: candidate.name.trim().length > 0 ? ["Kassalapp"] : undefined,
-      brand: candidate.brandName.trim().length > 0 ? ["Kassalapp"] : undefined,
-      store: candidate.storeName.trim().length > 0 ? ["Kassalapp"] : undefined,
-      price: candidate.price !== null ? ["Kassalapp"] : undefined,
-      image: candidate.imageUrl !== null ? ["Kassalapp"] : undefined,
-    },
-    nutritionAutofillSources: getNutritionAutofillSources(
-      candidate.kassalappNutritionPer100,
-      candidate.matvaretabellenNutritionPer100,
-    ),
-  };
-}
-
-function clearAutofillSource(draft: IngredientDraft, field: ScannerAutofillField): IngredientDraft {
-  if (draft.autofillSources[field] === undefined) {
-    return draft;
-  }
-
-  const { [field]: _removedField, ...autofillSources } = draft.autofillSources;
-  return { ...draft, autofillSources };
-}
-
-function getAutofillSourceLabel(
-  draft: IngredientDraft,
-  field: ScannerAutofillField,
-  label: (source: string) => string,
-) {
-  const sources = draft.autofillSources[field];
-  if (sources === undefined || sources.length === 0) {
-    return null;
-  }
-
-  return label(sources.map(formatAutofillSourceName).join(" / "));
-}
-
-function formatAutofillSourceName(source: AutofillSource) {
-  if (source === "Kassalapp") {
-    return "kassal.app";
-  }
-
-  if (source === "Matvaretabellen") {
-    return "Matvaretabellen";
-  }
-
-  return "manual";
-}
-
-function getNutritionAutofillSources(
-  kassalappNutrition: INutritionFacts | null,
-  matvaretabellenNutrition: INutritionFacts | null,
-): Partial<Record<keyof NutritionEditorValues, AutofillSource>> {
-  const sources: Partial<Record<keyof NutritionEditorValues, AutofillSource>> = {};
-
-  for (const key of nutritionEditorKeys) {
-    if (kassalappNutrition?.[key] !== null && kassalappNutrition?.[key] !== undefined) {
-      sources[key] = "Kassalapp";
-    } else if (matvaretabellenNutrition?.[key] !== null && matvaretabellenNutrition?.[key] !== undefined) {
-      sources[key] = "Matvaretabellen";
-    }
-  }
-
-  return sources;
-}
-
-function getNutritionFieldSubtitles(
-  draft: IngredientDraft,
-  label: (source: string) => string,
-): Partial<Record<keyof NutritionEditorValues, string>> {
-  return Object.fromEntries(
-    Object.entries(draft.nutritionAutofillSources).map(([key, source]) => [
-      key,
-      label(formatAutofillSourceName(source)),
-    ]),
-  ) as Partial<Record<keyof NutritionEditorValues, string>>;
-}
-
-function getNutritionSource(
-  draft: IngredientDraft,
-  labels: Record<NutritionDataSource, string>,
-) {
-  if (draft.nutritionPer100 === null || draft.nutritionSource === "None") {
-    return { text: labels.None, primary: null, supplement: null };
-  }
-
-  const matchedName = draft.nutritionMatchedName?.trim() ?? null;
-  const primary = sourceLink(
-    labels,
-    draft.nutritionSource,
-    draft.nutritionSource === "Kassalapp" ? draft.kassalappUrl : draft.matvaretabellenUrl,
-    draft.nutritionSource === "Matvaretabellen" ? matchedName : null,
-  );
-  const supplement = draft.nutritionSupplementSource === null
-    ? null
-    : sourceLink(
-        labels,
-        draft.nutritionSupplementSource,
-        draft.nutritionSupplementSource === "Kassalapp" ? draft.kassalappUrl : draft.matvaretabellenUrl,
-        draft.nutritionSupplementSource === "Matvaretabellen" ? matchedName : null,
-      );
-
-  if (supplement !== null) {
-    return {
-      text: `${primary.label}, ${supplement.label}`,
-      primary,
-      supplement,
-    };
-  }
-
-  return {
-    text: primary.label,
-    primary,
-    supplement: null,
-  };
-}
-
-type NutritionSourceLink = {
-  label: string;
-  url: string | null;
-};
-
-function sourceLink(
-  labels: Record<NutritionDataSource, string>,
-  source: NutritionDataSource,
-  url: string | null,
-  matchedName: string | null,
-): NutritionSourceLink {
-  const label = source === "Matvaretabellen" && matchedName
-    ? `Matvaretabellen: ${matchedName}`
-    : source === "Kassalapp"
-      ? "Kassalapp"
-      : labels[source];
-
-  return { label, url };
-}
-
-function findBrandId(brandName: string, brands: IBrand[]) {
-  const normalizedBrandName = brandName.trim().toLowerCase();
-  if (normalizedBrandName.length === 0) {
-    return null;
-  }
-
-  return brands.find((brand) => brand.name.toLowerCase() === normalizedBrandName)?.brandId ?? null;
-}
-
-function findStoreId(storeName: string, stores: IStore[]) {
-  const normalizedStoreName = storeName.trim().toLowerCase();
-  if (normalizedStoreName.length === 0) {
-    return null;
-  }
-
-  return stores.find((store) => store.name.toLowerCase() === normalizedStoreName)?.storeId ?? null;
-}
-
-function cleanIngredientName(name: string) {
-  return name.replace(/\s{2,}/g, " ").trim();
-}
-
-function toIngredientNutrition(nutrition: IProductLookupNutrition | null): INutritionFacts | null {
-  if (nutrition === null) {
-    return null;
-  }
-
-  return {
-    calories: nutrition.calories,
-    carbohydrateGrams: nutrition.carbohydrateGrams,
-    proteinGrams: nutrition.proteinGrams,
-    fatGrams: nutrition.fatGrams,
-    saltGrams: nutrition.saltGrams,
-    dietaryFiberGrams: nutrition.dietaryFiberGrams,
-    saturatedFatGrams: nutrition.saturatedFatGrams,
-    transFatGrams: nutrition.transFatGrams,
-    monounsaturatedFatGrams: nutrition.monounsaturatedFatGrams,
-    polyunsaturatedFatGrams: nutrition.polyunsaturatedFatGrams,
-    omega3Grams: nutrition.omega3Grams,
-    omega6Grams: nutrition.omega6Grams,
-    cholesterolMilligrams: nutrition.cholesterolMilligrams,
-    vitaminAMicrograms: nutrition.vitaminAMicrograms,
-    vitaminB9Micrograms: nutrition.vitaminB9Micrograms,
-    vitaminB12Micrograms: nutrition.vitaminB12Micrograms,
-    vitaminCMilligrams: nutrition.vitaminCMilligrams,
-    vitaminDMicrograms: nutrition.vitaminDMicrograms,
-    vitaminEMilligrams: nutrition.vitaminEMilligrams,
-    vitamins: [],
-  };
-}
-
-function emptyNutritionFacts(): INutritionFacts {
-  return {
-    calories: null,
-    carbohydrateGrams: null,
-    proteinGrams: null,
-    fatGrams: null,
-    saltGrams: null,
-    dietaryFiberGrams: null,
-    saturatedFatGrams: null,
-    transFatGrams: null,
-    monounsaturatedFatGrams: null,
-    polyunsaturatedFatGrams: null,
-    omega3Grams: null,
-    omega6Grams: null,
-    cholesterolMilligrams: null,
-    vitaminAMicrograms: null,
-    vitaminB9Micrograms: null,
-    vitaminB12Micrograms: null,
-    vitaminCMilligrams: null,
-    vitaminDMicrograms: null,
-    vitaminEMilligrams: null,
-    vitamins: [],
-  };
-}
-
-function nutritionToEditorValues(nutrition: INutritionFacts | null): NutritionEditorValues {
-  return {
-    calories: numberToInputValue(nutrition?.calories),
-    carbohydrateGrams: numberToInputValue(nutrition?.carbohydrateGrams),
-    proteinGrams: numberToInputValue(nutrition?.proteinGrams),
-    fatGrams: numberToInputValue(nutrition?.fatGrams),
-    saltGrams: numberToInputValue(nutrition?.saltGrams),
-    dietaryFiberGrams: numberToInputValue(nutrition?.dietaryFiberGrams),
-    saturatedFatGrams: numberToInputValue(nutrition?.saturatedFatGrams),
-    transFatGrams: numberToInputValue(nutrition?.transFatGrams),
-    monounsaturatedFatGrams: numberToInputValue(nutrition?.monounsaturatedFatGrams),
-    polyunsaturatedFatGrams: numberToInputValue(nutrition?.polyunsaturatedFatGrams),
-    omega3Grams: numberToInputValue(nutrition?.omega3Grams),
-    omega6Grams: numberToInputValue(nutrition?.omega6Grams),
-    cholesterolMilligrams: numberToInputValue(nutrition?.cholesterolMilligrams),
-    vitaminAMicrograms: numberToInputValue(nutrition?.vitaminAMicrograms),
-    vitaminB9Micrograms: numberToInputValue(nutrition?.vitaminB9Micrograms),
-    vitaminB12Micrograms: numberToInputValue(nutrition?.vitaminB12Micrograms),
-    vitaminCMilligrams: numberToInputValue(nutrition?.vitaminCMilligrams),
-    vitaminDMicrograms: numberToInputValue(nutrition?.vitaminDMicrograms),
-    vitaminEMilligrams: numberToInputValue(nutrition?.vitaminEMilligrams),
-  };
-}
-
-function nullableNumber(value: string) {
-  const trimmed = value.trim().replace(",", ".");
-  if (trimmed.length === 0) {
-    return null;
-  }
-
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function numberToInputValue(value: number | null | undefined) {
-  return value === null || value === undefined ? "" : value.toString();
-}
-
-function toggleValue<TValue>(values: TValue[], value: TValue) {
-  return values.includes(value)
-    ? values.filter((currentValue) => currentValue !== value)
-    : [...values, value];
 }
 
 export default ScannerPage;

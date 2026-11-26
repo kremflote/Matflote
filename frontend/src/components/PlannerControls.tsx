@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLanguage } from "../contexts";
 import type { PlannerViewMode } from "../interfaces/IMeal";
-import { plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
+import { plannerControlsStyles } from "../styles/appStyles";
 import Modal from "./Modal";
 
 type PlannerControlsProps = {
@@ -12,10 +12,12 @@ type PlannerControlsProps = {
   isGenerateRangeRunning?: boolean;
   isMobileToolsHidden?: boolean;
   isRangeBusy?: boolean;
-  theme?: SiteTheme;
+  /** The visible week or month holds today, so the Today button has nothing to do. */
+  isShowingToday?: boolean;
   viewMode: PlannerViewMode;
   onNextRange: () => void;
   onPreviousRange: () => void;
+  onToday: () => void;
   onClearRange: () => void | Promise<void>;
   onExportRange: () => void | Promise<void>;
   onGenerateRange: () => void | Promise<void>;
@@ -31,10 +33,11 @@ function PlannerControls({
   isGenerateRangeRunning = false,
   isMobileToolsHidden = false,
   isRangeBusy = false,
-  theme = "dark",
+  isShowingToday = false,
   viewMode,
   onNextRange,
   onPreviousRange,
+  onToday,
   onClearRange,
   onExportRange,
   onGenerateRange,
@@ -57,7 +60,7 @@ function PlannerControls({
           <div className={plannerControlsStyles.actionSlotLeft}>
             <button
               aria-label={t.planner.clearCurrent(rangeLabel)}
-              className={plannerControlsStyles.iconOnlyButton(theme)}
+              className={plannerControlsStyles.iconOnlyButton}
               disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               type="button"
               onClick={onClearRange}
@@ -66,7 +69,7 @@ function PlannerControls({
               <span className={plannerControlsStyles.actionButtonLabel}>
                 {isClearRangeRunning ? t.planner.clearing : t.planner.actionClear}
               </span>
-              <span className={plannerControlsStyles.tooltip(theme)}>
+              <span className={plannerControlsStyles.tooltip}>
                 {isClearRangeRunning ? t.planner.clearing : t.planner.clearCurrent(rangeLabel)}
               </span>
             </button>
@@ -74,7 +77,7 @@ function PlannerControls({
           <div className={plannerControlsStyles.actionSlotCenter}>
             <button
               aria-label={t.planner.generateMealPlan}
-              className={plannerControlsStyles.iconOnlyButton(theme)}
+              className={plannerControlsStyles.iconOnlyButton}
               disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               type="button"
               onClick={onGenerateRange}
@@ -83,7 +86,7 @@ function PlannerControls({
               <span className={plannerControlsStyles.actionButtonLabel}>
                 {isGenerateRangeRunning ? t.planner.generating : t.planner.actionGenerate}
               </span>
-              <span className={plannerControlsStyles.tooltip(theme)}>
+              <span className={plannerControlsStyles.tooltip}>
                 {isGenerateRangeRunning ? t.planner.generating : t.planner.generateMealPlan}
               </span>
             </button>
@@ -91,7 +94,7 @@ function PlannerControls({
           <div className={plannerControlsStyles.actionSlotRight}>
             <button
               aria-label={t.planner.prepHelper}
-              className={plannerControlsStyles.iconOnlyButton(theme)}
+              className={plannerControlsStyles.iconOnlyButton}
               disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               type="button"
               onClick={onOpenPrepHelper}
@@ -100,7 +103,7 @@ function PlannerControls({
               <span className={plannerControlsStyles.actionButtonLabel}>
                 {t.planner.actionPrep}
               </span>
-              <span className={plannerControlsStyles.tooltip(theme)}>
+              <span className={plannerControlsStyles.tooltip}>
                 {t.planner.prepHelper}
               </span>
             </button>
@@ -108,7 +111,7 @@ function PlannerControls({
           <div className={plannerControlsStyles.actionSlotRight}>
             <button
               aria-label={t.planner.exportGroceryList}
-              className={plannerControlsStyles.iconOnlyButton(theme)}
+              className={plannerControlsStyles.iconOnlyButton}
               disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning || isExportRangeRunning}
               type="button"
               onClick={onExportRange}
@@ -117,7 +120,7 @@ function PlannerControls({
               <span className={plannerControlsStyles.actionButtonLabel}>
                 {isExportRangeRunning ? t.planner.groceryExportLoading : t.planner.actionExport}
               </span>
-              <span className={plannerControlsStyles.tooltip(theme)}>
+              <span className={plannerControlsStyles.tooltip}>
                 {isExportRangeRunning ? t.planner.groceryExportLoading : t.planner.exportGroceryList}
               </span>
             </button>
@@ -127,38 +130,64 @@ function PlannerControls({
       <div className={plannerControlsStyles.centerCell}>
         <time
           aria-label={t.planner.yearLabel(anchorYear)}
-          className={plannerControlsStyles.dateYearRow(theme)}
+          className={plannerControlsStyles.dateYearRow}
           dateTime={anchorYear}
         >
           {anchorYear}
         </time>
         <div className={plannerControlsStyles.datePrimaryRow}>
+          {/* On phones and tablets the tools sit in this row rather than floating over the cards. */}
+          {showMobileTools ? (
+            <button
+              aria-haspopup="dialog"
+              aria-expanded={isMobileActionsOpen}
+              aria-label={t.planner.openPlannerActions}
+              className={plannerControlsStyles.mobileControlButton()}
+              disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
+              title={t.planner.plannerTools}
+              type="button"
+              onClick={() => setIsMobileActionsOpen(true)}
+            >
+              <ToolsIcon />
+            </button>
+          ) : null}
           <button
             aria-label={t.planner.previousRange(rangeLabel)}
-            className={plannerControlsStyles.iconButton(theme)}
+            className={plannerControlsStyles.iconButton}
             disabled={isClearRangeRunning || isGenerateRangeRunning}
             type="button"
             onClick={onPreviousRange}
           >
             <ArrowIcon direction="left" />
           </button>
-          <div className={plannerControlsStyles.datePrimary(theme)}>{anchorLabel}</div>
-          <button
-            aria-label={t.planner.nextRange(rangeLabel)}
-            className={plannerControlsStyles.iconButton(theme)}
-            disabled={isClearRangeRunning || isGenerateRangeRunning}
-            type="button"
-            onClick={onNextRange}
-          >
-            <ArrowIcon direction="right" />
-          </button>
+          <div className={plannerControlsStyles.datePrimary}>{anchorLabel}</div>
+          <span className={plannerControlsStyles.nextAndTodayGroup}>
+            <button
+              aria-label={t.planner.nextRange(rangeLabel)}
+              className={plannerControlsStyles.iconButton}
+              disabled={isClearRangeRunning || isGenerateRangeRunning}
+              type="button"
+              onClick={onNextRange}
+            >
+              <ArrowIcon direction="right" />
+            </button>
+            {/* Hangs to the right of the arrow so the week label stays centred. */}
+            <button
+              className={plannerControlsStyles.todayButton}
+              disabled={isShowingToday || isClearRangeRunning || isGenerateRangeRunning}
+              type="button"
+              onClick={onToday}
+            >
+              {t.planner.today}
+            </button>
+          </span>
         </div>
       </div>
       <div className={plannerControlsStyles.rightCell}>
-        <div className={plannerControlsStyles.viewToggle(theme)} role="group" aria-label={t.planner.plannerView}>
+        <div className={plannerControlsStyles.viewToggle} role="group" aria-label={t.planner.plannerView}>
           <button
             aria-pressed={viewMode === "week"}
-            className={plannerControlsStyles.viewToggleOption(theme, viewMode === "week")}
+            className={plannerControlsStyles.viewToggleOption(viewMode === "week")}
             disabled={isClearRangeRunning || isGenerateRangeRunning}
             type="button"
             onClick={() => onViewModeChange("week")}
@@ -167,7 +196,7 @@ function PlannerControls({
           </button>
           <button
             aria-pressed={viewMode === "month"}
-            className={plannerControlsStyles.viewToggleOption(theme, viewMode === "month")}
+            className={plannerControlsStyles.viewToggleOption(viewMode === "month")}
             disabled={isClearRangeRunning || isGenerateRangeRunning}
             type="button"
             onClick={() => onViewModeChange("month")}
@@ -176,76 +205,61 @@ function PlannerControls({
           </button>
         </div>
       </div>
-      <div className={plannerControlsStyles.mobileControlRow}>
-        {showMobileTools ? (
-          <button
-            aria-haspopup="dialog"
-            aria-expanded={isMobileActionsOpen}
-            aria-label={t.planner.openPlannerActions}
-            className={plannerControlsStyles.mobileControlButton(theme)}
-            disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
-            type="button"
-            onClick={() => setIsMobileActionsOpen(true)}
-          >
-            <PrepIcon />
-          </button>
-        ) : null}
-      </div>
       {isMobileActionsOpen ? (
         <Modal
           backdropClassName={plannerControlsStyles.mobileActionsBackdrop}
           bodyClassName={plannerControlsStyles.mobileActionsBody}
-          closeButtonClassName={plannerControlsStyles.mobileActionsCloseButton(theme)}
+          closeButtonClassName={plannerControlsStyles.mobileActionsCloseButton}
           closeLabel={t.common.close}
           headerClassName={plannerControlsStyles.mobileActionsHeader}
-          panelClassName={plannerControlsStyles.mobileActionsPanel(theme)}
+          panelClassName={plannerControlsStyles.mobileActionsPanel}
           title={t.planner.plannerTools}
           titleClassName={plannerControlsStyles.mobileActionsTitle}
           onClose={() => setIsMobileActionsOpen(false)}
         >
             <button
               aria-label={t.planner.clearCurrent(rangeLabel)}
-              className={plannerControlsStyles.iconOnlyButton(theme)}
+              className={plannerControlsStyles.iconOnlyButton}
               disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               type="button"
               onClick={() => runMobileAction(onClearRange)}
             >
               <ClearIcon />
-              <span className={plannerControlsStyles.actionButtonLabel}>
+              <span className={plannerControlsStyles.mobileActionButtonLabel}>
                 {isClearRangeRunning ? t.planner.clearing : t.planner.actionClear}
               </span>
             </button>
             <button
               aria-label={t.planner.generateMealPlan}
-              className={plannerControlsStyles.iconOnlyButton(theme)}
+              className={plannerControlsStyles.iconOnlyButton}
               disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               type="button"
               onClick={() => runMobileAction(onGenerateRange)}
             >
               <GenerateIcon />
-              <span className={plannerControlsStyles.actionButtonLabel}>
+              <span className={plannerControlsStyles.mobileActionButtonLabel}>
                 {isGenerateRangeRunning ? t.planner.generating : t.planner.actionGenerate}
               </span>
             </button>
             <button
               aria-label={t.planner.prepHelper}
-              className={plannerControlsStyles.iconOnlyButton(theme)}
+              className={plannerControlsStyles.iconOnlyButton}
               disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               type="button"
               onClick={() => runMobileAction(onOpenPrepHelper)}
             >
               <PrepIcon />
-              <span className={plannerControlsStyles.actionButtonLabel}>{t.planner.actionPrep}</span>
+              <span className={plannerControlsStyles.mobileActionButtonLabel}>{t.planner.actionPrep}</span>
             </button>
             <button
               aria-label={t.planner.exportGroceryList}
-              className={plannerControlsStyles.iconOnlyButton(theme)}
+              className={plannerControlsStyles.iconOnlyButton}
               disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning || isExportRangeRunning}
               type="button"
               onClick={() => runMobileAction(onExportRange)}
             >
               <ExportIcon />
-              <span className={plannerControlsStyles.actionButtonLabel}>
+              <span className={plannerControlsStyles.mobileActionButtonLabel}>
                 {isExportRangeRunning ? t.planner.groceryExportLoading : t.planner.actionExport}
               </span>
             </button>
@@ -287,6 +301,14 @@ function ExportIcon() {
   return (
     <svg aria-hidden="true" className={plannerControlsStyles.buttonIcon} viewBox="0 0 24 24">
       <path d="M12 3 7.5 7.5l1.4 1.4 2.1-2.1V15h2V6.8l2.1 2.1 1.4-1.4L12 3Zm-7 9h2v7h10v-7h2v9H5v-9Z" />
+    </svg>
+  );
+}
+
+function ToolsIcon() {
+  return (
+    <svg aria-hidden="true" className={plannerControlsStyles.buttonIcon} viewBox="0 0 24 24">
+      <path d="M4 6h10v2H4V6Zm14 0h2v2h-2V6Zm-2-2h2v6h-2V4ZM4 16h4v2H4v-2Zm8 0h8v2h-8v-2Zm-2-2h2v6h-2v-6Z" />
     </svg>
   );
 }

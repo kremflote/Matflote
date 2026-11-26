@@ -1,11 +1,10 @@
+import { useLanguage } from "../../contexts";
 import type { IRecipe } from "../../interfaces/IRecipe";
-import type { SiteTheme } from "../../styles/appStyles";
 import RecipeThumbnail from "../RecipeThumbnail";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type RecipeSelectionGridProps = {
   recipes: IRecipe[];
-  theme: SiteTheme;
   getSubtitle?: (recipe: IRecipe) => string;
   gridClassName?: string;
   selectedRecipeIds?: number[];
@@ -14,12 +13,13 @@ type RecipeSelectionGridProps = {
 
 function RecipeSelectionGrid({
   recipes,
-  theme,
   getSubtitle,
   gridClassName = recipeBrowserStyles.recipeGrid,
   selectedRecipeIds = [],
   onSelect,
 }: RecipeSelectionGridProps) {
+  const { t } = useLanguage();
+
   return (
     <div className={gridClassName}>
       {recipes.map((recipe) => {
@@ -28,16 +28,17 @@ function RecipeSelectionGrid({
         return (
           <RecipeThumbnail
             ariaPressed={selected}
-            className={`${recipeBrowserStyles.recipeCard(theme)} ${
-              selected ? recipeBrowserStyles.componentRecipeSelected(theme) : ""
+            className={`${recipeBrowserStyles.recipeCard} ${
+              selected ? recipeBrowserStyles.componentRecipeSelected : ""
             }`}
             interactiveEffect={false}
             key={recipe.recipeId}
-            theme={theme}
             recipe={{
               imageUrl: recipe.imageUrl,
+              thumbnailUrl: recipe.thumbnailUrl,
               name: recipe.name,
-              subtitle: getSubtitle?.(recipe) ?? recipe.tags.slice(0, 2).join(" · "),
+              ingredients: recipe.ingredients,
+              subtitle: getSubtitle?.(recipe) ?? recipe.tags.slice(0, 2).map((tag) => t.enums.recipeTags[tag] ?? tag).join(" · "),
             }}
             onClick={() => onSelect(recipe)}
           />

@@ -1,11 +1,17 @@
 import type { ReactNode } from "react";
+import { useLanguage } from "../contexts";
 import type { IRecipe } from "../interfaces/IRecipe";
-import { getApiAssetUrl } from "../services/apiClient";
-import { thumbnailStyles, type SiteTheme } from "../styles/appStyles";
+import { getThumbnailSrc } from "../utils/imageThumbnail";
+import type { TileIngredientLine } from "../utils/recipeTile";
+import RecipeFallbackTile from "./RecipeFallbackTile";
+import { thumbnailStyles } from "../styles/appStyles";
 
 type RecipeThumbnailProps = {
   recipe: Pick<IRecipe, "name" | "imageUrl"> & {
+    thumbnailUrl?: string | null;
     subtitle?: string | null;
+    /** Lets a recipe without a photo show its ingredients' colours instead of a blank block. */
+    ingredients?: readonly TileIngredientLine[];
   };
   className?: string;
   interactiveEffect?: boolean;
@@ -13,7 +19,6 @@ type RecipeThumbnailProps = {
   textScale?: "default" | "compact" | "micro";
   titleBandExtra?: ReactNode;
   titleBandExpanded?: boolean;
-  theme?: SiteTheme;
   onClick?: () => void;
 };
 
@@ -25,11 +30,11 @@ function RecipeThumbnail({
   textScale = "default",
   titleBandExtra,
   titleBandExpanded = false,
-  theme = "dark",
   onClick,
 }: RecipeThumbnailProps) {
+  const { t } = useLanguage();
   const subtitle = recipe.subtitle ?? "";
-  const imageUrl = getApiAssetUrl(recipe.imageUrl);
+  const imageUrl = getThumbnailSrc(recipe);
   const titleClassName =
     textScale === "micro"
       ? thumbnailStyles.recipeTitleMicro
@@ -59,21 +64,26 @@ function RecipeThumbnail({
           src={imageUrl}
           alt={recipe.name}
           loading="lazy"
+          decoding="async"
         />
       ) : (
-        <div className={thumbnailStyles.recipeImageFallback} aria-hidden="true" />
+        <RecipeFallbackTile
+          initialsPosition="top"
+          recipe={recipe}
+          showInitials={textScale !== "micro"}
+        />
       )}
 
-      <div className={thumbnailStyles.recipeImageOverlay(theme)} aria-hidden="true" />
+      <div className={thumbnailStyles.recipeImageOverlay} aria-hidden="true" />
 
-      <div className={`${titleBandLayoutClassName} ${thumbnailStyles.recipeTitleBand(theme)}`}>
+      <div className={`${titleBandLayoutClassName} ${thumbnailStyles.recipeTitleBand}`}>
         {titleBandExtra !== undefined && (
           <div className={thumbnailStyles.recipeTitleBandExtra}>
             {titleBandExtra}
           </div>
         )}
         <h3 className={titleClassName}>{recipe.name}</h3>
-        <p className={`${subtitleLayoutClassName} ${thumbnailStyles.recipeSubtitle(theme)}`}>{subtitle}</p>
+        <p className={`${subtitleLayoutClassName} ${thumbnailStyles.recipeSubtitle}`}>{subtitle}</p>
       </div>
     </>
   );
@@ -81,7 +91,7 @@ function RecipeThumbnail({
   if (onClick) {
     return (
       <button
-        aria-label={`Open ${recipe.name}`}
+        aria-label={t.common.openNamed(recipe.name)}
         aria-pressed={ariaPressed}
         className={sharedClassName}
         type="button"

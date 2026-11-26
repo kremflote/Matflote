@@ -317,7 +317,8 @@ public partial class MatvaretabellenNutritionLookupService(
             return null;
         }
 
-        return Uri.TryCreate(uri, UriKind.Absolute, out var absoluteUri)
+        // On Linux "/laks/" parses as an absolute file: URI, so only http(s) counts as already absolute.
+        return Uri.TryCreate(uri, UriKind.Absolute, out var absoluteUri) && absoluteUri.Scheme is "http" or "https"
             ? absoluteUri.ToString()
             : $"https://www.matvaretabellen.no/{uri.TrimStart('/')}";
     }

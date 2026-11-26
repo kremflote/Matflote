@@ -1,14 +1,13 @@
-import { useEffect, useId, useRef } from "react";
+import { useId } from "react";
 import { useLanguage } from "../contexts";
 import type { MeasurementUnit } from "../interfaces/IIngredient";
-import { prepHelperStyles, type SiteTheme } from "../styles/appStyles";
+import { prepHelperStyles } from "../styles/appStyles";
 import type { PrepHelperItem } from "../utils/plannerPrepHelper";
 import Modal from "./Modal";
 
 type PrepHelperDialogProps = {
   from: string;
   items: PrepHelperItem[];
-  theme: SiteTheme;
   to: string;
   onClose: () => void;
 };
@@ -16,43 +15,24 @@ type PrepHelperDialogProps = {
 function PrepHelperDialog({
   from,
   items,
-  theme,
   to,
   onClose,
 }: PrepHelperDialogProps) {
   const { t } = useLanguage();
   const titleId = useId();
   const descriptionId = useId();
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    closeButtonRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
   return (
     <Modal
       backdropClassName={prepHelperStyles.modalBackdrop}
       bodyClassName={prepHelperStyles.bodyFrame}
-      closeButtonClassName={prepHelperStyles.closeButton(theme)}
-      closeButtonRef={closeButtonRef}
+      closeButtonClassName={prepHelperStyles.closeButton}
       closeLabel={t.common.close}
       description={t.planner.prepHelperDescription(from, to)}
-      descriptionClassName={prepHelperStyles.subtitle(theme)}
+      descriptionClassName={prepHelperStyles.subtitle}
       descriptionId={descriptionId}
       footer={
         <button
-          className={prepHelperStyles.secondaryButton(theme)}
+          className={prepHelperStyles.secondaryButton}
           type="button"
           onClick={onClose}
         >
@@ -61,27 +41,27 @@ function PrepHelperDialog({
       }
       footerClassName={prepHelperStyles.footer}
       headerClassName={prepHelperStyles.header}
-      panelClassName={prepHelperStyles.modalPanel(theme)}
+      panelClassName={prepHelperStyles.modalPanel}
       title={t.planner.prepHelperTitle}
       titleClassName={prepHelperStyles.title}
       titleId={titleId}
       onClose={onClose}
     >
         {items.length === 0 ? (
-          <div className={prepHelperStyles.emptyState(theme)}>
+          <div className={prepHelperStyles.emptyState}>
             {t.planner.prepHelperEmpty}
           </div>
         ) : (
           <div className={prepHelperStyles.list}>
             {items.map((item) => (
               <article
-                className={prepHelperStyles.item(theme)}
+                className={prepHelperStyles.item}
                 key={`${item.ingredientId}::${item.unit}`}
               >
                 <div className={prepHelperStyles.itemHeader}>
                   <div>
                     <h3 className={prepHelperStyles.itemName}>{item.ingredientName}</h3>
-                    <p className={prepHelperStyles.sourceText(theme)}>
+                    <p className={prepHelperStyles.sourceText}>
                       {t.planner.prepHelperSources(item.sources.join(", "))}
                     </p>
                   </div>
@@ -91,7 +71,7 @@ function PrepHelperDialog({
                 </div>
                 <div className={prepHelperStyles.actionList}>
                   {item.actions.map((action) => (
-                    <span className={prepHelperStyles.actionChip(theme)} key={action}>
+                    <span className={prepHelperStyles.actionChip} key={action}>
                       {action}
                     </span>
                   ))}

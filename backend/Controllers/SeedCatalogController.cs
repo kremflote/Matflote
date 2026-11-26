@@ -1,6 +1,3 @@
-// MATFLOTE: API controller for SeedCatalog-related frontend and integration requests.
-// Note: Controllers stay thin where possible and delegate heavier business rules to services or EF model helpers.
-
 using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,10 +50,17 @@ public class SeedCatalogController(SeedCatalogService seedCatalogService) : Cont
         return NoContent();
     }
 
+    /// <summary>
+    /// Adds what the package holds. Only with ?syncTags=true does it also delete the tags and tag categories
+    /// the package does not name (and with them those tags on every recipe and ingredient).
+    /// </summary>
     [HttpPost("import-package")]
     [RequestSizeLimit(250 * 1024 * 1024)]
     [RequestFormLimits(MultipartBodyLengthLimit = 250 * 1024 * 1024)]
-    public async Task<IActionResult> ImportPackage(IFormFile file, CancellationToken cancellationToken)
+    public async Task<IActionResult> ImportPackage(
+        IFormFile file,
+        [FromQuery] bool syncTags = false,
+        CancellationToken cancellationToken = default)
     {
         if (file.Length == 0)
         {
@@ -69,7 +73,7 @@ public class SeedCatalogController(SeedCatalogService seedCatalogService) : Cont
         }
 
         await using var stream = file.OpenReadStream();
-        await seedCatalogService.ImportCatalogPackageStreamAsync(stream, cancellationToken);
+        await seedCatalogService.ImportCatalogPackageStreamAsync(stream, syncTags, cancellationToken);
         return NoContent();
     }
 }

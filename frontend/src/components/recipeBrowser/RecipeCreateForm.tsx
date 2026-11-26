@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useMemo, useState, type FormEvent } from "react";
 import { useIngredientTagCategories, useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
-import type { IConversionRule } from "../../interfaces/IConversionRule";
-import { conversionRuleService, imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
-import type { SiteTheme } from "../../styles/appStyles";
+import { ApiError, imageUploadService, recipeService } from "../../services";
 import { getAllCategoryTagNames, getRecipeVisibleTagCategories } from "../../utils/tagCatalog";
 import {
   formatRecipeTagGroupName,
@@ -28,25 +26,26 @@ import {
   type SelectedRecipeComponent,
   type SelectedRecipeIngredient,
 } from "./recipeIngredientSelection";
+import { toggleValue } from "../../utils/formValues";
+import { tagManagementHandlers } from "./tagManagementHandlers";
+import { buildRecipeRequest, checkRecipeForm, RECIPE_NAME_MAX_LENGTH } from "./recipeFormRequest";
+import ConversionHelperDialog from "./ConversionHelperDialog";
 
 type RecipeCreateFormProps = {
   imageInputId: string;
   initialRecipe?: IRecipe | null;
   showRecipeDetails: boolean;
-  theme: SiteTheme;
   onToggleRecipeDetails?: () => void;
   onCreated: () => void;
   onCancel: () => void;
 };
 
-const RECIPE_NAME_MAX_LENGTH = 30;
 type RecipeLinePickerMode = "ingredients" | "recipes";
 
 function RecipeCreateForm({
   imageInputId,
   initialRecipe = null,
   showRecipeDetails,
-  theme,
   onToggleRecipeDetails,
   onCreated,
   onCancel,
@@ -54,7 +53,7 @@ function RecipeCreateForm({
   const isEditing = initialRecipe !== null;
   const { t } = useLanguage();
   const { ingredients } = useIngredients();
-  const { recipes, refreshRecipes } = useRecipes();
+  const { recipes, refreshRecipes, upsertRecipe } = useRecipes();
   const { ingredientTagCategories, refreshIngredientTagCategories } = useIngredientTagCategories();
   const [name, setName] = useState(initialRecipe?.name ?? "");
   const [portions, setPortions] = useState((initialRecipe?.portions ?? 1).toString());
@@ -228,35 +227,10 @@ function RecipeCreateForm({
 
   const submitRecipe = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const trimmedName = name.trim();
-
-    if (trimmedName.length === 0) {
-      setError(t.cookbook.recipeNeedsName);
-      return;
-    }
-
-    if (trimmedName.length > RECIPE_NAME_MAX_LENGTH) {
-      setError(t.cookbook.recipeNameTooLong(RECIPE_NAME_MAX_LENGTH));
-      return;
-    }
-
-    if (selectedIngredients.length === 0 && selectedComponents.length === 0) {
-      setError(t.cookbook.chooseAtLeastOneIngredient);
-      return;
-    }
-
-    const parsedPortions = nullableNumber(portions);
-    if (parsedPortions === null || parsedPortions <= 0) {
-      setError(t.cookbook.portionsRequired);
-      return;
-    }
-
-    const parsedComponents = selectedComponents.map((component) => ({
-      ...component,
-      amount: nullableNumber(component.amount),
-    }));
-    if (parsedComponents.some((component) => component.amount === null || component.amount <= 0)) {
-      setError(t.cookbook.recipeComponentAmountRequired);
+    const formValues = { name, portions, description, instructions, selectedIngredients, selectedComponents, selectedTags };
+    const formError = checkRecipeForm(formValues, t);
+    if (formError !== null) {
+      setError(formError);
       return;
     }
 
@@ -268,38 +242,23 @@ function RecipeCreateForm({
         ? null
         : await imageUploadService.upload(croppedImageFile, "recipes");
 
-      const request = {
-        name: trimmedName,
-        imageUrl: upload?.url ?? initialRecipe?.imageUrl ?? null,
-        description: nullableText(description),
-        instructions: nullableText(instructions),
-        portions: parsedPortions,
-        ingredients: selectedIngredients.map((ingredient) => ({
-          ingredientId: ingredient.ingredientId,
-          amount: nullableNumber(ingredient.amount),
-          unit: ingredient.unit,
-          preparation: ingredient.preparation,
-        })),
-        tags: selectedTags,
-        components: parsedComponents.map((component, index) => ({
-          recipeId: component.recipeId,
-          amount: component.amount ?? 0,
-          unit: component.unit,
-          preparation: component.preparation,
-          sortOrder: index + 1,
-        })),
-      };
+      const request = buildRecipeRequest(formValues, upload?.url ?? initialRecipe?.imageUrl ?? null);
 
-      if (isEditing) {
-        await recipeService.update(initialRecipe.recipeId, request);
-      } else {
-        await recipeService.create(request);
+      const saved = isEditing
+        ? await recipeService.update(initialRecipe.recipeId, request)
+        : await recipeService.create(request);
+
+      upsertRecipe(saved);
+      // Other recipes repeat a component's name; refresh them in the background only when that can have changed.
+      if (isEditing && saved.name !== initialRecipe.name && recipes.some((recipe) =>
+        recipe.components.some((component) => component.recipeId === saved.recipeId))) {
+        void refreshRecipes();
       }
-
-      await refreshRecipes();
       onCreated();
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : t.cookbook.couldNotCreateRecipe);
+      setError(caughtError instanceof ApiError && caughtError.status === 409
+        ? t.cookbook.recipeNameTaken(name.trim())
+        : caughtError instanceof Error ? caughtError.message : t.cookbook.couldNotCreateRecipe);
     } finally {
       setIsSaving(false);
     }
@@ -308,20 +267,20 @@ function RecipeCreateForm({
   return (
     <form className={recipeBrowserStyles.form} onSubmit={submitRecipe}>
       <div className={recipeBrowserStyles.formBodyScrollArea}>
-        {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
+        {error !== null && <p className={recipeBrowserStyles.statusError}>{error}</p>}
 
-        <div className={recipeBrowserStyles.recipeCreateScrollArea(theme)}>
+        <div className={recipeBrowserStyles.recipeCreateScrollArea}>
           <div className={recipeBrowserStyles.createFormTopGrid}>
             <div className={recipeBrowserStyles.createFormPrimaryFields}>
               <label className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>
-                  Name<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-                  <span className={recipeBrowserStyles.inlineHint(theme)}>
+                <span className={recipeBrowserStyles.label}>
+                  {t.cookbook.name}<span className={recipeBrowserStyles.requiredMark}> *</span>
+                  <span className={recipeBrowserStyles.inlineHint}>
                     {name.length}/{RECIPE_NAME_MAX_LENGTH}
                   </span>
                 </span>
                 <input
-                  className={recipeBrowserStyles.textField(theme)}
+                  className={recipeBrowserStyles.textField}
                   maxLength={RECIPE_NAME_MAX_LENGTH}
                   required
                   type="text"
@@ -331,11 +290,11 @@ function RecipeCreateForm({
               </label>
 
               <label className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>
-                  {t.cookbook.portions}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+                <span className={recipeBrowserStyles.label}>
+                  {t.cookbook.portions}<span className={recipeBrowserStyles.requiredMark}> *</span>
                 </span>
                 <input
-                  className={recipeBrowserStyles.textField(theme)}
+                  className={recipeBrowserStyles.textField}
                   min="0"
                   required
                   step="0.25"
@@ -347,14 +306,13 @@ function RecipeCreateForm({
 
             </div>
             <div className={recipeBrowserStyles.createImageField}>
-              <span className={`${recipeBrowserStyles.label(theme)} ${recipeBrowserStyles.createImageLabel}`}>
+              <span className={`${recipeBrowserStyles.label} ${recipeBrowserStyles.createImageLabel}`}>
                 {t.cookbook.image}
               </span>
               <div className={recipeBrowserStyles.createImageControl}>
                 <ImageCropPicker
                   inputId={imageInputId}
                   initialImageUrl={initialRecipe?.imageUrl}
-                  theme={theme}
                   onCroppedFileChange={handleCroppedFileChange}
                 />
               </div>
@@ -364,7 +322,7 @@ function RecipeCreateForm({
           {onToggleRecipeDetails && (
             <button
               aria-expanded={showRecipeDetails}
-              className={recipeBrowserStyles.detailsToggleFull(theme)}
+              className={recipeBrowserStyles.detailsToggleFull}
               type="button"
               onClick={onToggleRecipeDetails}
             >
@@ -373,12 +331,12 @@ function RecipeCreateForm({
           )}
 
           {showRecipeDetails && (
-            <div className={recipeBrowserStyles.detailsPanel(theme)}>
+            <div className={recipeBrowserStyles.detailsPanel}>
               <div className={recipeBrowserStyles.formGrid}>
                 <label className={recipeBrowserStyles.field}>
-                  <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.description}</span>
+                  <span className={recipeBrowserStyles.label}>{t.cookbook.description}</span>
                   <textarea
-                    className={recipeBrowserStyles.textArea(theme)}
+                    className={recipeBrowserStyles.textArea}
                     maxLength={600}
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
@@ -386,9 +344,9 @@ function RecipeCreateForm({
                 </label>
 
                 <label className={recipeBrowserStyles.field}>
-                  <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.instructions}</span>
+                  <span className={recipeBrowserStyles.label}>{t.cookbook.instructions}</span>
                   <textarea
-                    className={recipeBrowserStyles.textArea(theme)}
+                    className={recipeBrowserStyles.textArea}
                     value={instructions}
                     onChange={(event) => setInstructions(event.target.value)}
                   />
@@ -398,18 +356,17 @@ function RecipeCreateForm({
           )}
 
           <section className={`${recipeBrowserStyles.field} ${recipeBrowserStyles.desktopTagSection}`}>
-            <span className={recipeBrowserStyles.label(theme)}>
+            <span className={recipeBrowserStyles.label}>
               {t.cookbook.tags}
-              <span className={recipeBrowserStyles.inlineHint(theme)}>{t.cookbook.optional}</span>
+              <span className={recipeBrowserStyles.inlineHint}>{t.cookbook.optional}</span>
             </span>
             <GroupedCheckboxPanel
               addActionLabel={t.common.manageTags}
               formatValue={(value) => t.enums.recipeTags[value] ?? formatLabel(value)}
               groupLabels={recipeTagGroupLabels}
               groups={groupedRecipeTags}
-              panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
+              panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel}`}
               selectedValues={selectedTags}
-              theme={theme}
               onAddTag={() => setIsTagCreateOpen(true)}
               onToggle={(value) => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
             />
@@ -417,7 +374,7 @@ function RecipeCreateForm({
 
           <div className={recipeBrowserStyles.mobileFormActionRow}>
             <button
-              className={`${recipeBrowserStyles.detailsToggleFull(theme)} ${recipeBrowserStyles.mobileFormActionButton}`}
+              className={`${recipeBrowserStyles.detailsToggleFull} ${recipeBrowserStyles.mobileFormActionButton}`}
               type="button"
               onClick={() => setIsTagPickerOpen(true)}
             >
@@ -427,14 +384,14 @@ function RecipeCreateForm({
 
           <section className={recipeBrowserStyles.field}>
             <div className={recipeBrowserStyles.fieldHeaderRow}>
-              <span className={recipeBrowserStyles.label(theme)}>
-                {t.cookbook.ingredients}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-                <span className={recipeBrowserStyles.inlineHint(theme)}>
+              <span className={recipeBrowserStyles.label}>
+                {t.cookbook.ingredients}<span className={recipeBrowserStyles.requiredMark}> *</span>
+                <span className={recipeBrowserStyles.inlineHint}>
                   {t.cookbook.recipeLinesHelp}
                 </span>
               </span>
               <button
-                className={recipeBrowserStyles.inlineHelperButton(theme)}
+                className={recipeBrowserStyles.inlineHelperButton}
                 type="button"
                 onClick={() => setIsConversionHelperOpen(true)}
               >
@@ -444,15 +401,14 @@ function RecipeCreateForm({
             <RecipeLineModeToggle
               className="max-w-md max-sm:hidden"
               mode={recipeLinePickerMode}
-              theme={theme}
               onChange={setRecipeLinePickerMode}
             />
             <div className={recipeBrowserStyles.mobileIngredientSummary}>
-              <button className={recipeBrowserStyles.detailsToggleFull(theme)} type="button" onClick={openMobileIngredientPicker}>
+              <button className={recipeBrowserStyles.detailsToggleFull} type="button" onClick={openMobileIngredientPicker}>
                 {recipeLinePickerMode === "ingredients" ? t.cookbook.chooseIngredients : t.cookbook.chooseRecipes}
               </button>
               {selectedIngredients.length === 0 && selectedComponents.length === 0 ? (
-                <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noIngredientsSelected}</p>
+                <p className={recipeBrowserStyles.helperText}>{t.cookbook.noIngredientsSelected}</p>
               ) : null}
             </div>
             <div className={recipeBrowserStyles.desktopIngredientPicker}>
@@ -463,7 +419,6 @@ function RecipeCreateForm({
                   preparationLabels={t.enums.ingredientPreparations}
                   selectedIngredientIds={selectedIngredientIds}
                   selectedIngredients={selectedIngredients}
-                  theme={theme}
                   onAmountChange={(ingredientId, amount) =>
                     setSelectedIngredients((currentIngredients) =>
                       updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
@@ -493,7 +448,6 @@ function RecipeCreateForm({
                   recipes={visibleComponentRecipes}
                   selectedComponentIds={selectedComponentIds}
                   selectedComponents={selectedComponents}
-                  theme={theme}
                   onAmountChange={(recipeId, amount) =>
                     setSelectedComponents((currentComponents) =>
                       updateSelectedRecipeComponent(currentComponents, recipeId, { amount }),
@@ -523,10 +477,10 @@ function RecipeCreateForm({
       </div>
 
       <div className={recipeBrowserStyles.formActions}>
-        <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="button" onClick={onCancel}>
+        <button className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="button" onClick={onCancel}>
           {t.common.cancel}
         </button>
-        <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="submit">
+        <button className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="submit">
           {isSaving ? t.common.saving : isEditing ? t.cookbook.saveRecipe : t.cookbook.createRecipe}
         </button>
       </div>
@@ -534,21 +488,21 @@ function RecipeCreateForm({
         <Modal
           backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
           bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-          closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+          closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
           closeLabel={t.common.close}
           footer={
             <>
-              <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={() => setIsIngredientPickerOpen(false)}>
+              <button className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={() => setIsIngredientPickerOpen(false)}>
                 {t.common.cancel}
               </button>
-              <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={confirmMobileIngredients}>
+              <button className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={confirmMobileIngredients}>
                 {t.common.confirm}
               </button>
             </>
           }
           footerClassName={recipeBrowserStyles.formActions}
           headerClassName={recipeBrowserStyles.modalHeader}
-          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
           title={t.cookbook.ingredients}
           titleClassName={recipeBrowserStyles.modalTitle}
           onClose={() => setIsIngredientPickerOpen(false)}
@@ -556,7 +510,6 @@ function RecipeCreateForm({
           <RecipeLineModeToggle
             className="max-w-full"
             mode={recipeLinePickerMode}
-            theme={theme}
             onChange={setRecipeLinePickerMode}
           />
           {recipeLinePickerMode === "ingredients" ? (
@@ -566,7 +519,6 @@ function RecipeCreateForm({
               preparationLabels={t.enums.ingredientPreparations}
               selectedIngredientIds={mobileSelectedIngredientIds}
               selectedIngredients={mobileIngredientDraft}
-              theme={theme}
               onAmountChange={(ingredientId, amount) =>
                 setMobileIngredientDraft((currentIngredients) =>
                   updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
@@ -596,7 +548,6 @@ function RecipeCreateForm({
               recipes={visibleMobileComponentRecipes}
               selectedComponentIds={mobileSelectedComponentIds}
               selectedComponents={mobileComponentDraft}
-              theme={theme}
               onAmountChange={(recipeId, amount) =>
                 setMobileComponentDraft((currentComponents) =>
                   updateSelectedRecipeComponent(currentComponents, recipeId, { amount }),
@@ -624,7 +575,6 @@ function RecipeCreateForm({
       )}
       {isConversionHelperOpen && (
         <ConversionHelperDialog
-          theme={theme}
           onClose={() => setIsConversionHelperOpen(false)}
         />
       )}
@@ -635,7 +585,6 @@ function RecipeCreateForm({
           groupLabels={recipeTagGroupLabels}
           groups={groupedRecipeTags}
           selectedValues={selectedTags}
-          theme={theme}
           title={t.cookbook.tags}
           onAddTag={() => setIsTagCreateOpen(true)}
           onClose={() => setIsTagPickerOpen(false)}
@@ -647,276 +596,43 @@ function RecipeCreateForm({
           categories={ingredientTagCategories}
           existingTags={[...knownRecipeTags, ...customRecipeTags]}
           initialMode="recipes"
-          theme={theme}
           onCancel={() => setIsTagCreateOpen(false)}
-          onCreate={async (tag, categoryId) => {
-            await ingredientTagCategoryService.createTag(categoryId, { name: tag });
-            await refreshIngredientTagCategories();
-            setSelectedTags((currentTags) => currentTags.includes(tag) ? currentTags : [...currentTags, tag]);
-            setIsTagCreateOpen(false);
-          }}
-          onCreateCategory={async (name, mode) => {
-            const category = await ingredientTagCategoryService.create({
-              name,
-              showForIngredients: mode === "ingredients",
-              showForRecipes: mode === "recipes",
-            });
-            await refreshIngredientTagCategories();
-            return {
-              id: category.ingredientTagCategoryId,
-              name: category.name,
-              showForIngredients: category.showForIngredients,
-              showForRecipes: category.showForRecipes,
-            };
-          }}
-          onUpdateCategory={async (category) => {
-            await ingredientTagCategoryService.update(category.id, {
-              name: category.name,
-              showForIngredients: category.showForIngredients,
-              showForRecipes: category.showForRecipes,
-            });
-            await refreshIngredientTagCategories();
-          }}
-          onDeleteCategory={async (category) => {
-            await ingredientTagCategoryService.delete(category.id);
-            await refreshIngredientTagCategories();
-            await refreshRecipes();
-          }}
-          onUpdateTag={async (tagName, nextName) => {
-            await ingredientTagCategoryService.updateTag(tagName, { name: nextName });
-            await refreshIngredientTagCategories();
-            await refreshRecipes();
-            setSelectedTags((currentTags) =>
-              currentTags.map((tag) => tag.toLowerCase() === tagName.toLowerCase() ? nextName : tag),
-            );
-          }}
-          onDeleteTag={async (tagName) => {
-            await ingredientTagCategoryService.deleteTag(tagName);
-            await refreshIngredientTagCategories();
-            await refreshRecipes();
-            setSelectedTags((currentTags) =>
-              currentTags.filter((tag) => tag.toLowerCase() !== tagName.toLowerCase()),
-            );
-          }}
-          onMoveCategory={async (categoryId, direction) => {
-            await ingredientTagCategoryService.move(categoryId, direction);
-            await refreshIngredientTagCategories();
-          }}
-          onMoveTag={async (tagId, direction) => {
-            await ingredientTagCategoryService.moveTag(tagId, direction);
-            await refreshIngredientTagCategories();
-          }}
+          {...tagManagementHandlers({
+            refreshCategories: refreshIngredientTagCategories,
+            refreshTagUsers: refreshRecipes,
+            onTagCreated: (tag) => {
+              setSelectedTags((currentTags) => currentTags.includes(tag) ? currentTags : [...currentTags, tag]);
+              setIsTagCreateOpen(false);
+            },
+            onTagRenamed: (tagName, nextName) =>
+              setSelectedTags((currentTags) =>
+                currentTags.map((tag) => tag.toLowerCase() === tagName.toLowerCase() ? nextName : tag),
+              ),
+            onTagDeleted: (tagName) =>
+              setSelectedTags((currentTags) =>
+                currentTags.filter((tag) => tag.toLowerCase() !== tagName.toLowerCase()),
+              ),
+          })}
         />
       )}
     </form>
   );
 }
 
-type ConversionHelperDialogProps = {
-  theme: SiteTheme;
-  onClose: () => void;
-};
-
 type RecipeLineModeToggleProps = {
   className?: string;
   mode: RecipeLinePickerMode;
-  theme: SiteTheme;
   onChange: (mode: RecipeLinePickerMode) => void;
 };
 
-function RecipeLineModeToggle({ className = "", mode, theme, onChange }: RecipeLineModeToggleProps) {
+function RecipeLineModeToggle({ className = "", mode, onChange }: RecipeLineModeToggleProps) {
   return (
     <RecipeIngredientToggle
       value={mode}
-      theme={theme}
       className={className}
       onChange={onChange}
     />
   );
-}
-
-function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps) {
-  const { language, t } = useLanguage();
-  const [rules, setRules] = useState<IConversionRule[]>([]);
-  const [fromText, setFromText] = useState("");
-  const [toText, setToText] = useState("");
-  const [isLoadingRules, setIsLoadingRules] = useState(true);
-  const [isSavingRule, setIsSavingRule] = useState(false);
-  const [rulesError, setRulesError] = useState<string | null>(null);
-
-  const loadRules = useCallback(async () => {
-    setIsLoadingRules(true);
-    setRulesError(null);
-
-    try {
-      setRules(await conversionRuleService.getAll());
-    } catch {
-      setRulesError(t.cookbook.couldNotLoadConversionRules);
-    } finally {
-      setIsLoadingRules(false);
-    }
-  }, [t.cookbook.couldNotLoadConversionRules]);
-
-  useEffect(() => {
-    void loadRules();
-  }, [loadRules]);
-
-  async function createRule() {
-    const normalizedFromText = fromText.trim();
-    const normalizedToText = toText.trim();
-    if (normalizedFromText.length === 0 || normalizedToText.length === 0) {
-      setRulesError(t.cookbook.conversionRuleNeedsValues);
-      return;
-    }
-
-    setIsSavingRule(true);
-    setRulesError(null);
-    try {
-      const createdRule = await conversionRuleService.create({
-        fromText: normalizedFromText,
-        toText: normalizedToText,
-      });
-      setRules((currentRules) => [
-        ...currentRules.filter((rule) => rule.conversionRuleId !== createdRule.conversionRuleId),
-        createdRule,
-      ].sort((left, right) => left.sortOrder - right.sortOrder || left.fromText.localeCompare(right.fromText)));
-      setFromText("");
-      setToText("");
-    } catch {
-      setRulesError(t.cookbook.couldNotSaveConversionRule);
-    } finally {
-      setIsSavingRule(false);
-    }
-  }
-
-  async function deleteRule(ruleId: number) {
-    setRulesError(null);
-    try {
-      await conversionRuleService.delete(ruleId);
-      setRules((currentRules) => currentRules.filter((rule) => rule.conversionRuleId !== ruleId));
-    } catch {
-      setRulesError(t.cookbook.couldNotDeleteConversionRule);
-    }
-  }
-
-  return (
-    <Modal
-      backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
-      bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-      closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
-      closeLabel={t.common.close}
-      footer={
-        <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onClose}>
-          {t.common.close}
-        </button>
-      }
-      footerClassName={recipeBrowserStyles.formActions}
-      headerClassName={recipeBrowserStyles.modalHeader}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
-      title={t.cookbook.conversionHelper}
-      titleClassName={recipeBrowserStyles.modalTitle}
-      onClose={onClose}
-    >
-      <p className={recipeBrowserStyles.conversionHelperIntro(theme)}>
-        {t.cookbook.conversionHelperIntro}
-      </p>
-      <p className={recipeBrowserStyles.conversionHelperSource(theme)}>
-        {t.cookbook.conversionHelperSourceText}{" "}
-        <a
-          className={recipeBrowserStyles.conversionHelperSourceLink(theme)}
-          href="https://www.matprat.no/artikler/mengde-mal-og-vekt/mal-og-vekt/"
-          rel="noreferrer"
-          target="_blank"
-        >
-          {t.cookbook.conversionHelperSourceLink}
-        </a>
-        .
-      </p>
-      <section className={recipeBrowserStyles.conversionSection(theme)}>
-        <h3 className={recipeBrowserStyles.conversionSectionTitle(theme)}>{t.cookbook.conversions}</h3>
-        {rulesError !== null && <p className={recipeBrowserStyles.statusError(theme)}>{rulesError}</p>}
-        {isLoadingRules ? (
-          <p className={recipeBrowserStyles.conversionHelperSource(theme)}>{t.common.working}</p>
-        ) : (
-          <div className={recipeBrowserStyles.conversionList}>
-            {rules.map((rule) => {
-              const localizedFromText = language === "nb" ? rule.fromTextNb ?? rule.fromText : rule.fromText;
-              const localizedToText = language === "nb" ? rule.toTextNb ?? rule.toText : rule.toText;
-
-              return (
-                <div className={recipeBrowserStyles.conversionRow(theme)} key={rule.conversionRuleId}>
-                  <span className={recipeBrowserStyles.conversionSource}>{localizedFromText}</span>
-                  <span className={recipeBrowserStyles.conversionArrow(theme)}>=</span>
-                  <span className={recipeBrowserStyles.conversionTarget}>{localizedToText}</span>
-                  <button
-                    className={recipeBrowserStyles.inlineTextButton(theme)}
-                    type="button"
-                    onClick={() => void deleteRule(rule.conversionRuleId)}
-                  >
-                    {t.common.remove}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-      <section className={recipeBrowserStyles.conversionSection(theme)}>
-        <h3 className={recipeBrowserStyles.conversionSectionTitle(theme)}>{t.cookbook.addConversionRule}</h3>
-        <div className={recipeBrowserStyles.conversionRuleForm}>
-          <label className={recipeBrowserStyles.field}>
-            <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.conversionFrom}</span>
-            <input
-              className={recipeBrowserStyles.textField(theme)}
-              maxLength={120}
-              placeholder={t.cookbook.conversionFromPlaceholder}
-              value={fromText}
-              onChange={(event) => setFromText(event.target.value)}
-            />
-          </label>
-          <label className={recipeBrowserStyles.field}>
-            <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.conversionTo}</span>
-            <input
-              className={recipeBrowserStyles.textField(theme)}
-              maxLength={120}
-              placeholder={t.cookbook.conversionToPlaceholder}
-              value={toText}
-              onChange={(event) => setToText(event.target.value)}
-            />
-          </label>
-          <button
-            className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
-            disabled={isSavingRule}
-            type="button"
-            onClick={() => void createRule()}
-          >
-            {isSavingRule ? t.common.saving : t.common.add}
-          </button>
-        </div>
-      </section>
-    </Modal>
-  );
-}
-
-function toggleValue<T>(values: T[], value: T) {
-  return values.includes(value)
-    ? values.filter((currentValue) => currentValue !== value)
-    : [...values, value];
-}
-
-function nullableText(value: string) {
-  const trimmedValue = value.trim();
-  return trimmedValue.length === 0 ? null : trimmedValue;
-}
-
-function nullableNumber(value: string) {
-  const trimmedValue = value.trim();
-  if (trimmedValue.length === 0) {
-    return null;
-  }
-
-  const parsedValue = Number(trimmedValue);
-  return Number.isFinite(parsedValue) ? parsedValue : null;
 }
 
 export default RecipeCreateForm;

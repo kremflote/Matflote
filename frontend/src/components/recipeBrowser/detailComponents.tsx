@@ -1,25 +1,23 @@
 import type { ReactNode } from "react";
 import { useLanguage } from "../../contexts";
 import type { INutritionFacts } from "../../interfaces/IIngredient";
-import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type DetailSectionProps = {
   title: string;
-  theme: SiteTheme;
   children: ReactNode;
   headerAction?: ReactNode;
   subtitle?: string;
 };
 
-export function DetailSection({ title, theme, children, headerAction, subtitle }: DetailSectionProps) {
+export function DetailSection({ title, children, headerAction, subtitle }: DetailSectionProps) {
   return (
-    <section className={recipeBrowserStyles.detailsPanel(theme)}>
+    <section className={recipeBrowserStyles.detailsPanel}>
       <div className={recipeBrowserStyles.detailSectionHeader}>
         <div className={recipeBrowserStyles.detailSectionTitleRow}>
           <h3 className={recipeBrowserStyles.detailSectionTitle}>{title}</h3>
           {subtitle !== undefined && (
-            <span className={recipeBrowserStyles.detailSectionSubtitle(theme)}>{subtitle}</span>
+            <span className={recipeBrowserStyles.detailSectionSubtitle}>{subtitle}</span>
           )}
         </div>
         {headerAction}
@@ -31,13 +29,12 @@ export function DetailSection({ title, theme, children, headerAction, subtitle }
 
 type DetailTextProps = {
   label: string;
-  theme: SiteTheme;
   value: string;
 };
 
-export function DetailText({ label, theme, value }: DetailTextProps) {
+export function DetailText({ label, value }: DetailTextProps) {
   return (
-    <DetailSection title={label} theme={theme}>
+    <DetailSection title={label}>
       <p className={recipeBrowserStyles.detailText}>{value}</p>
     </DetailSection>
   );
@@ -48,12 +45,12 @@ type DetailTextWithMetaProps = DetailTextProps & {
   meta: string;
 };
 
-export function DetailTextWithMeta({ className = "", label, meta, theme, value }: DetailTextWithMetaProps) {
+export function DetailTextWithMeta({ className = "", label, meta, value }: DetailTextWithMetaProps) {
   return (
-    <section className={`${recipeBrowserStyles.detailsPanel(theme)} min-h-0 overflow-hidden ${className}`}>
+    <section className={`${recipeBrowserStyles.detailsPanel} ${className}`}>
       <div className={recipeBrowserStyles.detailTextMetaHeader}>
         <h3 className={recipeBrowserStyles.detailSectionTitle}>{label}</h3>
-        <span className={recipeBrowserStyles.helperText(theme)}>{meta}</span>
+        <span className={recipeBrowserStyles.helperText}>{meta}</span>
       </div>
       <p className={recipeBrowserStyles.detailTextScrollable}>{value}</p>
     </section>
@@ -63,12 +60,11 @@ export function DetailTextWithMeta({ className = "", label, meta, theme, value }
 type MetadataRowProps = {
   label: string;
   value: string;
-  theme: SiteTheme;
 };
 
-export function MetadataRow({ label, value, theme }: MetadataRowProps) {
+export function MetadataRow({ label, value }: MetadataRowProps) {
   return (
-    <div className={recipeBrowserStyles.detailRow(theme)}>
+    <div className={recipeBrowserStyles.detailRow}>
       <span className={recipeBrowserStyles.detailRowLabel}>{label}</span>
       <span>{value}</span>
     </div>
@@ -78,22 +74,21 @@ export function MetadataRow({ label, value, theme }: MetadataRowProps) {
 type ChipListProps = {
   label: string;
   values: string[];
-  theme: SiteTheme;
   compact?: boolean;
 };
 
-export function ChipList({ compact = false, label, values, theme }: ChipListProps) {
+export function ChipList({ compact = false, label, values }: ChipListProps) {
   const { t } = useLanguage();
 
   return (
     <section className={compact ? recipeBrowserStyles.detailChipSectionCompact : recipeBrowserStyles.detailChipSection}>
-      <span className={recipeBrowserStyles.label(theme)}>{label}</span>
+      <span className={recipeBrowserStyles.label}>{label}</span>
       <div className={recipeBrowserStyles.detailChipList}>
         {values.length === 0 ? (
-          <span className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.none}</span>
+          <span className={recipeBrowserStyles.helperText}>{t.cookbook.none}</span>
         ) : (
           values.map((value) => (
-            <span className={recipeBrowserStyles.filterChip(theme)} key={value}>
+            <span className={recipeBrowserStyles.filterChip} key={value}>
               {value}
             </span>
           ))
@@ -107,7 +102,6 @@ type NutritionGridProps = {
   nutrition: INutritionFacts | null;
   recipePortions?: number;
   recipeTotalGrams?: number | null;
-  theme: SiteTheme;
   variant?: "default" | "recipe";
 };
 
@@ -115,13 +109,12 @@ export function NutritionGrid({
   nutrition,
   recipePortions = 1,
   recipeTotalGrams = null,
-  theme,
   variant = "default",
 }: NutritionGridProps) {
   const { t } = useLanguage();
 
   if (nutrition === null) {
-    return <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noDietaryInformation}</p>;
+    return <p className={recipeBrowserStyles.helperText}>{t.cookbook.noDietaryInformation}</p>;
   }
 
   const caloriesPerPortion =
@@ -188,11 +181,11 @@ export function NutritionGrid({
     <div className={recipeBrowserStyles.nutritionGrid}>
       {rowGroups.map((group, groupIndex) => (
         <div className={recipeBrowserStyles.nutritionGridGroupWrap} key={group.title}>
-          {groupIndex > 0 && <div className={recipeBrowserStyles.nutritionSeparator(theme)} />}
-          <h4 className={recipeBrowserStyles.nutritionGridGroupTitle(theme)}>{group.title}</h4>
+          {groupIndex > 0 && <div className={recipeBrowserStyles.nutritionSeparator} />}
+          <h4 className={recipeBrowserStyles.nutritionGridGroupTitle}>{group.title}</h4>
           <div className={recipeBrowserStyles.nutritionGridGroup}>
             {group.rows.map(([label, value]) => (
-              <div className={recipeBrowserStyles.detailRow(theme)} key={label}>
+              <div className={recipeBrowserStyles.detailRow} key={label}>
                 <span className={recipeBrowserStyles.detailRowLabel}>{label}</span>
                 <span>{value ?? t.cookbook.notSet}</span>
               </div>

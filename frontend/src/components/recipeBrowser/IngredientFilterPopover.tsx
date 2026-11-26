@@ -3,8 +3,8 @@ import { useLanguage } from "../../contexts";
 import IngredientThumbnail from "../IngredientThumbnail";
 import SearchField from "../SearchField";
 import type { IIngredient } from "../../interfaces/IIngredient";
-import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
+import { desktopMinWidthPx } from "../../styles/breakpoints";
 
 const popoverWidth = 288;
 const popoverHeight = 360;
@@ -15,7 +15,6 @@ type IngredientFilterPopoverProps = {
   popoverRef: RefObject<HTMLDivElement | null>;
   searchTerm: string;
   selectedIngredientIds: number[];
-  theme: SiteTheme;
   x: number;
   y: number;
   onSearchChange: (value: string) => void;
@@ -27,7 +26,6 @@ function IngredientFilterPopover({
   popoverRef,
   searchTerm,
   selectedIngredientIds,
-  theme,
   x,
   y,
   onSearchChange,
@@ -38,7 +36,7 @@ function IngredientFilterPopover({
 
   return (
     <div
-      className={recipeBrowserStyles.ingredientPicker(theme)}
+      className={recipeBrowserStyles.ingredientPicker}
       ref={popoverRef}
       style={{
         left: position.left,
@@ -47,15 +45,14 @@ function IngredientFilterPopover({
     >
       <SearchField
         aria-label={t.browser.searchIngredientsToInclude}
-        inputClassName={recipeBrowserStyles.ingredientPickerSearch(theme)}
+        inputClassName={recipeBrowserStyles.ingredientPickerSearch}
         placeholder={t.browser.ingredientSearchPlaceholder}
-        theme={theme}
         value={searchTerm}
         onChange={onSearchChange}
       />
       <div className={recipeBrowserStyles.ingredientPickerList}>
         {ingredients.length === 0 ? (
-          <p className={recipeBrowserStyles.ingredientPickerEmpty(theme)}>{t.browser.noIngredientsFound}</p>
+          <p className={recipeBrowserStyles.ingredientPickerEmpty}>{t.browser.noIngredientsFound}</p>
         ) : (
           ingredients.map((ingredient) => {
             const isSelected = selectedIngredientIds.includes(ingredient.ingredientId);
@@ -68,7 +65,6 @@ function IngredientFilterPopover({
                 mode="compact"
                 selected={!isSelected}
                 selectedPresentation="muted"
-                theme={theme}
                 onClick={() => onToggleIngredient(ingredient.ingredientId)}
               />
             );
@@ -98,7 +94,7 @@ function getClampedPopoverPosition(x: number, y: number) {
   const viewportHeight = window.innerHeight;
   const effectivePopoverWidth = Math.min(popoverWidth, viewportWidth - viewportMargin * 2);
   const left = Math.max(viewportMargin, Math.min(x, viewportWidth - effectivePopoverWidth - viewportMargin));
-  const preferredTop = viewportWidth <= 1100 ? y - popoverHeight - 8 : y + 8;
+  const preferredTop = viewportWidth < desktopMinWidthPx ? y - popoverHeight - 8 : y + 8;
   const top = Math.max(viewportMargin, Math.min(preferredTop, viewportHeight - popoverHeight - viewportMargin));
 
   return { left, top };

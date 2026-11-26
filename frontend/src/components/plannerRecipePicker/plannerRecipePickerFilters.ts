@@ -3,6 +3,8 @@ import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
 import type { MealRecipeRole } from "../../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
 import { ingredientTags } from "../recipeBrowser/formOptions";
+import { getRecipeAndComponentLines } from "../../utils/recipeComponents";
+import { getSystemTagName, systemTagKeys } from "../../utils/tagCatalog";
 
 export const mainProteinFilters: IngredientTag[] = ingredientTags.filter(
   (ingredientTag) =>
@@ -30,37 +32,48 @@ export function isMainDish(recipe: IRecipe) {
   return recipe.recipeId > 0;
 }
 
-export function matchesSelectedIngredients(recipe: IRecipe, selectedIngredientIds: number[]) {
+export function matchesSelectedIngredients(
+  recipe: IRecipe,
+  selectedIngredientIds: number[],
+  recipesById: ReadonlyMap<number, IRecipe>,
+) {
   if (selectedIngredientIds.length === 0) {
     return true;
   }
 
+  const lines = getRecipeAndComponentLines(recipe, recipesById);
   return selectedIngredientIds.every((ingredientId) =>
-    recipe.ingredients.some((recipeIngredient) =>
-      recipeIngredient.ingredient.ingredientId === ingredientId,
-    ) ||
-    recipe.components.some((component) =>
-      component.ingredients?.some((recipeIngredient) =>
-        recipeIngredient.ingredient.ingredientId === ingredientId,
-      ) ?? false,
-    ),
+    lines.some((recipeIngredient) => recipeIngredient.ingredient.ingredientId === ingredientId),
   );
 }
 
-export function matchesSelectedIngredientTags(recipe: IRecipe, selectedIngredientTags: IngredientTag[]) {
+export function matchesSelectedIngredientTags(
+  recipe: IRecipe,
+  selectedIngredientTags: IngredientTag[],
+  recipesById: ReadonlyMap<number, IRecipe>,
+) {
   if (selectedIngredientTags.length === 0) {
     return true;
   }
 
-  return selectedIngredientTags.every((ingredientTag) => recipeHasIngredientTag(recipe, ingredientTag));
+  return selectedIngredientTags.every((ingredientTag) => recipeHasIngredientTag(recipe, ingredientTag, recipesById));
 }
 
-export function matchesSelectedRecipeTags(recipe: IRecipe, selectedRecipeTags: RecipeTag[]) {
-  if (selectedRecipeTags.length === 0) {
-    return true;
-  }
+/** Meal-time tags are alternatives: a lunch slot offers recipes tagged Lunch or Dinner. */
+export const mealTimeRecipeTags: readonly RecipeTag[] = ["Breakfast", "Lunch", "Dinner"];
 
-  return selectedRecipeTags.every((recipeTag) => recipe.tags.includes(recipeTag));
+/**
+ * A recipe matches when it has at least one of the selected meal-time tags (if any are selected)
+ * and every other selected tag.
+ */
+export function matchesSelectedRecipeTags(recipe: IRecipe, selectedRecipeTags: RecipeTag[]) {
+  const selectedMealTimeTags = selectedRecipeTags.filter((recipeTag) => mealTimeRecipeTags.includes(recipeTag));
+  const otherSelectedTags = selectedRecipeTags.filter((recipeTag) => !mealTimeRecipeTags.includes(recipeTag));
+
+  return (
+    (selectedMealTimeTags.length === 0 || selectedMealTimeTags.some((recipeTag) => recipe.tags.includes(recipeTag))) &&
+    otherSelectedTags.every((recipeTag) => recipe.tags.includes(recipeTag))
+  );
 }
 
 export function matchesSearch(recipe: IRecipe, searchTerm: string) {
@@ -96,25 +109,25 @@ export function matchesIngredientSearch(ingredient: IIngredient, searchTerm: str
     .includes(normalizedSearch);
 }
 
-export function recipeHasIngredientTag(recipe: IRecipe, ingredientTag: IngredientTag) {
-  return (
-    recipe.ingredients.some((recipeIngredient) =>
-      recipeIngredient.ingredient.tags.includes(ingredientTag),
-    ) ||
-    recipe.components.some((component) =>
-      component.ingredients?.some((recipeIngredient) =>
-        recipeIngredient.ingredient.tags.includes(ingredientTag),
-      ) ?? false,
-    )
+export function recipeHasIngredientTag(
+  recipe: IRecipe,
+  ingredientTag: IngredientTag,
+  recipesById: ReadonlyMap<number, IRecipe>,
+) {
+  return getRecipeAndComponentLines(recipe, recipesById).some((recipeIngredient) =>
+    recipeIngredient.ingredient.tags.includes(ingredientTag),
   );
 }
 
-export function getSupplementaryRole(recipe: IRecipe): MealRecipeRole {
-  if (recipe.tags.includes("Sauce") || recipe.tags.includes("Dip")) {
+/** The role a recipe added beside the main dish gets, from its sauce, dip, side or salad tag (by system key). */
+export function getSupplementaryRole(recipe: IRecipe, systemTagNames: ReadonlyMap<string, string>): MealRecipeRole {
+  const hasTag = (systemKey: string) => recipe.tags.includes(getSystemTagName(systemTagNames, systemKey));
+
+  if (hasTag(systemTagKeys.sauce) || hasTag(systemTagKeys.dip)) {
     return "Sauce";
   }
 
-  if (recipe.tags.includes("Side") || recipe.tags.includes("Salad")) {
+  if (hasTag(systemTagKeys.side) || hasTag(systemTagKeys.salad)) {
     return "Side";
   }
 

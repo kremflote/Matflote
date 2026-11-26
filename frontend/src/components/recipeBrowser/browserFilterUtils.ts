@@ -1,5 +1,6 @@
 import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
 import type { RecipeTag } from "../../interfaces/IRecipe";
+import { getRecipeAndComponentLines } from "../../utils/recipeComponents";
 import type { EnrichedRecipe } from "./types";
 
 export function matchesRecipeSearch(recipe: EnrichedRecipe, searchTerm: string) {
@@ -40,29 +41,31 @@ export function matchesIngredientSearch(ingredient: IIngredient, searchTerm: str
   return searchableText.includes(normalizedSearch);
 }
 
-export function matchesSelectedIngredients(recipe: EnrichedRecipe, selectedIngredientIds: number[]) {
+export function matchesSelectedIngredients(
+  recipe: EnrichedRecipe,
+  selectedIngredientIds: number[],
+  recipesById: ReadonlyMap<number, EnrichedRecipe>,
+) {
   if (selectedIngredientIds.length === 0) {
     return true;
   }
 
+  const lines = getRecipeAndComponentLines(recipe, recipesById);
   return selectedIngredientIds.every((ingredientId) =>
-    recipe.ingredients.some((recipeIngredient) =>
-      recipeIngredient.ingredient.ingredientId === ingredientId,
-    ) ||
-    recipe.components.some((component) =>
-      component.ingredients?.some((recipeIngredient) =>
-        recipeIngredient.ingredient.ingredientId === ingredientId,
-      ) ?? false,
-    ),
+    lines.some((recipeIngredient) => recipeIngredient.ingredient.ingredientId === ingredientId),
   );
 }
 
-export function matchesRecipeTags(recipe: EnrichedRecipe, selectedRecipeTags: RecipeTag[]) {
+export function matchesRecipeTags(
+  recipe: EnrichedRecipe,
+  selectedRecipeTags: RecipeTag[],
+  recipesById: ReadonlyMap<number, EnrichedRecipe>,
+) {
   if (selectedRecipeTags.length === 0) {
     return true;
   }
 
-  return selectedRecipeTags.every((selectedTag) => recipeHasTag(recipe, selectedTag));
+  return selectedRecipeTags.every((selectedTag) => recipeHasTag(recipe, selectedTag, recipesById));
 }
 
 export function matchesIngredientTags(
@@ -76,22 +79,11 @@ export function matchesIngredientTags(
   return selectedIngredientTags.every((selectedTag) => ingredient.tags.includes(selectedTag));
 }
 
-function recipeHasTag(recipe: EnrichedRecipe, selectedTag: RecipeTag) {
-  if (recipe.tags.includes(selectedTag)) {
-    return true;
-  }
-
-  if (
-    recipe.ingredients.some((recipeIngredient) =>
+function recipeHasTag(recipe: EnrichedRecipe, selectedTag: RecipeTag, recipesById: ReadonlyMap<number, EnrichedRecipe>) {
+  return (
+    recipe.tags.includes(selectedTag) ||
+    getRecipeAndComponentLines(recipe, recipesById).some((recipeIngredient) =>
       recipeIngredient.ingredient.tags.includes(selectedTag),
     )
-  ) {
-    return true;
-  }
-
-  return recipe.components.some((component) =>
-    component.ingredients?.some((recipeIngredient) =>
-      recipeIngredient.ingredient.tags.includes(selectedTag),
-    ) ?? false,
   );
 }

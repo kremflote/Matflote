@@ -1,6 +1,3 @@
-// MATFLOTE: EF Core entity/model for Recipe data stored by MATFLOTE.
-// Note: Navigation properties are initialized to empty collections so controllers can safely add related rows without null checks.
-
 using System.ComponentModel.DataAnnotations;
 
 namespace DinnerPlanner.Api.Models;
@@ -9,12 +6,15 @@ public class Recipe
 {
     [Key]
     public int RecipeId { get; set; }
-    [StringLength(30, MinimumLength = 1)]
+    [StringLength(ValidationLimits.RecipeNameMaxLength, MinimumLength = 1)]
     public string Name { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
     public string? Description { get; set; }
     public string? Instructions { get; set; }
     public decimal Portions { get; set; } = 1m;
+    // The household's verdict, 1 (never again) to 5 (a favourite); null until rated. Set in the recipe view only.
+    public int? Rating { get; set; }
+    public string? RatingNote { get; set; }
     public ICollection<RecipeIngredient> Ingredients { get; set; } = [];
     public ICollection<RecipeTagAssignment> Tags { get; set; } = [];
     public ICollection<RecipeComponent> Components { get; set; } = [];

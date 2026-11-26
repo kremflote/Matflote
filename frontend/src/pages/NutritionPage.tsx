@@ -2,24 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "../contexts";
 import type { INutritionSummary } from "../interfaces/INutrition";
 import { nutritionService } from "../services";
-import { nutritionStyles, pageStyles, type SiteTheme } from "../styles/appStyles";
-
-type NutritionPageProps = {
-  theme: SiteTheme;
-};
+import { nutritionStyles, pageStyles } from "../styles/appStyles";
+import { addDays, getWeekStart, parseDateInputValue, toDateInputValue } from "../utils/plannerDate";
 
 const DEFAULT_PROFILE_ID = "female-25-50";
 const DEFAULT_PEOPLE_EATING = 1;
 
-function NutritionPage({ theme }: NutritionPageProps) {
+function NutritionPage() {
   const { t } = useLanguage();
   const [profileId, setProfileId] = useState(DEFAULT_PROFILE_ID);
   const [peopleEating, setPeopleEating] = useState(DEFAULT_PEOPLE_EATING);
-  const [weekStart, setWeekStart] = useState(() => toDateInput(startOfWeek(new Date())));
+  const [weekStart, setWeekStart] = useState(() => toDateInputValue(getWeekStart(new Date())));
   const [summary, setSummary] = useState<INutritionSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart]);
+  const weekEnd = useMemo(() => getWeekEndValue(weekStart), [weekStart]);
 
   useEffect(() => {
     let ignore = false;
@@ -80,16 +77,16 @@ function NutritionPage({ theme }: NutritionPageProps) {
     <main className={pageStyles.shell}>
       <section className={nutritionStyles.shell}>
         <header className={nutritionStyles.header}>
-          <h1 className={nutritionStyles.title(theme)}>{t.nutrition.pageTitle}</h1>
-          <p className={nutritionStyles.intro(theme)}>{t.nutrition.pageIntro}</p>
-          <p className={nutritionStyles.sourceText(theme)}>{t.nutrition.approximateNotice}</p>
+          <h1 className={nutritionStyles.title}>{t.nutrition.pageTitle}</h1>
+          <p className={nutritionStyles.intro}>{t.nutrition.pageIntro}</p>
+          <p className={nutritionStyles.sourceText}>{t.nutrition.approximateNotice}</p>
         </header>
 
-        <section className={nutritionStyles.panel(theme)}>
+        <section className={nutritionStyles.panel}>
           <label className={nutritionStyles.field}>
             <span className={nutritionStyles.label}>{t.nutrition.weekStart}</span>
             <input
-              className={nutritionStyles.input(theme)}
+              className={nutritionStyles.input}
               type="date"
               value={weekStart}
               onChange={(event) => setWeekStart(event.target.value)}
@@ -98,7 +95,7 @@ function NutritionPage({ theme }: NutritionPageProps) {
           <label className={nutritionStyles.field}>
             <span className={nutritionStyles.label}>{t.nutrition.profile}</span>
             <select
-              className={nutritionStyles.input(theme)}
+              className={nutritionStyles.input}
               value={profileId}
               onChange={(event) => {
                 const nextProfileId = event.target.value;
@@ -117,7 +114,7 @@ function NutritionPage({ theme }: NutritionPageProps) {
           <label className={nutritionStyles.field}>
             <span className={nutritionStyles.label}>{t.nutrition.peopleEating}</span>
             <input
-              className={nutritionStyles.input(theme)}
+              className={nutritionStyles.input}
               min="1"
               step="1"
               type="number"
@@ -132,26 +129,26 @@ function NutritionPage({ theme }: NutritionPageProps) {
         </section>
 
         {summary?.referenceSource !== null && summary?.referenceSource !== undefined && (
-          <p className={nutritionStyles.sourceText(theme)}>
+          <p className={nutritionStyles.sourceText}>
             {t.nutrition.referenceSource(
               summary.referenceSource.provider,
               formatDateTime(summary.referenceSource.importedAt, t.locale),
             )}{" "}
-            <a className={nutritionStyles.sourceLink(theme)} href={summary.referenceSource.sourceUrl} target="_blank" rel="noreferrer">
+            <a className={nutritionStyles.sourceLink} href={summary.referenceSource.sourceUrl} target="_blank" rel="noreferrer">
               {t.nutrition.referenceSourceLink}
             </a>
           </p>
         )}
 
         {summary !== null && summary.missingNutritionIngredients.length > 0 && (
-          <section className={nutritionStyles.warningPanel(theme)}>
+          <section className={nutritionStyles.warningPanel}>
             <h2 className={nutritionStyles.warningTitle}>{t.nutrition.missingNutritionTitle}</h2>
             <p className={nutritionStyles.warningText}>
               {t.nutrition.missingNutritionIntro(summary.missingNutritionIngredients.length)}
             </p>
             <div className={nutritionStyles.warningList}>
               {summary.missingNutritionIngredients.map((ingredient) => (
-                <span className={nutritionStyles.warningChip(theme)} key={ingredient.ingredientId}>
+                <span className={nutritionStyles.warningChip} key={ingredient.ingredientId}>
                   {ingredient.brandName === null ? ingredient.ingredientName : `${ingredient.ingredientName}, ${ingredient.brandName}`}
                 </span>
               ))}
@@ -159,28 +156,28 @@ function NutritionPage({ theme }: NutritionPageProps) {
           </section>
         )}
 
-        {error !== null && <p className={nutritionStyles.statusError(theme)}>{error}</p>}
+        {error !== null && <p className={nutritionStyles.statusError}>{error}</p>}
         {isLoading ? (
-          <div className={nutritionStyles.emptyState(theme)}>{t.common.working}</div>
+          <div className={nutritionStyles.emptyState}>{t.common.working}</div>
         ) : summary === null ? (
-          <div className={nutritionStyles.emptyState(theme)}>{t.nutrition.noData}</div>
+          <div className={nutritionStyles.emptyState}>{t.nutrition.noData}</div>
         ) : (
           <>
-            <section className={nutritionStyles.dailyPanel(theme)}>
+            <section className={nutritionStyles.dailyPanel}>
               <div className={nutritionStyles.dailyHeader}>
                 <h2 className={nutritionStyles.dailyTitle}>{t.nutrition.dailyCaloriesTitle}</h2>
                 <div className={nutritionStyles.dailyHeaderMeta}>
-                  <span className={nutritionStyles.dailySubtitle(theme)}>{t.nutrition.dailyCaloriesSubtitle(peopleEating)}</span>
-                  <span className={nutritionStyles.dailyAverage(theme)}>
+                  <span className={nutritionStyles.dailySubtitle}>{t.nutrition.dailyCaloriesSubtitle(peopleEating)}</span>
+                  <span className={nutritionStyles.dailyAverage}>
                     {t.nutrition.averageDailyCalories}: {formatAverageDailyCalories(summary.dailyCalories, peopleEating, t.locale)}
                   </span>
                 </div>
               </div>
               <div className={nutritionStyles.dailyGrid}>
                 {summary.dailyCalories.map((day) => (
-                  <article className={nutritionStyles.dailyItem(theme)} key={day.date}>
+                  <article className={nutritionStyles.dailyItem} key={day.date}>
                     <span className={nutritionStyles.dailyDay}>{formatWeekday(day.date, t.locale)}</span>
-                    <span className={nutritionStyles.dailyCalories(theme)}>
+                    <span className={nutritionStyles.dailyCalories}>
                       {formatCaloriesForPeople(day.calories, peopleEating, t.locale)}
                     </span>
                   </article>
@@ -192,22 +189,22 @@ function NutritionPage({ theme }: NutritionPageProps) {
               {summary.items.map((item) => {
                 const displayItem = toPerPersonItem(item, peopleEating);
                 return (
-                  <article className={nutritionStyles.item(theme)} key={item.key}>
+                  <article className={nutritionStyles.item} key={item.key}>
                     <div className={nutritionStyles.itemHeader}>
                       <h2 className={nutritionStyles.itemTitle}>{t.nutrition.items[item.key] ?? item.label}</h2>
-                      <span className={nutritionStyles.itemTotal(theme)}>{formatAmount(displayItem.total, displayItem.unit, t.locale)}</span>
+                      <span className={nutritionStyles.itemTotal}>{formatAmount(displayItem.total, displayItem.unit, t.locale)}</span>
                     </div>
-                    <div className={nutritionStyles.progressTrack(theme)}>
+                    <div className={nutritionStyles.progressTrack}>
                       <span
-                        className={nutritionStyles.progressFill(theme)}
+                        className={nutritionStyles.progressFill}
                         style={{ width: `${Math.min(displayItem.percentOfRecommended ?? 0, 100)}%` }}
                       />
                     </div>
-                    <span className={nutritionStyles.itemMeta(theme)}>
+                    <span className={nutritionStyles.itemMeta}>
                       {formatReference(displayItem, t)}
                     </span>
                     {displayItem.coveragePercent !== null && (
-                      <span className={nutritionStyles.itemMeta(theme)}>
+                      <span className={nutritionStyles.itemMeta}>
                         {t.nutrition.coverage(displayItem.coveragePercent)} · {t.nutrition.statusLabels[displayItem.status] ?? displayItem.status}
                       </span>
                     )}
@@ -274,21 +271,9 @@ function toPerPersonItem(item: INutritionSummary["items"][number], peopleEating:
   };
 }
 
-function startOfWeek(date: Date) {
-  const nextDate = new Date(date);
-  const day = (nextDate.getDay() + 6) % 7;
-  nextDate.setDate(nextDate.getDate() - day);
-  return nextDate;
-}
-
-function addDays(value: string, days: number) {
-  const date = new Date(`${value}T00:00:00`);
-  date.setDate(date.getDate() + days);
-  return toDateInput(date);
-}
-
-function toDateInput(date: Date) {
-  return date.toISOString().slice(0, 10);
+function getWeekEndValue(weekStart: string) {
+  const startDate = parseDateInputValue(weekStart);
+  return startDate === null ? weekStart : toDateInputValue(addDays(startDate, 6));
 }
 
 function formatAmount(value: number | null, unit: string, locale: string) {

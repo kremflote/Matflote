@@ -5,7 +5,6 @@ import { useLanguage } from "../../contexts";
 import type { INutritionFacts } from "../../interfaces/IIngredient";
 import type { IMatvaretabellenCandidate, IProductLookupNutrition } from "../../interfaces/IProductLookup";
 import { productLookupService } from "../../services";
-import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
 export type MatvaretabellenNutritionCandidate = {
@@ -18,7 +17,6 @@ export type MatvaretabellenNutritionCandidate = {
 
 type MatvaretabellenSearchDialogProps = {
   initialQuery?: string;
-  theme: SiteTheme;
   onCancel: () => void;
   onSelect: (
     candidate: MatvaretabellenNutritionCandidate,
@@ -28,7 +26,6 @@ type MatvaretabellenSearchDialogProps = {
 
 function MatvaretabellenSearchDialog({
   initialQuery = "",
-  theme,
   onCancel,
   onSelect,
 }: MatvaretabellenSearchDialogProps) {
@@ -74,16 +71,16 @@ function MatvaretabellenSearchDialog({
     <Modal
       backdropClassName={recipeBrowserStyles.modalBackdrop}
       bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-      closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+      closeButtonClassName={recipeBrowserStyles.modalCloseButton}
       closeLabel={t.common.close}
       footer={(
-        <button className={recipeBrowserStyles.secondaryButton(theme)} type="button" onClick={onCancel}>
+        <button className={recipeBrowserStyles.secondaryButton} type="button" onClick={onCancel}>
           {t.common.cancel}
         </button>
       )}
       footerClassName={recipeBrowserStyles.formActions}
       headerClassName={recipeBrowserStyles.modalHeader}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
       title={t.scanner.searchMatvaretabellenTitle}
       titleClassName={recipeBrowserStyles.modalTitle}
       titleId={titleId}
@@ -92,15 +89,14 @@ function MatvaretabellenSearchDialog({
       <div className={recipeBrowserStyles.matvareSearchForm}>
         <SearchField
           aria-label={t.scanner.searchMatvaretabellenPlaceholder}
-          inputClassName={recipeBrowserStyles.textField(theme)}
+          inputClassName={recipeBrowserStyles.textField}
           placeholder={t.scanner.searchMatvaretabellenPlaceholder}
-          theme={theme}
           value={query}
           onKeyDown={handleSearchInputKeyDown}
           onChange={setQuery}
         />
         <button
-          className={recipeBrowserStyles.primaryButton(theme)}
+          className={recipeBrowserStyles.primaryButton}
           disabled={isSearching || query.trim().length === 0}
           type="button"
           onClick={() => void handleSearch()}
@@ -109,14 +105,13 @@ function MatvaretabellenSearchDialog({
         </button>
       </div>
       {error !== null && (
-        <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>
+        <p className={recipeBrowserStyles.statusError}>{error}</p>
       )}
       {hasSearched && candidates.length === 0 && error === null && (
-        <p className={recipeBrowserStyles.emptyState(theme)}>{t.scanner.searchMatvaretabellenEmpty}</p>
+        <p className={recipeBrowserStyles.emptyState}>{t.scanner.searchMatvaretabellenEmpty}</p>
       )}
       <MatvaretabellenCandidateList
         candidates={candidates}
-        theme={theme}
         onSelect={(candidate) => onSelect(candidate, candidates)}
       />
     </Modal>
@@ -125,11 +120,9 @@ function MatvaretabellenSearchDialog({
 
 export function MatvaretabellenCandidateList({
   candidates,
-  theme,
   onSelect,
 }: {
   candidates: MatvaretabellenNutritionCandidate[];
-  theme: SiteTheme;
   onSelect: (candidate: MatvaretabellenNutritionCandidate) => void;
 }) {
   const { t } = useLanguage();
@@ -138,16 +131,16 @@ export function MatvaretabellenCandidateList({
     <>
       {candidates.map((candidate) => (
         <button
-          className={recipeBrowserStyles.matvareCandidateButton(theme)}
+          className={recipeBrowserStyles.matvareCandidateButton}
           key={candidate.foodId}
           type="button"
           onClick={() => onSelect(candidate)}
         >
           <span className={recipeBrowserStyles.matvareCandidateName}>{candidate.foodName}</span>
-          <span className={recipeBrowserStyles.matvareCandidateMeta(theme)}>
+          <span className={recipeBrowserStyles.matvareCandidateMeta}>
             {t.scanner.matvaretabellenScore(candidate.confidence)}
           </span>
-          <span className={recipeBrowserStyles.matvareCandidateMacros(theme)}>
+          <span className={recipeBrowserStyles.matvareCandidateMacros}>
             {formatCandidateMacros(candidate.nutrition, {
               calories: t.cookbook.calories,
               carbs: t.cookbook.carbs,
@@ -161,7 +154,7 @@ export function MatvaretabellenCandidateList({
   );
 }
 
-export function toMatvaretabellenNutritionCandidate(
+function toMatvaretabellenNutritionCandidate(
   candidate: IMatvaretabellenCandidate,
 ): MatvaretabellenNutritionCandidate {
   return {
@@ -194,7 +187,6 @@ function toIngredientNutrition(nutrition: IProductLookupNutrition): INutritionFa
     vitaminCMilligrams: nutrition.vitaminCMilligrams,
     vitaminDMicrograms: nutrition.vitaminDMicrograms,
     vitaminEMilligrams: nutrition.vitaminEMilligrams,
-    vitamins: [],
   };
 }
 

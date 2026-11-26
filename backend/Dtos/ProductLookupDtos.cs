@@ -1,6 +1,3 @@
-// MATFLOTE: Request/response contracts for ProductLookup API calls.
-// Note: DTOs are kept separate from EF entities so the browser sees stable shapes without inheriting database navigation details.
-
 namespace DinnerPlanner.Api.Dtos;
 
 using DinnerPlanner.Api.Models;
@@ -18,11 +15,8 @@ public record ProductLookupResultDto(
     string? Description,
     string? Ingredients,
     string? ImageUrl,
-    decimal? CurrentPrice,
-    decimal? CurrentUnitPrice,
     decimal? Weight,
     string? WeightUnit,
-    ProductLookupStoreDto? Store,
     string? KassalappUrl,
     ProductLookupNutritionDto? KassalappNutritionPer100,
     ProductLookupNutritionDto? MatvaretabellenNutritionPer100,
@@ -46,12 +40,6 @@ public record MatvaretabellenCandidateDto(
     string? Url,
     decimal Confidence,
     ProductLookupNutritionDto Nutrition
-);
-
-public record ProductLookupStoreDto(
-    string Name,
-    string? Url,
-    string? Logo
 );
 
 public record ProductLookupNutritionDto(

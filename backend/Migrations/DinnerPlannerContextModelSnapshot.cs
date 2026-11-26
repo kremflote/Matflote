@@ -15,7 +15,7 @@ namespace backend.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.15");
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.AppSetting", b =>
                 {
@@ -33,6 +33,41 @@ namespace backend.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("AppSettings");
+                });
+
+            modelBuilder.Entity("DinnerPlanner.Api.Models.AssistantWriteLog", b =>
+                {
+                    b.Property<int>("AssistantWriteLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Counts")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UndoState")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("UndoneAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AssistantWriteLogId");
+
+                    b.ToTable("AssistantWriteLogs");
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.Brand", b =>
@@ -261,94 +296,11 @@ namespace backend.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal?>("Price")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
-
                     b.HasKey("IngredientId");
 
                     b.HasIndex("BrandId");
 
                     b.ToTable("Ingredients");
-
-                    b.HasData(
-                        new
-                        {
-                            IngredientId = 1,
-                            Color = "#f6d4b8",
-                            Description = "Lean poultry cut with mild flavor. Useful as the main protein in bowls, salads, soups, and quick pan-fried dinners.",
-                            IngredientName = "Chicken breast",
-                            NutritionSource = "Manual",
-                            Price = 89.90m
-                        },
-                        new
-                        {
-                            IngredientId = 2,
-                            Color = "#f4ead2",
-                            Description = "Aromatic vegetable used to build flavor in sauces, marinades, soups, stir fries, and roasted dishes.",
-                            IngredientName = "Garlic",
-                            NutritionSource = "Manual",
-                            Price = 14.90m
-                        },
-                        new
-                        {
-                            IngredientId = 3,
-                            Color = "#fff7ef",
-                            Description = "Thick cultured dairy product. Works as a base for cold sauces, dressings, marinades, and high-protein breakfasts.",
-                            IngredientName = "Greek yogurt",
-                            NutritionSource = "Manual",
-                            Price = 34.90m
-                        },
-                        new
-                        {
-                            IngredientId = 4,
-                            Color = "#f6f0df",
-                            Description = "Neutral grain that works as a side or base for bowls, curries, stir fries, and meal prep portions.",
-                            IngredientName = "Rice",
-                            NutritionSource = "Manual",
-                            Price = 39.90m
-                        },
-                        new
-                        {
-                            IngredientId = 5,
-                            Color = "#f9dc5c",
-                            Description = "Bright acidic fruit used for sauces, dressings, marinades, desserts, and finishing cooked dishes.",
-                            IngredientName = "Lemon",
-                            NutritionSource = "Manual",
-                            Price = 8.90m
-                        });
-                });
-
-            modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientPricePoint", b =>
-                {
-                    b.Property<int>("IngredientPricePointId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("IngredientId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("StoreId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("IngredientPricePointId");
-
-                    b.HasIndex("StoreId");
-
-                    b.HasIndex("IngredientId", "Date");
-
-                    b.ToTable("IngredientPricePoints");
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientTagAssignment", b =>
@@ -364,33 +316,6 @@ namespace backend.Migrations
                     b.HasIndex("IngredientTagDefinitionId");
 
                     b.ToTable("IngredientTagAssignments");
-
-                    b.HasData(
-                        new
-                        {
-                            IngredientId = 1,
-                            IngredientTagDefinitionId = 7
-                        },
-                        new
-                        {
-                            IngredientId = 2,
-                            IngredientTagDefinitionId = 1
-                        },
-                        new
-                        {
-                            IngredientId = 3,
-                            IngredientTagDefinitionId = 12
-                        },
-                        new
-                        {
-                            IngredientId = 4,
-                            IngredientTagDefinitionId = 13
-                        },
-                        new
-                        {
-                            IngredientId = 5,
-                            IngredientTagDefinitionId = 2
-                        });
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientTagCategory", b =>
@@ -2183,37 +2108,16 @@ namespace backend.Migrations
                     b.Property<decimal>("Portions")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("Rating")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RatingNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("RecipeId");
 
                     b.ToTable("Recipes");
-
-                    b.HasData(
-                        new
-                        {
-                            RecipeId = 1,
-                            Description = "Cold yogurt sauce with grated garlic and lemon. Best with chicken bowls, grilled meat, roasted vegetables, and rice.",
-                            ImageUrl = "/images/recipes/garlic-yogurt-sauce.png",
-                            Instructions = "Grate the garlic finely. Stir garlic, lemon juice, and a little lemon zest into the yogurt. Season with salt and let it rest for at least 10 minutes before serving.",
-                            Name = "Garlic yogurt sauce",
-                            Portions = 1m
-                        },
-                        new
-                        {
-                            RecipeId = 2,
-                            Description = "Weeknight bowl with pan-fried chicken, steamed rice, and fresh garlic yogurt sauce. Good as dinner and easy to scale for meal prep.",
-                            ImageUrl = "/images/recipes/chicken-rice-bowl.png",
-                            Instructions = "Rinse the rice and cook until tender. Slice the chicken breast, season lightly, and fry in a hot pan until cooked through. Spoon rice into bowls, add chicken, and finish with garlic yogurt sauce.",
-                            Name = "Chicken rice bowl",
-                            Portions = 1m
-                        },
-                        new
-                        {
-                            RecipeId = 3,
-                            Description = "Plain steamed rice for bowls, curries, stir fries, and saucy dishes.",
-                            Instructions = "Rinse the rice until the water runs mostly clear. Cook with the correct amount of water, then rest covered for 5 minutes before fluffing.",
-                            Name = "Steamed rice",
-                            Portions = 1m
-                        });
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.RecipeComponent", b =>
@@ -2290,56 +2194,6 @@ namespace backend.Migrations
                         .IsUnique();
 
                     b.ToTable("RecipeIngredients");
-
-                    b.HasData(
-                        new
-                        {
-                            RecipeIngredientId = 1,
-                            Amount = 200m,
-                            IngredientId = 3,
-                            RecipeId = 1,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 2,
-                            Amount = 3m,
-                            IngredientId = 2,
-                            RecipeId = 1,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 3,
-                            Amount = 30m,
-                            IngredientId = 5,
-                            RecipeId = 1,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 4,
-                            Amount = 400m,
-                            IngredientId = 1,
-                            RecipeId = 2,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 5,
-                            Amount = 250m,
-                            IngredientId = 4,
-                            RecipeId = 2,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 6,
-                            Amount = 250m,
-                            IngredientId = 4,
-                            RecipeId = 3,
-                            Unit = "Gram"
-                        });
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.RecipeTagAssignment", b =>
@@ -2355,72 +2209,6 @@ namespace backend.Migrations
                     b.HasIndex("IngredientTagDefinitionId");
 
                     b.ToTable("RecipeTagAssignments");
-                });
-
-            modelBuilder.Entity("DinnerPlanner.Api.Models.Store", b =>
-                {
-                    b.Property<int>("StoreId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("StoreId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Stores");
-
-                    b.HasData(
-                        new
-                        {
-                            StoreId = 1,
-                            Name = "Rema 1000"
-                        },
-                        new
-                        {
-                            StoreId = 2,
-                            Name = "Coop Mega"
-                        },
-                        new
-                        {
-                            StoreId = 3,
-                            Name = "Coop Prix"
-                        },
-                        new
-                        {
-                            StoreId = 4,
-                            Name = "Coop Obs"
-                        },
-                        new
-                        {
-                            StoreId = 5,
-                            Name = "Coop Extra"
-                        },
-                        new
-                        {
-                            StoreId = 6,
-                            Name = "Meny"
-                        },
-                        new
-                        {
-                            StoreId = 7,
-                            Name = "Kiwi"
-                        },
-                        new
-                        {
-                            StoreId = 8,
-                            Name = "Bunnpris"
-                        },
-                        new
-                        {
-                            StoreId = 9,
-                            Name = "Europris"
-                        });
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.UploadedImage", b =>
@@ -2468,6 +2256,14 @@ namespace backend.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ThumbnailRelativePath")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("UploadedImageId");
 
                     b.HasIndex("CreatedAt");
@@ -2498,10 +2294,6 @@ namespace backend.Migrations
                                 .HasColumnType("TEXT");
 
                             b1.Property<decimal?>("CholesterolMilligrams")
-                                .HasPrecision(8, 2)
-                                .HasColumnType("TEXT");
-
-                            b1.Property<decimal?>("CholineMilligrams")
                                 .HasPrecision(8, 2)
                                 .HasColumnType("TEXT");
 
@@ -2569,14 +2361,6 @@ namespace backend.Migrations
                                 .HasPrecision(8, 2)
                                 .HasColumnType("TEXT");
 
-                            b1.Property<decimal?>("VitaminKMicrograms")
-                                .HasPrecision(8, 2)
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("Vitamins")
-                                .IsRequired()
-                                .HasColumnType("TEXT");
-
                             b1.HasKey("IngredientId");
 
                             b1.ToTable("Ingredients");
@@ -2588,25 +2372,6 @@ namespace backend.Migrations
                     b.Navigation("Brand");
 
                     b.Navigation("NutritionPer100");
-                });
-
-            modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientPricePoint", b =>
-                {
-                    b.HasOne("DinnerPlanner.Api.Models.Ingredient", "Ingredient")
-                        .WithMany()
-                        .HasForeignKey("IngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DinnerPlanner.Api.Models.Store", "Store")
-                        .WithMany("PricePoints")
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Ingredient");
-
-                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientTagAssignment", b =>
@@ -2761,11 +2526,6 @@ namespace backend.Migrations
                     b.Navigation("Tags");
 
                     b.Navigation("UsedInRecipes");
-                });
-
-            modelBuilder.Entity("DinnerPlanner.Api.Models.Store", b =>
-                {
-                    b.Navigation("PricePoints");
                 });
 #pragma warning restore 612, 618
         }

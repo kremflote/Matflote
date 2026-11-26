@@ -1,6 +1,3 @@
-// MATFLOTE: EF Core entity/model for NutritionFacts data stored by MATFLOTE.
-// Note: Navigation properties are initialized to empty collections so controllers can safely add related rows without null checks.
-
 namespace DinnerPlanner.Api.Models;
 
 public class NutritionFacts
@@ -24,8 +21,4 @@ public class NutritionFacts
     public decimal? VitaminCMilligrams { get; set; }
     public decimal? VitaminDMicrograms { get; set; }
     public decimal? VitaminEMilligrams { get; set; }
-    // Kept for old local data compatibility. MATFLOTE no longer surfaces these until source coverage is reliable.
-    public decimal? VitaminKMicrograms { get; set; }
-    public decimal? CholineMilligrams { get; set; }
-    public List<Vitamin> Vitamins { get; set; } = [];
 }

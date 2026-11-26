@@ -1,3 +1,4 @@
+import type { MealSlot } from "./IMeal";
 import type { IBrand } from "./ILookup";
 
 export interface IIngredient {
@@ -7,7 +8,8 @@ export interface IIngredient {
   brandId: number | null;
   brand: IBrand | null;
   imageUrl: string | null;
-  price: number | null;
+  /** A small version of the image for grids and cards; null until one has been made. */
+  thumbnailUrl: string | null;
   tags: IngredientTag[];
   nutritionPer100: INutritionFacts | null;
   nutritionSource: NutritionDataSource;
@@ -16,6 +18,21 @@ export interface IIngredient {
   nutritionMatchedName: string | null;
   nutritionMatchConfidence: number | null;
   color: string | null;
+}
+
+/** The 409 body of DELETE /api/ingredients/{id}: what still uses the ingredient. */
+export interface IIngredientInUse {
+  error: string;
+  recipes: { recipeId: number; name: string }[];
+  mealPlanEntries: { mealPlanEntryId: number; date: string; slot: MealSlot }[];
+}
+
+export interface IIngredientReplacementResult {
+  deletedIngredientId: number;
+  replacement: IIngredient;
+  recipeLinesMoved: number;
+  recipeLinesMerged: number;
+  mealPlanItemsMoved: number;
 }
 
 export type KnownTag =
@@ -81,16 +98,7 @@ export interface INutritionFacts {
   vitaminCMilligrams: number | null;
   vitaminDMicrograms: number | null;
   vitaminEMilligrams: number | null;
-  vitamins: Vitamin[];
 }
-
-export type Vitamin =
-  | "VitaminA"
-  | "VitaminB9"
-  | "VitaminB12"
-  | "VitaminC"
-  | "VitaminD"
-  | "VitaminE";
 
 export type NutritionDataSource =
   | "None"

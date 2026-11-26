@@ -1,15 +1,18 @@
-import { useEffect, useState } from "react";
-import { useLanguage } from "../../contexts";
+import { useMemo, useState } from "react";
+import { useIngredients, useLanguage } from "../../contexts";
+import { formatRecipeIngredientAmount } from "./recipeAmountFormat";
 import type { IIngredient, INutritionFacts, MeasurementUnit } from "../../interfaces/IIngredient";
 import { getApiAssetUrl } from "../../services/apiClient";
-import type { SiteTheme } from "../../styles/appStyles";
+import { pickReadableTextColor } from "../../utils/colorContrast";
+import { getThumbnailSrc } from "../../utils/imageThumbnail";
 import { DetailSection, DetailText, DetailTextWithMeta, NutritionGrid } from "./detailComponents";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
+import RecipeFallbackTile from "../RecipeFallbackTile";
+import RecipeRatingSection from "./RecipeRatingSection";
 import type { EnrichedRecipe } from "./types";
 type RecipeDetailContentProps = {
   allRecipes: EnrichedRecipe[];
   recipe: EnrichedRecipe;
-  theme: SiteTheme;
   onIngredientClick?: (ingredient: IIngredient) => void;
   onRecipeClick?: (recipeId: number) => void;
 };
@@ -17,20 +20,37 @@ type RecipeDetailContentProps = {
 function RecipeDetailContent({
   allRecipes,
   recipe,
-  theme,
   onIngredientClick,
   onRecipeClick,
 }: RecipeDetailContentProps) {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
+  const { ingredients } = useIngredients();
+  // The recipe list carries slim ingredients; nutrition and the full ingredient come from the ingredient list.
+  const ingredientsById = useMemo(
+    () => new Map(ingredients.map((ingredient) => [ingredient.ingredientId, ingredient])),
+    [ingredients],
+  );
   const imageUrl = getApiAssetUrl(recipe.imageUrl);
-  const nutrition = calculateRecipeNutrition(recipe, allRecipes);
+  const nutrition = calculateRecipeNutrition(recipe, allRecipes, ingredientsById);
   const recipeTotalGrams = calculateRecipeTotalGrams(recipe, allRecipes);
   const [selectedPortions, setSelectedPortions] = useState(formatPortionInputValue(recipe.portions));
+  const [portionsSource, setPortionsSource] = useState({ recipeId: recipe.recipeId, portions: recipe.portions });
   const amountMultiplier = parsePortionMultiplier(selectedPortions, recipe.portions);
+  const handleIngredientClick =
+    onIngredientClick === undefined
+      ? undefined
+      : (ingredientId: number) => {
+          const ingredient = ingredientsById.get(ingredientId);
+          if (ingredient !== undefined) {
+            onIngredientClick(ingredient);
+          }
+        };
 
-  useEffect(() => {
+  // Another recipe (or a changed portion count) resets the scale field; adjusted while rendering, not in an effect.
+  if (portionsSource.recipeId !== recipe.recipeId || portionsSource.portions !== recipe.portions) {
+    setPortionsSource({ recipeId: recipe.recipeId, portions: recipe.portions });
     setSelectedPortions(formatPortionInputValue(recipe.portions));
-  }, [recipe.recipeId, recipe.portions]);
+  }
 
   return (
     <div className={recipeBrowserStyles.detailShell}>
@@ -39,9 +59,7 @@ function RecipeDetailContent({
           {imageUrl ? (
             <img className={recipeBrowserStyles.detailImage} src={imageUrl} alt={recipe.name} />
           ) : (
-            <div className={recipeBrowserStyles.detailImageFallback}>
-              {t.cookbook.noImage}
-            </div>
+            <RecipeFallbackTile recipe={recipe} />
           )}
         </div>
 
@@ -49,8 +67,7 @@ function RecipeDetailContent({
           <DetailTextWithMeta
             className={recipeBrowserStyles.recipeDetailDescriptionPanel}
             label={t.cookbook.description}
-            meta={recipe.tags.join(" · ")}
-            theme={theme}
+            meta={recipe.tags.map((tag) => t.enums.recipeTags[tag] ?? tag).join(" · ")}
             value={recipe.description || t.cookbook.noDescription}
           />
         </div>
@@ -59,14 +76,13 @@ function RecipeDetailContent({
       <div className={recipeBrowserStyles.recipeDetailSplitGrid}>
         <DetailSection
           title={t.cookbook.ingredients}
-          theme={theme}
           headerAction={
             <label className={recipeBrowserStyles.scaleLabel}>
-              <span className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.portions}</span>
+              <span className={recipeBrowserStyles.helperText}>{t.cookbook.portions}</span>
               <span className={`${recipeBrowserStyles.scaleField}`}>
                 <input
                   aria-label={t.cookbook.portions}
-                  className={`${recipeBrowserStyles.compactTextField(theme)} ${recipeBrowserStyles.scaleInput}`}
+                  className={`${recipeBrowserStyles.compactTextField} ${recipeBrowserStyles.scaleInput}`}
                   min="0"
                   placeholder={formatPortionInputValue(recipe.portions)}
                   step="0.25"
@@ -83,15 +99,14 @@ function RecipeDetailContent({
               amountMultiplier={amountMultiplier}
               ingredients={recipe.ingredients}
               title={t.cookbook.mainRecipe}
-              theme={theme}
-              onIngredientClick={onIngredientClick}
+              onIngredientClick={handleIngredientClick}
             />
             {recipe.components
               .slice()
               .sort((first, second) => first.sortOrder - second.sortOrder)
               .map((component) => {
                 const fullComponentRecipe = allRecipes.find((currentRecipe) => currentRecipe.recipeId === component.recipeId);
-                const componentIngredients = component.ingredients ?? fullComponentRecipe?.ingredients ?? [];
+                const componentIngredients = fullComponentRecipe?.ingredients ?? [];
                 const componentScale = fullComponentRecipe === undefined
                   ? 1
                   : getComponentScale(component.amount, component.unit, fullComponentRecipe);
@@ -103,9 +118,8 @@ function RecipeDetailContent({
                     key={component.recipeId}
                     recipeId={component.recipeId}
                     title={component.name}
-                    titleLinkLabel={`${component.name} (${formatRecipeIngredientAmount(component.amount, component.unit, t.enums.measurementUnits)})`}
-                    theme={theme}
-                    onIngredientClick={onIngredientClick}
+                    titleLinkLabel={`${component.name} (${formatRecipeIngredientAmount(component.amount, component.unit, t.enums.measurementUnits, locale)})`}
+                    onIngredientClick={handleIngredientClick}
                     onRecipeClick={onRecipeClick}
                   />
                 );
@@ -115,17 +129,17 @@ function RecipeDetailContent({
 
         <DetailText
           label={t.cookbook.instructions}
-          theme={theme}
           value={recipe.instructions || t.cookbook.noInstructions}
         />
       </div>
 
-      <DetailSection title={t.cookbook.dietaryInformation} subtitle="per 100g" theme={theme}>
+      <RecipeRatingSection recipe={recipe} />
+
+      <DetailSection title={t.cookbook.dietaryInformation} subtitle={t.cookbook.per100g}>
         <NutritionGrid
           nutrition={nutrition}
           recipePortions={recipe.portions}
           recipeTotalGrams={recipeTotalGrams}
-          theme={theme}
           variant="recipe"
         />
       </DetailSection>
@@ -139,8 +153,7 @@ type RecipeIngredientSectionProps = {
   recipeId?: number;
   title: string;
   titleLinkLabel?: string;
-  theme: SiteTheme;
-  onIngredientClick?: (ingredient: IIngredient) => void;
+  onIngredientClick?: (ingredientId: number) => void;
   onRecipeClick?: (recipeId: number) => void;
 };
 
@@ -150,18 +163,17 @@ function RecipeIngredientSection({
   recipeId,
   title,
   titleLinkLabel,
-  theme,
   onIngredientClick,
   onRecipeClick,
 }: RecipeIngredientSectionProps) {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
 
   return (
     <section className={recipeBrowserStyles.detailIngredientSection}>
-      <h3 className={recipeBrowserStyles.detailIngredientSectionTitle(theme)}>
+      <h3 className={recipeBrowserStyles.detailIngredientSectionTitle}>
         {titleLinkLabel !== undefined && recipeId !== undefined ? (
           <button
-            className={recipeBrowserStyles.detailIngredientSectionTitleButton(theme)}
+            className={recipeBrowserStyles.detailIngredientSectionTitleButton}
             type="button"
             onClick={() => onRecipeClick?.(recipeId)}
           >
@@ -172,26 +184,35 @@ function RecipeIngredientSection({
         )}
       </h3>
       {ingredients.length === 0 ? (
-        <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noIngredientsAdded}</p>
+        <p className={recipeBrowserStyles.helperText}>{t.cookbook.noIngredientsAdded}</p>
       ) : (
         <div className={recipeBrowserStyles.detailRows}>
           {ingredients.map((recipeIngredient) => (
             <button
-              className={recipeBrowserStyles.detailIngredientRow(theme)}
+              className={recipeBrowserStyles.detailIngredientRow}
               key={recipeIngredient.recipeIngredientId}
               type="button"
-              onClick={() => onIngredientClick?.(recipeIngredient.ingredient)}
+              onClick={() => onIngredientClick?.(recipeIngredient.ingredient.ingredientId)}
             >
               <span
                 aria-hidden="true"
-                className={recipeBrowserStyles.detailIngredientImageFrame(theme)}
-                style={{ backgroundColor: recipeIngredient.ingredient.color ?? undefined }}
+                className={recipeBrowserStyles.detailIngredientImageFrame}
+                style={
+                  recipeIngredient.ingredient.color
+                    ? {
+                        backgroundColor: recipeIngredient.ingredient.color,
+                        color: pickReadableTextColor(recipeIngredient.ingredient.color),
+                      }
+                    : undefined
+                }
               >
                 {recipeIngredient.ingredient.imageUrl ? (
                   <img
                     alt=""
                     className={recipeBrowserStyles.detailIngredientImage}
-                    src={getApiAssetUrl(recipeIngredient.ingredient.imageUrl) ?? undefined}
+                    src={getThumbnailSrc(recipeIngredient.ingredient) ?? undefined}
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <span className={recipeBrowserStyles.detailIngredientImageFallback}>
@@ -209,6 +230,7 @@ function RecipeIngredientSection({
                       recipeIngredient.amount,
                       recipeIngredient.unit,
                       t.enums.measurementUnits,
+                      locale,
                       amountMultiplier,
                     )}
                   </span>
@@ -234,9 +256,13 @@ function getInitials(value: string) {
     .join("") || "?";
 }
 
-function calculateRecipeNutrition(recipe: EnrichedRecipe, allRecipes: EnrichedRecipe[]): INutritionFacts | null {
+function calculateRecipeNutrition(
+  recipe: EnrichedRecipe,
+  allRecipes: EnrichedRecipe[],
+  ingredientsById: ReadonlyMap<number, IIngredient>,
+): INutritionFacts | null {
   const total = createEmptyNutrition();
-  const hasNutrition = addRecipeNutrition(total, recipe, allRecipes, new Set<number>(), 1);
+  const hasNutrition = addRecipeNutrition(total, recipe, allRecipes, ingredientsById, new Set<number>(), 1);
 
   return hasNutrition ? total : null;
 }
@@ -250,6 +276,7 @@ function addRecipeNutrition(
   total: INutritionFacts,
   recipe: EnrichedRecipe,
   allRecipes: EnrichedRecipe[],
+  ingredientsById: ReadonlyMap<number, IIngredient>,
   visitedRecipeIds: Set<number>,
   multiplier: number,
 ) {
@@ -261,7 +288,7 @@ function addRecipeNutrition(
   let hasNutrition = false;
 
   recipe.ingredients.forEach((recipeIngredient) => {
-    const nutrition = recipeIngredient.ingredient.nutritionPer100;
+    const nutrition = ingredientsById.get(recipeIngredient.ingredient.ingredientId)?.nutritionPer100 ?? null;
     const grams = toGramAmount(recipeIngredient.amount, recipeIngredient.unit);
 
     if (nutrition === null || grams === null) {
@@ -289,7 +316,6 @@ function addRecipeNutrition(
     total.vitaminCMilligrams = addScaled(total.vitaminCMilligrams, nutrition.vitaminCMilligrams, factor);
     total.vitaminDMicrograms = addScaled(total.vitaminDMicrograms, nutrition.vitaminDMicrograms, factor);
     total.vitaminEMilligrams = addScaled(total.vitaminEMilligrams, nutrition.vitaminEMilligrams, factor);
-    total.vitamins = Array.from(new Set([...total.vitamins, ...nutrition.vitamins]));
   });
 
   recipe.components.forEach((component) => {
@@ -302,6 +328,7 @@ function addRecipeNutrition(
       total,
       componentRecipe,
       allRecipes,
+      ingredientsById,
       visitedRecipeIds,
       multiplier * getComponentScale(component.amount, component.unit, componentRecipe),
     );
@@ -371,7 +398,6 @@ function createEmptyNutrition(): INutritionFacts {
     vitaminCMilligrams: null,
     vitaminDMicrograms: null,
     vitaminEMilligrams: null,
-    vitamins: [],
   };
 }
 
@@ -453,20 +479,6 @@ function parsePortionMultiplier(value: string, defaultPortions: number) {
 
 function formatPortionInputValue(value: number) {
   return Number.isInteger(value) ? value.toString() : value.toString();
-}
-
-function formatRecipeIngredientAmount(
-  amount: number | null,
-  unit: MeasurementUnit,
-  unitLabels: Record<MeasurementUnit, string>,
-  multiplier = 1,
-) {
-  if (amount === null) {
-    return unitLabels[unit];
-  }
-
-  const scaledAmount = Math.round(amount * multiplier);
-  return `${scaledAmount} ${unitLabels[unit].toLowerCase()}`;
 }
 
 export default RecipeDetailContent;

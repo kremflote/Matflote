@@ -1,33 +1,34 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import type { IIngredient } from "../interfaces/IIngredient";
 import type { IIngredientContext } from "../interfaces/contexts/IIngredientContext";
 import type { IProviderProps } from "../interfaces/IProviderProps";
 import { ingredientService } from "../services";
-import { getErrorMessage } from "./contextHelpers";
+import { compareOrdinal, upsertSorted, useCatalogList } from "./contextHelpers";
+import { IngredientContext } from "./contextHooks";
 
-const IngredientContext = createContext<IIngredientContext | null>(null);
+const compareIngredients = (first: IIngredient, second: IIngredient) =>
+  compareOrdinal(first.ingredientName, second.ingredientName);
 
 export function IngredientProvider({ children }: IProviderProps) {
-  const [ingredients, setIngredients] = useState<IIngredient[]>([]);
-  const [ingredientIsLoading, setIngredientIsLoading] = useState(true);
-  const [initError, setInitError] = useState<string | null>(null);
+  const {
+    items: ingredients,
+    setItems: setIngredients,
+    isLoading: ingredientIsLoading,
+    error: initError,
+    refresh: refreshIngredients,
+  } = useCatalogList(ingredientService.getAll);
 
-  const refreshIngredients = useCallback(async () => {
-    setIngredientIsLoading(true);
-    setInitError(null);
+  const upsertIngredient = useCallback(
+    (ingredient: IIngredient) =>
+      setIngredients((current) => upsertSorted(current, ingredient, (item) => item.ingredientId, compareIngredients)),
+    [setIngredients],
+  );
 
-    try {
-      setIngredients(await ingredientService.getAll());
-    } catch (error) {
-      setInitError(getErrorMessage(error));
-    } finally {
-      setIngredientIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refreshIngredients();
-  }, [refreshIngredients]);
+  const removeIngredient = useCallback(
+    (ingredientId: number) =>
+      setIngredients((current) => current.filter((item) => item.ingredientId !== ingredientId)),
+    [setIngredients],
+  );
 
   const value = useMemo<IIngredientContext>(
     () => ({
@@ -35,18 +36,11 @@ export function IngredientProvider({ children }: IProviderProps) {
       ingredientIsLoading,
       initError,
       refreshIngredients,
+      removeIngredient,
+      upsertIngredient,
     }),
-    [ingredients, ingredientIsLoading, initError, refreshIngredients],
+    [ingredients, ingredientIsLoading, initError, refreshIngredients, removeIngredient, upsertIngredient],
   );
 
   return <IngredientContext.Provider value={value}>{children}</IngredientContext.Provider>;
-}
-
-export function useIngredients() {
-  const context = useContext(IngredientContext);
-  if (context === null) {
-    throw new Error("useIngredients must be used inside IngredientProvider.");
-  }
-
-  return context;
 }

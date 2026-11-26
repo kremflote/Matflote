@@ -11,11 +11,8 @@ export interface IProductLookupResult {
   description: string | null;
   ingredients: string | null;
   imageUrl: string | null;
-  currentPrice: number | null;
-  currentUnitPrice: number | null;
   weight: number | null;
   weightUnit: string | null;
-  store: IProductLookupStore | null;
   kassalappUrl: string | null;
   kassalappNutritionPer100: IProductLookupNutrition | null;
   matvaretabellenNutritionPer100: IProductLookupNutrition | null;
@@ -46,12 +43,6 @@ export type ProductLookupNutritionSource =
   | "Matvaretabellen"
   | "Kassalapp"
   | "Manual";
-
-export interface IProductLookupStore {
-  name: string;
-  url: string | null;
-  logo: string | null;
-}
 
 export interface IProductLookupNutrition {
   calories: number | null;

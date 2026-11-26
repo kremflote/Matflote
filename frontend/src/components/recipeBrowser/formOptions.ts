@@ -1,4 +1,4 @@
-import type { IngredientTag, KnownTag, MeasurementUnit, Vitamin } from "../../interfaces/IIngredient";
+import type { IngredientTag, KnownTag, MeasurementUnit } from "../../interfaces/IIngredient";
 import type { IIngredientTagCategory } from "../../interfaces/ILookup";
 import type { IngredientPreparation, RecipeTag } from "../../interfaces/IRecipe";
 import { getCategoryTagNames } from "../../utils/tagCatalog";
@@ -255,13 +255,4 @@ export const ingredientPreparations: IngredientPreparation[] = [
   "Grated",
   "Shredded",
   "Crushed",
-];
-
-export const vitamins: Vitamin[] = [
-  "VitaminA",
-  "VitaminB9",
-  "VitaminB12",
-  "VitaminC",
-  "VitaminD",
-  "VitaminE",
 ];

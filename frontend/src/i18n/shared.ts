@@ -62,12 +62,4 @@ export const commonEnumLabels = {
     Milliliter: "ml",
     Liter: "l",
   },
-  vitamins: {
-    VitaminA: "Vitamin A",
-    VitaminB9: "Vitamin B9",
-    VitaminB12: "Vitamin B12",
-    VitaminC: "Vitamin C",
-    VitaminD: "Vitamin D",
-    VitaminE: "Vitamin E",
-  },
 } as const;

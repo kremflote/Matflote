@@ -31,6 +31,10 @@ public class ImageMaintenanceService(DinnerPlannerContext context, ImageStorageP
         foreach (var image in unusedUploadedImages)
         {
             DeleteImageFile(image.RelativePath);
+            if (image.ThumbnailRelativePath is not null)
+            {
+                DeleteImageFile(image.ThumbnailRelativePath);
+            }
         }
 
         foreach (var imageFile in untrackedFiles)
@@ -45,6 +49,32 @@ public class ImageMaintenanceService(DinnerPlannerContext context, ImageStorageP
             unusedUploadedImages.Select(ToDto).ToList(),
             untrackedFiles.ToList()
         );
+    }
+
+    /// <summary>
+    /// Images that recipes or ingredients use, that are in image storage and have no thumbnail yet. Driven by the
+    /// URLs in use rather than by UploadedImages, because images from a package import have no row there.
+    /// </summary>
+    public async Task<ImagesWithoutThumbnailsDto> GetImagesWithoutThumbnailsAsync(CancellationToken cancellationToken = default)
+    {
+        var referencedUrls = await GetReferencedImageUrlsAsync(cancellationToken);
+        var urlsWithThumbnails = (await context.UploadedImages
+            .AsNoTracking()
+            .Where(image => image.ThumbnailUrl != null)
+            .Select(image => image.PublicUrl)
+            .ToListAsync(cancellationToken))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var imageUrls = referencedUrls
+            .Where(url => !urlsWithThumbnails.Contains(url))
+            .Where(url => ImageStorageUrls.ToRelativePath(url) is { } relativePath
+                && !ImageStorageUrls.IsThumbnail(relativePath)
+                && imageStorage.ResolveFile(relativePath) is { } fullPath
+                && File.Exists(fullPath))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        return new ImagesWithoutThumbnailsDto(imageUrls);
     }
 
     private async Task<HashSet<string>> GetReferencedImageUrlsAsync(CancellationToken cancellationToken)
@@ -82,11 +112,15 @@ public class ImageMaintenanceService(DinnerPlannerContext context, ImageStorageP
             return [];
         }
 
-        var trackedRelativePaths = await context.UploadedImages
+        var trackedRows = await context.UploadedImages
             .AsNoTracking()
-            .Select(image => image.RelativePath)
+            .Select(image => new { image.RelativePath, image.ThumbnailRelativePath })
             .ToListAsync(cancellationToken);
-        var trackedSet = trackedRelativePaths.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        // A thumbnail belongs to its image's row, so it is tracked even though nothing references it directly.
+        var trackedSet = trackedRows
+            .SelectMany(row => new[] { row.RelativePath, row.ThumbnailRelativePath })
+            .OfType<string>()
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         return Directory
             .EnumerateFiles(imageStorage.RootPath, "*", SearchOption.AllDirectories)

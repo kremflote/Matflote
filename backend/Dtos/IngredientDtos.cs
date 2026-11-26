@@ -1,6 +1,3 @@
-// MATFLOTE: Request/response contracts for Ingredient API calls.
-// Note: DTOs are kept separate from EF entities so the browser sees stable shapes without inheriting database navigation details.
-
 using DinnerPlanner.Api.Models;
 using System.ComponentModel.DataAnnotations;
 
@@ -15,8 +12,6 @@ public record IngredientRequest(
     int? BrandId,
     [StringLength(500)]
     string? ImageUrl,
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ParseLimitsInInvariantCulture = true)]
-    decimal? Price,
     IReadOnlyCollection<string> Tags,
     NutritionFacts? NutritionPer100,
     NutritionDataSource? NutritionSource,
@@ -39,7 +34,8 @@ public record IngredientDto(
     int? BrandId,
     BrandDto? Brand,
     string? ImageUrl,
-    decimal? Price,
+    // A small version of the image for grids and cards; null when none has been made (use ImageUrl).
+    string? ThumbnailUrl,
     IReadOnlyCollection<string> Tags,
     NutritionFacts? NutritionPer100,
     NutritionDataSource NutritionSource,
@@ -48,4 +44,31 @@ public record IngredientDto(
     string? NutritionMatchedName,
     decimal? NutritionMatchConfidence,
     string? Color
+);
+
+/// <summary>A recipe that has a line for an ingredient.</summary>
+public record IngredientUseRecipeDto(int RecipeId, string Name);
+
+/// <summary>A planned meal that lists an ingredient directly.</summary>
+public record IngredientUseMealDto(int MealPlanEntryId, DateOnly Date, MealSlot Slot);
+
+/// <summary>
+/// The uses that stop DELETE /api/ingredients/{id}: its 409 is ProblemDetails with <c>error</c>, <c>recipes</c> and
+/// <c>mealPlanEntries</c>. Repoint the uses with POST /api/ingredients/{id}/replace-with/{otherId}, or edit them, before deleting.
+/// </summary>
+public record IngredientInUseDto(
+    string Error,
+    IReadOnlyCollection<IngredientUseRecipeDto> Recipes,
+    IReadOnlyCollection<IngredientUseMealDto> MealPlanEntries
+);
+
+/// <summary>The result of replacing one ingredient with another everywhere and deleting the first.</summary>
+public record IngredientReplacementResultDto(
+    int DeletedIngredientId,
+    IngredientDto Replacement,
+    // Recipe lines that now point at the replacement.
+    int RecipeLinesMoved,
+    // Recipes that already had the replacement: the two lines were added into one.
+    int RecipeLinesMerged,
+    int MealPlanItemsMoved
 );

@@ -2,7 +2,6 @@ import type {
   KnownTag,
   MeasurementUnit,
   NutritionDataSource,
-  Vitamin,
 } from "../interfaces/IIngredient";
 import type { MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import type { IngredientPreparation } from "../interfaces/IRecipe";
@@ -15,7 +14,6 @@ type EnumLabels = {
   mealSlots: Record<MealSlot, string>;
   measurementUnits: Record<MeasurementUnit, string>;
   recipeTags: Record<string, string | undefined>;
-  vitamins: Record<Vitamin, string>;
   viewModes: Record<PlannerViewMode, string>;
 };
 
@@ -53,6 +51,21 @@ export type TranslationDictionary = {
     saving: string;
     search: string;
     systemTagMeta: string;
+    reload: string;
+    requestFailed: (status: number) => string;
+    retry: string;
+    retrying: string;
+    serverUnreachable: string;
+    somethingWentWrong: string;
+    somethingWentWrongBody: string;
+    amountFor: (name: string) => string;
+    deleteOptionNamed: (name: string) => string;
+    imageCouldNotBeLoaded: string;
+    openNamed: (name: string) => string;
+    preparationFor: (name: string) => string;
+    selectNamed: (name: string) => string;
+    selectOption: string;
+    unitFor: (name: string) => string;
     working: string;
   };
   browser: {
@@ -110,6 +123,8 @@ export type TranslationDictionary = {
     dietaryInformation: string;
     dietaryInformationPer100g: string;
     couldNotExportPdf: string;
+    couldNotRemoveIngredient: string;
+    couldNotRemoveRecipe: string;
     fiberPer100g: string;
     fiber: string;
     fetchingCookbook: string;
@@ -134,16 +149,28 @@ export type TranslationDictionary = {
     monounsaturatedFatsPer100g: string;
     monounsaturatedFats: string;
     name: string;
+    per100g: string;
+    removeIngredientBody: string;
+    ingredientInUseTitle: (name: string) => string;
+    ingredientInUseBody: (recipeCount: number, mealCount: number) => string;
+    ingredientInUseRecipes: string;
+    ingredientInUseMeals: string;
+    replaceWith: string;
+    replaceWithPlaceholder: string;
+    replaceWithHelp: string;
+    replaceAndRemove: string;
+    couldNotReplaceIngredient: string;
+    recipeNameTaken: (name: string) => string;
+    ingredientNameTaken: (name: string) => string;
+    removeRecipeBody: string;
     none: string;
     noDescription: string;
     noDietaryInformation: string;
-    noImage: string;
     noIngredientsAdded: string;
     noIngredientsFound: string;
     noIngredientsSelected: string;
     noRecipesSelected: string;
     noInstructions: string;
-    noPrice: string;
     noRecipesFound: string;
     noSidesAdded: string;
     nutrition: string;
@@ -165,7 +192,6 @@ export type TranslationDictionary = {
     omega6: string;
     cholesterolPer100g: string;
     cholesterol: string;
-    price: string;
     proteinPer100g: string;
     protein: string;
     recipes: string;
@@ -231,7 +257,6 @@ export type TranslationDictionary = {
     home: string;
     nutrition: string;
     planner: string;
-    prices: string;
     primary: string;
     scanner: string;
     settings: string;
@@ -262,35 +287,6 @@ export type TranslationDictionary = {
     referenceSourceLink: string;
     statusLabels: Record<string, string>;
     weekStart: string;
-  };
-  prices: {
-    addPrice: string;
-    addPricePoint: string;
-    average: string;
-    couldNotLoad: string;
-    couldNotSave: string;
-    date: string;
-    empty: string;
-    history: string;
-    ingredient: string;
-    latest: string;
-    lowest: string;
-    note: string;
-    notePlaceholder: string;
-    pageIntro: string;
-    pageTitle: string;
-    price: string;
-    priceInformation: string;
-    priceUnitSubtitle: string;
-    pricePlaceholder: string;
-    savePrice: string;
-    selectStore: string;
-    selectedIngredient: string;
-    store: string;
-    storeComparison: string;
-    storePlaceholder: string;
-    trackedIngredients: string;
-    trackedPrices: string;
   };
   scanner: {
     cameraPermissionDenied: string;
@@ -332,7 +328,6 @@ export type TranslationDictionary = {
     nameLabel: string;
     noCandidateSelected: string;
     noImage: string;
-    noPrice: string;
     noProductsFound: (ean: string) => string;
     nutritionSupplementedBy: (primary: string, supplement: string) => string;
     nutritionFromPrefix: string;
@@ -342,9 +337,6 @@ export type TranslationDictionary = {
     pageIntroAfterKassalapp: string;
     pageIntroBeforeKassalapp: string;
     pageTitle: string;
-    priceLabel: string;
-    storeLabel: string;
-    price: (price: number) => string;
     productImageLabel: string;
     protein: string;
     resultsLabel: string;
@@ -360,7 +352,6 @@ export type TranslationDictionary = {
     searching: string;
     selectTags: string;
     suggestedIngredient: string;
-    unitPrice: (price: number) => string;
     unknownBrand: string;
   };
   planner: {
@@ -369,7 +360,6 @@ export type TranslationDictionary = {
     actionGenerate: string;
     actionPrep: string;
     addMeal: (slot: string) => string;
-    addMealLower: (slot: string) => string;
     chooseMainDish: string;
     clearCurrent: (range: string) => string;
     clearRange: (range: string) => string;
@@ -433,7 +423,10 @@ export type TranslationDictionary = {
     prepHelperTitle: string;
     previousRange: (range: string) => string;
     nextRange: (range: string) => string;
-    openMealSlot: string;
+    today: string;
+    plannedMealsCount: (planned: number, total: number) => string;
+    portionsCount: (portions: number) => string;
+    mealSlotLabel: (day: string, slot: string, meal: string | null) => string;
     openRecipe: string;
     rangeNames: Record<PlannerViewMode, string>;
     recipeFallback: (id: number) => string;
@@ -448,6 +441,7 @@ export type TranslationDictionary = {
     selectMainDescription: string;
     selectedCount: (count: number, max: number) => string;
     selectedMealSummary: (main: string | null, supplements: string[]) => string;
+    showAddMeals: (day: string) => string;
     switchToView: (view: string) => string;
     weekLabel: (week: number) => string;
     yearLabel: (year: string) => string;
@@ -461,6 +455,10 @@ export type TranslationDictionary = {
     checkingImages: string;
     cleanupImages: string;
     cleaningImages: string;
+    createThumbnails: string;
+    creatingThumbnails: (done: number, total: number) => string;
+    couldNotCreateThumbnails: string;
+    thumbnailsFinished: (created: number, failed: number) => string;
     couldNotCheckImages: string;
     couldNotCleanupImages: string;
     couldNotImportSeedCatalog: string;
@@ -523,6 +521,63 @@ export type TranslationDictionary = {
     testConnectionFailed: string;
     updateReferenceValues: string;
     updatingReferenceValues: string;
+  };
+  planningPreferences: {
+    title: string;
+    body: string;
+    peopleEating: string;
+    peopleEatingHelp: string;
+    minFishDinners: string;
+    minChickenDinners: string;
+    minimumsHelp: string;
+    repeatAfterWeeks: string;
+    repeatAfterWeeksHelp: string;
+    avoidTags: string;
+    avoidTagsHelp: string;
+    avoidIngredients: string;
+    avoidIngredientsHelp: string;
+    chooseIngredient: string;
+    addIngredient: string;
+    removeIngredient: (name: string) => string;
+    noIngredientsAvoided: string;
+    notes: string;
+    notesPlaceholder: string;
+    save: string;
+    saving: string;
+    saved: string;
+    couldNotLoad: string;
+    couldNotSave: string;
+  };
+  assistantLog: {
+    title: string;
+    body: string;
+    empty: string;
+    refresh: string;
+    undo: string;
+    undoing: string;
+    undoTitle: string;
+    undoBody: (summary: string) => string;
+    undone: string;
+    undoneAt: (time: string) => string;
+    undoFinished: (count: number) => string;
+    conflict: string;
+    undoAnyway: string;
+    couldNotLoad: string;
+    couldNotUndo: string;
+    endpoints: Record<string, string>;
+    counts: Record<string, ((count: number) => string) | undefined>;
+  };
+  recipeRating: {
+    title: string;
+    help: string;
+    star: (value: number) => string;
+    notRated: string;
+    clear: string;
+    note: string;
+    notePlaceholder: string;
+    saveNote: string;
+    saving: string;
+    couldNotSave: string;
   };
   theme: {
     switchToDark: string;

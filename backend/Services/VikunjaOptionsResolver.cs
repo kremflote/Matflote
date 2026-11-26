@@ -21,9 +21,18 @@ public class VikunjaOptionsResolver(AppSettingsService appSettingsService)
         CancellationToken cancellationToken
     )
     {
-        var apiToken = string.IsNullOrWhiteSpace(request.Vikunja.ApiToken)
-            ? await appSettingsService.GetValueAsync(AppSettingKeys.VikunjaApiToken, cancellationToken)
-            : request.Vikunja.ApiToken;
+        var apiToken = request.Vikunja.ApiToken;
+        if (string.IsNullOrWhiteSpace(apiToken))
+        {
+            var storedBaseUrl = await appSettingsService.GetValueAsync(AppSettingKeys.VikunjaBaseUrl, cancellationToken);
+            if (!StoredSecrets.MayUseFor(request.Vikunja.BaseUrl, storedBaseUrl))
+            {
+                throw new ShoppingListExportConfigurationException(
+                    "Enter the Vikunja API token to test a base URL other than the saved one.");
+            }
+
+            apiToken = await appSettingsService.GetValueAsync(AppSettingKeys.VikunjaApiToken, cancellationToken);
+        }
 
         return Resolve(
             request.Vikunja.BaseUrl,

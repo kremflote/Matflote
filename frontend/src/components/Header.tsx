@@ -1,14 +1,13 @@
 import { useLanguage } from "../contexts";
 import { headerStyles, type SiteTheme } from "../styles/appStyles";
 
-export type PageId = "settings" | "weekPlanner" | "cookbook" | "scanner" | "prices" | "nutrition";
+export type PageId = "settings" | "weekPlanner" | "cookbook" | "scanner" | "nutrition";
 
 const navItems: Array<{
   id: PageId;
-  labelKey: "planner" | "cookbook" | "scanner" | "prices" | "nutrition";
-  icon: "calendar" | "book" | "barcode" | "price" | "nutrition";
+  labelKey: "planner" | "cookbook" | "scanner" | "nutrition";
+  icon: "calendar" | "book" | "barcode" | "nutrition";
 }> = [
-  { id: "prices", labelKey: "prices", icon: "price" },
   { id: "scanner", labelKey: "scanner", icon: "barcode" },
   { id: "weekPlanner", labelKey: "planner", icon: "calendar" },
   { id: "cookbook", labelKey: "cookbook", icon: "book" },
@@ -31,17 +30,17 @@ function Header({
   const { t } = useLanguage();
 
   function toggleTheme() {
-    onThemeChange(theme === "dark" ? "paletteLight" : "dark");
+    onThemeChange(theme === "dark" ? "light" : "dark");
   }
 
   const isLightSide = theme !== "dark";
   const themeLabel = theme === "dark" ? t.theme.switchToLight : t.theme.switchToDark;
 
   return (
-    <header className={headerStyles.shell(theme)}>
+    <header className={headerStyles.shell}>
       <div className={headerStyles.inner}>
         <button
-          className={headerStyles.logo(theme)}
+          className={headerStyles.logo}
           type="button"
           aria-label={t.nav.home}
           onClick={() => onPageChange("weekPlanner")}
@@ -49,7 +48,7 @@ function Header({
           MATFLOTE
         </button>
 
-        <nav className={headerStyles.nav(theme)} aria-label={t.nav.primary}>
+        <nav className={headerStyles.nav} aria-label={t.nav.primary}>
           {navItems.map((item) => {
             const label = t.nav[item.labelKey];
 
@@ -57,7 +56,7 @@ function Header({
               <button
                 aria-current={activePage === item.id ? "page" : undefined}
                 aria-label={label}
-                className={headerStyles.navButton(theme, activePage === item.id)}
+                className={headerStyles.navButton(activePage === item.id)}
                 key={item.id}
                 onClick={() => onPageChange(item.id)}
                 title={label}
@@ -74,7 +73,7 @@ function Header({
           <button
             aria-current={activePage === "settings" ? "page" : undefined}
             aria-label={t.nav.settings}
-            className={headerStyles.settingsButton(theme, activePage === "settings")}
+            className={headerStyles.settingsButton(activePage === "settings")}
             onClick={() => onPageChange("settings")}
             title={t.nav.settings}
             type="button"
@@ -84,13 +83,13 @@ function Header({
           <button
             aria-label={themeLabel}
             aria-pressed={isLightSide}
-            className={headerStyles.themeButton(theme)}
+            className={headerStyles.themeButton}
             onClick={toggleTheme}
             title={themeLabel}
             type="button"
           >
-            <span className={headerStyles.themeTrack(theme)}>
-              <span className={headerStyles.themeThumb(theme)}>
+            <span className={headerStyles.themeTrack}>
+              <span className={headerStyles.themeThumb}>
                 <HeaderIcon icon={theme === "dark" ? "moon" : "sun"} />
               </span>
             </span>
@@ -104,7 +103,7 @@ function Header({
 function HeaderIcon({
   icon,
 }: {
-  icon: "settings" | "calendar" | "book" | "barcode" | "price" | "nutrition" | "moon" | "sun";
+  icon: "settings" | "calendar" | "book" | "barcode" | "nutrition" | "moon" | "sun";
 }) {
   if (icon === "settings") {
     return (
@@ -135,14 +134,6 @@ function HeaderIcon({
     return (
       <svg aria-hidden="true" className={headerStyles.icon} viewBox="0 0 24 24">
         <path d="M4 5h2v14H4V5Zm3 0h1v14H7V5Zm3 0h2v14h-2V5Zm3 0h1v14h-1V5Zm3 0h1v14h-1V5Zm2 0h2v14h-2V5Z" />
-      </svg>
-    );
-  }
-
-  if (icon === "price") {
-    return (
-      <svg aria-hidden="true" className={headerStyles.icon} viewBox="0 0 24 24">
-        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12l8 8-8.5 8.5a2 2 0 0 1-2.8 0L4.5 15.3a2 2 0 0 1 0-2.8L13 4H6.5a1.5 1.5 0 0 0 0 3H8v2H6.5A3.5 3.5 0 0 1 3 5.5h1Zm11.2 1.3-9.3 9.3 4.2 4.2 9.3-9.3-4.2-4.2Z" />
       </svg>
     );
   }

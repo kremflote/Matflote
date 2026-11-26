@@ -1,6 +1,3 @@
-// MATFLOTE: Request/response contracts for MealPlan API calls.
-// Note: DTOs are kept separate from EF entities so the browser sees stable shapes without inheriting database navigation details.
-
 using System.ComponentModel.DataAnnotations;
 using DinnerPlanner.Api.Models;
 
@@ -42,4 +39,21 @@ public record MealPlanEntryDto(
     MealSlot Slot,
     string? Notes,
     IReadOnlyCollection<MealPlanRecipeDto> Recipes
+);
+
+public record MealPlanBatchRequest(
+    IReadOnlyCollection<MealPlanEntryRequest>? Upsert,
+    IReadOnlyCollection<int>? Delete,
+    MealPlanDateRange? ClearRange
+);
+
+public record MealPlanDateRange(
+    DateOnly From,
+    DateOnly To
+);
+
+public record MealPlanBatchResultDto(
+    DateOnly From,
+    DateOnly To,
+    IReadOnlyCollection<MealPlanEntryDto> Entries
 );

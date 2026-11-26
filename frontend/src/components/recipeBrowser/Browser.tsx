@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { RecipeTag } from "../../interfaces/IRecipe";
-import type { SiteTheme } from "../../styles/appStyles";
 import Modal from "../Modal";
 import ActiveFilterChips from "./ActiveFilterChips";
 import BrowserDetailModal from "./BrowserDetailModal";
@@ -17,47 +16,50 @@ import {
 } from "./browserFilterUtils";
 import IngredientPickerPopover, { FilterIcon } from "./IngredientFilterPopover";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
-import type { BrowserDetail, BrowserMode } from "./types";
-
-type BrowserDetailKey =
-  | { id: number; kind: "ingredient" }
-  | { id: number; kind: "recipe" };
+import { useRouteDetail } from "../../utils/hashRoute";
+import { toBrowserDetailKey, type BrowserDetail, type BrowserMode } from "./types";
 
 type BrowserProps = {
   mode: BrowserMode;
-  theme: SiteTheme;
   headerActions: ReactNode;
   modeToggle: ReactNode;
 };
 
-function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
+function Browser({ mode, headerActions, modeToggle }: BrowserProps) {
   const { t } = useLanguage();
-  const { recipes, recipeIsLoading, initError: recipeError } = useRecipes();
+  const { recipes, recipeIsLoading, initError: recipeError, refreshRecipes } = useRecipes();
   const {
     ingredients,
     ingredientIsLoading,
     initError: ingredientError,
+    refreshIngredients,
   } = useIngredients();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIngredientTags, setSelectedIngredientTags] = useState<IngredientTag[]>([]);
   const [selectedRecipeTags, setSelectedRecipeTags] = useState<RecipeTag[]>([]);
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
-  const [selectedDetailKey, setSelectedDetailKey] = useState<BrowserDetailKey | null>(null);
+  // The open recipe or ingredient is part of the address (#/cookbook/recipe/12), so Back closes it.
+  const { detail: selectedDetailKey, openDetail, closeDetail } = useRouteDetail("cookbook");
   const [ingredientPickerSearch, setIngredientPickerSearch] = useState("");
   const [ingredientPickerPosition, setIngredientPickerPosition] = useState<{ x: number; y: number } | null>(null);
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false);
   const ingredientFilterButtonRef = useRef<HTMLButtonElement | null>(null);
   const ingredientPickerRef = useRef<HTMLDivElement | null>(null);
 
+  const recipesById = useMemo(
+    () => new Map(recipes.map((recipe) => [recipe.recipeId, recipe])),
+    [recipes],
+  );
   const filteredRecipes = useMemo(
     () =>
       recipes.filter((recipe) =>
         matchesRecipeSearch(recipe, searchTerm) &&
-        matchesSelectedIngredients(recipe, selectedIngredientIds) &&
-        matchesRecipeTags(recipe, selectedRecipeTags),
+        matchesSelectedIngredients(recipe, selectedIngredientIds, recipesById) &&
+        matchesRecipeTags(recipe, selectedRecipeTags, recipesById),
       ),
     [
       recipes,
+      recipesById,
       searchTerm,
       selectedIngredientIds,
       selectedRecipeTags,
@@ -86,31 +88,13 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
     [ingredients, ingredientPickerSearch],
   );
 
-  const selectedDetail = useMemo<BrowserDetail | null>(() => {
-    if (selectedDetailKey === null) {
-      return null;
-    }
-
-    if (selectedDetailKey.kind === "recipe") {
-      const recipe = recipes.find((item) => item.recipeId === selectedDetailKey.id);
-      return recipe === undefined ? null : { kind: "recipe", recipe };
-    }
-
-    const ingredient = ingredients.find((item) => item.ingredientId === selectedDetailKey.id);
-    return ingredient === undefined ? null : { kind: "ingredient", ingredient };
-  }, [ingredients, recipes, selectedDetailKey]);
-
   const selectDetail = (detail: BrowserDetail | null) => {
     if (detail === null) {
-      setSelectedDetailKey(null);
+      closeDetail();
       return;
     }
 
-    setSelectedDetailKey(
-      detail.kind === "recipe"
-        ? { kind: "recipe", id: detail.recipe.recipeId }
-        : { kind: "ingredient", id: detail.ingredient.ingredientId },
-    );
+    openDetail(toBrowserDetailKey(detail));
   };
 
   const clearFilters = () => {
@@ -145,32 +129,15 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
     return () => document.removeEventListener("pointerdown", handleOutsidePointerDown);
   }, [ingredientPickerPosition]);
 
-  useEffect(() => {
-    if (!isCategoryFilterOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setIsCategoryFilterOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isCategoryFilterOpen]);
-
   return (
     <>
-      <header>
+      <header className={recipeBrowserStyles.browserHeader}>
         <div className={recipeBrowserStyles.headerControlsRow}>
           <div className={recipeBrowserStyles.headerModeToggleStackedSlot}>
             {modeToggle}
           </div>
           <div className={recipeBrowserStyles.headerTitle}>
-            <h1 className={recipeBrowserStyles.title(theme)}>
+            <h1 className={recipeBrowserStyles.title}>
               {mode === "recipes" ? t.cookbook.allRecipes : t.cookbook.allIngredients}
             </h1>
           </div>
@@ -186,7 +153,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             <div className={recipeBrowserStyles.searchFieldShell}>
               <input
                 aria-label={mode === "recipes" ? t.browser.searchRecipes : t.browser.searchIngredients}
-                className={`${recipeBrowserStyles.searchInput(theme)} ${recipeBrowserStyles.searchInputWithClear}`}
+                className={`${recipeBrowserStyles.searchInput} ${recipeBrowserStyles.searchInputWithClear}`}
                 placeholder={t.common.search}
                 type="search"
                 value={searchTerm}
@@ -195,7 +162,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
               {searchTerm.length > 0 && (
                 <button
                   aria-label={t.common.clear}
-                  className={recipeBrowserStyles.searchClearButton(theme)}
+                  className={recipeBrowserStyles.searchClearButton}
                   type="button"
                   onClick={() => setSearchTerm("")}
                 >
@@ -219,7 +186,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             <div className={recipeBrowserStyles.filterButtonSlot}>
               <button
                 aria-label={t.filters.categories}
-                className={recipeBrowserStyles.categoryFilterButton(theme)}
+                className={recipeBrowserStyles.categoryFilterButton}
                 type="button"
                 onClick={() => setIsCategoryFilterOpen(true)}
               >
@@ -228,7 +195,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
               {mode === "recipes" && (
                 <button
                   aria-label={t.browser.openIngredientFilter}
-                  className={recipeBrowserStyles.filterButton(theme)}
+                  className={recipeBrowserStyles.filterButton}
                   ref={ingredientFilterButtonRef}
                   type="button"
                   onClick={(event) => {
@@ -253,7 +220,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             selectedRecipeTags={selectedRecipeTags}
             selectedIngredientTags={selectedIngredientTags}
             selectedIngredients={selectedIngredients}
-            theme={theme}
             onClear={clearFilters}
             onRemoveRecipeTag={(value) =>
               setSelectedRecipeTags((currentValues) => currentValues.filter((currentValue) => currentValue !== value))
@@ -276,7 +242,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             popoverRef={ingredientPickerRef}
             searchTerm={ingredientPickerSearch}
             selectedIngredientIds={selectedIngredientIds}
-            theme={theme}
             x={ingredientPickerPosition.x}
             y={ingredientPickerPosition.y}
             onSearchChange={setIngredientPickerSearch}
@@ -295,10 +260,10 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
         <Modal
           backdropClassName={recipeBrowserStyles.categoryFilterBackdrop}
           bodyClassName={recipeBrowserStyles.categoryFilterBody}
-          closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+          closeButtonClassName={recipeBrowserStyles.modalCloseButton}
           closeLabel={t.common.close}
           headerClassName={recipeBrowserStyles.categoryFilterHeader}
-          panelClassName={recipeBrowserStyles.categoryFilterPanel(theme)}
+          panelClassName={recipeBrowserStyles.categoryFilterPanel}
           title={t.filters.categories}
           titleClassName={recipeBrowserStyles.modalTitle}
           titleId="cookbook-category-filter-title"
@@ -310,7 +275,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             selectedIngredientTags={selectedIngredientTags}
             setSelectedRecipeTags={setSelectedRecipeTags}
             setSelectedIngredientTags={setSelectedIngredientTags}
-            theme={theme}
             variant="panel"
           />
         </Modal>
@@ -323,7 +287,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
           selectedIngredientTags={selectedIngredientTags}
           setSelectedRecipeTags={setSelectedRecipeTags}
           setSelectedIngredientTags={setSelectedIngredientTags}
-          theme={theme}
         />
 
         <div className={recipeBrowserStyles.resultsWithFilters}>
@@ -335,22 +298,17 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             mode={mode}
             recipeError={recipeError}
             recipeIsLoading={recipeIsLoading}
-            theme={theme}
+            onRetryIngredients={refreshIngredients}
+            onRetryRecipes={refreshRecipes}
             onSelectDetail={selectDetail}
           />
         </div>
       </section>
 
-      <div className={recipeBrowserStyles.mobileModeToggleDock}>
-        <div className={recipeBrowserStyles.mobileModeToggleInner}>
-          {modeToggle}
-        </div>
-      </div>
-
-      {selectedDetail !== null && (
+      {selectedDetailKey !== null && (
         <BrowserDetailModal
-          detail={selectedDetail}
-          theme={theme}
+          detail={selectedDetailKey}
+          key={`${selectedDetailKey.kind}-${selectedDetailKey.id}`}
           onClose={() => selectDetail(null)}
         />
       )}

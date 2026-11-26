@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     environment:
+      TZ: Europe/Oslo
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DinnerPlanner: Data Source=/data/dinnerplanner.db
@@ -24,16 +25,27 @@ services:
       - matflote-images:/data/images
     expose:
       - "8080"
+    # The same check is built into the image; it is repeated here so it is visible and easy to tune.
+    # The aspnet image has no curl or wget, so the app checks its own /health.
+    healthcheck:
+      test: ["CMD", "dotnet", "backend.dll", "--healthcheck"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
     restart: unless-stopped
 
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+    environment:
+      TZ: Europe/Oslo
     ports:
       - "${MATFLOTE_PORT:-8080}:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

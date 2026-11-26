@@ -153,7 +153,6 @@ public class SeedCatalogService(
                 ingredient.Description,
                 ingredient.Brand == null ? null : ingredient.Brand.Name,
                 ingredient.ImageUrl,
-                ingredient.Price,
                 ingredient.Tags.Select(tag => tag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
                 ingredient.NutritionPer100,
                 ingredient.NutritionSource,
@@ -199,7 +198,14 @@ public class SeedCatalogService(
         await ImportCatalogAsync(catalog, cancellationToken);
     }
 
-    public async Task ImportCatalogPackageStreamAsync(Stream stream, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Imports a package additively. With <paramref name="synchronizeTags"/> it also deletes every tag and tag category
+    /// the package does not name, which removes those tags from recipes and ingredients (AUDIT B3).
+    /// </summary>
+    public async Task ImportCatalogPackageStreamAsync(
+        Stream stream,
+        bool synchronizeTags = false,
+        CancellationToken cancellationToken = default)
     {
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
         var catalogEntry = archive.GetEntry("seed-catalog.json")
@@ -214,7 +220,7 @@ public class SeedCatalogService(
             throw new InvalidOperationException("Seed catalog file was empty or invalid.");
         }
 
-        await ImportCatalogAsync(catalog, cancellationToken, synchronizeTagCategories: true);
+        await ImportCatalogAsync(catalog, cancellationToken, synchronizeTagCategories: synchronizeTags);
     }
 
     public async Task<byte[]> BuildExportPackageAsync(CancellationToken cancellationToken = default)
@@ -257,6 +263,14 @@ public class SeedCatalogService(
             cancellationToken.ThrowIfCancellationRequested();
             if (!entry.FullName.StartsWith("images/", StringComparison.OrdinalIgnoreCase) || entry.FullName.EndsWith('/'))
             {
+                continue;
+            }
+
+            // The image folder is served on the app's own origin, so an .html or .svg entry would become a page
+            // there (AUDIT S3); only the image types the app itself stores are extracted.
+            if (!ImageStorageUrls.IsImageFileName(entry.FullName))
+            {
+                logger.LogWarning("Skipped non-image file in seed catalog package: {EntryName}.", entry.FullName);
                 continue;
             }
 
@@ -509,7 +523,6 @@ public class SeedCatalogService(
                 Description = NullIfWhiteSpace(seedIngredient.Description),
                 BrandId = brand?.BrandId,
                 ImageUrl = NullIfWhiteSpace(seedIngredient.ImageUrl),
-                Price = seedIngredient.Price,
                 NutritionPer100 = seedIngredient.NutritionPer100,
                 NutritionSource = seedIngredient.NutritionPer100 is null
                     ? NutritionDataSource.None

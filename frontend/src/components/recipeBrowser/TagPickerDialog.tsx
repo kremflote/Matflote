@@ -1,6 +1,5 @@
 import Modal from "../Modal";
 import { useLanguage } from "../../contexts";
-import type { SiteTheme } from "../../styles/appStyles";
 import { GroupedCheckboxPanel, type CheckboxGroup } from "./BrowserFilterGroups";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
@@ -10,7 +9,6 @@ type TagPickerDialogProps<TValue extends string> = {
   groupLabels: Record<string, string>;
   groups: CheckboxGroup<TValue>[];
   selectedValues: TValue[];
-  theme: SiteTheme;
   title: string;
   onAddTag: () => void;
   onClose: () => void;
@@ -23,7 +21,6 @@ function TagPickerDialog<TValue extends string>({
   groupLabels,
   groups,
   selectedValues,
-  theme,
   title,
   onAddTag,
   onClose,
@@ -35,16 +32,16 @@ function TagPickerDialog<TValue extends string>({
     <Modal
       backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
       bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-      closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+      closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
       closeLabel={t.common.close}
       footer={
-        <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onClose}>
+        <button className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onClose}>
           {t.common.confirm}
         </button>
       }
       footerClassName={recipeBrowserStyles.formActions}
       headerClassName={recipeBrowserStyles.modalHeader}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
       title={title}
       titleClassName={recipeBrowserStyles.modalTitle}
       onClose={onClose}
@@ -54,9 +51,8 @@ function TagPickerDialog<TValue extends string>({
         formatValue={formatValue}
         groupLabels={groupLabels}
         groups={groups}
-        panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
+        panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel}`}
         selectedValues={selectedValues}
-        theme={theme}
         onAddTag={onAddTag}
         onToggle={onToggle}
       />

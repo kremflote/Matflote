@@ -2,15 +2,21 @@ import { useLanguage } from "../contexts";
 import type { IIngredient } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, MealSlot as MealSlotId } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
-import { mealCalendarStyles, type SiteTheme } from "../styles/appStyles";
-import { getApiAssetUrl } from "../services/apiClient";
+import { colorPalette, mealCalendarStyles } from "../styles/appStyles";
+import { getThumbnailSrc } from "../utils/imageThumbnail";
+import { getMainIngredientNames, getRecipeColorBarBackground, getRecipeTile } from "../utils/recipeTile";
 
 type MealSlotProps = {
   canUseDesktopInteractions: boolean;
   date: string;
+  /** The day in words ("Monday, November 30"), so each slot has its own accessible name. */
+  dateLabel: string;
   entry?: IMealPlanEntry;
   ingredientsById: Map<number, IIngredient>;
+  isDisabled: boolean;
   isLoading: boolean;
+  /** Today's row is highlighted. */
+  isToday?: boolean;
   onClick: () => void;
   onDeleteRequest: (date: string, slot: MealSlotId) => void;
   onDragEnd: () => void;
@@ -19,15 +25,17 @@ type MealSlotProps = {
   onOpenRecipe: (recipe: IRecipe) => void;
   slot: MealSlotId;
   recipesById: Map<number, IRecipe>;
-  theme?: SiteTheme;
 };
 
 function MealSlot({
   canUseDesktopInteractions,
   date,
+  dateLabel,
   entry,
   ingredientsById,
+  isDisabled,
   isLoading,
+  isToday = false,
   onClick,
   onDeleteRequest,
   onDragEnd,
@@ -36,7 +44,6 @@ function MealSlot({
   onOpenRecipe,
   recipesById,
   slot,
-  theme = "dark",
 }: MealSlotProps) {
   const { t } = useLanguage();
   const plannedItems =
@@ -50,17 +57,35 @@ function MealSlot({
       })) ?? [];
   const mainItem = plannedItems.find((plannedRecipe) => plannedRecipe.role === "Main") ?? plannedItems[0];
   const supplementaryItems = plannedItems.filter((plannedRecipe) => plannedRecipe !== mainItem);
-  const visibleSupplementaryItems = supplementaryItems.slice(0, 3);
-  const hiddenSupplementaryCount = Math.max(supplementaryItems.length - visibleSupplementaryItems.length, 0);
+  const supplementaryNames = supplementaryItems.map(
+    (plannedRecipe) =>
+      plannedRecipe.recipe?.name ??
+      plannedRecipe.ingredient?.ingredientName ??
+      t.planner.recipeFallback(plannedRecipe.recipeId ?? plannedRecipe.ingredientId ?? 0),
+  );
   const mainName = mainItem?.recipe?.name ?? mainItem?.ingredient?.ingredientName;
-  const mainImageUrl = mainItem?.recipe?.imageUrl ?? mainItem?.ingredient?.imageUrl ?? null;
+  const mainImageSrc = getThumbnailSrc(mainItem?.recipe ?? mainItem?.ingredient);
   const mainRecipe = mainItem?.recipe;
+  const mainColors = mainRecipe !== undefined
+    ? getRecipeTile(mainRecipe).colors
+    : [mainItem?.ingredient?.color ?? colorPalette.stone];
+  const mainIngredientNames = mainRecipe !== undefined ? getMainIngredientNames(mainRecipe) : [];
+  // Side dishes first; a card without a photo shows its main ingredients when there are none.
+  const secondaryText =
+    supplementaryNames.length > 0
+      ? `+ ${supplementaryNames.join(", ")}`
+      : mainImageSrc === null
+        ? mainIngredientNames.join(" · ")
+        : "";
+  const slotLabel = t.enums.mealSlots[slot];
   const hasMeal = plannedItems.length > 0;
-  const canDragMeal = canUseDesktopInteractions && hasMeal && !isLoading;
+  const isUnavailable = isLoading || isDisabled;
+  const canDragMeal = canUseDesktopInteractions && hasMeal && !isUnavailable;
+  const showsTouchActions = !canUseDesktopInteractions && hasMeal && !isUnavailable;
 
   return (
     <div
-      className={`${mealCalendarStyles.mealSlot(theme)} ${mealCalendarStyles.mealSlotDropTarget(theme)}`}
+      className={`${mealCalendarStyles.mealSlot(isToday, showsTouchActions)} ${mealCalendarStyles.mealSlotDropTarget}`}
       onDragOver={(event) => {
         if (!canUseDesktopInteractions) {
           return;
@@ -83,12 +108,18 @@ function MealSlot({
       }}
     >
       <button
-        aria-label={t.planner.openMealSlot}
+        aria-label={t.planner.mealSlotLabel(
+          dateLabel,
+          slotLabel,
+          mainName === undefined
+            ? null
+            : [mainName, ...supplementaryNames].join(", "),
+        )}
         className={`${mealCalendarStyles.mealSlotButton} ${
           canDragMeal ? mealCalendarStyles.mealSlotDraggableButton : ""
-        }`}
+        } ${isDisabled && !isLoading ? mealCalendarStyles.mealSlotUnavailable : ""}`}
         aria-busy={isLoading}
-        disabled={isLoading}
+        disabled={isUnavailable}
         draggable={canDragMeal}
         type="button"
         onClick={onClick}
@@ -105,106 +136,95 @@ function MealSlot({
         }}
       >
         {isLoading ? (
-          <MealSlotSkeleton theme={theme} />
-        ) : hasMeal ? (
-          <div className={mealCalendarStyles.mealSlotContent}>
-            {mainName !== undefined ? (
-              <>
-                <div className={mealCalendarStyles.mealSlotImageFrame(theme)}>
-                  {getApiAssetUrl(mainImageUrl) ? (
-                    <img
-                      alt=""
-                      className={mealCalendarStyles.mealSlotImage}
-                      src={getApiAssetUrl(mainImageUrl) ?? undefined}
-                    />
-                  ) : (
-                    <div className={mealCalendarStyles.mealSlotImageFallback(theme)} aria-hidden="true" />
-                  )}
-                </div>
-                <div className={mealCalendarStyles.mealSlotDetails}>
-                  <h3 className={mealCalendarStyles.mealSlotTitle(theme)}>
-                    {mainName}
-                  </h3>
-                  {mainItem?.portions !== null && mainItem?.portions !== undefined && (
-                    <span className={mealCalendarStyles.mealSlotPortions(theme)}>
-                      {mainItem.portions}x
-                    </span>
-                  )}
-                  <div className={mealCalendarStyles.mealSlotRecipeList}>
-                    {visibleSupplementaryItems.map((plannedRecipe) => {
-                      const name = plannedRecipe.recipe?.name ?? plannedRecipe.ingredient?.ingredientName ?? t.planner.recipeFallback(plannedRecipe.recipeId ?? plannedRecipe.ingredientId ?? 0);
-
-                      return (
-                        <div
-                          className={mealCalendarStyles.mealSlotRecipe(theme)}
-                          key={`${plannedRecipe.mealPlanRecipeId}-${plannedRecipe.recipeId ?? plannedRecipe.ingredientId}`}
-                          title={name}
-                        >
-                          {name}
-                        </div>
-                      );
-                    })}
-                    {hiddenSupplementaryCount > 0 && (
-                      <div
-                        className={mealCalendarStyles.mealSlotRecipe(theme)}
-                        title={supplementaryItems
-                          .slice(visibleSupplementaryItems.length)
-                          .map((plannedRecipe) => plannedRecipe.recipe?.name ?? plannedRecipe.ingredient?.ingredientName ?? t.planner.recipeFallback(plannedRecipe.recipeId ?? plannedRecipe.ingredientId ?? 0))
-                          .join(", ")}
-                      >
-                        +{hiddenSupplementaryCount}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
+          <MealSlotSkeleton />
+        ) : hasMeal && mainName !== undefined ? (
+          <span className={mealCalendarStyles.mealSlotContent(mainImageSrc !== null)}>
+            {mainImageSrc !== null ? (
+              <span className={mealCalendarStyles.mealSlotImageFrame}>
+                <img
+                  alt=""
+                  className={mealCalendarStyles.mealSlotImage}
+                  src={mainImageSrc}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
             ) : (
-              <div className={mealCalendarStyles.mealSlotInner(theme)} />
+              // Without a photo the card is text-first: a thin bar of the ingredients' colours, then the name.
+              <span
+                aria-hidden="true"
+                className={mealCalendarStyles.mealSlotColorBar}
+                data-testid="meal-slot-color-bar"
+                style={{ background: getRecipeColorBarBackground(mainColors) }}
+              />
             )}
-          </div>
+            <span className={mealCalendarStyles.mealSlotDetails}>
+              <span className={mealCalendarStyles.mealSlotEyebrow}>{slotLabel}</span>
+              <span className={mealCalendarStyles.mealSlotTitle}>{mainName}</span>
+              <span className={mealCalendarStyles.mealSlotMetaRow}>
+                <span className={mealCalendarStyles.mealSlotSecondary} title={secondaryText || undefined}>
+                  {secondaryText}
+                </span>
+                {mainItem?.portions !== null && mainItem?.portions !== undefined && (
+                  <span className={mealCalendarStyles.mealSlotPortions}>
+                    {t.planner.portionsCount(mainItem.portions)}
+                  </span>
+                )}
+              </span>
+            </span>
+          </span>
         ) : (
-          <div className={mealCalendarStyles.mealSlotInner(theme)} />
+          <span className={mealCalendarStyles.mealSlotEmpty}>
+            <span aria-hidden="true" className={mealCalendarStyles.mealSlotEmptyPlus}>+</span>
+            {slotLabel}
+          </span>
         )}
       </button>
-      {canUseDesktopInteractions && !isLoading && mainRecipe !== undefined && (
-        <button
-          aria-label={t.planner.openRecipe}
-          className={mealCalendarStyles.mealSlotOpenRecipeButton(theme)}
-          title={t.planner.openRecipe}
-          type="button"
-          onClick={() => onOpenRecipe(mainRecipe)}
-        >
-          {t.planner.openRecipe}
-        </button>
-      )}
-      {canDragMeal && (
-        <button
-          aria-label={t.planner.removeMeal}
-          className={mealCalendarStyles.mealSlotDeleteButton(theme)}
-          title={t.planner.removeMeal}
-          type="button"
-          onClick={() => onDeleteRequest(date, slot)}
-        >
-          <TrashIcon />
-        </button>
+      {!isUnavailable && hasMeal && (
+        <span className={mealCalendarStyles.mealSlotActions(canUseDesktopInteractions)}>
+          {mainRecipe !== undefined && (
+            <button
+              aria-label={t.planner.openRecipe}
+              className={mealCalendarStyles.mealSlotActionButton(canUseDesktopInteractions)}
+              title={t.planner.openRecipe}
+              type="button"
+              onClick={() => onOpenRecipe(mainRecipe)}
+            >
+              <BookIcon />
+            </button>
+          )}
+          <button
+            aria-label={t.planner.removeMeal}
+            className={mealCalendarStyles.mealSlotDeleteButton(canUseDesktopInteractions)}
+            title={t.planner.removeMeal}
+            type="button"
+            onClick={() => onDeleteRequest(date, slot)}
+          >
+            <TrashIcon />
+          </button>
+        </span>
       )}
     </div>
   );
 }
 
-function MealSlotSkeleton({ theme }: { theme: SiteTheme }) {
+function MealSlotSkeleton() {
   return (
-    <div className={mealCalendarStyles.mealSlotContent} aria-hidden="true">
-      <div className={mealCalendarStyles.mealSlotSkeletonImage(theme)} />
-      <div className={mealCalendarStyles.mealSlotSkeletonDetails}>
-        <span className={mealCalendarStyles.mealSlotSkeletonLine(theme, "title")} />
-        <span className={mealCalendarStyles.mealSlotSkeletonLine(theme, "short")} />
-        <div className={mealCalendarStyles.mealSlotSkeletonChips}>
-          <span className={mealCalendarStyles.mealSlotSkeletonChip(theme)} />
-          <span className={mealCalendarStyles.mealSlotSkeletonChip(theme)} />
-        </div>
-      </div>
-    </div>
+    <span className={mealCalendarStyles.mealSlotContent(true)} aria-hidden="true">
+      <span className={mealCalendarStyles.mealSlotSkeletonImage} />
+      <span className={mealCalendarStyles.mealSlotSkeletonDetails}>
+        <span className={mealCalendarStyles.mealSlotSkeletonLine("title")} />
+        <span className={mealCalendarStyles.mealSlotSkeletonLine("short")} />
+      </span>
+    </span>
+  );
+}
+
+function BookIcon() {
+  return (
+    <svg aria-hidden="true" className={mealCalendarStyles.mealSlotDeleteIcon} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M5 3h5.5c1 0 1.9.3 2.5 1 .6-.7 1.5-1 2.5-1H21v16h-5.5c-.7 0-1.3.2-1.8.7l-.7.7-.7-.7c-.5-.5-1.1-.7-1.8-.7H5V3Zm2 2v12h3.5c.6 0 1.1.1 1.5.3V6.5c-.3-1-1-1.5-1.5-1.5H7Zm7 1.5v10.8c.4-.2.9-.3 1.5-.3H19V5h-3.5c-.5 0-1.2.5-1.5 1.5Z" />
+    </svg>
   );
 }
 

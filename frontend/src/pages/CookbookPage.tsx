@@ -1,13 +1,8 @@
 import { useEffect, useState } from "react";
 import RecipeBrowser, { type BrowserMode } from "../components/recipeBrowser";
-import type { SiteTheme } from "../styles/appStyles";
 import { getLocalPreference, localPreferenceKeys, setLocalPreference } from "../utils/localPreferences";
 
-type CookbookPageProps = {
-  theme: SiteTheme;
-};
-
-function CookbookPage({ theme }: CookbookPageProps) {
+function CookbookPage() {
   const [browserMode, setBrowserMode] = useState<BrowserMode>(() =>
     getLocalPreference(localPreferenceKeys.cookbookMode, ["recipes", "ingredients"], "recipes"),
   );
@@ -19,7 +14,6 @@ function CookbookPage({ theme }: CookbookPageProps) {
   return (
     <RecipeBrowser
       mode={browserMode}
-      theme={theme}
       onModeChange={setBrowserMode}
     />
   );

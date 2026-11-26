@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import ConfirmationDialog from "../ConfirmationDialog";
 import { useLanguage } from "../../contexts";
-import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
 export type CreatableOption = {
@@ -15,7 +14,6 @@ type CreatableSelectProps = {
   label: ReactNode;
   value: number | null;
   options: CreatableOption[];
-  theme: SiteTheme;
   fieldClassName?: string;
   helperClassName?: string;
   helperText?: string | null;
@@ -35,20 +33,21 @@ function CreatableSelect({
   label,
   value,
   options,
-  theme,
   fieldClassName,
   helperClassName,
   helperText,
   labelClassName,
   required = false,
-  placeholder = "Select option",
-  createLabel = "Create New",
+  placeholder: placeholderProp,
+  createLabel: createLabelProp,
   onChange,
   onCreate,
   onCreatedOptionSelected,
   onDeleteOption,
 }: CreatableSelectProps) {
   const { t } = useLanguage();
+  const placeholder = placeholderProp ?? t.common.selectOption;
+  const createLabel = createLabelProp ?? t.common.createNew;
   const selectRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -135,9 +134,9 @@ function CreatableSelect({
   };
 
   const labelContent = (
-    <span className={labelClassName ?? recipeBrowserStyles.label(theme)}>
+    <span className={labelClassName ?? recipeBrowserStyles.label}>
       {label}
-      {required && <span className={recipeBrowserStyles.requiredMark(theme)}> *</span>}
+      {required && <span className={recipeBrowserStyles.requiredMark}> *</span>}
     </span>
   );
 
@@ -148,7 +147,7 @@ function CreatableSelect({
         <div className={recipeBrowserStyles.customSelectWrap}>
           <button
             aria-expanded={isOpen}
-            className={recipeBrowserStyles.customSelectButton(theme)}
+            className={recipeBrowserStyles.customSelectButton}
             type="button"
             onClick={() => setIsOpen((currentValue) => !currentValue)}
           >
@@ -157,9 +156,9 @@ function CreatableSelect({
           </button>
 
           {isOpen && (
-            <div className={recipeBrowserStyles.customSelectMenu(theme)}>
+            <div className={recipeBrowserStyles.customSelectMenu}>
               <button
-                className={recipeBrowserStyles.customSelectOption(theme, false)}
+                className={recipeBrowserStyles.customSelectOption(false)}
                 type="button"
                 onClick={() => {
                   setIsCreating(true);
@@ -169,7 +168,7 @@ function CreatableSelect({
                 <span>{createLabel}</span>
               </button>
               <button
-                className={recipeBrowserStyles.customSelectOption(theme, value === null)}
+                className={recipeBrowserStyles.customSelectOption(value === null)}
                 type="button"
                 onClick={() => {
                   onChange(null);
@@ -180,7 +179,7 @@ function CreatableSelect({
               </button>
               {sortedOptions.map((option) => (
                 <button
-                  className={recipeBrowserStyles.customSelectOption(theme, value === option.id)}
+                  className={recipeBrowserStyles.customSelectOption(value === option.id)}
                   key={option.id}
                   type="button"
                   onClick={() => {
@@ -190,8 +189,8 @@ function CreatableSelect({
                 >
                   <span className={recipeBrowserStyles.customSelectOptionLabel}>{option.name}</span>
                   <span
-                    aria-label={`Delete ${option.name}`}
-                    className={recipeBrowserStyles.customSelectDeleteButton(theme)}
+                    aria-label={t.common.deleteOptionNamed(option.name)}
+                    className={recipeBrowserStyles.customSelectDeleteButton}
                     role="button"
                     tabIndex={0}
                     onClick={(event) => {
@@ -220,7 +219,6 @@ function CreatableSelect({
             isSaving={isSaving}
             label={createPanelLabel}
             name={name}
-            theme={theme}
             setName={setName}
             cancelLabel={t.common.cancel}
             createLabel={t.cookbook.create}
@@ -238,7 +236,6 @@ function CreatableSelect({
             body={t.common.deleteNamed(optionPendingDelete.name)}
             confirmLabel={t.common.remove}
             isBusy={deletingOptionId === optionPendingDelete.id}
-            theme={theme}
             title={t.common.removeNamed(optionPendingDelete.name)}
             onCancel={() => setOptionPendingDelete(null)}
             onConfirm={() => void deleteOption(optionPendingDelete)}
@@ -252,7 +249,7 @@ function CreatableSelect({
     <label className={fieldClassName ?? recipeBrowserStyles.field}>
       {labelContent}
       <select
-        className={recipeBrowserStyles.textField(theme)}
+        className={recipeBrowserStyles.textField}
         required={required}
         value={value ?? ""}
         onChange={(event) => {
@@ -282,7 +279,6 @@ function CreatableSelect({
           isSaving={isSaving}
           label={createPanelLabel}
           name={name}
-          theme={theme}
           setName={setName}
           cancelLabel={t.common.cancel}
           createLabel={t.cookbook.create}
@@ -307,7 +303,6 @@ type CreateOptionPanelProps = {
   cancelLabel: string;
   createLabel: string;
   savingLabel: string;
-  theme: SiteTheme;
   setName: (name: string) => void;
   onCancel: () => void;
   onSave: () => void;
@@ -321,16 +316,15 @@ function CreateOptionPanel({
   cancelLabel,
   createLabel,
   savingLabel,
-  theme,
   setName,
   onCancel,
   onSave,
 }: CreateOptionPanelProps) {
   return (
-    <div className={recipeBrowserStyles.createOptionPanel(theme)}>
-      {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
+    <div className={recipeBrowserStyles.createOptionPanel}>
+      {error !== null && <p className={recipeBrowserStyles.statusError}>{error}</p>}
       <input
-        className={recipeBrowserStyles.textField(theme)}
+        className={recipeBrowserStyles.textField}
         maxLength={120}
         placeholder={label}
         type="text"
@@ -339,7 +333,7 @@ function CreateOptionPanel({
       />
       <div className={recipeBrowserStyles.createOptionActions}>
         <button
-          className={recipeBrowserStyles.secondaryButton(theme)}
+          className={recipeBrowserStyles.secondaryButton}
           disabled={isSaving}
           type="button"
           onClick={onCancel}
@@ -347,7 +341,7 @@ function CreateOptionPanel({
           {cancelLabel}
         </button>
         <button
-          className={recipeBrowserStyles.primaryButton(theme)}
+          className={recipeBrowserStyles.primaryButton}
           disabled={isSaving}
           type="button"
           onClick={onSave}

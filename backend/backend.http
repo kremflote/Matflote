@@ -32,7 +32,6 @@ Content-Type: application/json
   "ingredientName": "Chicken thigh",
   "description": "Dark chicken cut with more fat and stronger flavor than chicken breast.",
   "brandId": null,
-  "price": 79.90,
   "tags": ["Chicken"],
   "nutritionPer100": null,
   "color": "#e8b48f"

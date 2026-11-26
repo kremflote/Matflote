@@ -1,6 +1,3 @@
-// MATFLOTE: EF Core entity/model for Ingredient data stored by MATFLOTE.
-// Note: Navigation properties are initialized to empty collections so controllers can safely add related rows without null checks.
-
 using System.ComponentModel.DataAnnotations;
 
 namespace DinnerPlanner.Api.Models;
@@ -15,7 +12,6 @@ public class Ingredient
     public int? BrandId { get; set; }
     public Brand? Brand { get; set; }
     public string? ImageUrl { get; set; }
-    public decimal? Price { get; set; }
     public ICollection<IngredientTagAssignment> Tags { get; set; } = [];
     public NutritionFacts? NutritionPer100 { get; set; }
     public NutritionDataSource NutritionSource { get; set; } = NutritionDataSource.None;

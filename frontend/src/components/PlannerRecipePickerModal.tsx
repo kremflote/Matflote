@@ -1,12 +1,11 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { Dispatch, SetStateAction } from "react";
 import { useIngredientTagCategories, useIngredients, useLanguage } from "../contexts";
 import type { IIngredient, IngredientTag, MeasurementUnit } from "../interfaces/IIngredient";
-import type { IIngredientTagCategory } from "../interfaces/ILookup";
 import type { IMealPlanEntry, MealSlot } from "../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
-import { plannerPickerStyles, type SiteTheme } from "../styles/appStyles";
+import { plannerPickerStyles } from "../styles/appStyles";
+import { buildSystemTagNameLookup } from "../utils/tagCatalog";
 import { recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
 import {
   getSupplementaryRole,
@@ -30,36 +29,35 @@ import PlannerRecipePickerSelection, {
 } from "./plannerRecipePicker/PlannerRecipePickerSelection";
 import Modal from "./Modal";
 import SearchField from "./SearchField";
+import {
+  type SelectedPlannerRecipe,
+  type SelectedPlannerIngredient,
+  type PickerBrowserMode,
+  toSelectedRecipeItem,
+  toSelectedIngredientItem,
+  getInitialRecipeTagFilters,
+  buildAvailableTagNames,
+  findAvailableTagName,
+  uniqueValues,
+  toggleTagFilter,
+  toMealPlanItems,
+  getInitialSelections,
+} from "./plannerRecipePicker/pickerSelection";
 
 type PlannerRecipePickerModalProps = {
   date: string;
   entry?: IMealPlanEntry;
   recipes: IRecipe[];
   slot: MealSlot;
-  theme: SiteTheme;
   onClose: () => void;
   onSave: (entryId: number | null, request: MealPlanEntryRequest) => Promise<void>;
 };
-
-type SelectedPlannerRecipe = {
-  recipeId: number;
-  portions: number;
-};
-
-type SelectedPlannerIngredient = {
-  ingredientId: number;
-  amount: number;
-  unit: MeasurementUnit;
-};
-
-type PickerBrowserMode = "recipes" | "ingredients";
 
 function PlannerRecipePickerModal({
   date,
   entry,
   recipes,
   slot,
-  theme,
   onClose,
   onSave,
 }: PlannerRecipePickerModalProps) {
@@ -67,51 +65,17 @@ function PlannerRecipePickerModal({
   const titleId = useId();
   const { ingredients } = useIngredients();
   const { ingredientTagCategories } = useIngredientTagCategories();
-  const sortedInitialItems =
-    entry?.recipes.slice().sort((first, second) => first.sortOrder - second.sortOrder) ?? [];
-  const initialMainItem =
-    sortedInitialItems.find((plannedRecipe) => plannedRecipe.role === "Main") ?? sortedInitialItems[0];
-  const initialSupplementaryItems = sortedInitialItems.filter(
-    (plannedRecipe) => plannedRecipe !== initialMainItem,
-  );
-  const initialMainRecipe =
-    initialMainItem?.recipeId !== null && initialMainItem?.recipeId !== undefined ? initialMainItem : undefined;
-  const initialMainIngredient =
-    initialMainItem?.ingredientId !== null && initialMainItem?.ingredientId !== undefined ? initialMainItem : undefined;
-  const initialSupplementaryRecipes =
-    initialSupplementaryItems
-      .filter((plannedRecipe) => plannedRecipe.recipeId !== null)
-      .map((plannedRecipe) => ({
-        recipeId: plannedRecipe.recipeId!,
-        portions: plannedRecipe.portions ?? recipeByIdFallback(recipes, plannedRecipe.recipeId)?.portions ?? 1,
-      }));
-  const initialSupplementaryIngredients =
-    initialSupplementaryItems
-      .filter((plannedRecipe) => plannedRecipe.ingredientId !== null)
-      .map((plannedRecipe) => ({
-        ingredientId: plannedRecipe.ingredientId!,
-        amount: plannedRecipe.amount ?? 1,
-        unit: plannedRecipe.unit ?? ("Gram" as MeasurementUnit),
-      }));
+  const initialSelections = getInitialSelections(entry, recipes);
   const [browserMode, setBrowserMode] = useState<PickerBrowserMode>("recipes");
   const [searchTerm, setSearchTerm] = useState("");
-  const [mainRecipeSelection, setMainRecipeSelection] = useState<SelectedPlannerRecipe | null>(
-    initialMainRecipe === undefined ? null : {
-      recipeId: initialMainRecipe.recipeId!,
-      portions: initialMainRecipe.portions ?? recipeByIdFallback(recipes, initialMainRecipe.recipeId)?.portions ?? 1,
-    },
-  );
-  const [mainIngredientSelection, setMainIngredientSelection] = useState<SelectedPlannerIngredient | null>(
-    initialMainIngredient === undefined ? null : {
-      ingredientId: initialMainIngredient.ingredientId!,
-      amount: initialMainIngredient.amount ?? 1,
-      unit: initialMainIngredient.unit ?? "Gram",
-    },
-  );
+  const [mainRecipeSelection, setMainRecipeSelection] =
+    useState<SelectedPlannerRecipe | null>(initialSelections.mainRecipe);
+  const [mainIngredientSelection, setMainIngredientSelection] =
+    useState<SelectedPlannerIngredient | null>(initialSelections.mainIngredient);
   const [supplementaryRecipeSelections, setSupplementaryRecipeSelections] =
-    useState<SelectedPlannerRecipe[]>(initialSupplementaryRecipes);
+    useState<SelectedPlannerRecipe[]>(initialSelections.supplementaryRecipes);
   const [supplementaryIngredientSelections, setSupplementaryIngredientSelections] =
-    useState<SelectedPlannerIngredient[]>(initialSupplementaryIngredients);
+    useState<SelectedPlannerIngredient[]>(initialSelections.supplementaryIngredients);
   const [selectedIngredientTags, setSelectedIngredientTags] = useState<IngredientTag[]>([]);
   const [selectedMainRecipeTags, setSelectedMainRecipeTags] =
     useState<RecipeTag[]>(() => getInitialRecipeTagFilters(slot));
@@ -121,7 +85,6 @@ function PlannerRecipePickerModal({
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const modalPanelRef = useRef<HTMLElement | null>(null);
   const ingredientFilterButtonRef = useRef<HTMLButtonElement | null>(null);
   const ingredientPickerRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -174,11 +137,12 @@ function PlannerRecipePickerModal({
           isMainDish(recipe) &&
           matchesSelectedRecipeTags(recipe, selectedMainRecipeTags),
         )
-        .filter((recipe) => matchesSelectedIngredients(recipe, selectedIngredientIds))
+        .filter((recipe) => matchesSelectedIngredients(recipe, selectedIngredientIds, recipeById))
         .filter((recipe) => matchesSearch(recipe, searchTerm))
         .sort((first, second) => first.name.localeCompare(second.name)),
     [
       recipes,
+      recipeById,
       searchTerm,
       selectedIngredientIds,
       selectedMainRecipeTags,
@@ -242,15 +206,6 @@ function PlannerRecipePickerModal({
     ].some((selection) => recipeById.get(selection.recipeId)?.tags.includes(breadTagName) === true);
 
   useEffect(() => {
-    const previouslyFocusedElement =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-
-    return () => {
-      previouslyFocusedElement?.focus();
-    };
-  }, []);
-
-  useEffect(() => {
     if (ingredientPickerPosition === null) {
       return;
     }
@@ -275,29 +230,6 @@ function PlannerRecipePickerModal({
 
     return () => document.removeEventListener("pointerdown", handleOutsidePointerDown);
   }, [ingredientPickerPosition]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        if (isCategoryFilterOpen) {
-          setIsCategoryFilterOpen(false);
-          return;
-        }
-
-        onClose();
-        return;
-      }
-
-      if (event.key === "Tab") {
-        trapFocus(event, modalPanelRef.current);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isCategoryFilterOpen, onClose]);
 
   const selectMainRecipe = (recipe: IRecipe, portions: number) => {
     setMainRecipeSelection({ recipeId: recipe.recipeId, portions });
@@ -466,52 +398,16 @@ function PlannerRecipePickerModal({
     setSaveError(null);
 
     try {
-      const recipesToSave =
-        [
-          ...(mainRecipeSelection === null
-            ? []
-            : [{
-                recipeId: mainRecipeSelection.recipeId,
-                ingredientId: null,
-                role: "Main" as const,
-                sortOrder: 0,
-                portions: mainRecipeSelection.portions,
-                amount: null,
-                unit: null,
-              }]),
-          ...(mainIngredientSelection === null
-            ? []
-            : [{
-                recipeId: null,
-                ingredientId: mainIngredientSelection.ingredientId,
-                role: "Main" as const,
-                sortOrder: 0,
-                portions: null,
-                amount: mainIngredientSelection.amount,
-                unit: mainIngredientSelection.unit,
-              }]),
-          ...supplementaryRecipeSelections.map((selection, index) => {
-            const recipe = recipeById.get(selection.recipeId);
-            return {
-              recipeId: selection.recipeId,
-              ingredientId: null,
-              role: recipe === undefined ? "Side" as const : getSupplementaryRole(recipe),
-              sortOrder: index + 1,
-              portions: selection.portions,
-              amount: null,
-              unit: null,
-            };
-          }),
-          ...supplementaryIngredientSelections.map((selection, index) => ({
-            recipeId: null,
-            ingredientId: selection.ingredientId,
-            role: "Side" as const,
-            sortOrder: supplementaryRecipeSelections.length + index + 1,
-            portions: null,
-            amount: selection.amount,
-            unit: selection.unit,
-          })),
-        ];
+      const recipesToSave = toMealPlanItems({
+        mainRecipe: mainRecipeSelection,
+        mainIngredient: mainIngredientSelection,
+        supplementaryRecipes: supplementaryRecipeSelections,
+        supplementaryIngredients: supplementaryIngredientSelections,
+        roleOf: (recipeId) => {
+          const recipe = recipeById.get(recipeId);
+          return recipe === undefined ? "Side" : getSupplementaryRole(recipe, systemTagNames);
+        },
+      });
 
       await onSave(entry?.mealPlanEntryId ?? null, {
         date,
@@ -534,7 +430,6 @@ function PlannerRecipePickerModal({
       selectedRecipeTags={selectedMainRecipeTags}
       setSelectedIngredientTags={setSelectedIngredientTags}
       setSelectedRecipeTags={setSelectedMainRecipeTags}
-      theme={theme}
       variant="panel"
     />
   );
@@ -543,22 +438,21 @@ function PlannerRecipePickerModal({
     <Modal
       backdropClassName={plannerPickerStyles.modalBackdrop}
       bodyClassName={plannerPickerStyles.bodyFrame}
-      closeButtonClassName={plannerPickerStyles.closeButton(theme)}
+      closeButtonClassName={plannerPickerStyles.closeButton}
       closeLabel={t.common.close}
       description={
         t.planner.selectMainDescription
       }
-      descriptionClassName={plannerPickerStyles.subtitle(theme)}
+      descriptionClassName={plannerPickerStyles.subtitle}
       footer={
         <div className={plannerPickerStyles.footerContent}>
           <div className={plannerPickerStyles.footerSelectionRow}>
             <PlannerRecipePickerSelection
               items={selectedPickerItems}
-              theme={theme}
               onRemoveItem={removeSelectedPickerItem}
             />
             <button
-              className={plannerPickerStyles.footerClearButton(theme)}
+              className={plannerPickerStyles.footerClearButton}
               disabled={
                 mainRecipeSelection === null &&
                 mainIngredientSelection === null &&
@@ -573,7 +467,7 @@ function PlannerRecipePickerModal({
           </div>
           <div className={plannerPickerStyles.footerActions}>
             <button
-              className={plannerPickerStyles.mobileCancelButton(theme)}
+              className={plannerPickerStyles.mobileCancelButton}
               disabled={isSaving}
               type="button"
               onClick={onClose}
@@ -581,7 +475,7 @@ function PlannerRecipePickerModal({
               {t.common.cancel}
             </button>
             <button
-              className={plannerPickerStyles.primaryButton(theme)}
+              className={plannerPickerStyles.primaryButton}
               disabled={(mainRecipe === null && mainIngredient === null && entry === undefined) || isSaving}
               type="button"
               onClick={saveMealSlot}
@@ -593,8 +487,7 @@ function PlannerRecipePickerModal({
       }
       footerClassName={plannerPickerStyles.footer}
       headerClassName={plannerPickerStyles.header}
-      panelClassName={plannerPickerStyles.modalPanel(theme)}
-      ref={modalPanelRef}
+      panelClassName={plannerPickerStyles.modalPanel}
       title={t.planner.chooseMainDish}
       titleClassName={plannerPickerStyles.title}
       titleId={titleId}
@@ -603,16 +496,15 @@ function PlannerRecipePickerModal({
         <div className={plannerPickerStyles.controls}>
           <SearchField
             aria-label={browserMode === "recipes" ? t.browser.searchRecipes : t.browser.searchIngredients}
-            inputClassName={plannerPickerStyles.searchInput(theme)}
+            inputClassName={plannerPickerStyles.searchInput}
             placeholder={t.planner.mealPickerSearchPlaceholder}
             ref={searchInputRef}
-            theme={theme}
             value={searchTerm}
             onChange={setSearchTerm}
           />
           <button
             aria-label={t.filters.categories}
-            className={plannerPickerStyles.categoryButton(theme)}
+            className={plannerPickerStyles.categoryButton}
             type="button"
             onClick={() => setIsCategoryFilterOpen(true)}
           >
@@ -624,7 +516,7 @@ function PlannerRecipePickerModal({
           {browserMode === "recipes" && (
             <button
               aria-label={t.browser.openIngredientFilter}
-              className={plannerPickerStyles.filterButton(theme)}
+              className={plannerPickerStyles.filterButton}
               ref={ingredientFilterButtonRef}
               type="button"
               onClick={(event) => {
@@ -642,16 +534,16 @@ function PlannerRecipePickerModal({
               <FilterIcon />
             </button>
           )}
-          <div className={plannerPickerStyles.browserModeSwitch(theme)} role="group" aria-label={t.cookbook.cookbookSections}>
+          <div className={plannerPickerStyles.browserModeSwitch} role="group" aria-label={t.cookbook.cookbookSections}>
             <button
-              className={plannerPickerStyles.browserModeOption(theme, browserMode === "recipes")}
+              className={plannerPickerStyles.browserModeOption(browserMode === "recipes")}
               type="button"
               onClick={() => setBrowserMode("recipes")}
             >
               {t.cookbook.recipes}
             </button>
             <button
-              className={plannerPickerStyles.browserModeOption(theme, browserMode === "ingredients")}
+              className={plannerPickerStyles.browserModeOption(browserMode === "ingredients")}
               type="button"
               onClick={switchToIngredientBrowser}
             >
@@ -663,7 +555,6 @@ function PlannerRecipePickerModal({
             selectedIngredientTags={selectedIngredientTags}
             selectedIngredients={selectedIngredients}
             selectedRecipeTags={selectedMainRecipeTags}
-            theme={theme}
             onClear={() => {
               setSelectedIngredientIds([]);
               setSelectedIngredientTags([]);
@@ -689,7 +580,7 @@ function PlannerRecipePickerModal({
             {browserMode === "recipes"
               ? quickRecipeFilters.map((tag) => (
                   <button
-                    className={plannerPickerStyles.quickFilterChip(theme, selectedMainRecipeTags.includes(tag))}
+                    className={plannerPickerStyles.quickFilterChip(selectedMainRecipeTags.includes(tag))}
                     key={tag}
                     type="button"
                     onClick={() => toggleTagFilter(tag, setSelectedMainRecipeTags)}
@@ -699,7 +590,7 @@ function PlannerRecipePickerModal({
                 ))
               : quickIngredientFilters.map((tag) => (
                   <button
-                    className={plannerPickerStyles.quickFilterChip(theme, selectedIngredientTags.includes(tag))}
+                    className={plannerPickerStyles.quickFilterChip(selectedIngredientTags.includes(tag))}
                     key={tag}
                     type="button"
                     onClick={() => toggleTagFilter(tag, setSelectedIngredientTags)}
@@ -713,10 +604,10 @@ function PlannerRecipePickerModal({
           <Modal
             backdropClassName={recipeBrowserStyles.categoryFilterBackdrop}
             bodyClassName={recipeBrowserStyles.categoryFilterBody}
-            closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+            closeButtonClassName={recipeBrowserStyles.modalCloseButton}
             closeLabel={t.common.close}
             headerClassName={recipeBrowserStyles.categoryFilterHeader}
-            panelClassName={recipeBrowserStyles.categoryFilterPanel(theme)}
+            panelClassName={recipeBrowserStyles.categoryFilterPanel}
             title={t.filters.categories}
             titleClassName={recipeBrowserStyles.modalTitle}
             titleId="planner-category-filter-title"
@@ -731,7 +622,6 @@ function PlannerRecipePickerModal({
             popoverRef={ingredientPickerRef}
             searchTerm={ingredientPickerSearch}
             selectedIngredientIds={selectedIngredientIds}
-            theme={theme}
             x={ingredientPickerPosition.x}
             y={ingredientPickerPosition.y}
             onSearchChange={setIngredientPickerSearch}
@@ -760,7 +650,6 @@ function PlannerRecipePickerModal({
                 ...(mainRecipeSelection === null ? [] : [mainRecipeSelection]),
                 ...supplementaryRecipeSelections,
               ]}
-              theme={theme}
               onSelectIngredient={(ingredient, amount, unit) =>
                 selectOrUpdateMealIngredient(ingredient, amount, unit)
               }
@@ -778,153 +667,10 @@ function PlannerRecipePickerModal({
         </div>
 
         {saveError !== null && (
-          <p className={plannerPickerStyles.statusErrorWithOffset(theme)}>{saveError}</p>
+          <p className={plannerPickerStyles.statusErrorWithOffset()}>{saveError}</p>
         )}
 
     </Modal>
-  );
-}
-
-const focusableSelector = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "[tabindex]:not([tabindex='-1'])",
-].join(",");
-
-function trapFocus(event: KeyboardEvent, container: HTMLElement | null) {
-  if (container === null) {
-    return;
-  }
-
-  const focusableElements = Array.from(
-    container.querySelectorAll<HTMLElement>(focusableSelector),
-  ).filter((element) => element.offsetParent !== null || element === document.activeElement);
-
-  if (focusableElements.length === 0) {
-    event.preventDefault();
-    return;
-  }
-
-  const firstElement = focusableElements[0];
-  const lastElement = focusableElements[focusableElements.length - 1];
-
-  if (event.shiftKey && document.activeElement === firstElement) {
-    event.preventDefault();
-    lastElement.focus();
-    return;
-  }
-
-  if (!event.shiftKey && document.activeElement === lastElement) {
-    event.preventDefault();
-    firstElement.focus();
-  }
-}
-
-function toSelectedRecipeItem(recipe: IRecipe, selection: SelectedPlannerRecipe): PlannerPickerSelectedItem {
-  return {
-    id: recipe.recipeId,
-    imageUrl: recipe.imageUrl,
-    kind: "recipe",
-    name: recipe.name,
-    valueLabel: `${formatNumber(selection.portions)}x`,
-  };
-}
-
-function toSelectedIngredientItem(
-  ingredient: IIngredient,
-  selection: SelectedPlannerIngredient,
-  unitLabels: Record<MeasurementUnit, string>,
-): PlannerPickerSelectedItem {
-  return {
-    id: ingredient.ingredientId,
-    imageUrl: ingredient.imageUrl,
-    kind: "ingredient",
-    name: ingredient.ingredientName,
-    valueLabel: `${formatNumber(selection.amount)} ${unitLabels[selection.unit]}`,
-  };
-}
-
-function formatNumber(value: number) {
-  return Number.isInteger(value) ? value.toString() : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
-}
-
-function recipeByIdFallback(recipes: IRecipe[], recipeId: number | null) {
-  return recipeId === null ? undefined : recipes.find((recipe) => recipe.recipeId === recipeId);
-}
-
-function getInitialRecipeTagFilters(slot: MealSlot): RecipeTag[] {
-  if (slot === "Breakfast") {
-    return ["Breakfast"];
-  }
-
-  if (slot === "Lunch") {
-    return ["Lunch", "Dinner"];
-  }
-
-  return slot === "Dinner" ? ["Dinner"] : [];
-}
-
-function buildSystemTagNameLookup(categories: IIngredientTagCategory[]) {
-  const systemTagNames = new Map<string, string>();
-
-  for (const category of categories) {
-    for (const tag of category.tags) {
-      if (tag.systemKey !== null) {
-        systemTagNames.set(tag.systemKey, tag.name);
-      }
-    }
-  }
-
-  return systemTagNames;
-}
-
-function buildAvailableTagNames(
-  categories: IIngredientTagCategory[],
-  recipes: IRecipe[],
-  ingredients: IIngredient[],
-) {
-  const tagNames = new Set<string>();
-
-  for (const category of categories) {
-    for (const tag of category.tags) {
-      tagNames.add(tag.name);
-    }
-  }
-
-  for (const recipe of recipes) {
-    for (const tag of recipe.tags) {
-      tagNames.add(tag);
-    }
-  }
-
-  for (const ingredient of ingredients) {
-    for (const tag of ingredient.tags) {
-      tagNames.add(tag);
-    }
-  }
-
-  return tagNames;
-}
-
-function findAvailableTagName(tagNames: ReadonlySet<string>, candidates: string[]) {
-  return candidates.find((candidate) => tagNames.has(candidate));
-}
-
-function uniqueValues<TValue>(values: Array<TValue | undefined>) {
-  return Array.from(new Set(values.filter((value): value is TValue => value !== undefined)));
-}
-
-function toggleTagFilter<TTag extends string>(
-  tag: TTag,
-  setTags: Dispatch<SetStateAction<TTag[]>>,
-) {
-  setTags((currentTags) =>
-    currentTags.includes(tag)
-      ? currentTags.filter((currentTag) => currentTag !== tag)
-      : [...currentTags, tag],
   );
 }
 

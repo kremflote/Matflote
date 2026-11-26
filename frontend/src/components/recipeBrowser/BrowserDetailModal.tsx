@@ -1,32 +1,44 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import ConfirmationDialog from "../ConfirmationDialog";
-import { useIngredients, useLanguage, useRecipes } from "../../contexts";
-import { ingredientService, recipeService } from "../../services";
-import type { SiteTheme } from "../../styles/appStyles";
+import { useIngredientTagCategories, useIngredients, useLanguage, useMealPlan, useRecipes } from "../../contexts";
+import type { IIngredient, IIngredientInUse } from "../../interfaces/IIngredient";
+import type { IRecipe } from "../../interfaces/IRecipe";
+import { getIngredientInUse, ingredientService, recipeService } from "../../services";
 import Modal from "../Modal";
 import IngredientCreateForm from "./IngredientCreateForm";
 import IngredientDetailContent from "./IngredientDetailContent";
+import IngredientInUseDialog from "./IngredientInUseDialog";
 import RecipeCreateForm from "./RecipeCreateForm";
 import RecipeDetailContent from "./RecipeDetailContent";
-import { recipeTags } from "./formOptions";
+import { getAllCategoryTagNames, getRecipeVisibleTagCategories } from "../../utils/tagCatalog";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
-import type { BrowserDetail } from "./types";
+import { toBrowserDetailKey, type BrowserDetail, type BrowserDetailKey } from "./types";
 
 type BrowserDetailModalProps = {
-  detail: BrowserDetail;
-  theme: SiteTheme;
+  /**
+   * What to show, by id; the current recipe or ingredient is looked up in the lists, so a refresh
+   * keeps an open edit form. Give the modal a `key` from this so opening another one starts afresh.
+   */
+  detail: BrowserDetailKey;
   onClose: () => void;
 };
 
-function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps) {
+function BrowserDetailModal({ detail, onClose }: BrowserDetailModalProps) {
   const { language, t } = useLanguage();
   const editRecipeImageInputId = useId();
   const editTitleId = useId();
   const detailTitleId = useId();
   const { recipes, refreshRecipes } = useRecipes();
-  const { refreshIngredients } = useIngredients();
-  const [activeDetail, setActiveDetail] = useState(detail);
-  const [detailHistory, setDetailHistory] = useState<BrowserDetail[]>([]);
+  const { ingredients, refreshIngredients } = useIngredients();
+  const { refreshMealPlan } = useMealPlan();
+  const { ingredientTagCategories } = useIngredientTagCategories();
+  // The header shows a recipe's tags from the categories used for recipes, custom ones included (F15).
+  const recipeTagNames = useMemo(
+    () => new Set(getAllCategoryTagNames(getRecipeVisibleTagCategories(ingredientTagCategories))),
+    [ingredientTagCategories],
+  );
+  const [activeKey, setActiveKey] = useState(detail);
+  const [detailHistory, setDetailHistory] = useState<BrowserDetailKey[]>([]);
   const [isEditingRecipe, setIsEditingRecipe] = useState(false);
   const [isEditingIngredient, setIsEditingIngredient] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -34,42 +46,20 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-
-  useEffect(() => {
-    setActiveDetail(detail);
-    setDetailHistory([]);
-    setIsEditingRecipe(false);
-    setIsEditingIngredient(false);
-    setDeleteError(null);
-    setPdfError(null);
-    setIsExportingPdf(false);
-    setIsConfirmingDelete(false);
-  }, [detail]);
-
-  useEffect(() => {
-    if (isConfirmingDelete) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isConfirmingDelete, onClose]);
+  const [ingredientInUse, setIngredientInUse] = useState<IIngredientInUse | null>(null);
+  const activeDetail = useMemo(
+    () => resolveDetail(activeKey, recipes, ingredients),
+    [activeKey, ingredients, recipes],
+  );
 
   const navigateToDetail = (nextDetail: BrowserDetail) => {
-    if (isSameDetail(activeDetail, nextDetail)) {
+    const nextKey = toBrowserDetailKey(nextDetail);
+    if (isSameDetail(activeKey, nextKey)) {
       return;
     }
 
-    setDetailHistory((currentHistory) => [...currentHistory, activeDetail]);
-    setActiveDetail(nextDetail);
+    setDetailHistory((currentHistory) => [...currentHistory, activeKey]);
+    setActiveKey(nextKey);
     setIsEditingRecipe(false);
     setIsEditingIngredient(false);
     setDeleteError(null);
@@ -85,7 +75,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
         return currentHistory;
       }
 
-      setActiveDetail(previousDetail);
+      setActiveKey(previousDetail);
       setIsEditingRecipe(false);
       setIsEditingIngredient(false);
       setDeleteError(null);
@@ -94,6 +84,11 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
       return currentHistory.slice(0, -1);
     });
   };
+
+  // Removed elsewhere, or not loaded: there is nothing to show.
+  if (activeDetail === null) {
+    return null;
+  }
 
   const handleExportPdf = async () => {
     if (activeDetail.kind !== "recipe" || isExportingPdf) {
@@ -113,8 +108,6 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
   };
 
   const handleRemove = async () => {
-    const itemLabel = activeDetail.kind === "recipe" ? "recipe" : "ingredient";
-
     setIsDeleting(true);
     setDeleteError(null);
 
@@ -130,7 +123,13 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
 
       onClose();
     } catch (caughtError) {
-      setDeleteError(caughtError instanceof Error ? caughtError.message : `Could not remove ${itemLabel}.`);
+      const uses = getIngredientInUse(caughtError);
+      if (uses !== null) {
+        setIngredientInUse(uses);
+        return;
+      }
+
+      setDeleteError(caughtError instanceof Error ? caughtError.message : activeDetail.kind === "recipe" ? t.cookbook.couldNotRemoveRecipe : t.cookbook.couldNotRemoveIngredient);
     } finally {
       setIsDeleting(false);
       setIsConfirmingDelete(false);
@@ -141,10 +140,10 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
     return (
       <Modal
         backdropClassName={recipeBrowserStyles.modalBackdrop}
-        closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+        closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
         closeLabel={t.common.close}
         headerClassName={recipeBrowserStyles.modalHeader}
-        panelClassName={recipeBrowserStyles.modalPanel(theme)}
+        panelClassName={recipeBrowserStyles.modalPanel}
         title={`${t.common.edit} ${activeDetail.recipe.name}`}
         titleClassName={recipeBrowserStyles.modalTitle}
         titleId={editTitleId}
@@ -154,7 +153,6 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
           imageInputId={editRecipeImageInputId}
           initialRecipe={activeDetail.recipe}
           showRecipeDetails
-          theme={theme}
           onCancel={() => setIsEditingRecipe(false)}
           onCreated={onClose}
         />
@@ -166,10 +164,10 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
     return (
       <Modal
         backdropClassName={recipeBrowserStyles.modalBackdrop}
-        closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+        closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
         closeLabel={t.common.close}
         headerClassName={recipeBrowserStyles.modalHeader}
-        panelClassName={recipeBrowserStyles.modalPanel(theme)}
+        panelClassName={recipeBrowserStyles.modalPanel}
         title={`${t.common.edit} ${activeDetail.ingredient.ingredientName}`}
         titleClassName={recipeBrowserStyles.modalTitle}
         titleId={editTitleId}
@@ -177,7 +175,6 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
       >
         <IngredientCreateForm
           initialIngredient={activeDetail.ingredient}
-          theme={theme}
           onCancel={() => setIsEditingIngredient(false)}
           onCreated={onClose}
         />
@@ -191,9 +188,9 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
         <span>{activeDetail.recipe.name}</span>
         <span className={recipeBrowserStyles.detailHeaderTagList}>
           {activeDetail.recipe.tags
-            .filter((tag) => recipeTags.includes(tag))
+            .filter((tag) => recipeTagNames.size === 0 || recipeTagNames.has(tag))
             .map((tag) => (
-              <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
+              <span className={recipeBrowserStyles.filterChip} key={tag}>
                 {t.enums.recipeTags[tag] ?? tag}
               </span>
             ))}
@@ -204,7 +201,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
         <span>{activeDetail.ingredient.ingredientName}</span>
         <span className={recipeBrowserStyles.detailHeaderTagList}>
           {activeDetail.ingredient.tags.map((tag) => (
-            <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
+            <span className={recipeBrowserStyles.filterChip} key={tag}>
               {t.enums.ingredientTags[tag] ?? tag}
             </span>
           ))}
@@ -214,15 +211,15 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
 
   return (
     <Modal
-      backdropClassName={recipeBrowserStyles.modalBackdrop}
+      backdropClassName={recipeBrowserStyles.detailModalBackdrop}
       bodyClassName={recipeBrowserStyles.detailBodyScrollArea}
-      closeButtonClassName={recipeBrowserStyles.detailCloseButton(theme)}
+      closeButtonClassName={recipeBrowserStyles.detailCloseButton()}
       closeLabel={t.common.close}
       footer={
         <>
           {detailHistory.length > 0 && (
             <button
-              className={recipeBrowserStyles.detailHeaderBackButton(theme)}
+              className={recipeBrowserStyles.detailHeaderBackButton()}
               disabled={isDeleting}
               type="button"
               onClick={navigateBack}
@@ -232,7 +229,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
           )}
           {activeDetail.kind === "recipe" && (
             <button
-              className={recipeBrowserStyles.detailHeaderEditButton(theme)}
+              className={recipeBrowserStyles.detailHeaderEditButton()}
               disabled={isExportingPdf || isDeleting}
               type="button"
               onClick={() => void handleExportPdf()}
@@ -241,7 +238,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
             </button>
           )}
           <button
-            className={recipeBrowserStyles.detailHeaderEditButton(theme)}
+            className={recipeBrowserStyles.detailHeaderEditButton()}
             type="button"
             onClick={() => {
               if (activeDetail.kind === "recipe") {
@@ -254,7 +251,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
             {t.common.edit}
           </button>
           <button
-            className={recipeBrowserStyles.detailHeaderRemoveButton(theme)}
+            className={recipeBrowserStyles.detailHeaderRemoveButton()}
             disabled={isDeleting}
             type="button"
             onClick={() => setIsConfirmingDelete(true)}
@@ -265,20 +262,19 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
       }
       footerClassName={recipeBrowserStyles.detailHeaderActionRow}
       headerClassName={recipeBrowserStyles.detailFrameHeader}
-      panelClassName={recipeBrowserStyles.detailModalPanel(theme)}
+      panelClassName={recipeBrowserStyles.detailModalPanel}
       title={detailTitle}
       titleClassName={recipeBrowserStyles.detailHeaderTitle}
       titleId={detailTitleId}
       onClose={onClose}
     >
-          {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{deleteError}</p>}
-          {pdfError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{pdfError}</p>}
+          {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset()}>{deleteError}</p>}
+          {pdfError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset()}>{pdfError}</p>}
 
           {activeDetail.kind === "recipe" ? (
             <RecipeDetailContent
               allRecipes={recipes}
               recipe={activeDetail.recipe}
-              theme={theme}
               onIngredientClick={(ingredient) => navigateToDetail({ kind: "ingredient", ingredient })}
               onRecipeClick={(recipeId) => {
                 const recipe = recipes.find((currentRecipe) => currentRecipe.recipeId === recipeId);
@@ -288,29 +284,50 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
               }}
             />
           ) : (
-            <IngredientDetailContent ingredient={activeDetail.ingredient} theme={theme} />
+            <IngredientDetailContent ingredient={activeDetail.ingredient} />
           )}
         {isConfirmingDelete && (
           <ConfirmationDialog
-            body={`This will delete ${activeDetail.kind === "recipe" ? "the recipe" : "the ingredient"}.`}
+            body={activeDetail.kind === "recipe" ? t.cookbook.removeRecipeBody : t.cookbook.removeIngredientBody}
             confirmLabel={t.common.remove}
             isBusy={isDeleting}
-            theme={theme}
-            title={`Remove ${getDetailName(activeDetail)}?`}
+            title={t.common.removeNamed(getDetailName(activeDetail))}
             onCancel={() => setIsConfirmingDelete(false)}
             onConfirm={() => void handleRemove()}
+          />
+        )}
+        {ingredientInUse !== null && activeDetail.kind === "ingredient" && (
+          <IngredientInUseDialog
+            ingredient={activeDetail.ingredient}
+            ingredients={ingredients}
+            uses={ingredientInUse}
+            onCancel={() => setIngredientInUse(null)}
+            onReplaced={async () => {
+              await Promise.all([refreshIngredients(), refreshRecipes(), refreshMealPlan()]);
+              onClose();
+            }}
           />
         )}
     </Modal>
   );
 }
 
-function isSameDetail(first: BrowserDetail, second: BrowserDetail) {
-  if (first.kind === "recipe") {
-    return second.kind === "recipe" && first.recipe.recipeId === second.recipe.recipeId;
+function isSameDetail(first: BrowserDetailKey, second: BrowserDetailKey) {
+  return first.kind === second.kind && first.id === second.id;
+}
+
+function resolveDetail(
+  key: BrowserDetailKey,
+  recipes: IRecipe[],
+  ingredients: IIngredient[],
+): BrowserDetail | null {
+  if (key.kind === "recipe") {
+    const recipe = recipes.find((item) => item.recipeId === key.id);
+    return recipe === undefined ? null : { kind: "recipe", recipe };
   }
 
-  return second.kind === "ingredient" && first.ingredient.ingredientId === second.ingredient.ingredientId;
+  const ingredient = ingredients.find((item) => item.ingredientId === key.id);
+  return ingredient === undefined ? null : { kind: "ingredient", ingredient };
 }
 
 function getDetailName(detail: BrowserDetail) {

@@ -1,20 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "../../contexts";
 import { getApiAssetUrl } from "../../services/apiClient";
-import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type ImageCropPickerProps = {
   inputId: string;
   initialImageUrl?: string | null;
-  theme: SiteTheme;
   onCroppedFileChange: (file: File | null) => void;
 };
 
 const cropOutputSize = 800;
 const placeholderImageUrl = getApiAssetUrl("/images/placeholders/recipe-photo-placeholder.png");
 
-function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFileChange }: ImageCropPickerProps) {
+function ImageCropPicker({ inputId, initialImageUrl = null, onCroppedFileChange }: ImageCropPickerProps) {
   const { t } = useLanguage();
   const cameraInputId = `${inputId}-camera`;
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -26,21 +24,8 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
   const [cropConfirmed, setCropConfirmed] = useState(false);
   const currentImageUrl = getApiAssetUrl(initialImageUrl);
 
-  useEffect(() => {
-    if (sourceFile === null) {
-      setImageUrl(null);
-      setPreviewUrl(null);
-      onCroppedFileChange(null);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(sourceFile);
-    setImageUrl(objectUrl);
-    setPreviewUrl(null);
-    onCroppedFileChange(null);
-
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [sourceFile, onCroppedFileChange]);
+  // The object URL of the chosen file lives until another file is chosen or the picker closes.
+  useEffect(() => (imageUrl === null ? undefined : () => URL.revokeObjectURL(imageUrl)), [imageUrl]);
 
   useEffect(() => {
     if (imageUrl === null || sourceFile === null) {
@@ -104,6 +89,9 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
   const hasImage = useMemo(() => sourceFile !== null && previewUrl !== null, [previewUrl, sourceFile]);
   const handleImageSelected = (file: File | null) => {
     setSourceFile(file);
+    setImageUrl(file === null ? null : URL.createObjectURL(file));
+    setPreviewUrl(null);
+    onCroppedFileChange(null);
     setZoom(1);
     setOffsetX(0);
     setOffsetY(0);
@@ -128,7 +116,7 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
         onChange={(event) => handleImageSelected(event.target.files?.[0] ?? null)}
       />
 
-      <div className={recipeBrowserStyles.cropPreview(theme)}>
+      <div className={recipeBrowserStyles.cropPreview}>
         {previewUrl ? (
           <img className={recipeBrowserStyles.cropImage} src={previewUrl} alt={t.cookbook.imagePreview} />
         ) : currentImageUrl ? (
@@ -149,12 +137,12 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
           </div>
         )}
         <div className={recipeBrowserStyles.imageUploadActionStack}>
-          <label className={recipeBrowserStyles.imageUploadFloatingButton(theme)} htmlFor={inputId}>
+          <label className={recipeBrowserStyles.imageUploadFloatingButton} htmlFor={inputId}>
             <ImageUploadIcon />
             <span className={recipeBrowserStyles.desktopUploadLabel}>{t.cookbook.chooseFile}</span>
             <span className={recipeBrowserStyles.mobileUploadLabel}>{t.cookbook.choosePhoto}</span>
           </label>
-          <label className={recipeBrowserStyles.imageCaptureButton(theme)} htmlFor={cameraInputId}>
+          <label className={recipeBrowserStyles.imageCaptureButton} htmlFor={cameraInputId}>
             <CameraIcon />
             {t.cookbook.takePhoto}
           </label>
@@ -167,7 +155,7 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
           <SliderField label={t.cookbook.horizontalCrop} max={100} min={-100} step={1} value={offsetX} onChange={setOffsetX} />
           <SliderField label={t.cookbook.verticalCrop} max={100} min={-100} step={1} value={offsetY} onChange={setOffsetY} />
           <button
-            className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.cropConfirmButton}`}
+            className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.cropConfirmButton}`}
             type="button"
             onClick={() => setCropConfirmed(true)}
           >

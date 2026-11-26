@@ -1,8 +1,6 @@
-// MATFLOTE: API controller for IngredientTagCategories-related frontend and integration requests.
-// Note: Controllers stay thin where possible and delegate heavier business rules to services or EF model helpers.
-
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
+using DinnerPlanner.Api.Filters;
 using DinnerPlanner.Api.Models;
 using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +13,7 @@ namespace DinnerPlanner.Api.Controllers;
 public class IngredientTagCategoriesController(DinnerPlannerContext context, TagCatalogService tagCatalog) : ControllerBase
 {
     [HttpGet]
+    [CatalogETag(CatalogGroup.Tags)]
     public async Task<ActionResult<IEnumerable<IngredientTagCategoryDto>>> GetCategories()
     {
         var categories = await context.IngredientTagCategories
@@ -24,7 +23,7 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
             .ThenBy(category => category.Name)
             .ToListAsync();
 
-        return Ok(categories.Select(ToDto).ToList());
+        return Ok(categories.Select(CatalogMapping.ToDto).ToList());
     }
 
     [HttpPost]
@@ -37,7 +36,7 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
 
         if (existingCategory is not null)
         {
-            return Ok(ToDto(existingCategory));
+            return Ok(CatalogMapping.ToDto(existingCategory));
         }
 
         var possibleDuplicate = LookupDuplicateDetector.FindNearDuplicate(
@@ -63,7 +62,7 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         context.IngredientTagCategories.Add(category);
         await context.SaveChangesAsync();
 
-        return Ok(ToDto(category));
+        return Ok(CatalogMapping.ToDto(category));
     }
 
     [HttpPost("{categoryId:int}/tags")]
@@ -95,7 +94,7 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
             await context.SaveChangesAsync();
         }
 
-        return Ok(ToDto(category));
+        return Ok(CatalogMapping.ToDto(category));
     }
 
     [HttpPost("{id:int}/move")]
@@ -116,14 +115,14 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         var targetIndex = request.Direction == "Up" ? index - 1 : index + 1;
         if (targetIndex < 0 || targetIndex >= categories.Count)
         {
-            return Ok(categories.Select(ToDto).ToList());
+            return Ok(categories.Select(CatalogMapping.ToDto).ToList());
         }
 
         (categories[index], categories[targetIndex]) = (categories[targetIndex], categories[index]);
         ApplySortOrder(categories);
         await context.SaveChangesAsync();
 
-        return Ok(categories.Select(ToDto).ToList());
+        return Ok(categories.Select(CatalogMapping.ToDto).ToList());
     }
 
     [HttpPost("tags/{tagId:int}/move")]
@@ -157,14 +156,14 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         var targetIndex = request.Direction == "Up" ? index - 1 : index + 1;
         if (targetIndex < 0 || targetIndex >= tags.Count)
         {
-            return Ok(ToDto(category));
+            return Ok(CatalogMapping.ToDto(category));
         }
 
         (tags[index], tags[targetIndex]) = (tags[targetIndex], tags[index]);
         ApplySortOrder(tags);
         await context.SaveChangesAsync();
 
-        return Ok(ToDto(category));
+        return Ok(CatalogMapping.ToDto(category));
     }
 
     [HttpPut("{id:int}")]
@@ -194,7 +193,7 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         category.ShowForRecipes = request.ShowForRecipes ?? category.ShowForRecipes;
         await context.SaveChangesAsync();
 
-        return Ok(ToDto(category));
+        return Ok(CatalogMapping.ToDto(category));
     }
 
     [HttpPut("tags/{tagName}")]
@@ -270,25 +269,6 @@ public class IngredientTagCategoriesController(DinnerPlannerContext context, Tag
         await context.SaveChangesAsync();
         return NoContent();
     }
-
-    private static IngredientTagCategoryDto ToDto(IngredientTagCategory category) => new(
-        category.IngredientTagCategoryId,
-        category.Name,
-        category.SortOrder,
-        category.ShowForIngredients,
-        category.ShowForRecipes,
-        category.Tags
-            .OrderBy(tag => tag.SortOrder)
-            .ThenBy(tag => tag.Name)
-            .Select(tag => new IngredientTagDto(
-                tag.IngredientTagDefinitionId,
-                tag.Name,
-                tag.SortOrder,
-                tag.IsSystemTag,
-                tag.SystemKey
-            ))
-            .ToList()
-    );
 
     private static void ApplySortOrder(IReadOnlyList<IngredientTagCategory> categories)
     {

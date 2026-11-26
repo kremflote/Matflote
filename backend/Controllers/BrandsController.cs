@@ -1,8 +1,6 @@
-// MATFLOTE: API controller for Brands-related frontend and integration requests.
-// Note: Controllers stay thin where possible and delegate heavier business rules to services or EF model helpers.
-
 using DinnerPlanner.Api.Contexts;
 using DinnerPlanner.Api.Dtos;
+using DinnerPlanner.Api.Filters;
 using DinnerPlanner.Api.Models;
 using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +13,7 @@ namespace DinnerPlanner.Api.Controllers;
 public class BrandsController(DinnerPlannerContext context) : ControllerBase
 {
     [HttpGet]
+    [CatalogETag(CatalogGroup.Brands)]
     public async Task<ActionResult<IEnumerable<BrandDto>>> GetBrands()
     {
         var brands = await context.Brands
@@ -22,7 +21,7 @@ public class BrandsController(DinnerPlannerContext context) : ControllerBase
             .OrderBy(brand => brand.Name)
             .ToListAsync();
 
-        return Ok(brands.Select(ToDto));
+        return Ok(brands.Select(CatalogMapping.ToDto));
     }
 
     [HttpPost]
@@ -42,14 +41,14 @@ public class BrandsController(DinnerPlannerContext context) : ControllerBase
 
         if (existingBrand is not null)
         {
-            return Ok(ToDto(existingBrand));
+            return Ok(CatalogMapping.ToDto(existingBrand));
         }
 
         var brand = new Brand { Name = name };
         context.Brands.Add(brand);
         await context.SaveChangesAsync();
 
-        return Ok(ToDto(brand));
+        return Ok(CatalogMapping.ToDto(brand));
     }
 
     [HttpDelete("{id:int}")]
@@ -65,6 +64,4 @@ public class BrandsController(DinnerPlannerContext context) : ControllerBase
         await context.SaveChangesAsync();
         return NoContent();
     }
-
-    private static BrandDto ToDto(Brand brand) => new(brand.BrandId, brand.Name);
 }

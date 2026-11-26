@@ -1,6 +1,5 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { useLanguage } from "../../contexts";
-import type { SiteTheme } from "../../styles/appStyles";
 import Modal from "../Modal";
 import SuccessToast from "../SuccessToast";
 import IngredientCreateForm from "./IngredientCreateForm";
@@ -10,10 +9,9 @@ import type { BrowserAddTarget } from "./types";
 
 type AddButtonProps = {
   target: BrowserAddTarget;
-  theme: SiteTheme;
 };
 
-function AddButton({ target, theme }: AddButtonProps) {
+function AddButton({ target }: AddButtonProps) {
   const { t } = useLanguage();
   const recipeImageInputId = useId();
   const modalTitleId = useId();
@@ -36,28 +34,11 @@ function AddButton({ target, theme }: AddButtonProps) {
     }
   };
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        closeModal();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
-
   return (
     <>
       <button
         aria-label={t.common.add}
-        className={recipeBrowserStyles.addButton(theme)}
+        className={recipeBrowserStyles.addButton}
         type="button"
         onClick={openModal}
       >
@@ -67,26 +48,26 @@ function AddButton({ target, theme }: AddButtonProps) {
       {isOpen && (
         <Modal
           backdropClassName={recipeBrowserStyles.modalBackdrop}
-          closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+          closeButtonClassName={recipeBrowserStyles.modalCloseButton}
           closeLabel={t.common.close}
           headerClassName={recipeBrowserStyles.modalHeaderIntro}
-          panelClassName={recipeBrowserStyles.modalPanel(theme)}
+          panelClassName={recipeBrowserStyles.modalPanel}
           title={t.cookbook.create}
           titleClassName={recipeBrowserStyles.modalTitle}
           titleId={modalTitleId}
           onClose={closeModal}
         >
             <div className={recipeBrowserStyles.modalControlsRow}>
-              <div className={recipeBrowserStyles.modalModeSwitch(theme)} aria-label={t.cookbook.create}>
+              <div className={recipeBrowserStyles.modalModeSwitch} aria-label={t.cookbook.create}>
                 <button
-                  className={recipeBrowserStyles.modalModeOption(theme, activeTarget === "recipe")}
+                  className={recipeBrowserStyles.modalModeOption(activeTarget === "recipe")}
                   type="button"
                   onClick={() => setActiveTarget("recipe")}
                 >
                   {t.cookbook.recipeSingular}
                 </button>
                 <button
-                  className={recipeBrowserStyles.modalModeOption(theme, activeTarget === "ingredient")}
+                  className={recipeBrowserStyles.modalModeOption(activeTarget === "ingredient")}
                   type="button"
                   onClick={() => setActiveTarget("ingredient")}
                 >
@@ -100,13 +81,12 @@ function AddButton({ target, theme }: AddButtonProps) {
               <RecipeCreateForm
                 imageInputId={recipeImageInputId}
                 showRecipeDetails={showRecipeDetails}
-                theme={theme}
                 onToggleRecipeDetails={() => setShowRecipeDetails((currentValue) => !currentValue)}
                 onCancel={closeModal}
                 onCreated={closeModal}
               />
             ) : (
-              <IngredientCreateForm theme={theme} onCancel={closeModal} onCreated={closeIngredientModal} />
+              <IngredientCreateForm onCancel={closeModal} onCreated={closeIngredientModal} />
             )}
         </Modal>
       )}
@@ -114,7 +94,6 @@ function AddButton({ target, theme }: AddButtonProps) {
         <SuccessToast
           closeLabel={t.common.close}
           message={successMessage}
-          theme={theme}
           onClose={() => setSuccessMessage(null)}
         />
       )}

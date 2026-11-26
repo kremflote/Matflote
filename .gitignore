@@ -215,3 +215,6 @@ nCrunchTemp_*
 scripts/
 
 master-document.txt
+
+# Pre-migration database copies
+*.bak

@@ -19,6 +19,22 @@ export interface MealPlanEntryRequest {
   recipes: MealPlanRecipeRequest[];
 }
 
+export interface MealPlanBatchRequest {
+  /** Entries to write by date and slot; an entry without recipes empties its slot. */
+  upsert?: MealPlanEntryRequest[];
+  /** Entry ids to delete. */
+  delete?: number[];
+  /** Everything in this range is removed, except the slots in `upsert`. */
+  clearRange?: { from: string; to: string };
+}
+
+export interface MealPlanBatchResult {
+  from: string;
+  to: string;
+  /** Every entry in from..to after the batch was applied. */
+  entries: IMealPlanEntry[];
+}
+
 export const mealPlanService = {
   getRange: (from: string, to: string) => {
     const query = new URLSearchParams({ from, to });
@@ -31,12 +47,18 @@ export const mealPlanService = {
       body: entry,
     }),
   update: (id: number, entry: MealPlanEntryRequest) =>
-    apiRequest<void>(`/api/mealplans/${id}`, {
+    apiRequest<IMealPlanEntry>(`/api/mealplans/${id}`, {
       method: "PUT",
       body: entry,
     }),
   delete: (id: number) =>
     apiRequest<void>(`/api/mealplans/${id}`, {
       method: "DELETE",
+    }),
+  /** Applies several changes in one transaction: all of them or, on any error, none. */
+  batch: (request: MealPlanBatchRequest) =>
+    apiRequest<MealPlanBatchResult>("/api/mealplans/batch", {
+      method: "PUT",
+      body: request,
     }),
 };

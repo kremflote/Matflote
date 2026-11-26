@@ -1,6 +1,7 @@
 import type { IngredientTag, MeasurementUnit } from "../interfaces/IIngredient";
 import type { IMealPlanEntry } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
+import { getSystemTagName, systemTagKeys } from "./tagCatalog";
 
 export type PrepHelperItem = {
   ingredientId: number;
@@ -35,7 +36,11 @@ type PrepIngredientRow = {
   sourceRecipe: string;
 };
 
-const prepIngredientTags: IngredientTag[] = ["Vegetable", "Fruit", "Herb", "LeafyGreen"];
+/** The tags (by current name) of ingredients that get prepared ahead: vegetables, fruit, herbs and leafy greens. */
+export function getPrepIngredientTagNames(systemTagNames: ReadonlyMap<string, string>): IngredientTag[] {
+  return [systemTagKeys.vegetable, systemTagKeys.fruit, systemTagKeys.herb, systemTagKeys.leafyGreen]
+    .map((key) => getSystemTagName(systemTagNames, key));
+}
 
 const prepActionPatterns: Array<{
   key: PrepActionKey;
@@ -63,6 +68,7 @@ export function buildPrepHelperItems(
   to: string,
   preparationLabels: Record<IRecipe["ingredients"][number]["preparation"], string>,
   actionLabels: Record<string, string>,
+  prepTagNames: readonly IngredientTag[] = getPrepIngredientTagNames(new Map()),
 ): PrepHelperItem[] {
   const prepRows = mealPlanEntries
     .filter((entry) => entry.date >= from && entry.date <= to)
@@ -89,6 +95,7 @@ export function buildPrepHelperItems(
           actionLabels,
           new Set<number>(),
           portionFactor,
+          prepTagNames,
         );
       }),
     );
@@ -143,6 +150,7 @@ function buildRecipePrepRows(
   actionLabels: Record<string, string>,
   visitedRecipeIds: Set<number>,
   portionFactor: number,
+  prepTagNames: readonly IngredientTag[],
 ): PrepIngredientRow[] {
   if (visitedRecipeIds.has(recipe.recipeId)) {
     return [];
@@ -151,7 +159,7 @@ function buildRecipePrepRows(
   visitedRecipeIds.add(recipe.recipeId);
 
   const directRows = recipe.ingredients
-    .filter((recipeIngredient) => shouldPrepIngredient(recipeIngredient.ingredient.tags))
+    .filter((recipeIngredient) => recipeIngredient.ingredient.tags.some((tag) => prepTagNames.includes(tag)))
     .map((recipeIngredient): PrepIngredientRow => ({
       ingredientId: recipeIngredient.ingredient.ingredientId,
       ingredientName: recipeIngredient.ingredient.ingredientName,
@@ -179,6 +187,7 @@ function buildRecipePrepRows(
       actionLabels,
       visitedRecipeIds,
       portionFactor * getComponentScale(component.amount, component.unit, componentRecipe),
+      prepTagNames,
     );
   });
 
@@ -245,10 +254,6 @@ function getMeasurementFamily(unit: MeasurementUnit) {
   }
 
   return null;
-}
-
-function shouldPrepIngredient(tags: IngredientTag[]) {
-  return prepIngredientTags.some((tag) => tags.includes(tag));
 }
 
 function inferPrepActions(instructions: string | null, ingredientName: string): PrepActionKey[] {

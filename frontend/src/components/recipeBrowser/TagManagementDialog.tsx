@@ -1,6 +1,5 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { useLanguage } from "../../contexts";
-import type { SiteTheme } from "../../styles/appStyles";
 import ConfirmationDialog from "../ConfirmationDialog";
 import Modal from "../Modal";
 import type { CreatableOption } from "./CreatableSelect";
@@ -27,7 +26,6 @@ type TagManagementDialogProps = {
   existingTags: readonly string[];
   formatCategoryName: (name: string) => string;
   initialMode: TagManagementMode;
-  theme: SiteTheme;
   onCancel: () => void;
   onCreate: (tag: string, categoryId: number) => Promise<void>;
   onCreateCategory: (name: string, mode: TagManagementMode) => Promise<CreatableOption>;
@@ -47,7 +45,6 @@ function TagManagementDialog({
   existingTags,
   formatCategoryName,
   initialMode,
-  theme,
   onCancel,
   onCreate,
   onCreateCategory,
@@ -61,7 +58,7 @@ function TagManagementDialog({
   const { t } = useLanguage();
   const titleId = useId();
   const nameDialogTitleId = useId();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(categories[0]?.id ?? null);
+  const [chosenCategoryId, setSelectedCategoryId] = useState<number | null>(categories[0]?.id ?? null);
   const [nameDialogMode, setNameDialogMode] = useState<NameDialogMode | null>(null);
   const [newName, setNewName] = useState("");
   const [nameDialogError, setNameDialogError] = useState<string | null>(null);
@@ -76,19 +73,11 @@ function TagManagementDialog({
   const visibleCategories = categories.filter((category) =>
     activeMode === "ingredients" ? category.showForIngredients !== false : category.showForRecipes !== false,
   );
-  const selectedCategory = visibleCategories.find((category) => category.id === selectedCategoryId) ?? null;
+  // The chosen category, or the first visible one when the chosen one is hidden or gone.
+  const selectedCategory =
+    visibleCategories.find((category) => category.id === chosenCategoryId) ?? visibleCategories[0] ?? null;
+  const selectedCategoryId = selectedCategory?.id ?? null;
   const canCreateTagInSelectedCategory = selectedCategory !== null && selectedCategory.id > 0;
-
-  useEffect(() => {
-    if (visibleCategories.length === 0) {
-      setSelectedCategoryId(null);
-      return;
-    }
-
-    if (!visibleCategories.some((category) => category.id === selectedCategoryId)) {
-      setSelectedCategoryId(visibleCategories[0].id);
-    }
-  }, [selectedCategoryId, visibleCategories]);
 
   async function saveNewName() {
     const normalizedName = normalizeCustomTagName(newName);
@@ -236,11 +225,11 @@ function TagManagementDialog({
     <Modal
       backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
       bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-      closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+      closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
       closeLabel={t.common.close}
       footer={
         <button
-          className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+          className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`}
           type="button"
           onClick={() => openNameDialog("category")}
         >
@@ -249,17 +238,17 @@ function TagManagementDialog({
       }
       footerClassName={recipeBrowserStyles.formActions}
       headerClassName={recipeBrowserStyles.modalHeader}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
       title={t.common.manageTags}
       titleClassName={recipeBrowserStyles.modalTitle}
       titleId={titleId}
       onClose={onCancel}
     >
       <div className={recipeBrowserStyles.manageTagModeRow}>
-        <div className={recipeBrowserStyles.manageTagVisibilityGroup(theme)}>
+        <div className={recipeBrowserStyles.manageTagVisibilityGroup}>
           <button
             aria-pressed={activeMode === "recipes"}
-            className={recipeBrowserStyles.manageTagVisibilityButton(theme, activeMode === "recipes")}
+            className={recipeBrowserStyles.manageTagVisibilityButton(activeMode === "recipes")}
             type="button"
             onClick={() => setActiveMode("recipes")}
           >
@@ -267,7 +256,7 @@ function TagManagementDialog({
           </button>
           <button
             aria-pressed={activeMode === "ingredients"}
-            className={recipeBrowserStyles.manageTagVisibilityButton(theme, activeMode === "ingredients")}
+            className={recipeBrowserStyles.manageTagVisibilityButton(activeMode === "ingredients")}
             type="button"
             onClick={() => setActiveMode("ingredients")}
           >
@@ -286,7 +275,7 @@ function TagManagementDialog({
             <div className={recipeBrowserStyles.manageTagCategoryShell} key={category.id}>
               <div className={recipeBrowserStyles.manageTagCategoryControlsRail}>
                 <button
-                  className={recipeBrowserStyles.manageTagCollapseButton(theme)}
+                  className={recipeBrowserStyles.manageTagCollapseButton}
                   type="button"
                   aria-expanded={!isCollapsed}
                   aria-label={isCollapsed ? t.common.expand : t.common.collapse}
@@ -301,14 +290,14 @@ function TagManagementDialog({
                 </button>
               </div>
               <section
-                className={recipeBrowserStyles.manageTagCategory(theme, isSelected)}
+                className={recipeBrowserStyles.manageTagCategory(isSelected)}
                 onClick={() => setSelectedCategoryId(category.id)}
               >
-              <div className={`${recipeBrowserStyles.manageTagCategoryRow(isCollapsed)} ${recipeBrowserStyles.manageTagDivider(theme, "category")}`}>
+              <div className={`${recipeBrowserStyles.manageTagCategoryRow(isCollapsed)} ${recipeBrowserStyles.manageTagDivider("category")}`}>
                 <div className={recipeBrowserStyles.manageTagCategoryEditRow}>
                   <div className={recipeBrowserStyles.manageTagOrderControls}>
                     <button
-                      className={recipeBrowserStyles.manageTagIconButton(theme)}
+                      className={recipeBrowserStyles.manageTagIconButton}
                       disabled={isManagingTags || isSyntheticCategory}
                       type="button"
                       aria-label={t.common.moveUp}
@@ -320,7 +309,7 @@ function TagManagementDialog({
                       ^
                     </button>
                     <button
-                      className={recipeBrowserStyles.manageTagIconButton(theme)}
+                      className={recipeBrowserStyles.manageTagIconButton}
                       disabled={isManagingTags || isSyntheticCategory}
                       type="button"
                       aria-label={t.common.moveDown}
@@ -333,7 +322,7 @@ function TagManagementDialog({
                     </button>
                   </div>
                   <input
-                    className={recipeBrowserStyles.manageTagTextField(theme)}
+                    className={recipeBrowserStyles.manageTagTextField}
                     readOnly={isSyntheticCategory}
                     value={managedCategoryNames[category.id] ?? category.name}
                     onChange={(event) =>
@@ -344,7 +333,7 @@ function TagManagementDialog({
                     }
                   />
                   <button
-                    className={recipeBrowserStyles.manageTagActionButton(theme)}
+                    className={recipeBrowserStyles.manageTagActionButton}
                     disabled={isManagingTags || isSyntheticCategory}
                     type="button"
                     onClick={(event) => {
@@ -355,7 +344,7 @@ function TagManagementDialog({
                     {t.common.save}
                   </button>
                   <button
-                    className={recipeBrowserStyles.manageTagRemoveButton(theme, hasSystemTags)}
+                    className={recipeBrowserStyles.manageTagRemoveButton(hasSystemTags)}
                     disabled={isManagingTags || isSyntheticCategory || hasSystemTags}
                     type="button"
                     onClick={(event) => {
@@ -370,12 +359,12 @@ function TagManagementDialog({
               {!isCollapsed && <div className={recipeBrowserStyles.manageTagList}>
                 {category.tags.map((tag) => (
                   <div
-                    className={`${recipeBrowserStyles.manageTagRow} ${recipeBrowserStyles.manageTagDivider(theme)}`}
+                    className={`${recipeBrowserStyles.manageTagRow} ${recipeBrowserStyles.manageTagDivider()}`}
                     key={tag.id}
                   >
                     <div className={recipeBrowserStyles.manageTagOrderControls}>
                       <button
-                        className={recipeBrowserStyles.manageTagIconButton(theme)}
+                        className={recipeBrowserStyles.manageTagIconButton}
                         disabled={isManagingTags || tag.isSystemTag}
                         type="button"
                         aria-label={t.common.moveUp}
@@ -384,7 +373,7 @@ function TagManagementDialog({
                         ^
                       </button>
                       <button
-                        className={recipeBrowserStyles.manageTagIconButton(theme)}
+                        className={recipeBrowserStyles.manageTagIconButton}
                         disabled={isManagingTags || tag.isSystemTag}
                         type="button"
                         aria-label={t.common.moveDown}
@@ -394,13 +383,13 @@ function TagManagementDialog({
                       </button>
                     </div>
                     {tag.isSystemTag ? (
-                      <div className={recipeBrowserStyles.manageTagSystemNameField(theme)}>
+                      <div className={recipeBrowserStyles.manageTagSystemNameField}>
                         <span className={recipeBrowserStyles.manageTagSystemName}>{tag.name}</span>
-                        <span className={recipeBrowserStyles.manageTagSystemMeta(theme)}>{t.common.systemTagMeta}</span>
+                        <span className={recipeBrowserStyles.manageTagSystemMeta}>{t.common.systemTagMeta}</span>
                       </div>
                     ) : (
                       <input
-                        className={recipeBrowserStyles.manageTagTextField(theme)}
+                        className={recipeBrowserStyles.manageTagTextField}
                         value={managedTagNames[tag.name] ?? tag.name}
                         onChange={(event) =>
                           setManagedTagNames((currentNames) => ({
@@ -411,7 +400,7 @@ function TagManagementDialog({
                       />
                     )}
                     <button
-                      className={recipeBrowserStyles.manageTagActionButton(theme)}
+                      className={recipeBrowserStyles.manageTagActionButton}
                       disabled={isManagingTags || tag.isSystemTag}
                       type="button"
                       onClick={() => void updateManagedTag(tag.name)}
@@ -419,7 +408,7 @@ function TagManagementDialog({
                       {t.common.save}
                     </button>
                     <button
-                      className={recipeBrowserStyles.manageTagRemoveButton(theme, tag.isSystemTag)}
+                      className={recipeBrowserStyles.manageTagRemoveButton(tag.isSystemTag)}
                       disabled={isManagingTags || tag.isSystemTag}
                       type="button"
                       onClick={() => void deleteManagedTag(tag.name)}
@@ -430,7 +419,7 @@ function TagManagementDialog({
                 ))}
                 <div className={recipeBrowserStyles.manageTagAddRow}>
                   <button
-                    className={recipeBrowserStyles.addTagButton(theme)}
+                    className={recipeBrowserStyles.addTagButton}
                     disabled={isSyntheticCategory}
                     type="button"
                     onClick={(event) => {
@@ -453,12 +442,12 @@ function TagManagementDialog({
         <Modal
           backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
           bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-          closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+          closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
           closeLabel={t.common.close}
           footer={
             <>
               <button
-                className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+                className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`}
                 disabled={isSavingName}
                 type="button"
                 onClick={() => setNameDialogMode(null)}
@@ -466,7 +455,7 @@ function TagManagementDialog({
                 {t.common.cancel}
               </button>
               <button
-                className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+                className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`}
                 disabled={isSavingName}
                 type="button"
                 onClick={() => void saveNewName()}
@@ -477,18 +466,18 @@ function TagManagementDialog({
           }
           footerClassName={recipeBrowserStyles.formActions}
           headerClassName={recipeBrowserStyles.modalHeader}
-          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
           title={nameDialogMode === "category" ? t.common.addCategory : t.common.addTag}
           titleClassName={recipeBrowserStyles.modalTitle}
           titleId={nameDialogTitleId}
           onClose={() => setNameDialogMode(null)}
         >
-          <div className={recipeBrowserStyles.ingredientPriceDialogForm}>
-            {nameDialogError !== null && <p className={recipeBrowserStyles.statusError(theme)}>{nameDialogError}</p>}
+          <div className={recipeBrowserStyles.nestedDialogForm}>
+            {nameDialogError !== null && <p className={recipeBrowserStyles.statusError}>{nameDialogError}</p>}
             <label className={recipeBrowserStyles.field}>
-              <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.name}</span>
+              <span className={recipeBrowserStyles.label}>{t.cookbook.name}</span>
               <input
-                className={recipeBrowserStyles.textField(theme)}
+                className={recipeBrowserStyles.textField}
                 maxLength={nameDialogMode === "category" ? 120 : 64}
                 value={newName}
                 onChange={(event) => setNewName(event.target.value)}
@@ -496,9 +485,9 @@ function TagManagementDialog({
             </label>
             {nameDialogMode === "tag" && (
               <label className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>{t.filters.categories}</span>
+                <span className={recipeBrowserStyles.label}>{t.filters.categories}</span>
                 <select
-                  className={recipeBrowserStyles.textField(theme)}
+                  className={recipeBrowserStyles.textField}
                   value={selectedCategoryId ?? ""}
                   onChange={(event) => setSelectedCategoryId(event.target.value.length === 0 ? null : Number(event.target.value))}
                 >
@@ -520,7 +509,6 @@ function TagManagementDialog({
           body={t.common.deleteNamed(formatCategoryName(categoryPendingDelete.name))}
           confirmLabel={t.common.remove}
           isBusy={isDeletingCategory}
-          theme={theme}
           title={t.common.removeNamed(formatCategoryName(categoryPendingDelete.name))}
           onCancel={() => setCategoryPendingDelete(null)}
           onConfirm={() => void deleteCategory()}
