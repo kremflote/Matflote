@@ -418,33 +418,34 @@ export const plannerControlsStyles = {
   viewport: "mx-auto w-full max-desktop:w-[min(100%,36rem)] max-sm:w-full",
   /* Keep the planner content aligned with the cookbook grid using the shared spacing scale. */
   // One row on wide screens (actions, week, view switch) so the whole week fits under it on a 900 px screen.
-  // Wide screens: one row with the week navigation on the left and the actions and view switch on the right.
+  // Wide screens: one row with the week navigation on the left, the view switch centred and the actions on the right.
+  // The two outer columns share the remaining width equally so the switch stays in the middle.
   // It is a size container so the action labels give way to icons when the row itself gets tight.
-  shell: `@container mb-5 flex w-full items-center gap-3 max-desktop:mb-6 max-desktop:grid max-desktop:grid-cols-1`,
+  shell: `@container mb-5 grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 max-desktop:mb-6 max-desktop:grid-cols-1`,
   datePrimaryRow: `flex w-full items-center gap-2 max-desktop:justify-between`,
   dateLabelGroup:
     "relative flex min-w-0 items-baseline gap-2 pl-2 max-desktop:order-3 max-desktop:flex-1 max-desktop:justify-center max-desktop:pl-0",
-  datePrimary: `whitespace-nowrap text-3xl font-bold leading-tight max-desktop:min-w-0 max-desktop:truncate max-sm:text-2xl ${siteColorClasses.plannerCounterAccent}`,
+  datePrimary: `whitespace-nowrap text-3xl font-bold leading-tight @max-[70rem]:text-2xl max-desktop:min-w-0 max-desktop:truncate max-sm:text-2xl ${siteColorClasses.plannerCounterAccent}`,
   // Beside the label on wide screens; above it, without adding height, on narrow ones.
   dateYear:
-    "whitespace-nowrap text-xl font-bold leading-none text-muted max-desktop:pointer-events-none max-desktop:absolute max-desktop:inset-x-0 max-desktop:-top-4 max-desktop:text-center max-desktop:text-sm",
+    "whitespace-nowrap text-xl font-bold leading-none text-muted @max-[70rem]:text-base max-desktop:pointer-events-none max-desktop:absolute max-desktop:inset-x-0 max-desktop:-top-4 max-desktop:text-center max-desktop:text-sm",
   leftCell:
-    "order-2 ml-auto flex shrink-0 items-center max-desktop:hidden",
+    "order-3 flex min-w-0 items-center justify-end max-desktop:hidden",
   centerCell:
     "order-1 flex min-w-0 items-center max-desktop:order-1 max-desktop:pt-4",
   rightCell:
-    "order-3 flex shrink-0 items-center max-desktop:hidden",
+    "order-2 flex items-center justify-center max-desktop:hidden",
   counterActions: `flex items-center gap-2`,
   actionSlotLeft: "shrink-0",
   actionSlotCenter: "shrink-0",
   actionSlotRight: "shrink-0",
-  iconOnlyButton: `${sizeClasses.plannerControlHeight} max-desktop:h-11 group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-1.5 ${radiusClasses.figma6} border px-3 text-sm font-bold whitespace-nowrap transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed @max-[60rem]:w-10 @max-[60rem]:px-0 max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
+  iconOnlyButton: `${sizeClasses.plannerControlHeight} max-desktop:h-11 group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-1.5 ${radiusClasses.figma6} border px-3 text-sm font-bold whitespace-nowrap transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed @max-[63rem]:w-10 @max-[63rem]:px-0 max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
   previousButton: `${sizeClasses.plannerControlHeight} inline-flex aspect-square shrink-0 items-center justify-center ${radiusClasses.figma6} border max-desktop:order-2 max-desktop:h-11 transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
   nextButton: `${sizeClasses.plannerControlHeight} inline-flex aspect-square shrink-0 items-center justify-center ${radiusClasses.figma6} border max-desktop:order-4 max-desktop:h-11 transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
   todayButton: `${sizeClasses.plannerControlHeight} max-desktop:h-11 inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-desktop:order-5 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
   buttonIcon: "h-4 w-4 shrink-0 fill-current",
   // When the row is too narrow for labels, the four actions become icons with tooltips rather than cut-off words.
-  actionButtonLabel: "leading-none @max-[60rem]:sr-only",
+  actionButtonLabel: "leading-none @max-[63rem]:sr-only",
   mobileActionButtonLabel: "min-w-0 truncate leading-none",
   tooltip: `pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold opacity-0 ${shadowClasses.subtle} transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${siteColorClasses.plannerTooltip}`,
   viewToggle: `${segmentedToggleStyles.shell("w-48")}`,
