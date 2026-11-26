@@ -22,7 +22,7 @@ Created with assistance of ChatGPT 5.5.
 - `backend.Tests/`: xUnit tests that run the API in memory against a temporary SQLite file. Run with `dotnet test` from the repository root (`Matflote.sln`).
 - `backend/SeedImages/`: committed starter images and placeholders that are copied into image storage on startup.
 - `docs/images/`: screenshots used by this README.
-- `docker-compose.yml`: two-container MATFLOTE stack for self-hosted use.
+- `docker-compose.yml`: reference two-container MATFLOTE stack. The home server uses its own compose file; see [Deployment On The Home Server](#deployment-on-the-home-server).
 
 ## Images
 
@@ -44,76 +44,115 @@ Created with assistance of ChatGPT 5.5.
 
 ![MATFLOTE mobile cookbook light mode](docs/images/mobilecookbooklight.png)
 
-## Docker
+## Deployment On The Home Server
 
-MATFLOTE runs as two containers:
+MATFLOTE runs on a Raspberry Pi 4 (arm64, Debian 13) behind Nginx Proxy Manager and is reached only over Tailscale, as `https://<hostname>`. It runs as two containers:
 
-- `frontend`: nginx serves the built frontend and proxies browser requests.
-- `backend`: .NET API, SQLite database access, migrations, and image uploads.
+- `matflote-frontend`: this repo's nginx (`frontend/Dockerfile`). It serves the built frontend, compresses responses, sets cache headers, and proxies `/api`, `/images` and `/health` to the backend at `http://backend:8080`.
+- `matflote-backend`: the .NET 10 API (`backend/Dockerfile`). It owns the SQLite database and the image files and runs database migrations when it starts.
 
-Persistent data lives in Docker volumes:
+Requests go `https://<hostname>` → Nginx Proxy Manager (TLS) → `http://matflote-frontend:80` → `http://backend:8080`.
 
-- `matflote-data`: SQLite database at `/data/dinnerplanner.db`
-- `matflote-images`: uploaded and seeded images at `/data/images`
+The server does **not** use this repo's `docker-compose.yml`. The server's own `~/infra/docker-compose.yml` builds both services from a checkout of this repo at `~/infra/matflote`, and keeps the data in bind-mounted folders:
 
-## Run
+| On the Pi | In the backend container | Holds |
+| --- | --- | --- |
+| `~/infra/config/matflote/data` | `/data` | `dinnerplanner.db`, its `-wal`/`-shm` files, the `.bak` copies made before migrations, and `backups/dinnerplanner.latest.db` |
+| `~/infra/config/matflote/images` | `/data/images` | uploaded, imported and seeded images and their thumbnails |
 
-```powershell
-docker compose up -d --build
+The backend finds them through `ConnectionStrings__DinnerPlanner=Data Source=/data/dinnerplanner.db` and `ImageStorage__RootPath=/data/images`. The nginx config looks the backend up by the name `backend`, so the backend service must be reachable under that name on the compose network (as a network alias, for example).
+
+### What To Mirror In `~/infra/docker-compose.yml`
+
+This repo's `docker-compose.yml` is the reference. These parts of it belong in the server's compose file too:
+
+```yaml
+  matflote-backend:
+    environment:
+      TZ: Europe/Oslo
+      # ...the existing variables stay as they are
+  matflote-frontend:
+    environment:
+      TZ: Europe/Oslo
+    depends_on:
+      matflote-backend:
+        condition: service_healthy
 ```
 
-Open:
+- `TZ: Europe/Oslo` on both services, as the other services on the server have. Without it the containers run on UTC, so the assistant API's idea of "today" is the previous day between midnight and 01:00 or 02:00, and the times in `.bak` names and logs are an hour or two off.
+- `depends_on` with `condition: service_healthy`, so the frontend starts once the backend has finished its migrations and answers. nginx will not start if it cannot resolve `backend`.
+- The health check itself does not need copying: the backend image declares it (`dotnet backend.dll --healthcheck`, which asks the app's own `/health`, because the image has no curl or wget). `sudo docker compose ps` shows the backend as `healthy` once it is up. To tune it, copy the `healthcheck:` block from this repo's compose file.
 
-```text
-http://localhost:8080
+No host ports are needed; Nginx Proxy Manager reaches the frontend over the compose network.
+
+### Updating
+
+1. If the update contains database migrations and you want a copy beyond the automatic one, run the backup call below first.
+2. Pull and rebuild (a build takes about five minutes on the Pi):
+
+   ```bash
+   cd ~/infra/matflote && git pull
+   cd ~/infra && sudo docker compose up -d --build matflote-backend matflote-frontend
+   ```
+
+3. Check that the backend came up and whether a migration ran:
+
+   ```bash
+   sudo docker compose ps matflote-backend matflote-frontend       # backend shows "healthy"
+   sudo docker compose logs matflote-backend | grep -i "copied the database"
+   ls -lt ~/infra/config/matflote/data/*.bak | head -n 3
+   ```
+
+   Before it applies migrations, the backend writes a copy of the database beside it, named like `dinnerplanner.db.20261125-120000.bak`, and keeps the newest five. A new `.bak` file and the log line mean a migration ran; no new file means there was nothing to migrate.
+
+4. Open **Settings → Image storage** and press **Create missing thumbnails** (Norwegian: **Lag manglende miniatyrbilder**). Grids and cards use small thumbnails, and images that existed before thumbnails were introduced, or that arrived through a package import, have none until this runs. It only creates what is missing, so it is safe to press after every deployment.
+
+### Nginx Proxy Manager
+
+In the MATFLOTE proxy host, keep **Cache Assets** switched **off**. When it is on, the proxy caches scripts, styles and images itself, throws away the cache headers this app sends, and keeps serving old files for up to 30 minutes after a deployment. Compression and caching are handled by the app's own nginx (`frontend/nginx.conf`).
+
+## Backups
+
+### Nightly Database Copy
+
+The live database is in WAL mode, so copying `dinnerplanner.db` while the backend runs can give an inconsistent file. Ask the backend for a consistent copy instead, just before the file backup runs:
+
+```bash
+curl -fsS -X POST https://<hostname>/api/maintenance/backup
 ```
 
-To use another host port, create `.env`:
+It writes `/data/backups/dinnerplanner.latest.db` (on the Pi: `~/infra/config/matflote/data/backups/dinnerplanner.latest.db`), replacing the previous copy, and answers with the path, size and time:
 
-```env
-MATFLOTE_PORT=8095
+```json
+{"path":"/data/backups/dinnerplanner.latest.db","sizeBytes":352256,"createdAt":"2026-11-25T02:00:01+00:00"}
 ```
 
-Then open:
+The copy is made with SQLite's `VACUUM INTO` into a temporary file and then moved into place, so a backup that reads the folder at the same moment never sees half a file. Because it lands inside `~/infra/config`, the existing Restic job picks it up with no other change: add that one line to the backup script (`~/scripts/backup-critical.sh`) before the Restic step. `-f` makes `curl` fail on an error answer, so the script can report it.
 
-```text
-http://localhost:8095
-```
+The same call works from any container on the compose network without going through the proxy, at `http://backend:8080/api/maintenance/backup` (or `http://matflote-frontend/api/maintenance/backup`). The backend image has no curl, so run it from another container.
 
-## First Setup Checklist
+### Restoring The Database
 
-1. Copy `.env.example` to `.env`.
-2. Set `MATFLOTE_PORT` if the default `8080` is already used.
-3. Add private keys or tokens for integrations you plan to use:
-   - `VIKUNJA_API_TOKEN` for shopping-list export.
-   - `KASSALAPP_API_KEY` for product scanning.
-   - `HELSEDIREKTORATET_SUBSCRIPTION_KEY` for refreshing nutrition references.
-4. Start MATFLOTE.
-5. Open Settings and confirm language, integrations, and grocery export mode.
-6. Create your first backup after adding real household data.
+1. `cd ~/infra && sudo docker compose stop matflote-backend`
+2. In `~/infra/config/matflote/data`, delete `dinnerplanner.db-wal` and `dinnerplanner.db-shm` if present, and copy the file you want to restore (`backups/dinnerplanner.latest.db` or a `.bak` file) over `dinnerplanner.db`.
+3. `sudo docker compose start matflote-backend`
 
+Images are not in the database. They are plain files in `~/infra/config/matflote/images`, which the Restic job already copies.
 
-## Backup And Restore MATFLOTE Data
+### Moving Recipes Between Instances
 
-MATFLOTE household data is made of two parts:
-
-- Database data: ingredients, recipes, tags, tag categories, brands, meal plans, nutrition references/settings, grocery export rules, integration settings, conversion rules, and image metadata.
-- Image files: uploaded ingredient/recipe images and seeded placeholder images.
-
-For an app-level portable backup, use:
+For an app-level portable copy, use:
 
 ```text
 GET /api/seed-catalog/export-package
 ```
 
-That downloads a zip containing catalog JSON plus image files. It is the easiest way to move recipes, ingredients, tags, brands, conversion rules, and images between MATFLOTE instances.
+That downloads a zip containing catalog JSON plus image files. It is the easiest way to move recipes, ingredients, tags, brands, conversion rules, and images between MATFLOTE instances. It is not a full backup: meal plans, settings and ratings are not in it.
 
 Import that package into another MATFLOTE instance:
 
-```powershell
-curl.exe -i -X POST `
-  -F "file=@C:\path\to\matflote-export-package.zip" `
-  "http://localhost:8080/api/seed-catalog/import-package"
+```bash
+curl -i -X POST -F "file=@matflote-export-package.zip" "https://<hostname>/api/seed-catalog/import-package"
 ```
 
 The import is additive. Matching ingredients and recipes are left alone, so it is useful for seeding or moving curated data, not for replacing a whole household database.
@@ -126,34 +165,26 @@ POST /api/seed-catalog/import-package?syncTags=true
 
 That deletes every tag and tag category the package does not name, and with them those tags on every recipe and ingredient. Without the parameter no tag is deleted. (Before this option existed, every package import synchronised tags.)
 
-Before it applies database migrations, the backend writes a copy of the database beside it, named like `dinnerplanner.db.20261125-120000.bak`, and keeps the newest five. Restoring one means stopping the backend, deleting `dinnerplanner.db-wal` and `dinnerplanner.db-shm` if present, and copying the `.bak` file over `dinnerplanner.db`.
+## Running With This Repo's Compose File
 
-For a complete server backup, back up both Docker volumes.
-
-Create a backup folder first:
-
-```powershell
-New-Item -ItemType Directory -Force backups
-```
-
-Back up the SQLite volume:
-
-```powershell
-docker run --rm -v matflote-data:/data -v ${PWD}/backups:/backup alpine tar czf /backup/matflote-data.tar.gz -C /data .
-```
-
-Back up the image volume:
-
-```powershell
-docker run --rm -v matflote-images:/images -v ${PWD}/backups:/backup alpine tar czf /backup/matflote-images.tar.gz -C /images .
-```
-
-On Linux/macOS, use shell-style current directory paths:
+For a local or fresh install, this repo's `docker-compose.yml` runs the same two containers with Docker named volumes (`matflote-data` for `/data`, `matflote-images` for `/data/images`) and publishes the frontend on a host port:
 
 ```bash
-docker run --rm -v matflote-data:/data -v "$(pwd)/backups:/backup" alpine tar czf /backup/matflote-data.tar.gz -C /data .
-docker run --rm -v matflote-images:/images -v "$(pwd)/backups:/backup" alpine tar czf /backup/matflote-images.tar.gz -C /images .
+cp .env.example .env    # set MATFLOTE_PORT and any integration keys
+docker compose up -d --build
 ```
+
+Then open `http://localhost:8080` (or the port set in `MATFLOTE_PORT`). Open Settings to choose the language and check the integrations:
+
+- `VIKUNJA_API_TOKEN` for shopping-list export.
+- `KASSALAPP_API_KEY` for product scanning.
+- `HELSEDIREKTORATET_SUBSCRIPTION_KEY` for refreshing nutrition references.
+
+The backup call above works the same way here, at `http://localhost:8080/api/maintenance/backup`, and writes into the `matflote-data` volume.
+
+## Development
+
+Backend: .NET SDK 10. `dotnet build backend`, `dotnet test` from the repository root. Creating migrations needs the `dotnet-ef` 10 tool. Frontend: Node 22 or 24, then `npm ci`, `npm run dev`, `npm run lint` and `npm run build` in `frontend/`. The dev server expects the backend on `http://localhost:5132` (`dotnet run --project backend`).
 
 ## Shopping List Export
 
@@ -278,7 +309,7 @@ Starter tags, tag categories, conversion rules, brands, ingredients, and recipes
 
 Starter images and placeholders are shipped through `backend/SeedImages/`. On startup, MATFLOTE copies missing files from `backend/SeedImages/` into the configured image storage folder and serves them through `/images/...`.
 
-Do not commit generated runtime image storage from `backend/wwwroot/images/`. In local development that folder is the default image storage location; in Docker the same role is handled by the persistent `matflote-images` volume.
+Do not commit generated runtime image storage from `backend/wwwroot/images/`. In local development that folder is the default image storage location; in Docker the same role is handled by whatever is mounted at `/data/images`.
 
 On backend startup, after database migrations, MATFLOTE imports that JSON file if it exists. Import is intentionally additive:
 
