@@ -55,7 +55,7 @@ function App() {
       <Suspense fallback={null}>
         {activePage === "settings" && <SettingsPage theme={theme} />}
         {activePage === "scanner" && <ScannerPage theme={theme} />}
-        {activePage === "nutrition" && <NutritionPage theme={theme} />}
+        {activePage === "nutrition" && <NutritionPage />}
       </Suspense>
     </div>
   );

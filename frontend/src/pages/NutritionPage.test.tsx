@@ -39,7 +39,7 @@ describe("NutritionPage week (F3)", () => {
 
     render(
       <LanguageProvider>
-        <NutritionPage theme="dark" />
+        <NutritionPage />
       </LanguageProvider>,
     );
 

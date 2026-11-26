@@ -494,112 +494,38 @@ export const scannerStyles = {
 export const nutritionStyles = {
   shell: pageStyles.contentShell,
   header: "grid gap-2",
-  title: (theme: SiteTheme) =>
-    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
-  intro: (theme: SiteTheme) =>
-    `max-w-2xl text-sm font-semibold leading-[1.5] ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-600"
-    }`,
+  title: "text-3xl font-bold leading-tight text-[#556145] dark:text-neutral-50",
+  intro: "max-w-2xl text-sm font-semibold leading-[1.5] text-[#556145] dark:text-neutral-300",
   panel: `grid grid-cols-3 items-end gap-3 rounded-md border p-4 max-md:grid-cols-2 max-sm:grid-cols-1 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   field: "grid gap-2",
   label: "text-sm font-bold leading-tight",
   input: controlStyles.formField,
-  statusError: (theme: SiteTheme) =>
-    `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
-      theme === "dark"
-        ? "border-red-400/30 bg-red-500/10 text-red-200"
-        : theme === "paletteLight"
-          ? "border-red-700/25 bg-red-700/10 text-red-800"
-          : "border-red-200 bg-red-50 text-red-700"
-    }`,
-  warningPanel: (theme: SiteTheme) =>
-    `${radiusClasses.figma6} border p-4 ${shadowClasses.subtle} ${
-      theme === "dark"
-        ? "border-amber-300/25 bg-amber-200/10 text-amber-100"
-        : theme === "paletteLight"
-          ? "border-[#9B7A3D]/30 bg-[#E5D5BC]/65 text-[#5F4A24]"
-          : "border-amber-200 bg-amber-50 text-amber-900"
-    }`,
+  statusError: `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-red-700/25 bg-red-700/10 text-red-800 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200`,
+  warningPanel: `${radiusClasses.figma6} border p-4 ${shadowClasses.subtle} border-[#9B7A3D]/30 bg-[#E5D5BC]/65 text-[#5F4A24] dark:border-amber-300/25 dark:bg-amber-200/10 dark:text-amber-100`,
   warningTitle: "text-sm font-extrabold leading-tight",
   warningText: "mt-1 text-sm font-semibold leading-[1.45]",
   warningList: "mt-3 flex flex-wrap gap-2",
-  warningChip: (theme: SiteTheme) =>
-    `${radiusClasses.figma6} border px-2 py-1 text-xs font-bold ${
-      theme === "dark"
-        ? "border-amber-200/20 bg-black/20 text-amber-50"
-        : theme === "paletteLight"
-          ? "border-[#9B7A3D]/25 bg-[#FAF7F2] text-[#5F4A24]"
-          : "border-amber-200 bg-white text-amber-900"
-    }`,
+  warningChip: `${radiusClasses.figma6} border px-2 py-1 text-xs font-bold border-[#9B7A3D]/25 bg-[#FAF7F2] text-[#5F4A24] dark:border-amber-200/20 dark:bg-black/20 dark:text-amber-50`,
   emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   grid: "grid grid-cols-3 gap-3 max-[1100px]:grid-cols-2 max-sm:grid-cols-1",
   dailyPanel: `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   dailyHeader: "flex flex-wrap items-baseline justify-between gap-2",
   dailyHeaderMeta: "flex flex-wrap items-baseline justify-end gap-3",
   dailyTitle: "text-base font-bold leading-tight",
-  dailySubtitle: (theme: SiteTheme) =>
-    `text-xs font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  dailySubtitle: "text-xs font-semibold leading-tight text-[#556145] dark:text-neutral-400",
   dailyGrid: "grid grid-cols-7 gap-2 max-[1100px]:grid-cols-4 max-sm:grid-cols-2",
-  dailyItem: (theme: SiteTheme) =>
-    `grid gap-1 rounded-md border px-3 py-2 text-sm font-semibold ${
-      theme === "dark"
-        ? "border-white/[0.08] bg-white/[0.05] text-neutral-200"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#E5D5BC]/45 text-[#556145]"
-          : "border-neutral-200 bg-neutral-100 text-neutral-800"
-    }`,
+  dailyItem: "grid gap-1 rounded-md border px-3 py-2 text-sm font-semibold border-[#C8C0B5] bg-[#E5D5BC]/45 text-[#556145] dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-neutral-200",
   dailyDay: "text-xs font-bold uppercase",
-  dailyCalories: (theme: SiteTheme) =>
-    `text-base font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
-  dailyAverage: (theme: SiteTheme) =>
-    `text-sm font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
+  dailyCalories: "text-base font-extrabold leading-tight text-[#556145] dark:text-neutral-50",
+  dailyAverage: "text-sm font-extrabold leading-tight text-[#556145] dark:text-neutral-50",
   item: `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   itemHeader: "flex items-start justify-between gap-3",
   itemTitle: "text-base font-bold leading-tight",
-  itemTotal: (theme: SiteTheme) =>
-    `text-sm font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
-  progressTrack: (theme: SiteTheme) =>
-    `h-2 overflow-hidden rounded-full ${
-      theme === "dark"
-        ? "bg-white/[0.10]"
-        : theme === "paletteLight"
-          ? "bg-[#D7CCBB]"
-          : "bg-neutral-200"
-    }`,
-  progressFill: (theme: SiteTheme) =>
-    `block h-full rounded-full ${
-      theme === "dark"
-        ? "bg-emerald-300"
-        : theme === "paletteLight"
-          ? "bg-[#556145]"
-          : "bg-neutral-900"
-    }`,
-  itemMeta: (theme: SiteTheme) =>
-    `text-xs font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
-  sourceText: (theme: SiteTheme) =>
-    `text-xs font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  itemTotal: "text-sm font-extrabold leading-tight text-[#556145] dark:text-neutral-50",
+  progressTrack: "h-2 overflow-hidden rounded-full bg-[#D7CCBB] dark:bg-white/[0.10]",
+  progressFill: "block h-full rounded-full bg-[#556145] dark:bg-emerald-300",
+  itemMeta: "text-xs font-semibold leading-tight text-[#556145] dark:text-neutral-400",
+  sourceText: "text-xs font-semibold leading-tight text-[#556145] dark:text-neutral-400",
   sourceLink: `font-extrabold underline-offset-2 hover:underline ${siteColorClasses.plannerCounterAccent}`,
 } as const;
 
