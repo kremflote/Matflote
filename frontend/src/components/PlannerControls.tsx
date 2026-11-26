@@ -128,13 +128,6 @@ function PlannerControls({
         </div>
       </div>
       <div className={plannerControlsStyles.centerCell}>
-        <time
-          aria-label={t.planner.yearLabel(anchorYear)}
-          className={plannerControlsStyles.dateYearRow}
-          dateTime={anchorYear}
-        >
-          {anchorYear}
-        </time>
         <div className={plannerControlsStyles.datePrimaryRow}>
           {/* On phones and tablets the tools sit in this row rather than floating over the cards. */}
           {showMobileTools ? (
@@ -151,36 +144,44 @@ function PlannerControls({
               <ToolsIcon />
             </button>
           ) : null}
+          {/* Wide screens: Today, both arrows, then the label, so the buttons never move when the label changes.
+              Narrow screens reorder to arrows around the label with Today last. */}
+          <button
+            className={plannerControlsStyles.todayButton}
+            disabled={isShowingToday || isClearRangeRunning || isGenerateRangeRunning}
+            type="button"
+            onClick={onToday}
+          >
+            {t.planner.today}
+          </button>
           <button
             aria-label={t.planner.previousRange(rangeLabel)}
-            className={plannerControlsStyles.iconButton}
+            className={plannerControlsStyles.previousButton}
             disabled={isClearRangeRunning || isGenerateRangeRunning}
             type="button"
             onClick={onPreviousRange}
           >
             <ArrowIcon direction="left" />
           </button>
-          <div className={plannerControlsStyles.datePrimary}>{anchorLabel}</div>
-          <span className={plannerControlsStyles.nextAndTodayGroup}>
-            <button
-              aria-label={t.planner.nextRange(rangeLabel)}
-              className={plannerControlsStyles.iconButton}
-              disabled={isClearRangeRunning || isGenerateRangeRunning}
-              type="button"
-              onClick={onNextRange}
+          <button
+            aria-label={t.planner.nextRange(rangeLabel)}
+            className={plannerControlsStyles.nextButton}
+            disabled={isClearRangeRunning || isGenerateRangeRunning}
+            type="button"
+            onClick={onNextRange}
+          >
+            <ArrowIcon direction="right" />
+          </button>
+          <div className={plannerControlsStyles.dateLabelGroup}>
+            <div className={plannerControlsStyles.datePrimary}>{anchorLabel}</div>
+            <time
+              aria-label={t.planner.yearLabel(anchorYear)}
+              className={plannerControlsStyles.dateYear}
+              dateTime={anchorYear}
             >
-              <ArrowIcon direction="right" />
-            </button>
-            {/* Hangs to the right of the arrow so the week label stays centred. */}
-            <button
-              className={plannerControlsStyles.todayButton}
-              disabled={isShowingToday || isClearRangeRunning || isGenerateRangeRunning}
-              type="button"
-              onClick={onToday}
-            >
-              {t.planner.today}
-            </button>
-          </span>
+              {anchorYear}
+            </time>
+          </div>
         </div>
       </div>
       <div className={plannerControlsStyles.rightCell}>
