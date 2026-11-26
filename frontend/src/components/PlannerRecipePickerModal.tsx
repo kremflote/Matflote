@@ -1,8 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { Dispatch, SetStateAction } from "react";
 import { useIngredientTagCategories, useIngredients, useLanguage } from "../contexts";
 import type { IIngredient, IngredientTag, MeasurementUnit } from "../interfaces/IIngredient";
-import type { IIngredientTagCategory } from "../interfaces/ILookup";
 import type { IMealPlanEntry, MealSlot } from "../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
@@ -31,6 +29,20 @@ import PlannerRecipePickerSelection, {
 } from "./plannerRecipePicker/PlannerRecipePickerSelection";
 import Modal from "./Modal";
 import SearchField from "./SearchField";
+import {
+  type SelectedPlannerRecipe,
+  type SelectedPlannerIngredient,
+  type PickerBrowserMode,
+  toSelectedRecipeItem,
+  toSelectedIngredientItem,
+  getInitialRecipeTagFilters,
+  buildAvailableTagNames,
+  findAvailableTagName,
+  uniqueValues,
+  toggleTagFilter,
+  toMealPlanItems,
+  getInitialSelections,
+} from "./plannerRecipePicker/pickerSelection";
 
 type PlannerRecipePickerModalProps = {
   date: string;
@@ -40,19 +52,6 @@ type PlannerRecipePickerModalProps = {
   onClose: () => void;
   onSave: (entryId: number | null, request: MealPlanEntryRequest) => Promise<void>;
 };
-
-type SelectedPlannerRecipe = {
-  recipeId: number;
-  portions: number;
-};
-
-type SelectedPlannerIngredient = {
-  ingredientId: number;
-  amount: number;
-  unit: MeasurementUnit;
-};
-
-type PickerBrowserMode = "recipes" | "ingredients";
 
 function PlannerRecipePickerModal({
   date,
@@ -66,51 +65,17 @@ function PlannerRecipePickerModal({
   const titleId = useId();
   const { ingredients } = useIngredients();
   const { ingredientTagCategories } = useIngredientTagCategories();
-  const sortedInitialItems =
-    entry?.recipes.slice().sort((first, second) => first.sortOrder - second.sortOrder) ?? [];
-  const initialMainItem =
-    sortedInitialItems.find((plannedRecipe) => plannedRecipe.role === "Main") ?? sortedInitialItems[0];
-  const initialSupplementaryItems = sortedInitialItems.filter(
-    (plannedRecipe) => plannedRecipe !== initialMainItem,
-  );
-  const initialMainRecipe =
-    initialMainItem?.recipeId !== null && initialMainItem?.recipeId !== undefined ? initialMainItem : undefined;
-  const initialMainIngredient =
-    initialMainItem?.ingredientId !== null && initialMainItem?.ingredientId !== undefined ? initialMainItem : undefined;
-  const initialSupplementaryRecipes =
-    initialSupplementaryItems
-      .filter((plannedRecipe) => plannedRecipe.recipeId !== null)
-      .map((plannedRecipe) => ({
-        recipeId: plannedRecipe.recipeId!,
-        portions: plannedRecipe.portions ?? recipeByIdFallback(recipes, plannedRecipe.recipeId)?.portions ?? 1,
-      }));
-  const initialSupplementaryIngredients =
-    initialSupplementaryItems
-      .filter((plannedRecipe) => plannedRecipe.ingredientId !== null)
-      .map((plannedRecipe) => ({
-        ingredientId: plannedRecipe.ingredientId!,
-        amount: plannedRecipe.amount ?? 1,
-        unit: plannedRecipe.unit ?? ("Gram" as MeasurementUnit),
-      }));
+  const initialSelections = getInitialSelections(entry, recipes);
   const [browserMode, setBrowserMode] = useState<PickerBrowserMode>("recipes");
   const [searchTerm, setSearchTerm] = useState("");
-  const [mainRecipeSelection, setMainRecipeSelection] = useState<SelectedPlannerRecipe | null>(
-    initialMainRecipe === undefined ? null : {
-      recipeId: initialMainRecipe.recipeId!,
-      portions: initialMainRecipe.portions ?? recipeByIdFallback(recipes, initialMainRecipe.recipeId)?.portions ?? 1,
-    },
-  );
-  const [mainIngredientSelection, setMainIngredientSelection] = useState<SelectedPlannerIngredient | null>(
-    initialMainIngredient === undefined ? null : {
-      ingredientId: initialMainIngredient.ingredientId!,
-      amount: initialMainIngredient.amount ?? 1,
-      unit: initialMainIngredient.unit ?? "Gram",
-    },
-  );
+  const [mainRecipeSelection, setMainRecipeSelection] =
+    useState<SelectedPlannerRecipe | null>(initialSelections.mainRecipe);
+  const [mainIngredientSelection, setMainIngredientSelection] =
+    useState<SelectedPlannerIngredient | null>(initialSelections.mainIngredient);
   const [supplementaryRecipeSelections, setSupplementaryRecipeSelections] =
-    useState<SelectedPlannerRecipe[]>(initialSupplementaryRecipes);
+    useState<SelectedPlannerRecipe[]>(initialSelections.supplementaryRecipes);
   const [supplementaryIngredientSelections, setSupplementaryIngredientSelections] =
-    useState<SelectedPlannerIngredient[]>(initialSupplementaryIngredients);
+    useState<SelectedPlannerIngredient[]>(initialSelections.supplementaryIngredients);
   const [selectedIngredientTags, setSelectedIngredientTags] = useState<IngredientTag[]>([]);
   const [selectedMainRecipeTags, setSelectedMainRecipeTags] =
     useState<RecipeTag[]>(() => getInitialRecipeTagFilters(slot));
@@ -433,52 +398,16 @@ function PlannerRecipePickerModal({
     setSaveError(null);
 
     try {
-      const recipesToSave =
-        [
-          ...(mainRecipeSelection === null
-            ? []
-            : [{
-                recipeId: mainRecipeSelection.recipeId,
-                ingredientId: null,
-                role: "Main" as const,
-                sortOrder: 0,
-                portions: mainRecipeSelection.portions,
-                amount: null,
-                unit: null,
-              }]),
-          ...(mainIngredientSelection === null
-            ? []
-            : [{
-                recipeId: null,
-                ingredientId: mainIngredientSelection.ingredientId,
-                role: "Main" as const,
-                sortOrder: 0,
-                portions: null,
-                amount: mainIngredientSelection.amount,
-                unit: mainIngredientSelection.unit,
-              }]),
-          ...supplementaryRecipeSelections.map((selection, index) => {
-            const recipe = recipeById.get(selection.recipeId);
-            return {
-              recipeId: selection.recipeId,
-              ingredientId: null,
-              role: recipe === undefined ? "Side" as const : getSupplementaryRole(recipe, systemTagNames),
-              sortOrder: index + 1,
-              portions: selection.portions,
-              amount: null,
-              unit: null,
-            };
-          }),
-          ...supplementaryIngredientSelections.map((selection, index) => ({
-            recipeId: null,
-            ingredientId: selection.ingredientId,
-            role: "Side" as const,
-            sortOrder: supplementaryRecipeSelections.length + index + 1,
-            portions: null,
-            amount: selection.amount,
-            unit: selection.unit,
-          })),
-        ];
+      const recipesToSave = toMealPlanItems({
+        mainRecipe: mainRecipeSelection,
+        mainIngredient: mainIngredientSelection,
+        supplementaryRecipes: supplementaryRecipeSelections,
+        supplementaryIngredients: supplementaryIngredientSelections,
+        roleOf: (recipeId) => {
+          const recipe = recipeById.get(recipeId);
+          return recipe === undefined ? "Side" : getSupplementaryRole(recipe, systemTagNames);
+        },
+      });
 
       await onSave(entry?.mealPlanEntryId ?? null, {
         date,
@@ -742,99 +671,6 @@ function PlannerRecipePickerModal({
         )}
 
     </Modal>
-  );
-}
-
-function toSelectedRecipeItem(recipe: IRecipe, selection: SelectedPlannerRecipe): PlannerPickerSelectedItem {
-  return {
-    id: recipe.recipeId,
-    imageUrl: recipe.imageUrl,
-    thumbnailUrl: recipe.thumbnailUrl,
-    kind: "recipe",
-    name: recipe.name,
-    valueLabel: `${formatNumber(selection.portions)}x`,
-  };
-}
-
-function toSelectedIngredientItem(
-  ingredient: IIngredient,
-  selection: SelectedPlannerIngredient,
-  unitLabels: Record<MeasurementUnit, string>,
-): PlannerPickerSelectedItem {
-  return {
-    id: ingredient.ingredientId,
-    imageUrl: ingredient.imageUrl,
-    thumbnailUrl: ingredient.thumbnailUrl,
-    kind: "ingredient",
-    name: ingredient.ingredientName,
-    valueLabel: `${formatNumber(selection.amount)} ${unitLabels[selection.unit]}`,
-  };
-}
-
-function formatNumber(value: number) {
-  return Number.isInteger(value) ? value.toString() : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
-}
-
-function recipeByIdFallback(recipes: IRecipe[], recipeId: number | null) {
-  return recipeId === null ? undefined : recipes.find((recipe) => recipe.recipeId === recipeId);
-}
-
-function getInitialRecipeTagFilters(slot: MealSlot): RecipeTag[] {
-  if (slot === "Breakfast") {
-    return ["Breakfast"];
-  }
-
-  if (slot === "Lunch") {
-    return ["Lunch", "Dinner"];
-  }
-
-  return slot === "Dinner" ? ["Dinner"] : [];
-}
-
-function buildAvailableTagNames(
-  categories: IIngredientTagCategory[],
-  recipes: IRecipe[],
-  ingredients: IIngredient[],
-) {
-  const tagNames = new Set<string>();
-
-  for (const category of categories) {
-    for (const tag of category.tags) {
-      tagNames.add(tag.name);
-    }
-  }
-
-  for (const recipe of recipes) {
-    for (const tag of recipe.tags) {
-      tagNames.add(tag);
-    }
-  }
-
-  for (const ingredient of ingredients) {
-    for (const tag of ingredient.tags) {
-      tagNames.add(tag);
-    }
-  }
-
-  return tagNames;
-}
-
-function findAvailableTagName(tagNames: ReadonlySet<string>, candidates: string[]) {
-  return candidates.find((candidate) => tagNames.has(candidate));
-}
-
-function uniqueValues<TValue>(values: Array<TValue | undefined>) {
-  return Array.from(new Set(values.filter((value): value is TValue => value !== undefined)));
-}
-
-function toggleTagFilter<TTag extends string>(
-  tag: TTag,
-  setTags: Dispatch<SetStateAction<TTag[]>>,
-) {
-  setTags((currentTags) =>
-    currentTags.includes(tag)
-      ? currentTags.filter((currentTag) => currentTag !== tag)
-      : [...currentTags, tag],
   );
 }
 
