@@ -23,17 +23,26 @@ public class KassalappProductLookupService(
         CancellationToken cancellationToken
     )
     {
-        var apiKey = string.IsNullOrWhiteSpace(request.ApiKey)
-            ? await appSettingsService.GetValueAsync(AppSettingKeys.KassalappApiKey, cancellationToken)
-            : request.ApiKey;
+        var storedBaseUrl = await appSettingsService.GetValueAsync(AppSettingKeys.KassalappBaseUrl, cancellationToken);
+        var baseUrl = EffectiveBaseUrl(string.IsNullOrWhiteSpace(request.BaseUrl) ? storedBaseUrl : request.BaseUrl);
+        var apiKey = request.ApiKey;
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            if (!StoredSecrets.MayUseFor(baseUrl, EffectiveBaseUrl(storedBaseUrl)))
+            {
+                throw new ProductLookupConfigurationException(
+                    "Enter the Kassalapp API key to test a base URL other than the saved one.");
+            }
+
+            apiKey = await appSettingsService.GetValueAsync(AppSettingKeys.KassalappApiKey, cancellationToken);
+        }
+
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             throw new ProductLookupConfigurationException("Kassalapp API key is not configured.");
         }
 
-        var storedBaseUrl = await appSettingsService.GetValueAsync(AppSettingKeys.KassalappBaseUrl, cancellationToken);
-        var baseUrl = string.IsNullOrWhiteSpace(request.BaseUrl) ? storedBaseUrl : request.BaseUrl;
-        httpClient.BaseAddress = new Uri(string.IsNullOrWhiteSpace(baseUrl) ? "https://kassal.app/api/v1/" : EnsureTrailingSlash(baseUrl));
+        httpClient.BaseAddress = new Uri(baseUrl);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey.Trim());
         httpClient.DefaultRequestHeaders.Accept.Clear();
         httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -65,8 +74,8 @@ public class KassalappProductLookupService(
             throw new ProductLookupConfigurationException("Kassalapp API key is not configured.");
         }
 
-        var baseUrl = (await appSettingsService.GetValueAsync(AppSettingKeys.KassalappBaseUrl, cancellationToken))?.Trim();
-        httpClient.BaseAddress = new Uri(string.IsNullOrWhiteSpace(baseUrl) ? "https://kassal.app/api/v1/" : EnsureTrailingSlash(baseUrl));
+        var baseUrl = await appSettingsService.GetValueAsync(AppSettingKeys.KassalappBaseUrl, cancellationToken);
+        httpClient.BaseAddress = new Uri(EffectiveBaseUrl(baseUrl));
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey.Trim());
         httpClient.DefaultRequestHeaders.Accept.Clear();
         httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -396,8 +405,18 @@ public class KassalappProductLookupService(
         return match?.Amount;
     }
 
-    private static string EnsureTrailingSlash(string value) =>
-        value.EndsWith('/') ? value : $"{value}/";
+    private const string DefaultBaseUrl = "https://kassal.app/api/v1/";
+
+    private static string EffectiveBaseUrl(string? baseUrl)
+    {
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            return DefaultBaseUrl;
+        }
+
+        var value = baseUrl.Trim();
+        return value.EndsWith('/') ? value : $"{value}/";
+    }
 }
 
 public class ProductLookupConfigurationException(string message) : Exception(message);
