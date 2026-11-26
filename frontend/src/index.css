@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/*
+ * Themes (AUDIT F17, F18). The app shell carries data-theme="light" or "dark". The light look is the default; a
+ * class that is different in the dark theme is written with the dark: variant beside it, and light: marks the few
+ * classes only the light theme has.
+ */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@custom-variant light (&:where([data-theme=light], [data-theme=light] *));
+
 html {
   scrollbar-gutter: stable;
 }

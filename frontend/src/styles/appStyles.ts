@@ -1,4 +1,4 @@
-export type SiteTheme = "dark" | "light" | "paletteLight";
+export type SiteTheme = "dark" | "paletteLight";
 
 // Contrast (WCAG): #7A8864 is 3.55:1 on #FAF7F2, so it is kept for borders and accents. Text in the
 // light theme uses oliveDark (#556145, 6.18:1 on #FAF7F2, 4.58:1 on champagne), and olive surfaces that
