@@ -86,11 +86,11 @@ function NutritionPage({ theme }: NutritionPageProps) {
           <p className={nutritionStyles.sourceText(theme)}>{t.nutrition.approximateNotice}</p>
         </header>
 
-        <section className={nutritionStyles.panel(theme)}>
+        <section className={nutritionStyles.panel}>
           <label className={nutritionStyles.field}>
             <span className={nutritionStyles.label}>{t.nutrition.weekStart}</span>
             <input
-              className={nutritionStyles.input(theme)}
+              className={nutritionStyles.input}
               type="date"
               value={weekStart}
               onChange={(event) => setWeekStart(event.target.value)}
@@ -99,7 +99,7 @@ function NutritionPage({ theme }: NutritionPageProps) {
           <label className={nutritionStyles.field}>
             <span className={nutritionStyles.label}>{t.nutrition.profile}</span>
             <select
-              className={nutritionStyles.input(theme)}
+              className={nutritionStyles.input}
               value={profileId}
               onChange={(event) => {
                 const nextProfileId = event.target.value;
@@ -118,7 +118,7 @@ function NutritionPage({ theme }: NutritionPageProps) {
           <label className={nutritionStyles.field}>
             <span className={nutritionStyles.label}>{t.nutrition.peopleEating}</span>
             <input
-              className={nutritionStyles.input(theme)}
+              className={nutritionStyles.input}
               min="1"
               step="1"
               type="number"
@@ -138,7 +138,7 @@ function NutritionPage({ theme }: NutritionPageProps) {
               summary.referenceSource.provider,
               formatDateTime(summary.referenceSource.importedAt, t.locale),
             )}{" "}
-            <a className={nutritionStyles.sourceLink(theme)} href={summary.referenceSource.sourceUrl} target="_blank" rel="noreferrer">
+            <a className={nutritionStyles.sourceLink} href={summary.referenceSource.sourceUrl} target="_blank" rel="noreferrer">
               {t.nutrition.referenceSourceLink}
             </a>
           </p>
@@ -162,12 +162,12 @@ function NutritionPage({ theme }: NutritionPageProps) {
 
         {error !== null && <p className={nutritionStyles.statusError(theme)}>{error}</p>}
         {isLoading ? (
-          <div className={nutritionStyles.emptyState(theme)}>{t.common.working}</div>
+          <div className={nutritionStyles.emptyState}>{t.common.working}</div>
         ) : summary === null ? (
-          <div className={nutritionStyles.emptyState(theme)}>{t.nutrition.noData}</div>
+          <div className={nutritionStyles.emptyState}>{t.nutrition.noData}</div>
         ) : (
           <>
-            <section className={nutritionStyles.dailyPanel(theme)}>
+            <section className={nutritionStyles.dailyPanel}>
               <div className={nutritionStyles.dailyHeader}>
                 <h2 className={nutritionStyles.dailyTitle}>{t.nutrition.dailyCaloriesTitle}</h2>
                 <div className={nutritionStyles.dailyHeaderMeta}>
@@ -193,7 +193,7 @@ function NutritionPage({ theme }: NutritionPageProps) {
               {summary.items.map((item) => {
                 const displayItem = toPerPersonItem(item, peopleEating);
                 return (
-                  <article className={nutritionStyles.item(theme)} key={item.key}>
+                  <article className={nutritionStyles.item} key={item.key}>
                     <div className={nutritionStyles.itemHeader}>
                       <h2 className={nutritionStyles.itemTitle}>{t.nutrition.items[item.key] ?? item.label}</h2>
                       <span className={nutritionStyles.itemTotal(theme)}>{formatAmount(displayItem.total, displayItem.unit, t.locale)}</span>

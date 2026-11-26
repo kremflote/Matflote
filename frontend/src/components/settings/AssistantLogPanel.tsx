@@ -73,13 +73,13 @@ export default function AssistantLogPanel({ theme }: AssistantLogPanelProps) {
   };
 
   return (
-    <div className={settingsStyles.panel(theme)}>
+    <div className={settingsStyles.panel}>
       <div className={settingsStyles.statusRow}>
         <div>
           <h2 className={settingsStyles.panelTitle}>{text.title}</h2>
           <p className={settingsStyles.panelBody(theme)}>{text.body}</p>
         </div>
-        <button className={settingsStyles.secondaryButton(theme)} disabled={isUndoing} type="button" onClick={() => void load()}>
+        <button className={settingsStyles.secondaryButton} disabled={isUndoing} type="button" onClick={() => void load()}>
           {text.refresh}
         </button>
       </div>
@@ -101,7 +101,7 @@ export default function AssistantLogPanel({ theme }: AssistantLogPanelProps) {
                 </div>
                 {entry.isNextUndo && (
                   <button
-                    className={settingsStyles.secondaryButton(theme)}
+                    className={settingsStyles.secondaryButton}
                     disabled={isUndoing}
                     type="button"
                     onClick={() => {

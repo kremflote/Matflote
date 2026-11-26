@@ -48,7 +48,7 @@ export function RecipeIngredientPickerContent({
     <>
       <SearchField
         aria-label={t.cookbook.searchIngredientsPlaceholder}
-        inputClassName={recipeBrowserStyles.textField(theme)}
+        inputClassName={recipeBrowserStyles.textField}
         placeholder={t.cookbook.searchIngredientsPlaceholder}
         theme={theme}
         value={ingredientSearch}
@@ -136,7 +136,7 @@ function RecipeIngredientPickerRow({
       <div className={recipeBrowserStyles.recipeIngredientControlGrid}>
         <input
           aria-label={t.common.amountFor(ingredient.ingredientName)}
-          className={recipeBrowserStyles.compactTextField(theme)}
+          className={recipeBrowserStyles.compactTextField}
           disabled={!selected}
           min="0"
           placeholder={amountPlaceholder}
@@ -147,7 +147,7 @@ function RecipeIngredientPickerRow({
         />
         <select
           aria-label={t.common.unitFor(ingredient.ingredientName)}
-          className={recipeBrowserStyles.compactTextField(theme)}
+          className={recipeBrowserStyles.compactTextField}
           disabled={!selected}
           value={unit}
           onChange={(event) => onUnitChange(event.target.value as MeasurementUnit)}
@@ -160,7 +160,7 @@ function RecipeIngredientPickerRow({
         </select>
         <select
           aria-label={t.common.preparationFor(ingredient.ingredientName)}
-          className={`${recipeBrowserStyles.compactTextField(theme)} ${recipeBrowserStyles.recipeIngredientPreparationField}`}
+          className={`${recipeBrowserStyles.compactTextField} ${recipeBrowserStyles.recipeIngredientPreparationField}`}
           disabled={!selected}
           value={preparation}
           onChange={(event) => onPreparationChange(event.target.value as IngredientPreparation)}
@@ -260,7 +260,7 @@ export function RecipeComponentPickerContent({
     <>
       <SearchField
         aria-label={t.cookbook.searchRecipes}
-        inputClassName={recipeBrowserStyles.textField(theme)}
+        inputClassName={recipeBrowserStyles.textField}
         placeholder={t.cookbook.searchRecipes}
         theme={theme}
         value={recipeSearch}
@@ -360,7 +360,7 @@ function RecipeComponentPickerRow({
       <div className={recipeBrowserStyles.recipeIngredientControlGrid}>
         <input
           aria-label={t.common.amountFor(recipe.name)}
-          className={recipeBrowserStyles.compactTextField(theme)}
+          className={recipeBrowserStyles.compactTextField}
           disabled={!selected}
           min="0.01"
           placeholder={amountPlaceholder}
@@ -371,7 +371,7 @@ function RecipeComponentPickerRow({
         />
         <select
           aria-label={t.common.unitFor(recipe.name)}
-          className={recipeBrowserStyles.compactTextField(theme)}
+          className={recipeBrowserStyles.compactTextField}
           disabled={!selected}
           value={unit}
           onChange={(event) => onUnitChange(event.target.value as MeasurementUnit)}
@@ -384,7 +384,7 @@ function RecipeComponentPickerRow({
         </select>
         <select
           aria-label={t.common.preparationFor(recipe.name)}
-          className={`${recipeBrowserStyles.compactTextField(theme)} ${recipeBrowserStyles.recipeIngredientPreparationField}`}
+          className={`${recipeBrowserStyles.compactTextField} ${recipeBrowserStyles.recipeIngredientPreparationField}`}
           disabled={!selected}
           value={preparation}
           onChange={(event) => onPreparationChange(event.target.value as IngredientPreparation)}
@@ -483,21 +483,21 @@ export function RecipeIngredientPickerDialog({
     <Modal
       backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
       bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-      closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+      closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
       closeLabel={closeLabel}
       footer={
         <>
-          <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onCancel}>
+          <button className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onCancel}>
             {t.common.cancel}
           </button>
-          <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onConfirm}>
+          <button className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onConfirm}>
             {t.common.confirm}
           </button>
         </>
       }
       footerClassName={recipeBrowserStyles.formActions}
       headerClassName={recipeBrowserStyles.modalHeader}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
       title={t.cookbook.ingredients}
       titleClassName={recipeBrowserStyles.modalTitle}
       onClose={onCancel}

@@ -75,118 +75,64 @@ export const colorPaletteClasses = {
   },
 } as const;
 
-const plannerControlHoverClasses = {
-  dark: "hover:bg-white/[0.12]",
-  light: "hover:bg-neutral-100",
-  paletteLight: "hover:bg-[#FAF7F2]/55",
-} as const;
-
 export const siteColorClasses = {
-  dark: {
-    // A bar that stays under the fixed header on narrow screens, in the page colour.
-    stickyBar: "max-[1100px]:bg-[#181818]/95 max-[1100px]:backdrop-blur-sm",
-    page: "bg-[#111111] text-neutral-50 before:bg-white/[0.03]",
-    header: "border-white/[0.08] bg-white/[0.06]",
-    headerForeground: "text-neutral-50",
-    fixedHeader:
-      "max-[1100px]:border-white/[0.14] max-[1100px]:bg-neutral-950/95",
-    nav: "border-white/[0.08] bg-white/[0.04]",
-    bottomNav:
-      "max-[1100px]:border-white/[0.14] max-[1100px]:bg-neutral-950/95",
-    control:
-      "border-white/[0.08] bg-white/[0.055] text-neutral-300 hover:border-white/[0.16] hover:bg-white/[0.14] hover:text-neutral-50 max-[1100px]:border-white/[0.16] max-[1100px]:bg-neutral-800 max-[1100px]:text-neutral-100",
-    controlSelected:
-      "border-white/[0.18] bg-white/[0.18] text-neutral-50 max-[1100px]:border-white/[0.24] max-[1100px]:bg-neutral-700",
-    plannerControl: `border-white/[0.12] bg-white/[0.06] text-white ${plannerControlHoverClasses.dark}`,
-    plannerTooltip: "border-white/[0.18] bg-neutral-950 text-white",
-    cookbookFilterButton:
-      "border-white/[0.12] bg-neutral-400 text-neutral-950 hover:bg-neutral-300",
-    cookbookAddButton:
-      "border-neutral-700 bg-neutral-950 text-white hover:bg-neutral-900",
-    ingredientThumbnailInteractive: plannerControlHoverClasses.dark,
-    selectedThumbnailBorder: "border-[#B8F07A]",
-    selectedThumbnailRing: "after:ring-[#B8F07A]",
-    plannerDateItem: "bg-white/[0.12]",
-    plannerCounter: "border-white/[0.10] bg-white/[0.06] text-white",
-    plannerCounterMuted: "text-neutral-300",
-    plannerCounterAccent: "text-neutral-50",
-    plannerToggle: "border-white/[0.08] bg-black/50",
-    plannerToggleSelected: "bg-black text-white",
-    plannerToggleIdle: "text-neutral-400 hover:text-white",
-    switchTrack: "border-white/[0.14] bg-white/[0.12]",
-    switchThumb: "bg-neutral-50 text-[#111111]",
-    dayCell: "bg-black/30 text-white",
-    mealHeaderCell: "bg-black/30 text-white",
-    focus: "focus-visible:outline-white",
-  },
-  light: {
-    // A bar that stays under the fixed header on narrow screens, in the page colour.
-    stickyBar: "max-[1100px]:bg-white/95 max-[1100px]:backdrop-blur-sm",
-    page: "bg-white text-neutral-900 before:bg-black/[0.02]",
-    header: "border-neutral-200 bg-neutral-50",
-    headerForeground: "text-neutral-900",
-    fixedHeader: "max-[1100px]:border-neutral-300 max-[1100px]:bg-neutral-50",
-    nav: "border-neutral-200 bg-neutral-100",
-    bottomNav: "max-[1100px]:border-neutral-300 max-[1100px]:bg-neutral-50",
-    control:
-      "text-neutral-600 hover:border-neutral-300 hover:bg-neutral-200 hover:text-neutral-900",
-    controlSelected: "border-neutral-300 bg-neutral-200 text-neutral-900",
-    plannerControl: `border-neutral-300 bg-white text-neutral-900 ${plannerControlHoverClasses.light}`,
-    plannerTooltip: "border-neutral-300 bg-white text-neutral-900",
-    cookbookFilterButton:
-      "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-100",
-    cookbookAddButton:
-      "border-[#EEC642] bg-[#FFD64F] text-neutral-950 hover:bg-[#EEC642]",
-    ingredientThumbnailInteractive: plannerControlHoverClasses.light,
-    selectedThumbnailBorder: "border-[#9BCB4F]",
-    selectedThumbnailRing: "after:ring-[#9BCB4F]",
-    plannerDateItem: "bg-neutral-200",
-    plannerCounter: "border-neutral-200 bg-neutral-100 text-neutral-900",
-    plannerCounterMuted: "text-neutral-500",
-    plannerCounterAccent: "text-neutral-950",
-    plannerToggle: "border-neutral-300 bg-neutral-200",
-    plannerToggleSelected: "bg-neutral-900 text-white",
-    plannerToggleIdle: "text-neutral-600 hover:text-neutral-900",
-    switchTrack: "border-neutral-300 bg-neutral-200",
-    switchThumb: "bg-neutral-900 text-white",
-    dayCell: "bg-black/20 text-white",
-    mealHeaderCell: "bg-black/20 text-white",
-    focus: "focus-visible:outline-neutral-800",
-  },
-  paletteLight: {
-    // A bar that stays under the fixed header on narrow screens, in the page colour.
-    stickyBar: "max-[1100px]:bg-[#EAEBEB]/95 max-[1100px]:backdrop-blur-sm",
-    page: "bg-[#FAF7F2] text-[#556145] before:bg-[#A9BDD1]/20",
-    header: "border-[#7A8864]/35 bg-[#64714F]",
-    headerForeground: "text-[#FAF7F2]",
-    fixedHeader: "max-[1100px]:border-[#7A8864]/35 max-[1100px]:bg-[#64714F]",
-    nav: "border-[#C8C0B5] bg-[#FAF7F2]/55",
-    bottomNav: "max-[1100px]:border-[#7A8864]/35 max-[1100px]:bg-[#64714F]",
-    control:
-      "text-[#FAF7F2] hover:border-[#FAF7F2]/45 hover:bg-[#FAF7F2]/15 hover:text-[#FAF7F2]",
-    controlSelected: "border-[#FAF7F2]/70 bg-[#FAF7F2] text-[#556145]",
-    plannerControl: `border-[#7A8864]/35 bg-[#FAF7F2]/35 text-[#556145] ${plannerControlHoverClasses.paletteLight}`,
-    plannerTooltip: "border-[#7A8864] bg-[#FAF7F2] text-[#556145]",
-    cookbookFilterButton:
-      "border-[#7A8864]/35 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]",
-    cookbookAddButton:
-      "border-[#7A8864] bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]",
-    ingredientThumbnailInteractive: plannerControlHoverClasses.paletteLight,
-    selectedThumbnailBorder: "border-[#9BCB4F]",
-    selectedThumbnailRing: "after:ring-[#9BCB4F]",
-    plannerDateItem: "bg-[#C8C0B5]/70",
-    plannerCounter: "border-[#C8C0B5] bg-[#E5D5BC]/60 text-[#556145]",
-    plannerCounterMuted: "text-[#556145]",
-    plannerCounterAccent: "text-[#556145]",
-    plannerToggle: "border-[#7A8864]/35 bg-[#64714F]",
-    plannerToggleSelected: "bg-[#FAF7F2] text-[#556145]",
-    plannerToggleIdle: "text-[#FAF7F2] hover:text-[#FAF7F2]",
-    switchTrack: "border-[#7A8864]/35 bg-[#556145]",
-    switchThumb: "bg-[#FAF7F2] text-[#FFD64F]",
-    dayCell: "bg-[#64714F] text-[#FAF7F2]",
-    mealHeaderCell: "bg-[#64714F] text-[#FAF7F2]",
-    focus: "focus-visible:outline-[#7A8864]",
-  },
+  // A bar that stays under the fixed header on narrow screens, in the page colour.
+  stickyBar:
+    "max-[1100px]:bg-[#EAEBEB]/95 max-[1100px]:backdrop-blur-sm dark:max-[1100px]:bg-[#181818]/95",
+  page:
+    "bg-[#FAF7F2] text-[#556145] before:bg-[#A9BDD1]/20 dark:bg-[#111111] dark:text-neutral-50 dark:before:bg-white/[0.03]",
+  header:
+    "border-[#7A8864]/35 bg-[#64714F] dark:border-white/[0.08] dark:bg-white/[0.06]",
+  headerForeground:
+    "text-[#FAF7F2] dark:text-neutral-50",
+  fixedHeader:
+    "max-[1100px]:border-[#7A8864]/35 max-[1100px]:bg-[#64714F] dark:max-[1100px]:border-white/[0.14] dark:max-[1100px]:bg-neutral-950/95",
+  nav:
+    "border-[#C8C0B5] bg-[#FAF7F2]/55 dark:border-white/[0.08] dark:bg-white/[0.04]",
+  bottomNav:
+    "max-[1100px]:border-[#7A8864]/35 max-[1100px]:bg-[#64714F] dark:max-[1100px]:border-white/[0.14] dark:max-[1100px]:bg-neutral-950/95",
+  control:
+    "text-[#FAF7F2] hover:border-[#FAF7F2]/45 hover:bg-[#FAF7F2]/15 hover:text-[#FAF7F2] dark:border-white/[0.08] dark:bg-white/[0.055] dark:text-neutral-300 dark:hover:border-white/[0.16] dark:hover:bg-white/[0.14] dark:hover:text-neutral-50 dark:max-[1100px]:border-white/[0.16] dark:max-[1100px]:bg-neutral-800 dark:max-[1100px]:text-neutral-100",
+  controlSelected:
+    "border-[#FAF7F2]/70 bg-[#FAF7F2] text-[#556145] dark:border-white/[0.18] dark:bg-white/[0.18] dark:text-neutral-50 dark:max-[1100px]:border-white/[0.24] dark:max-[1100px]:bg-neutral-700",
+  plannerControl:
+    "border-[#7A8864]/35 bg-[#FAF7F2]/35 text-[#556145] hover:bg-[#FAF7F2]/55 dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.12]",
+  plannerTooltip:
+    "border-[#7A8864] bg-[#FAF7F2] text-[#556145] dark:border-white/[0.18] dark:bg-neutral-950 dark:text-white",
+  cookbookFilterButton:
+    "border-[#7A8864]/35 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC] dark:border-white/[0.12] dark:bg-neutral-400 dark:text-neutral-950 dark:hover:bg-neutral-300",
+  cookbookAddButton:
+    "border-[#7A8864] bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC] dark:border-neutral-700 dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-900",
+  ingredientThumbnailInteractive:
+    "hover:bg-[#FAF7F2]/55 dark:hover:bg-white/[0.12]",
+  selectedThumbnailBorder:
+    "border-[#9BCB4F] dark:border-[#B8F07A]",
+  selectedThumbnailRing:
+    "after:ring-[#9BCB4F] dark:after:ring-[#B8F07A]",
+  plannerDateItem:
+    "bg-[#C8C0B5]/70 dark:bg-white/[0.12]",
+  plannerCounter:
+    "border-[#C8C0B5] bg-[#E5D5BC]/60 text-[#556145] dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white",
+  plannerCounterMuted:
+    "text-[#556145] dark:text-neutral-300",
+  plannerCounterAccent:
+    "text-[#556145] dark:text-neutral-50",
+  plannerToggle:
+    "border-[#7A8864]/35 bg-[#64714F] dark:border-white/[0.08] dark:bg-black/50",
+  plannerToggleSelected:
+    "bg-[#FAF7F2] text-[#556145] dark:bg-black dark:text-white",
+  plannerToggleIdle:
+    "text-[#FAF7F2] hover:text-[#FAF7F2] dark:text-neutral-400 dark:hover:text-white",
+  switchTrack:
+    "border-[#7A8864]/35 bg-[#556145] dark:border-white/[0.14] dark:bg-white/[0.12]",
+  switchThumb:
+    "bg-[#FAF7F2] text-[#FFD64F] dark:bg-neutral-50 dark:text-[#111111]",
+  dayCell:
+    "bg-[#64714F] text-[#FAF7F2] dark:bg-black/30 dark:text-white",
+  mealHeaderCell:
+    "bg-[#64714F] text-[#FAF7F2] dark:bg-black/30 dark:text-white",
+  focus:
+    "focus-visible:outline-[#7A8864] dark:focus-visible:outline-white",
 } as const;
 
 export const typographyClasses = {
@@ -245,24 +191,9 @@ export const shadowClasses = {
 } as const;
 
 export const surfaceClasses = {
-  panel: (theme: SiteTheme) =>
-    theme === "dark"
-      ? "border-white/[0.10] bg-white/[0.035]"
-      : theme === "paletteLight"
-        ? "border-[#C8C0B5] bg-[#E5D5BC]/30"
-        : "border-neutral-200 bg-neutral-50",
-  field: (theme: SiteTheme) =>
-    theme === "dark"
-      ? "border-white/[0.10] bg-neutral-900 text-neutral-100 focus-visible:outline-white"
-      : theme === "paletteLight"
-        ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] focus-visible:outline-[#7A8864]"
-        : "border-neutral-300 bg-white text-neutral-900 focus-visible:outline-neutral-800",
-  modal: (theme: SiteTheme) =>
-    theme === "dark"
-      ? "border-white/[0.12] bg-neutral-950 text-neutral-100"
-      : theme === "paletteLight"
-        ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
-        : "border-neutral-200 bg-white text-neutral-900",
+  panel: "border-[#C8C0B5] bg-[#E5D5BC]/30 dark:border-white/[0.10] dark:bg-white/[0.035]",
+  field: "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] focus-visible:outline-[#7A8864] dark:border-white/[0.10] dark:bg-neutral-900 dark:text-neutral-100 dark:focus-visible:outline-white",
+  modal: "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] dark:border-white/[0.12] dark:bg-neutral-950 dark:text-neutral-100",
 } as const;
 
 export const modalLayoutClasses = {
@@ -283,12 +214,8 @@ export const thumbnailStyles = {
     "m-auto text-[30cqw] font-black leading-none tracking-tight",
   recipeTileInitialsTop:
     "absolute left-[8%] top-[7%] text-[17cqw] opacity-90 font-black leading-none tracking-tight",
-  recipeImageOverlay: (theme: SiteTheme) =>
-    theme === "dark"
-      ? "pointer-events-none absolute inset-0 bg-black/20"
-      : "hidden",
-  recipeTitleBand: (theme: SiteTheme) =>
-    theme === "paletteLight" ? "bg-[#556145]/95" : "bg-neutral-700/95",
+  recipeImageOverlay: "light:hidden dark:pointer-events-none dark:absolute dark:inset-0 dark:bg-black/20",
+  recipeTitleBand: "bg-[#556145]/95 dark:bg-neutral-700/95",
   recipeTitleBandLayout:
     "absolute inset-x-0 bottom-0 flex min-h-[22%] flex-col justify-center px-3 py-2",
   recipeTitleBandLayoutExpanded:
@@ -302,25 +229,16 @@ export const thumbnailStyles = {
   recipeTitleCompact: "line-clamp-2 break-words text-sm font-bold leading-tight text-[#FAF7F2]",
   recipeTitleMicro:
     "truncate text-[10px] font-bold leading-tight text-[#FAF7F2]",
-  recipeSubtitle: (theme: SiteTheme) =>
-    theme === "paletteLight" ? "text-[#FAF7F2]" : "text-neutral-300",
+  recipeSubtitle: "text-[#FAF7F2] dark:text-neutral-300",
   recipeSubtitleLayout: "mt-0.5 truncate text-xs font-semibold leading-tight",
   recipeSubtitleLayoutCompact:
     "mt-0.5 truncate text-[10px] font-semibold leading-tight",
   recipeSubtitleLayoutMicro:
     "mt-0 truncate text-[8px] font-semibold leading-tight",
-  ingredientShell: (theme: SiteTheme) =>
-    `grid min-h-12 w-full grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-2 rounded-md p-1.5 text-left ${shadowClasses.subtle} transition ${
-      theme === "dark"
-        ? "bg-white/[0.08]"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/45"
-          : "bg-neutral-100"
-    }`,
+  ingredientShell: `grid min-h-12 w-full grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-2 rounded-md p-1.5 text-left ${shadowClasses.subtle} transition bg-[#E5D5BC]/45 dark:bg-white/[0.08]`,
   ingredientShellCompact: "min-h-10 grid-cols-[1.75rem_minmax(0,1fr)] p-1",
   ingredientSelectedOutline: "outline outline-2 outline-current",
-  ingredientSelectedColorBorder: (theme: SiteTheme) =>
-    `border-2 ${siteColorClasses[theme].selectedThumbnailBorder}`,
+  ingredientSelectedColorBorder: `border-2 ${siteColorClasses.selectedThumbnailBorder}`,
   ingredientSelectedMuted: "opacity-45",
   ingredientImageFrame:
     "flex h-9 w-9 items-center justify-center overflow-hidden rounded-md",
@@ -344,42 +262,16 @@ export const focusBase =
 export const toastStyles = {
   viewport:
     "pointer-events-none fixed left-1/2 top-20 isolate z-[90] w-[min(24rem,calc(100vw_-_2rem))] -translate-x-1/2 max-sm:top-16",
-  success: (theme: SiteTheme) =>
-    `pointer-events-auto flex items-center justify-between gap-3 rounded-md border px-4 py-3 text-sm font-bold opacity-100 backdrop-blur-none ${shadowClasses.overlay} ${
-      theme === "dark"
-        ? "border-emerald-300/35 bg-emerald-950 text-emerald-50"
-        : theme === "paletteLight"
-          ? "border-[#7A8864] bg-[#DDECCF] text-[#3C4A2E]"
-          : "border-emerald-700 bg-[#ECFDF5] text-emerald-950"
-    }`,
-  closeButton: (theme: SiteTheme) =>
-    `inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm font-extrabold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "text-emerald-50 hover:bg-white/[0.10]"
-        : theme === "paletteLight"
-          ? "text-[#3C4A2E] hover:bg-[#7A8864]/15"
-          : "text-emerald-800 hover:bg-emerald-100"
-    }`,
+  success: `pointer-events-auto flex items-center justify-between gap-3 rounded-md border px-4 py-3 text-sm font-bold opacity-100 backdrop-blur-none ${shadowClasses.overlay} border-[#7A8864] bg-[#DDECCF] text-[#3C4A2E] dark:border-emerald-300/35 dark:bg-emerald-950 dark:text-emerald-50`,
+  closeButton: `inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm font-extrabold transition-colors ${focusBase} ${siteColorClasses.focus} text-[#3C4A2E] hover:bg-[#7A8864]/15 dark:text-emerald-50 dark:hover:bg-white/[0.10]`,
 } as const;
 
 export const loadErrorStyles = {
-  panel: (theme: SiteTheme) =>
-    `mb-4 flex items-center justify-between gap-4 ${radiusClasses.figma6} border px-4 py-3 max-sm:flex-col max-sm:items-stretch ${
-      theme === "dark"
-        ? "border-red-400/30 bg-red-500/10 text-red-100"
-        : theme === "paletteLight"
-          ? "border-red-700/30 bg-red-50 text-red-900"
-          : "border-red-200 bg-red-50 text-red-900"
-    }`,
+  panel: `mb-4 flex items-center justify-between gap-4 ${radiusClasses.figma6} border px-4 py-3 max-sm:flex-col max-sm:items-stretch border-red-700/30 bg-red-50 text-red-900 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-100`,
   text: "grid min-w-0 gap-1",
   title: "text-sm font-extrabold leading-tight",
   body: "text-sm font-semibold leading-snug opacity-90",
-  retryButton: (theme: SiteTheme) =>
-    `inline-flex h-10 shrink-0 items-center justify-center ${radiusClasses.figma6} border px-4 text-sm font-bold transition-colors disabled:cursor-wait disabled:opacity-60 ${focusBase} ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "border-red-300/40 bg-red-950 text-red-50 hover:bg-red-900"
-        : "border-red-700/40 bg-white text-red-900 hover:bg-red-100"
-    }`,
+  retryButton: `inline-flex h-10 shrink-0 items-center justify-center ${radiusClasses.figma6} border px-4 text-sm font-bold transition-colors disabled:cursor-wait disabled:opacity-60 ${focusBase} ${siteColorClasses.focus} border-red-700/40 bg-white text-red-900 hover:bg-red-100 dark:border-red-300/40 dark:bg-red-950 dark:text-red-50 dark:hover:bg-red-900`,
 } as const;
 
 /** The page shown by the error boundary; it cannot rely on the theme, so it uses neutral colours. */
@@ -393,115 +285,49 @@ export const errorBoundaryStyles = {
     "inline-flex h-10 items-center justify-center justify-self-start rounded-md border border-white/[0.16] bg-white/[0.08] px-4 text-sm font-bold text-neutral-100 hover:bg-white/[0.14] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
 } as const;
 
-const autofillHintTextClasses = (theme: SiteTheme) =>
-  `text-[10px] font-extrabold uppercase leading-tight ${
-    theme === "dark"
-      ? "text-neutral-400"
-      : theme === "paletteLight"
-        ? "text-[#556145]"
-        : "text-neutral-500"
-  }`;
+const autofillHintTextClasses = "text-[10px] font-extrabold uppercase leading-tight text-[#556145] dark:text-neutral-400";
 
 export const controlStyles = {
-  modalCloseButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-9 shrink-0 -translate-y-1 items-center justify-center ${radiusClasses.figma6} p-0 transition-colors max-sm:h-11 max-sm:w-11 max-sm:-translate-y-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5 ${focusBase} ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "bg-white/[0.08] text-neutral-200 hover:bg-white/[0.14]"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC] text-[#556145] hover:bg-[#C8C0B5]"
-          : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
-    }`,
-  primaryButton: (theme: SiteTheme) =>
-    `inline-flex h-12 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "border-white/[0.12] bg-white/[0.14] text-white hover:bg-white/[0.2]"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/35 bg-[#64714F] text-[#FAF7F2] hover:bg-[#556145]"
-          : "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-700"
-    }`,
-  secondaryButton: (theme: SiteTheme) =>
-    `inline-flex h-12 min-w-28 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-transparent text-neutral-200 hover:bg-white/[0.08]"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-transparent text-[#556145] hover:bg-[#E5D5BC]/55"
-          : "border-neutral-300 bg-transparent text-neutral-800 hover:bg-neutral-100"
-    }`,
-  removeButton: (theme: SiteTheme) =>
-    `inline-flex h-12 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "border-red-950 bg-red-950 text-white hover:bg-red-900"
-        : theme === "paletteLight"
-          ? "border-red-950 bg-red-950 text-[#FAF7F2] hover:bg-red-900"
-          : "border-red-900 bg-red-900 text-white hover:bg-red-800"
-    }`,
-  compactSearchInput: (theme: SiteTheme) =>
-    `h-9 w-full ${radiusClasses.figma6} border px-3 text-sm font-semibold ${shadowClasses.subtle} outline-none placeholder:text-neutral-500 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none ${focusBase} ${siteColorClasses[theme].focus} ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-neutral-200 text-neutral-900"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
-          : "border-neutral-300 bg-white text-neutral-900"
-    }`,
-  formField: (theme: SiteTheme) =>
-    `h-12 min-w-0 w-full rounded-md border px-4 text-base font-normal outline-none placeholder:text-neutral-500 ${focusBase} ${surfaceClasses.field(theme)}`,
-  compactTextField: (theme: SiteTheme) =>
-    `h-8 min-w-0 rounded-md border px-2 text-xs font-semibold outline-none placeholder:text-neutral-500 disabled:opacity-45 ${focusBase} ${surfaceClasses.field(theme)}`,
-  textArea: (theme: SiteTheme) =>
-    `min-h-32 min-w-0 w-full resize-y rounded-md border px-4 py-3 text-base font-normal leading-[1.5] outline-none placeholder:text-neutral-500 ${focusBase} ${surfaceClasses.field(theme)}`,
+  modalCloseButton: `inline-flex h-9 w-9 shrink-0 -translate-y-1 items-center justify-center ${radiusClasses.figma6} p-0 transition-colors max-sm:h-11 max-sm:w-11 max-sm:-translate-y-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5 ${focusBase} ${siteColorClasses.focus} bg-[#E5D5BC] text-[#556145] hover:bg-[#C8C0B5] dark:bg-white/[0.08] dark:text-neutral-200 dark:hover:bg-white/[0.14]`,
+  primaryButton: `inline-flex h-12 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} border-[#7A8864]/35 bg-[#64714F] text-[#FAF7F2] hover:bg-[#556145] dark:border-white/[0.12] dark:bg-white/[0.14] dark:text-white dark:hover:bg-white/[0.2]`,
+  secondaryButton: `inline-flex h-12 min-w-28 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} border-[#C8C0B5] bg-transparent text-[#556145] hover:bg-[#E5D5BC]/55 dark:border-white/[0.10] dark:text-neutral-200 dark:hover:bg-white/[0.08]`,
+  removeButton: `inline-flex h-12 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} border-red-950 bg-red-950 text-[#FAF7F2] hover:bg-red-900 dark:text-white`,
+  compactSearchInput: `h-9 w-full ${radiusClasses.figma6} border px-3 text-sm font-semibold ${shadowClasses.subtle} outline-none placeholder:text-neutral-500 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none ${focusBase} ${siteColorClasses.focus} border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] dark:border-white/[0.10] dark:bg-neutral-200 dark:text-neutral-900`,
+  formField: `h-12 min-w-0 w-full rounded-md border px-4 text-base font-normal outline-none placeholder:text-neutral-500 ${focusBase} ${surfaceClasses.field}`,
+  compactTextField: `h-8 min-w-0 rounded-md border px-2 text-xs font-semibold outline-none placeholder:text-neutral-500 disabled:opacity-45 ${focusBase} ${surfaceClasses.field}`,
+  textArea: `min-h-32 min-w-0 w-full resize-y rounded-md border px-4 py-3 text-base font-normal leading-[1.5] outline-none placeholder:text-neutral-500 ${focusBase} ${surfaceClasses.field}`,
 } as const;
 
 export const segmentedToggleStyles = {
-  shell: (theme: SiteTheme, widthClass = "w-full") =>
-    `${sizeClasses.plannerControlHeight} ${widthClass} flex max-w-full items-stretch overflow-hidden ${radiusClasses.figma6} border p-1 ${shadowClasses.subtle} ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerToggle}`,
-  option: (theme: SiteTheme, selected: boolean) =>
-    `flex h-full min-h-0 min-w-0 flex-1 items-center justify-center ${radiusClasses.figma6} px-3 text-xs font-semibold leading-none transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${
-      selected
-        ? siteColorClasses[theme].plannerToggleSelected
-        : siteColorClasses[theme].plannerToggleIdle
-    }`,
+  shell: (widthClass = "w-full") =>
+    `${sizeClasses.plannerControlHeight} ${widthClass} flex max-w-full items-stretch overflow-hidden ${radiusClasses.figma6} border p-1 ${shadowClasses.subtle} ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerToggle}`,
+  option: (selected: boolean) =>
+    `flex h-full min-h-0 min-w-0 flex-1 items-center justify-center ${radiusClasses.figma6} px-3 text-xs font-semibold leading-none transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${selected ? `${siteColorClasses.plannerToggleSelected}` : `${siteColorClasses.plannerToggleIdle}`}`,
 } as const;
 
 export const appStyles = {
-  shell: (theme: SiteTheme) =>
-    `relative min-h-screen overflow-x-clip before:pointer-events-none before:absolute before:inset-0 before:content-[''] ${sizeClasses.portableFixedHeaderOffset} ${typographyClasses.app} ${siteColorClasses[theme].page}`,
+  shell: `relative min-h-screen overflow-x-clip before:pointer-events-none before:absolute before:inset-0 before:content-[''] ${sizeClasses.portableFixedHeaderOffset} ${typographyClasses.app} ${siteColorClasses.page}`,
   overlay: "relative min-h-screen",
   contentBackground: "bg-transparent",
 };
 
 export const headerStyles = {
-  shell: (theme: SiteTheme) =>
-    `relative z-10 border-b max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:top-0 max-[1100px]:z-[60] ${shadowClasses.raised} ${siteColorClasses[theme].header} ${siteColorClasses[theme].fixedHeader}`,
+  shell: `relative z-10 border-b max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:top-0 max-[1100px]:z-[60] ${shadowClasses.raised} ${siteColorClasses.header} ${siteColorClasses.fixedHeader}`,
   // 64 px high on narrow screens, matching the shell's top padding and the cookbook's docked search row.
   inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-[1100px]:h-16 max-[1100px]:min-h-0 max-[1100px]:grid-cols-[1fr_auto] max-[1100px]:gap-x-4`,
-  logo: (theme: SiteTheme) =>
-    `min-h-11 justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses[theme].headerForeground}`,
+  logo: `min-h-11 justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses.headerForeground}`,
   actions: "flex items-center justify-end gap-2",
-  nav: (theme: SiteTheme) =>
-    `flex items-center justify-center gap-2 max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:bottom-0 max-[1100px]:z-50 max-[1100px]:border-t max-[1100px]:px-6 max-[1100px]:pt-2 max-[1100px]:[padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))] max-sm:px-4 ${siteColorClasses[theme].header} ${siteColorClasses[theme].bottomNav}`,
-  navButton: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-16 min-w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border px-3 transition-colors duration-150 max-[1100px]:h-14 max-[1100px]:min-w-0 max-[1100px]:flex-1 max-[1100px]:px-2 ${focusBase} ${siteColorClasses[theme].focus} ${
-      selected
-        ? siteColorClasses[theme].controlSelected
-        : siteColorClasses[theme].control
-    }`,
+  nav: `flex items-center justify-center gap-2 max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:bottom-0 max-[1100px]:z-50 max-[1100px]:border-t max-[1100px]:px-6 max-[1100px]:pt-2 max-[1100px]:[padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))] max-sm:px-4 ${siteColorClasses.header} ${siteColorClasses.bottomNav}`,
+  navButton: (selected: boolean) =>
+    `inline-flex h-16 min-w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border px-3 transition-colors duration-150 max-[1100px]:h-14 max-[1100px]:min-w-0 max-[1100px]:flex-1 max-[1100px]:px-2 ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.controlSelected}` : `${siteColorClasses.control}`}`,
   icon: "h-8 w-8 fill-current max-[1100px]:h-5 max-[1100px]:w-5",
   navLabel: "text-xs font-semibold leading-none max-sm:text-[11px]",
-  settingsButton: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border-0 transition-colors duration-150 max-[1100px]:h-11 max-[1100px]:w-11 ${focusBase} ${siteColorClasses[theme].focus} ${
-      selected
-        ? siteColorClasses[theme].controlSelected
-        : siteColorClasses[theme].control
-    }`,
-  themeButton: (theme: SiteTheme) =>
-    `inline-flex h-8 w-14 cursor-pointer items-center justify-center justify-self-end rounded-md border border-transparent bg-transparent p-0 max-[1100px]:h-11 ${focusBase} ${siteColorClasses[theme].focus}`,
+  settingsButton: (selected: boolean) =>
+    `inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border-0 transition-colors duration-150 max-[1100px]:h-11 max-[1100px]:w-11 ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.controlSelected}` : `${siteColorClasses.control}`}`,
+  themeButton: `inline-flex h-8 w-14 cursor-pointer items-center justify-center justify-self-end rounded-md border border-transparent bg-transparent p-0 max-[1100px]:h-11 ${focusBase} ${siteColorClasses.focus}`,
   // Exception to the rectangular control rule: the theme switch keeps the familiar rounded toggle shape.
-  themeTrack: (theme: SiteTheme) =>
-    `relative h-8 w-14 rounded-full border ${siteColorClasses[theme].switchTrack}`,
-  themeThumb: (theme: SiteTheme) =>
-    `absolute left-[3px] top-[3px] inline-flex h-6 w-6 items-center justify-center rounded-full transition-transform duration-150 ${
-      theme !== "dark" ? "translate-x-6" : ""
-    } ${siteColorClasses[theme].switchThumb}`,
+  themeTrack: `relative h-8 w-14 rounded-full border ${siteColorClasses.switchTrack}`,
+  themeThumb: `absolute left-[3px] top-[3px] inline-flex h-6 w-6 items-center justify-center rounded-full transition-transform duration-150 light:translate-x-6 ${siteColorClasses.switchThumb}`,
   themeIcon: "h-4 w-4 fill-current",
 };
 
@@ -520,9 +346,8 @@ export const settingsStyles = {
   quickSettingsRow:
     "flex flex-wrap items-start justify-between gap-4 max-sm:grid max-sm:w-full max-sm:grid-cols-1",
   title: (theme: SiteTheme) =>
-    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
-  panel: (theme: SiteTheme) =>
-    `grid gap-4 rounded-md border p-6 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
+  panel: `grid gap-4 rounded-md border p-6 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   panelTitle: "text-xl font-bold leading-tight",
   panelBody: (theme: SiteTheme) =>
     `text-sm font-semibold leading-[1.5] ${
@@ -532,12 +357,11 @@ export const settingsStyles = {
           ? "text-[#556145]"
           : "text-neutral-600"
     }`,
-  languagePanel: (theme: SiteTheme) =>
-    `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  languagePanel: `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   languagePanelTitle: "pl-2 text-sm font-bold leading-tight",
   languageOptions: "flex items-center gap-2",
   languageButton: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-10 min-w-20 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold transition-colors max-sm:h-11 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-10 min-w-20 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold transition-colors max-sm:h-11 ${focusBase} ${siteColorClasses.focus} ${
       selected
         ? theme === "dark"
           ? "border-white/[0.18] bg-white/[0.12] text-white"
@@ -584,12 +408,9 @@ export const settingsStyles = {
             ? "text-[#556145]"
             : "text-emerald-700"
     }`,
-  saveButton: (theme: SiteTheme) =>
-    `${controlStyles.primaryButton(theme)} max-sm:w-full max-sm:max-w-xs`,
-  secondaryButton: (theme: SiteTheme) =>
-    `${controlStyles.secondaryButton(theme)} max-sm:w-full max-sm:max-w-xs`,
-  currentProviderCard: (theme: SiteTheme) =>
-    `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  saveButton: `${controlStyles.primaryButton} max-sm:w-full max-sm:max-w-xs`,
+  secondaryButton: `${controlStyles.secondaryButton} max-sm:w-full max-sm:max-w-xs`,
+  currentProviderCard: `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   currentProviderTitle: "text-sm font-bold leading-tight",
   currentProviderDetails: "flex flex-wrap items-center gap-2",
   currentProviderItem: (theme: SiteTheme) =>
@@ -605,8 +426,7 @@ export const settingsStyles = {
   currentProviderValue:
     "mt-0.5 min-w-0 truncate text-sm font-bold leading-tight",
   systemGrid: "grid gap-4",
-  systemRow: (theme: SiteTheme) =>
-    `grid grid-cols-[10rem_minmax(0,1fr)] gap-4 rounded-md border px-4 py-2 text-sm max-sm:grid-cols-1 ${surfaceClasses.field(theme)}`,
+  systemRow: `grid grid-cols-[10rem_minmax(0,1fr)] gap-4 rounded-md border px-4 py-2 text-sm max-sm:grid-cols-1 ${surfaceClasses.field}`,
   systemLabel: "font-bold",
   systemValue: "min-w-0 break-words font-semibold",
 } as const;
@@ -615,7 +435,7 @@ export const scannerStyles = {
   shell: pageStyles.contentShell,
   header: "grid gap-2",
   title: (theme: SiteTheme) =>
-    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
+    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
   intro: (theme: SiteTheme) =>
     `max-w-2xl text-sm font-semibold leading-[1.5] ${
       theme === "dark"
@@ -632,10 +452,8 @@ export const scannerStyles = {
           ? "text-[#556145]"
           : "text-neutral-950"
     }`,
-  panel: (theme: SiteTheme) =>
-    `grid gap-4 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
-  desktopScannerHint: (theme: SiteTheme) =>
-    `hidden rounded-md border px-4 py-3 text-sm font-semibold leading-[1.45] min-[1101px]:block ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  panel: `grid gap-4 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
+  desktopScannerHint: `hidden rounded-md border px-4 py-3 text-sm font-semibold leading-[1.45] min-[1101px]:block ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   scannerSurface: "grid gap-4",
   lookupForm: (isOpenOnMobile: boolean) =>
     `grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 max-sm:grid-cols-1 ${
@@ -646,7 +464,7 @@ export const scannerStyles = {
   labelRow: "flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1",
   sectionTitleRow: "flex flex-wrap items-center justify-between gap-2",
   autofillHint: autofillHintTextClasses,
-  autofillReservedHint: (theme: SiteTheme) => `min-h-3 ${autofillHintTextClasses(theme)}`,
+  autofillReservedHint: `min-h-3 ${autofillHintTextClasses}`,
   nutritionSourceText: (theme: SiteTheme) =>
     `grid gap-1 text-xs font-semibold leading-tight ${
       theme === "dark"
@@ -669,7 +487,7 @@ export const scannerStyles = {
           : "text-neutral-700 hover:text-neutral-950"
     }`,
   sourceActionButton: (theme: SiteTheme) =>
-    `h-auto rounded-none border-0 bg-transparent p-0 text-xs font-extrabold underline underline-offset-2 transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+    `h-auto rounded-none border-0 bg-transparent p-0 text-xs font-extrabold underline underline-offset-2 transition-colors ${focusBase} ${siteColorClasses.focus} ${
       theme === "dark"
         ? "text-neutral-200 hover:text-white"
         : theme === "paletteLight"
@@ -695,10 +513,8 @@ export const scannerStyles = {
   input: controlStyles.formField,
   submitButton: controlStyles.primaryButton,
   scannerActions: "grid gap-3 min-[1101px]:hidden",
-  cameraButton: (theme: SiteTheme) =>
-    `${controlStyles.primaryButton(theme)} h-14 w-full text-base`,
-  manualEntryButton: (theme: SiteTheme) =>
-    `${controlStyles.secondaryButton(theme)} h-9 w-fit justify-self-center px-3 text-xs`,
+  cameraButton: `${controlStyles.primaryButton} h-14 w-full text-base`,
+  manualEntryButton: `${controlStyles.secondaryButton} h-9 w-fit justify-self-center px-3 text-xs`,
   cameraFrame: (theme: SiteTheme) =>
     `relative aspect-video w-full overflow-hidden rounded-md border ${shadowClasses.subtle} ${
       theme === "dark"
@@ -726,11 +542,9 @@ export const scannerStyles = {
           ? "border-red-700/25 bg-red-700/10 text-red-800"
           : "border-red-200 bg-red-50 text-red-700"
     }`,
-  emptyState: (theme: SiteTheme) =>
-    `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel(theme)}`,
+  emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   resultList: "grid gap-3",
-  productCard: (theme: SiteTheme) =>
-    `grid grid-cols-[6rem_minmax(0,1fr)_auto] gap-4 rounded-md border p-3 max-sm:grid-cols-[5rem_minmax(0,1fr)] ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  productCard: `grid grid-cols-[6rem_minmax(0,1fr)_auto] gap-4 rounded-md border p-3 max-sm:grid-cols-[5rem_minmax(0,1fr)] ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   productImageFrame: (theme: SiteTheme) =>
     `aspect-square overflow-hidden rounded-md border ${
       theme === "dark"
@@ -768,8 +582,7 @@ export const scannerStyles = {
           : "bg-neutral-200 text-neutral-700"
     }`,
   nutritionGrid: "grid grid-cols-4 gap-2 max-md:grid-cols-2 max-sm:grid-cols-1",
-  nutritionItem: (theme: SiteTheme) =>
-    `rounded-md border px-2 py-1 text-xs font-semibold ${surfaceClasses.panel(theme)}`,
+  nutritionItem: `rounded-md border px-2 py-1 text-xs font-semibold ${surfaceClasses.panel}`,
   candidateSection: "grid gap-3",
   candidateHeader: "flex flex-wrap items-baseline gap-3",
   candidateTitle: "text-lg font-bold leading-tight",
@@ -783,14 +596,14 @@ export const scannerStyles = {
     }`,
   candidateList: "grid gap-2",
   candidateButton: (theme: SiteTheme, selected: boolean) =>
-    `grid w-full grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 rounded-md border p-3 text-left transition-colors max-[380px]:grid-cols-[3.25rem_minmax(0,1fr)] ${shadowClasses.subtle} ${focusBase} ${siteColorClasses[theme].focus} ${
+    `grid w-full grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 rounded-md border p-3 text-left transition-colors max-[380px]:grid-cols-[3.25rem_minmax(0,1fr)] ${shadowClasses.subtle} ${focusBase} ${siteColorClasses.focus} ${
       selected
         ? theme === "dark"
           ? "border-white/[0.28] bg-white/[0.14]"
           : theme === "paletteLight"
             ? "border-[#7A8864]/50 bg-[#E5D5BC]/55"
             : "border-neutral-900 bg-neutral-100"
-        : surfaceClasses.panel(theme)
+        : surfaceClasses.panel
     }`,
   candidateImageFrame: (theme: SiteTheme) =>
     `flex aspect-square w-16 overflow-hidden rounded-md border max-[380px]:w-14 ${
@@ -810,8 +623,7 @@ export const scannerStyles = {
           ? "text-[#556145]"
         : "text-neutral-500"
     }`,
-  ingredientEditor: (theme: SiteTheme) =>
-    `grid gap-3 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  ingredientEditor: `grid gap-3 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   editorImageRow: "grid grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-3",
   editorImageLabel: "col-span-2 text-sm font-bold leading-tight",
   editorImageFrame: (theme: SiteTheme) =>
@@ -822,8 +634,7 @@ export const scannerStyles = {
           ? "border-[#C8C0B5] bg-[#FAF7F2]"
           : "border-neutral-200 bg-white"
     }`,
-  editorImageButton: (theme: SiteTheme) =>
-    `${controlStyles.secondaryButton(theme)} h-12 min-w-0 cursor-pointer px-4 text-sm`,
+  editorImageButton: `${controlStyles.secondaryButton} h-12 min-w-0 cursor-pointer px-4 text-sm`,
   hiddenFileInput: "sr-only",
   compactFormGrid:
     "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-3 max-sm:grid-cols-1",
@@ -845,15 +656,13 @@ export const scannerStyles = {
           : "text-neutral-500"
     }`,
   tagGrid: "grid grid-cols-2 gap-2",
-  tagOption: (theme: SiteTheme) =>
-    `flex min-h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${surfaceClasses.field(theme)}`,
+  tagOption: `flex min-h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${surfaceClasses.field}`,
   colorRow: "grid grid-cols-[minmax(0,1fr)_3rem] items-end gap-3",
   colorInput:
     "h-12 w-full cursor-pointer rounded-md border border-transparent bg-transparent p-0",
   saveButton: controlStyles.primaryButton,
   editorModalBackdrop: modalLayoutClasses.centeredBackdrop,
-  editorModalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  editorModalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   editorModalHeader: "flex items-start justify-between gap-4",
   editorModalTitle: "text-2xl font-bold leading-tight max-sm:text-xl",
   editorModalCloseButton: controlStyles.modalCloseButton,
@@ -876,11 +685,9 @@ export const scannerStyles = {
           ? "bg-[#B44E3A]/10 text-[#8E321F]"
           : "bg-red-50 text-red-700"
     }`,
-  matvareCandidateModalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  matvareCandidateModalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   matvareCandidateModalBody: "grid min-h-0 gap-2 overflow-y-auto pr-1",
-  infoModalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  infoModalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   infoModalBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
   infoText: (theme: SiteTheme) =>
     `text-sm font-semibold leading-[1.5] ${
@@ -900,7 +707,7 @@ export const scannerStyles = {
     }`,
   matvareSearchForm: "grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]",
   matvareCandidateButton: (theme: SiteTheme) =>
-    `grid gap-1 rounded-md border p-3 text-left transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+    `grid gap-1 rounded-md border p-3 text-left transition-colors ${focusBase} ${siteColorClasses.focus} ${
       theme === "dark"
         ? "border-white/[0.10] bg-white/[0.05] text-neutral-100 hover:bg-white/[0.10]"
         : theme === "paletteLight"
@@ -930,7 +737,7 @@ export const nutritionStyles = {
   shell: pageStyles.contentShell,
   header: "grid gap-2",
   title: (theme: SiteTheme) =>
-    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
+    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
   intro: (theme: SiteTheme) =>
     `max-w-2xl text-sm font-semibold leading-[1.5] ${
       theme === "dark"
@@ -939,8 +746,7 @@ export const nutritionStyles = {
           ? "text-[#556145]"
           : "text-neutral-600"
     }`,
-  panel: (theme: SiteTheme) =>
-    `grid grid-cols-3 items-end gap-3 rounded-md border p-4 max-md:grid-cols-2 max-sm:grid-cols-1 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  panel: `grid grid-cols-3 items-end gap-3 rounded-md border p-4 max-md:grid-cols-2 max-sm:grid-cols-1 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   field: "grid gap-2",
   label: "text-sm font-bold leading-tight",
   input: controlStyles.formField,
@@ -971,11 +777,9 @@ export const nutritionStyles = {
           ? "border-[#9B7A3D]/25 bg-[#FAF7F2] text-[#5F4A24]"
           : "border-amber-200 bg-white text-amber-900"
     }`,
-  emptyState: (theme: SiteTheme) =>
-    `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel(theme)}`,
+  emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   grid: "grid grid-cols-3 gap-3 max-[1100px]:grid-cols-2 max-sm:grid-cols-1",
-  dailyPanel: (theme: SiteTheme) =>
-    `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  dailyPanel: `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   dailyHeader: "flex flex-wrap items-baseline justify-between gap-2",
   dailyHeaderMeta: "flex flex-wrap items-baseline justify-end gap-3",
   dailyTitle: "text-base font-bold leading-tight",
@@ -998,15 +802,14 @@ export const nutritionStyles = {
     }`,
   dailyDay: "text-xs font-bold uppercase",
   dailyCalories: (theme: SiteTheme) =>
-    `text-base font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
+    `text-base font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
   dailyAverage: (theme: SiteTheme) =>
-    `text-sm font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
-  item: (theme: SiteTheme) =>
-    `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+    `text-sm font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
+  item: `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   itemHeader: "flex items-start justify-between gap-3",
   itemTitle: "text-base font-bold leading-tight",
   itemTotal: (theme: SiteTheme) =>
-    `text-sm font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses[theme].plannerCounterAccent}`,
+    `text-sm font-extrabold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
   progressTrack: (theme: SiteTheme) =>
     `h-2 overflow-hidden rounded-full ${
       theme === "dark"
@@ -1039,8 +842,7 @@ export const nutritionStyles = {
           ? "text-[#556145]"
           : "text-neutral-500"
     }`,
-  sourceLink: (theme: SiteTheme) =>
-    `font-extrabold underline-offset-2 hover:underline ${siteColorClasses[theme].plannerCounterAccent}`,
+  sourceLink: `font-extrabold underline-offset-2 hover:underline ${siteColorClasses.plannerCounterAccent}`,
 } as const;
 
 export const plannerControlsStyles = {
@@ -1058,8 +860,7 @@ export const plannerControlsStyles = {
           ? "text-[#556145]"
           : "text-neutral-500"
     }`,
-  datePrimary: (theme: SiteTheme) =>
-    `min-w-36 whitespace-nowrap text-center text-3xl font-bold leading-tight max-[1100px]:min-w-0 max-[1100px]:flex-1 max-[1100px]:truncate max-sm:text-2xl ${siteColorClasses[theme].plannerCounterAccent}`,
+  datePrimary: `min-w-36 whitespace-nowrap text-center text-3xl font-bold leading-tight max-[1100px]:min-w-0 max-[1100px]:flex-1 max-[1100px]:truncate max-sm:text-2xl ${siteColorClasses.plannerCounterAccent}`,
   leftCell:
     "order-1 col-span-5 flex items-center justify-start max-[1100px]:hidden",
   centerCell:
@@ -1070,27 +871,22 @@ export const plannerControlsStyles = {
   actionSlotLeft: "min-w-0",
   actionSlotCenter: "min-w-0",
   actionSlotRight: "min-w-0",
-  iconOnlyButton: (theme: SiteTheme) =>
-    `${sizeClasses.plannerControlHeight} max-[1100px]:h-11 group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-1.5 ${radiusClasses.figma6} border px-2 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
-  iconButton: (theme: SiteTheme) =>
-    `${sizeClasses.plannerControlHeight} inline-flex aspect-square shrink-0 items-center justify-center ${radiusClasses.figma6} border max-[1100px]:h-11 transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+  iconOnlyButton: `${sizeClasses.plannerControlHeight} max-[1100px]:h-11 group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-1.5 ${radiusClasses.figma6} border px-2 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
+  iconButton: `${sizeClasses.plannerControlHeight} inline-flex aspect-square shrink-0 items-center justify-center ${radiusClasses.figma6} border max-[1100px]:h-11 transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
   nextAndTodayGroup: "relative inline-flex gap-2",
-  todayButton: (theme: SiteTheme) =>
-    `${sizeClasses.plannerControlHeight} max-[1100px]:h-11 inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses[theme].focus} ${siteColorClasses[theme].plannerControl}`,
+  todayButton: `${sizeClasses.plannerControlHeight} max-[1100px]:h-11 inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
   buttonIcon: "h-4 w-4 shrink-0 fill-current",
   // Below 1440 px the four actions are icons with tooltips, so no label is cut off.
   actionButtonLabel: "min-w-0 truncate leading-none max-[1439px]:sr-only",
   mobileActionButtonLabel: "min-w-0 truncate leading-none",
-  tooltip: (theme: SiteTheme) =>
-    `pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold opacity-0 ${shadowClasses.subtle} transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${siteColorClasses[theme].plannerTooltip}`,
-  viewToggle: (theme: SiteTheme) =>
-    segmentedToggleStyles.shell(theme, "w-full max-w-64"),
-  viewToggleOption: (theme: SiteTheme, selected: boolean) =>
-    segmentedToggleStyles.option(theme, selected),
+  tooltip: `pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold opacity-0 ${shadowClasses.subtle} transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 ${siteColorClasses.plannerTooltip}`,
+  viewToggle: `${segmentedToggleStyles.shell("w-full max-w-64")}`,
+  viewToggleOption: (selected: boolean) =>
+    `${segmentedToggleStyles.option(selected)}`,
   mobileControlButton: (theme: SiteTheme, selected = false) =>
-    `hidden h-11 w-11 shrink-0 items-center justify-center ${radiusClasses.figma6} border p-0 max-[1100px]:inline-flex [&_svg]:h-5 [&_svg]:w-5 ${shadowClasses.subtle} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `hidden h-11 w-11 shrink-0 items-center justify-center ${radiusClasses.figma6} border p-0 max-[1100px]:inline-flex [&_svg]:h-5 [&_svg]:w-5 ${shadowClasses.subtle} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${
       selected
-        ? siteColorClasses[theme].plannerToggleSelected
+        ? siteColorClasses.plannerToggleSelected
         : theme === "dark"
           ? "border-neutral-700 bg-neutral-950 text-white hover:bg-neutral-900"
           : theme === "paletteLight"
@@ -1099,8 +895,7 @@ export const plannerControlsStyles = {
     }`,
   mobileActionsBackdrop:
     "fixed inset-0 z-[100] hidden items-center justify-center bg-black/35 p-4 max-[1100px]:flex",
-  mobileActionsPanel: (theme: SiteTheme) =>
-    `grid w-full max-w-xs grid-rows-[auto_minmax(0,1fr)] gap-3 ${radiusClasses.figma6} border p-4 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  mobileActionsPanel: `grid w-full max-w-xs grid-rows-[auto_minmax(0,1fr)] gap-3 ${radiusClasses.figma6} border p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   mobileActionsHeader: "flex items-center justify-between gap-3",
   mobileActionsTitle: "text-lg font-bold leading-tight",
   mobileActionsCloseButton: controlStyles.modalCloseButton,
@@ -1117,8 +912,7 @@ export const plannerControlsStyles = {
 
 export const prepHelperStyles = {
   modalBackdrop: modalLayoutClasses.centeredBackdrop,
-  modalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  modalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   header: "flex items-start justify-between gap-4",
   title: "text-2xl font-bold leading-tight",
   subtitle: (theme: SiteTheme) =>
@@ -1129,11 +923,10 @@ export const prepHelperStyles = {
           ? "text-[#556145]"
           : "text-neutral-500"
     }`,
-  closeButton: (theme: SiteTheme) => `${controlStyles.modalCloseButton(theme)} max-sm:hidden`,
+  closeButton: `${controlStyles.modalCloseButton} max-sm:hidden`,
   bodyFrame: "grid min-h-0 gap-3",
   list: "grid max-h-[48vh] gap-3 overflow-y-auto pr-1",
-  item: (theme: SiteTheme) =>
-    `grid gap-2 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  item: `grid gap-2 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   itemHeader: "flex flex-wrap items-start justify-between gap-3",
   itemName: "text-base font-bold leading-tight",
   itemAmount: "whitespace-nowrap text-sm font-extrabold",
@@ -1154,8 +947,7 @@ export const prepHelperStyles = {
           ? "text-[#556145]"
           : "text-neutral-500"
     }`,
-  emptyState: (theme: SiteTheme) =>
-    `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel(theme)}`,
+  emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   footer: "flex items-center justify-end border-t pt-4",
   secondaryButton: controlStyles.secondaryButton,
 } as const;
@@ -1179,10 +971,10 @@ export const mealCalendarStyles = {
           : theme === "paletteLight"
             ? "bg-[#556145] text-[#FAF7F2]"
             : "bg-neutral-900 text-white"
-        : siteColorClasses[theme].plannerCounterAccent
+        : siteColorClasses.plannerCounterAccent
     }`,
   dayCellButton: (theme: SiteTheme, isToday = false) =>
-    `${mealCalendarStyles.dayCell(theme, isToday)} cursor-pointer transition-opacity hover:opacity-80 ${focusBase} ${siteColorClasses[theme].focus}`,
+    `${mealCalendarStyles.dayCell(theme, isToday)} cursor-pointer transition-opacity hover:opacity-80 ${focusBase} ${siteColorClasses.focus}`,
   dayTitleGroup: "flex items-center justify-center gap-1",
   dayHeaderTextGroup:
     "flex flex-col items-center max-[1100px]:min-w-0 max-[1100px]:flex-row max-[1100px]:gap-1.5",
@@ -1233,7 +1025,7 @@ export const mealCalendarStyles = {
       : "flex shrink-0 flex-col justify-center p-1",
   // Mouse: small solid buttons over the card. Touch: 44 px ghost buttons in the card's own column.
   mealSlotActionButton: (theme: SiteTheme, compact: boolean) =>
-    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses.focus} ${
       compact
         ? `h-8 w-8 shadow-sm ${
             theme === "dark"
@@ -1247,7 +1039,7 @@ export const mealCalendarStyles = {
           }`
     }`,
   mealSlotDeleteButton: (theme: SiteTheme, compact: boolean) =>
-    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses.focus} ${
       compact
         ? `h-8 w-8 shadow-sm ${
             theme === "dark"
@@ -1337,7 +1129,7 @@ export const mealCalendarStyles = {
           : `${isToday ? "border-neutral-900" : "border-neutral-200"} ${muted ? "" : "bg-white"}`
     }`,
   monthDayNumberButton: (theme: SiteTheme, muted: boolean, isToday: boolean) =>
-    `inline-flex h-7 min-w-7 items-center gap-1.5 self-start rounded-md px-1.5 text-sm font-extrabold leading-none disabled:cursor-default max-[1100px]:h-11 max-[1100px]:w-20 max-[1100px]:shrink-0 max-[1100px]:flex-col max-[1100px]:justify-center max-[1100px]:gap-0.5 ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-7 min-w-7 items-center gap-1.5 self-start rounded-md px-1.5 text-sm font-extrabold leading-none disabled:cursor-default max-[1100px]:h-11 max-[1100px]:w-20 max-[1100px]:shrink-0 max-[1100px]:flex-col max-[1100px]:justify-center max-[1100px]:gap-0.5 ${focusBase} ${siteColorClasses.focus} ${
       isToday
         ? theme === "dark"
           ? "bg-white text-neutral-950"
@@ -1346,13 +1138,13 @@ export const mealCalendarStyles = {
             : "bg-neutral-900 text-white"
         : muted
           ? plannerMutedText(theme)
-          : siteColorClasses[theme].plannerCounterAccent
+          : siteColorClasses.plannerCounterAccent
     }`,
   monthDayName: "hidden text-[11px] font-extrabold uppercase tracking-wider max-[1100px]:block",
   monthDayNumber: (isToday: boolean) => (isToday ? "font-black" : ""),
   monthDayMeals: "grid min-w-0 flex-1 content-start gap-1",
   monthMealChip: (theme: SiteTheme) =>
-    `flex min-h-7 min-w-0 items-center gap-1.5 ${radiusClasses.figma6} px-1.5 py-1 text-left text-xs font-bold leading-tight transition-colors disabled:cursor-not-allowed disabled:opacity-45 max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses[theme].focus} ${
+    `flex min-h-7 min-w-0 items-center gap-1.5 ${radiusClasses.figma6} px-1.5 py-1 text-left text-xs font-bold leading-tight transition-colors disabled:cursor-not-allowed disabled:opacity-45 max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses.focus} ${
       theme === "dark"
         ? "bg-white/[0.10] text-neutral-50 hover:bg-white/[0.16]"
         : theme === "paletteLight"
@@ -1363,7 +1155,7 @@ export const mealCalendarStyles = {
   monthMealChipText: "min-w-0 truncate",
   // Hidden until the day is hovered or has focus (mouse), or its date was tapped (touch).
   monthAddButton: (theme: SiteTheme, isRevealed: boolean) =>
-    `flex min-h-7 min-w-0 items-center gap-1 ${radiusClasses.figma6} border border-dashed px-1.5 py-1 text-left text-xs font-bold leading-tight transition-opacity disabled:cursor-not-allowed max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses[theme].focus} ${
+    `flex min-h-7 min-w-0 items-center gap-1 ${radiusClasses.figma6} border border-dashed px-1.5 py-1 text-left text-xs font-bold leading-tight transition-opacity disabled:cursor-not-allowed max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses.focus} ${
       isRevealed
         ? "opacity-100"
         : "opacity-0 focus-visible:opacity-100 group-hover/day:opacity-100 group-focus-within/day:opacity-100 [@media(hover:none)]:hidden"
@@ -1396,27 +1188,24 @@ export const plannerPickerStyles = {
           ? "text-[#556145]"
           : "text-neutral-500"
     }`,
-  closeButton: (theme: SiteTheme) => `${controlStyles.modalCloseButton(theme)} max-sm:hidden`,
+  closeButton: `${controlStyles.modalCloseButton} max-sm:hidden`,
   bodyFrame: "grid min-h-0 gap-4 max-sm:gap-2",
   bodyScrollFrame: "grid min-h-0 overflow-y-auto pr-1",
   controls:
     "mt-2 grid grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] items-start gap-3 max-md:grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] max-sm:mt-0 max-sm:grid-cols-[minmax(0,1fr)_auto_auto] max-sm:gap-2",
   searchInput: controlStyles.compactSearchInput,
-  categoryButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-auto items-center justify-center rounded-md border px-3 text-xs font-extrabold max-[1100px]:w-9 max-[1100px]:px-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
-  filterButton: (theme: SiteTheme) =>
-    `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 text-xs font-extrabold ${shadowClasses.subtle} transition-colors ${siteColorClasses[theme].cookbookFilterButton}`,
-  browserModeSwitch: (theme: SiteTheme) =>
-    `${segmentedToggleStyles.shell(theme)} col-start-5 h-9 w-full justify-self-end max-sm:order-first max-sm:col-span-3 max-sm:col-start-auto`,
-  browserModeOption: (theme: SiteTheme, selected: boolean) =>
-    segmentedToggleStyles.option(theme, selected),
+  categoryButton: `inline-flex h-9 w-auto items-center justify-center rounded-md border px-3 text-xs font-extrabold max-[1100px]:w-9 max-[1100px]:px-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
+  filterButton: `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 text-xs font-extrabold ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
+  browserModeSwitch: `${segmentedToggleStyles.shell()} col-start-5 h-9 w-full justify-self-end max-sm:order-first max-sm:col-span-3 max-sm:col-start-auto`,
+  browserModeOption: (selected: boolean) =>
+    `${segmentedToggleStyles.option(selected)}`,
   categoryButtonLabel: "max-[1100px]:sr-only",
   ingredientFilterChips:
     "col-span-full flex flex-wrap items-start gap-2 max-sm:col-span-3",
   quickFilterRow:
     "col-span-full flex flex-wrap items-center gap-2 max-sm:col-span-3",
   quickFilterChip: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses.focus} ${
       selected
         ? theme === "dark"
           ? "border-emerald-300/70 bg-emerald-300 text-neutral-950"
@@ -1440,7 +1229,7 @@ export const plannerPickerStyles = {
   selectedThumbnailList:
     "flex min-h-10 min-w-0 flex-1 flex-wrap items-center gap-2",
   selectedThumbnailButton: (theme: SiteTheme) =>
-    `inline-flex h-12 shrink-0 items-center gap-2 rounded-md border px-1.5 pr-2 ${shadowClasses.subtle} transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+    `inline-flex h-12 shrink-0 items-center gap-2 rounded-md border px-1.5 pr-2 ${shadowClasses.subtle} transition-colors ${focusBase} ${siteColorClasses.focus} ${
       theme === "dark"
         ? "border-white/[0.10] bg-white/[0.06] hover:bg-white/[0.10]"
         : theme === "paletteLight"
@@ -1485,18 +1274,14 @@ export const plannerPickerStyles = {
   ingredientGrid: "grid auto-rows-max grid-cols-2 content-start items-start gap-2 max-sm:grid-cols-1",
   pickerCardShell: "relative h-fit min-w-0",
   pickerFloatingControls: "absolute inset-x-3 top-3 z-20",
-  pickerIngredientCard: (theme: SiteTheme, selected: boolean) =>
-    `relative grid min-w-0 rounded-md ${
-      selected
-        ? `after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:content-[''] ${siteColorClasses[theme].selectedThumbnailRing}`
-        : ""
-    }`,
+  pickerIngredientCard: (selected: boolean) =>
+    `relative grid min-w-0 rounded-md ${selected ? `after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:content-[''] ${siteColorClasses.selectedThumbnailRing}` : ""}`,
   pickerIngredientThumbnail: "shadow-none",
   pickerIngredientControls: "px-2 pb-2 pt-2",
   recipeCard: (theme: SiteTheme, selected: boolean) =>
     `${shadowClasses.subtle} ${
       selected
-        ? `after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:content-[''] ${siteColorClasses[theme].selectedThumbnailRing}`
+        ? `after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:content-[''] ${siteColorClasses.selectedThumbnailRing}`
         : theme === "dark"
           ? "ring-1 ring-white/[0.08]"
           : theme === "paletteLight"
@@ -1535,8 +1320,7 @@ export const plannerPickerStyles = {
   footerActions:
     "flex shrink-0 flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap max-sm:[&>button]:min-w-0 max-sm:[&>button]:flex-1 max-sm:[&>button]:px-3 max-sm:[&>button]:text-sm",
   secondaryButton: controlStyles.secondaryButton,
-  mobileCancelButton: (theme: SiteTheme) =>
-    `hidden max-sm:inline-flex ${controlStyles.secondaryButton(theme)}`,
+  mobileCancelButton: `hidden max-sm:inline-flex ${controlStyles.secondaryButton}`,
   primaryButton: controlStyles.primaryButton,
   removeButton: controlStyles.removeButton,
   emptyState: (theme: SiteTheme) =>
@@ -1561,8 +1345,7 @@ export const plannerPickerStyles = {
 
 export const groceryExportStyles = {
   modalBackdrop: modalLayoutClasses.centeredBackdrop,
-  modalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  modalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   header: "flex items-start justify-between gap-4",
   title: "text-2xl font-bold leading-tight",
   subtitle: (theme: SiteTheme) =>
@@ -1576,8 +1359,7 @@ export const groceryExportStyles = {
   closeButton: controlStyles.modalCloseButton,
   bodyFrame: "grid min-h-0 gap-3",
   list: "grid max-h-[44vh] gap-4 overflow-y-auto pr-1",
-  section: (theme: SiteTheme) =>
-    `grid gap-2 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel(theme)}`,
+  section: `grid gap-2 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   sectionTitle: (theme: SiteTheme) =>
     `text-xs font-extrabold uppercase leading-tight ${
       theme === "dark"
@@ -1587,9 +1369,9 @@ export const groceryExportStyles = {
           : "text-neutral-700"
     }`,
   itemButton: (theme: SiteTheme, selected: boolean) =>
-    `grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+    `grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${focusBase} ${siteColorClasses.focus} ${
       selected
-        ? siteColorClasses[theme].plannerControl
+        ? siteColorClasses.plannerControl
         : theme === "dark"
           ? "border-white/[0.08] bg-transparent text-neutral-400"
           : theme === "paletteLight"
@@ -1621,8 +1403,7 @@ export const groceryExportStyles = {
           : "text-neutral-500"
     }`,
   itemAmount: "whitespace-nowrap text-xs font-extrabold",
-  emptyState: (theme: SiteTheme) =>
-    `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel(theme)}`,
+  emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   statusError: plannerPickerStyles.statusError,
   statusSuccess: (theme: SiteTheme) =>
     `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
@@ -1645,13 +1426,12 @@ export const groceryExportStyles = {
   secondaryButton: controlStyles.secondaryButton,
   primaryButton: controlStyles.primaryButton,
   rulesBackdrop: "fixed inset-0 z-[110] flex items-center justify-center bg-black/45 px-4 py-6",
-  rulesPanel: (theme: SiteTheme) =>
-    `grid max-h-[min(28rem,calc(100vh_-_48px))] w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 ${shadowClasses.overlay} ${surfaceClasses.modal(theme)}`,
+  rulesPanel: `grid max-h-[min(28rem,calc(100vh_-_48px))] w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   rulesBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
   rulesFooter: "flex items-center justify-end gap-3 border-t pt-4",
   ruleTagGrid: "grid grid-cols-2 gap-2 max-sm:grid-cols-1",
   ruleTagButton: (theme: SiteTheme, selected: boolean) =>
-    `min-h-9 rounded-md border px-3 py-2 text-left text-xs font-bold transition-colors ${focusBase} ${siteColorClasses[theme].focus} ${
+    `min-h-9 rounded-md border px-3 py-2 text-left text-xs font-bold transition-colors ${focusBase} ${siteColorClasses.focus} ${
       selected
         ? theme === "dark"
           ? "border-emerald-300 bg-emerald-950 text-emerald-50 shadow-[inset_0_0_0_1px_rgba(110,231,183,0.75)]"

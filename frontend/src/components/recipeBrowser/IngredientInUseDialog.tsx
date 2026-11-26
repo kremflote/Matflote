@@ -93,7 +93,7 @@ function IngredientInUseDialog({ ingredient, ingredients, uses, theme, onCancel,
           <label className={confirmationDialogStyles.fieldLabel} htmlFor={selectId}>
             <span className={confirmationDialogStyles.fieldTitle(theme)}>{t.cookbook.replaceWith}</span>
             <select
-              className={controlStyles.formField(theme)}
+              className={controlStyles.formField}
               disabled={isReplacing}
               id={selectId}
               value={replacementId ?? ""}

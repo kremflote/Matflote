@@ -26,7 +26,7 @@ export function LanguageSettingsPanel({ theme }: LanguageSettingsPanelProps) {
   const { language, setLanguage, t } = useLanguage();
 
   return (
-    <div className={settingsStyles.languagePanel(theme)} aria-label={t.settings.languageTitle}>
+    <div className={settingsStyles.languagePanel} aria-label={t.settings.languageTitle}>
       <span className={settingsStyles.languagePanelTitle}>{t.settings.languageTitle}</span>
       <div className={settingsStyles.languageOptions}>
         {supportedLanguages.map((languageOption) => (
@@ -90,7 +90,7 @@ export function ExportSettingsPanel({
   const controlsDisabled = isLoading || isSaving || isTestingVikunja || isTestingKassalapp || isUpdatingNutritionReferences;
 
   return (
-    <div className={settingsStyles.panel(theme)}>
+    <div className={settingsStyles.panel}>
       <div>
         <h2 className={settingsStyles.panelTitle}>{t.settings.integrationsTitle}</h2>
         <p className={settingsStyles.panelBody(theme)}>{t.settings.integrationsBody}</p>
@@ -111,7 +111,7 @@ export function ExportSettingsPanel({
           <label className={settingsStyles.fieldGroup}>
             <span className={settingsStyles.label}>{t.settings.provider}</span>
             <select
-              className={settingsStyles.selectInput(theme)}
+              className={settingsStyles.selectInput}
               disabled={controlsDisabled}
               value={exportForm.provider}
               onChange={(event) => onChange({ ...exportForm, provider: event.target.value })}
@@ -122,7 +122,7 @@ export function ExportSettingsPanel({
           <label className={settingsStyles.fieldGroup}>
             <span className={settingsStyles.label}>{t.settings.projectId}</span>
             <input
-              className={settingsStyles.textInput(theme)}
+              className={settingsStyles.textInput}
               disabled={controlsDisabled}
               min="1"
               type="number"
@@ -162,7 +162,7 @@ export function ExportSettingsPanel({
         <label className={settingsStyles.fieldGroup}>
           <span className={settingsStyles.label}>{t.settings.vikunjaBaseUrl}</span>
           <input
-            className={settingsStyles.textInput(theme)}
+            className={settingsStyles.textInput}
             disabled={controlsDisabled}
             placeholder={t.settings.vikunjaBaseUrlPlaceholder}
             type="url"
@@ -174,7 +174,7 @@ export function ExportSettingsPanel({
           <span className={settingsStyles.label}>{t.settings.apiToken}</span>
           <input
             autoComplete="off"
-            className={settingsStyles.textInput(theme)}
+            className={settingsStyles.textInput}
             disabled={controlsDisabled}
             placeholder={appSettings?.shoppingListExport.vikunja.hasApiToken ? t.settings.apiTokenConfigured : t.settings.apiTokenPlaceholder}
             type="password"
@@ -185,7 +185,7 @@ export function ExportSettingsPanel({
         </label>
         <div className={settingsStyles.inlineActionRow}>
           <button
-            className={settingsStyles.secondaryButton(theme)}
+            className={settingsStyles.secondaryButton}
             disabled={controlsDisabled}
             type="button"
             onClick={onTestVikunjaConnection}
@@ -203,7 +203,7 @@ export function ExportSettingsPanel({
           <label className={settingsStyles.fieldGroup}>
             <span className={settingsStyles.label}>{t.settings.kassalappBaseUrl}</span>
             <input
-              className={settingsStyles.textInput(theme)}
+              className={settingsStyles.textInput}
               disabled={controlsDisabled}
               placeholder={t.settings.kassalappBaseUrlPlaceholder}
               type="url"
@@ -215,7 +215,7 @@ export function ExportSettingsPanel({
             <span className={settingsStyles.label}>{t.settings.kassalappApiKey}</span>
             <input
               autoComplete="off"
-              className={settingsStyles.textInput(theme)}
+              className={settingsStyles.textInput}
               disabled={controlsDisabled}
               placeholder={appSettings?.externalIntegrations.kassalapp.hasApiKey ? t.settings.apiTokenConfigured : t.settings.kassalappApiKeyPlaceholder}
               type="password"
@@ -226,7 +226,7 @@ export function ExportSettingsPanel({
           </label>
           <div className={settingsStyles.inlineActionRow}>
             <button
-              className={settingsStyles.secondaryButton(theme)}
+              className={settingsStyles.secondaryButton}
               disabled={controlsDisabled}
               type="button"
               onClick={onTestKassalappConnection}
@@ -244,7 +244,7 @@ export function ExportSettingsPanel({
           <label className={settingsStyles.fieldGroup}>
             <span className={settingsStyles.label}>{t.settings.helsedirektoratetBaseUrl}</span>
             <input
-              className={settingsStyles.textInput(theme)}
+              className={settingsStyles.textInput}
               disabled={controlsDisabled}
               placeholder={t.settings.helsedirektoratetBaseUrlPlaceholder}
               type="url"
@@ -256,7 +256,7 @@ export function ExportSettingsPanel({
             <span className={settingsStyles.label}>{t.settings.helsedirektoratetSubscriptionKey}</span>
             <input
               autoComplete="off"
-              className={settingsStyles.textInput(theme)}
+              className={settingsStyles.textInput}
               disabled={controlsDisabled}
               placeholder={appSettings?.externalIntegrations.helsedirektoratet.hasSubscriptionKey ? t.settings.apiTokenConfigured : t.settings.helsedirektoratetSubscriptionKeyPlaceholder}
               type="password"
@@ -267,7 +267,7 @@ export function ExportSettingsPanel({
           </label>
           <div className={settingsStyles.inlineActionRow}>
             <button
-              className={settingsStyles.secondaryButton(theme)}
+              className={settingsStyles.secondaryButton}
               disabled={controlsDisabled}
               type="button"
               onClick={onUpdateNutritionReferences}
@@ -287,7 +287,7 @@ export function ExportSettingsPanel({
             )}
           </div>
           <button
-            className={settingsStyles.saveButton(theme)}
+            className={settingsStyles.saveButton}
             disabled={controlsDisabled}
             type="submit"
           >
@@ -307,7 +307,7 @@ export function CurrentProviderSummary({ appSettings, theme }: { appSettings: IA
       : t.settings.exportModeSingleTask;
 
   return (
-    <section className={settingsStyles.currentProviderCard(theme)} aria-label={t.settings.currentProvider}>
+    <section className={settingsStyles.currentProviderCard} aria-label={t.settings.currentProvider}>
       <div className={settingsStyles.currentProviderDetails}>
         <ProviderSummaryItem label={t.settings.provider} theme={theme} value={appSettings.shoppingListExport.provider} />
         <ProviderSummaryItem label={t.settings.currentProviderMode} theme={theme} value={modeLabel} />
@@ -352,19 +352,19 @@ export function MaintenancePanel({
     (imageCleanupReport?.untrackedImageFiles.length ?? 0);
 
   return (
-    <div className={settingsStyles.panel(theme)}>
+    <div className={settingsStyles.panel}>
       <div>
         <h2 className={settingsStyles.panelTitle}>{t.settings.maintenanceTitle}</h2>
         <p className={settingsStyles.panelBody(theme)}>{t.settings.maintenanceBody}</p>
       </div>
       <div className={settingsStyles.statusRow}>
         <a
-          className={settingsStyles.secondaryButton(theme)}
+          className={settingsStyles.secondaryButton}
           href={`${API_BASE_URL}/api/seed-catalog/export-package`}
         >
           {t.settings.downloadExportPackage}
         </a>
-        <label className={settingsStyles.secondaryButton(theme)}>
+        <label className={settingsStyles.secondaryButton}>
           {isImportingSeedCatalog ? t.settings.importingSeedCatalog : t.settings.importSeedCatalog}
           <input
             accept="application/json,.json"
@@ -381,7 +381,7 @@ export function MaintenancePanel({
           />
         </label>
         <button
-          className={settingsStyles.secondaryButton(theme)}
+          className={settingsStyles.secondaryButton}
           disabled={isLoadingImageReport || isCleaningImages}
           type="button"
           onClick={onLoadImageReport}
@@ -389,7 +389,7 @@ export function MaintenancePanel({
           {isLoadingImageReport ? t.settings.checkingImages : t.settings.checkImages}
         </button>
         <button
-          className={settingsStyles.saveButton(theme)}
+          className={settingsStyles.saveButton}
           disabled={imageCleanupReport === null || unusedImageCount === 0 || isLoadingImageReport || isCleaningImages}
           type="button"
           onClick={onCleanupImages}

@@ -38,7 +38,7 @@ function IngredientFilterPopover({
 
   return (
     <div
-      className={recipeBrowserStyles.ingredientPicker(theme)}
+      className={recipeBrowserStyles.ingredientPicker}
       ref={popoverRef}
       style={{
         left: position.left,
@@ -47,7 +47,7 @@ function IngredientFilterPopover({
     >
       <SearchField
         aria-label={t.browser.searchIngredientsToInclude}
-        inputClassName={recipeBrowserStyles.ingredientPickerSearch(theme)}
+        inputClassName={recipeBrowserStyles.ingredientPickerSearch}
         placeholder={t.browser.ingredientSearchPlaceholder}
         theme={theme}
         value={searchTerm}

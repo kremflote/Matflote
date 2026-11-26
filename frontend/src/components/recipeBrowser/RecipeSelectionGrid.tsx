@@ -32,11 +32,10 @@ function RecipeSelectionGrid({
           <RecipeThumbnail
             ariaPressed={selected}
             className={`${recipeBrowserStyles.recipeCard(theme)} ${
-              selected ? recipeBrowserStyles.componentRecipeSelected(theme) : ""
+              selected ? recipeBrowserStyles.componentRecipeSelected : ""
             }`}
             interactiveEffect={false}
             key={recipe.recipeId}
-            theme={theme}
             recipe={{
               imageUrl: recipe.imageUrl,
               thumbnailUrl: recipe.thumbnailUrl,

@@ -228,11 +228,11 @@ function TagManagementDialog({
     <Modal
       backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
       bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-      closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+      closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
       closeLabel={t.common.close}
       footer={
         <button
-          className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+          className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`}
           type="button"
           onClick={() => openNameDialog("category")}
         >
@@ -241,7 +241,7 @@ function TagManagementDialog({
       }
       footerClassName={recipeBrowserStyles.formActions}
       headerClassName={recipeBrowserStyles.modalHeader}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
       title={t.common.manageTags}
       titleClassName={recipeBrowserStyles.modalTitle}
       titleId={titleId}
@@ -278,7 +278,7 @@ function TagManagementDialog({
             <div className={recipeBrowserStyles.manageTagCategoryShell} key={category.id}>
               <div className={recipeBrowserStyles.manageTagCategoryControlsRail}>
                 <button
-                  className={recipeBrowserStyles.manageTagCollapseButton(theme)}
+                  className={recipeBrowserStyles.manageTagCollapseButton}
                   type="button"
                   aria-expanded={!isCollapsed}
                   aria-label={isCollapsed ? t.common.expand : t.common.collapse}
@@ -325,7 +325,7 @@ function TagManagementDialog({
                     </button>
                   </div>
                   <input
-                    className={recipeBrowserStyles.manageTagTextField(theme)}
+                    className={recipeBrowserStyles.manageTagTextField}
                     readOnly={isSyntheticCategory}
                     value={managedCategoryNames[category.id] ?? category.name}
                     onChange={(event) =>
@@ -392,7 +392,7 @@ function TagManagementDialog({
                       </div>
                     ) : (
                       <input
-                        className={recipeBrowserStyles.manageTagTextField(theme)}
+                        className={recipeBrowserStyles.manageTagTextField}
                         value={managedTagNames[tag.name] ?? tag.name}
                         onChange={(event) =>
                           setManagedTagNames((currentNames) => ({
@@ -445,12 +445,12 @@ function TagManagementDialog({
         <Modal
           backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
           bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-          closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+          closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
           closeLabel={t.common.close}
           footer={
             <>
               <button
-                className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+                className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`}
                 disabled={isSavingName}
                 type="button"
                 onClick={() => setNameDialogMode(null)}
@@ -458,7 +458,7 @@ function TagManagementDialog({
                 {t.common.cancel}
               </button>
               <button
-                className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+                className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`}
                 disabled={isSavingName}
                 type="button"
                 onClick={() => void saveNewName()}
@@ -469,7 +469,7 @@ function TagManagementDialog({
           }
           footerClassName={recipeBrowserStyles.formActions}
           headerClassName={recipeBrowserStyles.modalHeader}
-          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
           title={nameDialogMode === "category" ? t.common.addCategory : t.common.addTag}
           titleClassName={recipeBrowserStyles.modalTitle}
           titleId={nameDialogTitleId}
@@ -480,7 +480,7 @@ function TagManagementDialog({
             <label className={recipeBrowserStyles.field}>
               <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.name}</span>
               <input
-                className={recipeBrowserStyles.textField(theme)}
+                className={recipeBrowserStyles.textField}
                 maxLength={nameDialogMode === "category" ? 120 : 64}
                 value={newName}
                 onChange={(event) => setNewName(event.target.value)}
@@ -490,7 +490,7 @@ function TagManagementDialog({
               <label className={recipeBrowserStyles.field}>
                 <span className={recipeBrowserStyles.label(theme)}>{t.filters.categories}</span>
                 <select
-                  className={recipeBrowserStyles.textField(theme)}
+                  className={recipeBrowserStyles.textField}
                   value={selectedCategoryId ?? ""}
                   onChange={(event) => setSelectedCategoryId(event.target.value.length === 0 ? null : Number(event.target.value))}
                 >

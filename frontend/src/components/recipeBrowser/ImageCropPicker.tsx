@@ -157,7 +157,7 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
           <SliderField label={t.cookbook.horizontalCrop} max={100} min={-100} step={1} value={offsetX} onChange={setOffsetX} />
           <SliderField label={t.cookbook.verticalCrop} max={100} min={-100} step={1} value={offsetY} onChange={setOffsetY} />
           <button
-            className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.cropConfirmButton}`}
+            className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.cropConfirmButton}`}
             type="button"
             onClick={() => setCropConfirmed(true)}
           >

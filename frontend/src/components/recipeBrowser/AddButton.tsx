@@ -40,7 +40,7 @@ function AddButton({ target, theme }: AddButtonProps) {
     <>
       <button
         aria-label={t.common.add}
-        className={recipeBrowserStyles.addButton(theme)}
+        className={recipeBrowserStyles.addButton}
         type="button"
         onClick={openModal}
       >
@@ -50,10 +50,10 @@ function AddButton({ target, theme }: AddButtonProps) {
       {isOpen && (
         <Modal
           backdropClassName={recipeBrowserStyles.modalBackdrop}
-          closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+          closeButtonClassName={recipeBrowserStyles.modalCloseButton}
           closeLabel={t.common.close}
           headerClassName={recipeBrowserStyles.modalHeaderIntro}
-          panelClassName={recipeBrowserStyles.modalPanel(theme)}
+          panelClassName={recipeBrowserStyles.modalPanel}
           title={t.cookbook.create}
           titleClassName={recipeBrowserStyles.modalTitle}
           titleId={modalTitleId}
@@ -97,7 +97,6 @@ function AddButton({ target, theme }: AddButtonProps) {
         <SuccessToast
           closeLabel={t.common.close}
           message={successMessage}
-          theme={theme}
           onClose={() => setSuccessMessage(null)}
         />
       )}

@@ -61,7 +61,7 @@ function ThumbnailMaintenance({ theme }: ThumbnailMaintenanceProps) {
   return (
     <>
       <button
-        className={settingsStyles.secondaryButton(theme)}
+        className={settingsStyles.secondaryButton}
         disabled={progress !== null}
         type="button"
         onClick={() => void createMissingThumbnails()}

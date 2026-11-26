@@ -51,7 +51,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
 
   if (form === null) {
     return (
-      <div className={settingsStyles.panel(theme)}>
+      <div className={settingsStyles.panel}>
         <h2 className={settingsStyles.panelTitle}>{text.title}</h2>
         {error !== null && <p className={settingsStyles.statusText(theme, "error")}>{error}</p>}
       </div>
@@ -107,7 +107,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
       <label className={settingsStyles.fieldGroup}>
         <span className={settingsStyles.label}>{label}</span>
         <input
-          className={settingsStyles.textInput(theme)}
+          className={settingsStyles.textInput}
           disabled={isSaving}
           max={max}
           min={min}
@@ -121,7 +121,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
   );
 
   return (
-    <div className={settingsStyles.panel(theme)}>
+    <div className={settingsStyles.panel}>
       <div>
         <h2 className={settingsStyles.panelTitle}>{text.title}</h2>
         <p className={settingsStyles.panelBody(theme)}>{text.body}</p>
@@ -182,7 +182,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
           <div className={settingsStyles.inlineActionRow}>
             <select
               aria-label={text.chooseIngredient}
-              className={`${settingsStyles.selectInput(theme)} max-w-sm`}
+              className={`${settingsStyles.selectInput} max-w-sm`}
               disabled={isSaving}
               value={ingredientToAdd}
               onChange={(event) => setIngredientToAdd(event.target.value)}
@@ -195,7 +195,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
                 ))}
             </select>
             <button
-              className={settingsStyles.secondaryButton(theme)}
+              className={settingsStyles.secondaryButton}
               disabled={isSaving || ingredientToAdd.length === 0}
               type="button"
               onClick={addIngredient}
@@ -209,7 +209,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
         <label className={settingsStyles.fieldGroup}>
           <span className={settingsStyles.label}>{text.notes}</span>
           <textarea
-            className={controlStyles.textArea(theme)}
+            className={controlStyles.textArea}
             disabled={isSaving}
             maxLength={1000}
             placeholder={text.notesPlaceholder}
@@ -223,7 +223,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
             {error !== null && <p className={settingsStyles.statusText(theme, "error")}>{error}</p>}
             {success !== null && <p className={settingsStyles.statusText(theme, "success")}>{success}</p>}
           </div>
-          <button className={settingsStyles.saveButton(theme)} disabled={isSaving} type="submit">
+          <button className={settingsStyles.saveButton} disabled={isSaving} type="submit">
             {isSaving ? text.saving : text.save}
           </button>
         </div>

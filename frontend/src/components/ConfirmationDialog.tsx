@@ -35,13 +35,13 @@ function ConfirmationDialog({
     <Modal
       backdropClassName={confirmationDialogStyles.backdrop}
       bodyClassName={confirmationDialogStyles.bodyFrame}
-      closeButtonClassName={confirmationDialogStyles.closeButton(theme)}
+      closeButtonClassName={confirmationDialogStyles.closeButton}
       closeLabel={t.common.close}
       describedBy={bodyId}
       footer={
         <>
           <button
-            className={`${confirmationDialogStyles.cancelButton(theme)} ${confirmationDialogStyles.actionButton}`}
+            className={`${confirmationDialogStyles.cancelButton} ${confirmationDialogStyles.actionButton}`}
             disabled={isBusy}
             type="button"
             onClick={onCancel}
@@ -49,7 +49,7 @@ function ConfirmationDialog({
             {t.common.cancel}
           </button>
           <button
-            className={`${confirmationDialogStyles.confirmButton(theme, tone)} ${confirmationDialogStyles.actionButton}`}
+            className={`${confirmationDialogStyles.confirmButton(tone)} ${confirmationDialogStyles.actionButton}`}
             disabled={isBusy || isConfirmDisabled}
             type="button"
             onClick={onConfirm}
@@ -60,7 +60,7 @@ function ConfirmationDialog({
       }
       footerClassName={confirmationDialogStyles.actions}
       headerClassName={confirmationDialogStyles.header}
-      panelClassName={confirmationDialogStyles.panel(theme)}
+      panelClassName={confirmationDialogStyles.panel}
       title={title}
       titleClassName={confirmationDialogStyles.title}
       titleId={titleId}

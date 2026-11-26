@@ -150,12 +150,12 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             </div>
           </div>
         </div>
-        <div className={recipeBrowserStyles.searchFilterRow(theme)}>
+        <div className={recipeBrowserStyles.searchFilterRow}>
           <div className={recipeBrowserStyles.searchControls}>
             <div className={recipeBrowserStyles.searchFieldShell}>
               <input
                 aria-label={mode === "recipes" ? t.browser.searchRecipes : t.browser.searchIngredients}
-                className={`${recipeBrowserStyles.searchInput(theme)} ${recipeBrowserStyles.searchInputWithClear}`}
+                className={`${recipeBrowserStyles.searchInput} ${recipeBrowserStyles.searchInputWithClear}`}
                 placeholder={t.common.search}
                 type="search"
                 value={searchTerm}
@@ -188,7 +188,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             <div className={recipeBrowserStyles.filterButtonSlot}>
               <button
                 aria-label={t.filters.categories}
-                className={recipeBrowserStyles.categoryFilterButton(theme)}
+                className={recipeBrowserStyles.categoryFilterButton}
                 type="button"
                 onClick={() => setIsCategoryFilterOpen(true)}
               >
@@ -197,7 +197,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
               {mode === "recipes" && (
                 <button
                   aria-label={t.browser.openIngredientFilter}
-                  className={recipeBrowserStyles.filterButton(theme)}
+                  className={recipeBrowserStyles.filterButton}
                   ref={ingredientFilterButtonRef}
                   type="button"
                   onClick={(event) => {
@@ -264,10 +264,10 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
         <Modal
           backdropClassName={recipeBrowserStyles.categoryFilterBackdrop}
           bodyClassName={recipeBrowserStyles.categoryFilterBody}
-          closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+          closeButtonClassName={recipeBrowserStyles.modalCloseButton}
           closeLabel={t.common.close}
           headerClassName={recipeBrowserStyles.categoryFilterHeader}
-          panelClassName={recipeBrowserStyles.categoryFilterPanel(theme)}
+          panelClassName={recipeBrowserStyles.categoryFilterPanel}
           title={t.filters.categories}
           titleClassName={recipeBrowserStyles.modalTitle}
           titleId="cookbook-category-filter-title"

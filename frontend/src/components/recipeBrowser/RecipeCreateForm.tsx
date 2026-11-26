@@ -326,7 +326,7 @@ function RecipeCreateForm({
                   </span>
                 </span>
                 <input
-                  className={recipeBrowserStyles.textField(theme)}
+                  className={recipeBrowserStyles.textField}
                   maxLength={RECIPE_NAME_MAX_LENGTH}
                   required
                   type="text"
@@ -340,7 +340,7 @@ function RecipeCreateForm({
                   {t.cookbook.portions}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
                 </span>
                 <input
-                  className={recipeBrowserStyles.textField(theme)}
+                  className={recipeBrowserStyles.textField}
                   min="0"
                   required
                   step="0.25"
@@ -378,12 +378,12 @@ function RecipeCreateForm({
           )}
 
           {showRecipeDetails && (
-            <div className={recipeBrowserStyles.detailsPanel(theme)}>
+            <div className={recipeBrowserStyles.detailsPanel}>
               <div className={recipeBrowserStyles.formGrid}>
                 <label className={recipeBrowserStyles.field}>
                   <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.description}</span>
                   <textarea
-                    className={recipeBrowserStyles.textArea(theme)}
+                    className={recipeBrowserStyles.textArea}
                     maxLength={600}
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
@@ -393,7 +393,7 @@ function RecipeCreateForm({
                 <label className={recipeBrowserStyles.field}>
                   <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.instructions}</span>
                   <textarea
-                    className={recipeBrowserStyles.textArea(theme)}
+                    className={recipeBrowserStyles.textArea}
                     value={instructions}
                     onChange={(event) => setInstructions(event.target.value)}
                   />
@@ -449,7 +449,6 @@ function RecipeCreateForm({
             <RecipeLineModeToggle
               className="max-w-md max-sm:hidden"
               mode={recipeLinePickerMode}
-              theme={theme}
               onChange={setRecipeLinePickerMode}
             />
             <div className={recipeBrowserStyles.mobileIngredientSummary}>
@@ -528,10 +527,10 @@ function RecipeCreateForm({
       </div>
 
       <div className={recipeBrowserStyles.formActions}>
-        <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="button" onClick={onCancel}>
+        <button className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="button" onClick={onCancel}>
           {t.common.cancel}
         </button>
-        <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="submit">
+        <button className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="submit">
           {isSaving ? t.common.saving : isEditing ? t.cookbook.saveRecipe : t.cookbook.createRecipe}
         </button>
       </div>
@@ -539,21 +538,21 @@ function RecipeCreateForm({
         <Modal
           backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
           bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-          closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+          closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
           closeLabel={t.common.close}
           footer={
             <>
-              <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={() => setIsIngredientPickerOpen(false)}>
+              <button className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={() => setIsIngredientPickerOpen(false)}>
                 {t.common.cancel}
               </button>
-              <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={confirmMobileIngredients}>
+              <button className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={confirmMobileIngredients}>
                 {t.common.confirm}
               </button>
             </>
           }
           footerClassName={recipeBrowserStyles.formActions}
           headerClassName={recipeBrowserStyles.modalHeader}
-          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+          panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
           title={t.cookbook.ingredients}
           titleClassName={recipeBrowserStyles.modalTitle}
           onClose={() => setIsIngredientPickerOpen(false)}
@@ -561,7 +560,6 @@ function RecipeCreateForm({
           <RecipeLineModeToggle
             className="max-w-full"
             mode={recipeLinePickerMode}
-            theme={theme}
             onChange={setRecipeLinePickerMode}
           />
           {recipeLinePickerMode === "ingredients" ? (
@@ -725,15 +723,13 @@ type ConversionHelperDialogProps = {
 type RecipeLineModeToggleProps = {
   className?: string;
   mode: RecipeLinePickerMode;
-  theme: SiteTheme;
   onChange: (mode: RecipeLinePickerMode) => void;
 };
 
-function RecipeLineModeToggle({ className = "", mode, theme, onChange }: RecipeLineModeToggleProps) {
+function RecipeLineModeToggle({ className = "", mode, onChange }: RecipeLineModeToggleProps) {
   return (
     <RecipeIngredientToggle
       value={mode}
-      theme={theme}
       className={className}
       onChange={onChange}
     />
@@ -819,16 +815,16 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
     <Modal
       backdropClassName={recipeBrowserStyles.nestedModalBackdrop}
       bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-      closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+      closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
       closeLabel={t.common.close}
       footer={
-        <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onClose}>
+        <button className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`} type="button" onClick={onClose}>
           {t.common.close}
         </button>
       }
       footerClassName={recipeBrowserStyles.formActions}
       headerClassName={recipeBrowserStyles.modalHeader}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
       title={t.cookbook.conversionHelper}
       titleClassName={recipeBrowserStyles.modalTitle}
       onClose={onClose}
@@ -883,7 +879,7 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
           <label className={recipeBrowserStyles.field}>
             <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.conversionFrom}</span>
             <input
-              className={recipeBrowserStyles.textField(theme)}
+              className={recipeBrowserStyles.textField}
               maxLength={120}
               placeholder={t.cookbook.conversionFromPlaceholder}
               value={fromText}
@@ -893,7 +889,7 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
           <label className={recipeBrowserStyles.field}>
             <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.conversionTo}</span>
             <input
-              className={recipeBrowserStyles.textField(theme)}
+              className={recipeBrowserStyles.textField}
               maxLength={120}
               placeholder={t.cookbook.conversionToPlaceholder}
               value={toText}
@@ -901,7 +897,7 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
             />
           </label>
           <button
-            className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`}
+            className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`}
             disabled={isSavingRule}
             type="button"
             onClick={() => void createRule()}

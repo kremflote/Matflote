@@ -44,7 +44,6 @@ function BrowserResults({
     const errorPanel = ingredientError === null ? null : (
       <LoadErrorPanel
         message={ingredientError}
-        theme={theme}
         title={t.cookbook.couldNotLoadIngredients}
         onRetry={onRetryIngredients}
       />
@@ -81,7 +80,6 @@ function BrowserResults({
   const errorPanel = recipeError === null ? null : (
     <LoadErrorPanel
       message={recipeError}
-      theme={theme}
       title={t.cookbook.couldNotLoadRecipes}
       onRetry={onRetryRecipes}
     />

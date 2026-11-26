@@ -38,7 +38,7 @@ function NutritionEditor({
   };
 
   return (
-    <div className={recipeBrowserStyles.detailsPanel(theme)}>
+    <div className={recipeBrowserStyles.detailsPanel}>
       {onSearchMatvaretabellen !== undefined && (
         <div className={recipeBrowserStyles.nutritionEditorActionRow}>
           <button
@@ -169,7 +169,7 @@ function NutritionNumberField({
       <span className={recipeBrowserStyles.label(theme)}>{label}</span>
       <span className={recipeBrowserStyles.numberField}>
         <input
-          className={recipeBrowserStyles.numberFieldInput(theme)}
+          className={recipeBrowserStyles.numberFieldInput}
           min="0"
           step={step}
           type="number"

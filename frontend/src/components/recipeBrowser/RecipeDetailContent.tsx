@@ -87,7 +87,7 @@ function RecipeDetailContent({
               <span className={`${recipeBrowserStyles.scaleField}`}>
                 <input
                   aria-label={t.cookbook.portions}
-                  className={`${recipeBrowserStyles.compactTextField(theme)} ${recipeBrowserStyles.scaleInput}`}
+                  className={`${recipeBrowserStyles.compactTextField} ${recipeBrowserStyles.scaleInput}`}
                   min="0"
                   placeholder={formatPortionInputValue(recipe.portions)}
                   step="0.25"
@@ -184,7 +184,7 @@ function RecipeIngredientSection({
       <h3 className={recipeBrowserStyles.detailIngredientSectionTitle(theme)}>
         {titleLinkLabel !== undefined && recipeId !== undefined ? (
           <button
-            className={recipeBrowserStyles.detailIngredientSectionTitleButton(theme)}
+            className={recipeBrowserStyles.detailIngredientSectionTitleButton}
             type="button"
             onClick={() => onRecipeClick?.(recipeId)}
           >

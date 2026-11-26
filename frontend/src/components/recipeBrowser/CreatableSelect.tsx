@@ -150,7 +150,7 @@ function CreatableSelect({
         <div className={recipeBrowserStyles.customSelectWrap}>
           <button
             aria-expanded={isOpen}
-            className={recipeBrowserStyles.customSelectButton(theme)}
+            className={recipeBrowserStyles.customSelectButton}
             type="button"
             onClick={() => setIsOpen((currentValue) => !currentValue)}
           >
@@ -159,7 +159,7 @@ function CreatableSelect({
           </button>
 
           {isOpen && (
-            <div className={recipeBrowserStyles.customSelectMenu(theme)}>
+            <div className={recipeBrowserStyles.customSelectMenu}>
               <button
                 className={recipeBrowserStyles.customSelectOption(theme, false)}
                 type="button"
@@ -254,7 +254,7 @@ function CreatableSelect({
     <label className={fieldClassName ?? recipeBrowserStyles.field}>
       {labelContent}
       <select
-        className={recipeBrowserStyles.textField(theme)}
+        className={recipeBrowserStyles.textField}
         required={required}
         value={value ?? ""}
         onChange={(event) => {
@@ -332,7 +332,7 @@ function CreateOptionPanel({
     <div className={recipeBrowserStyles.createOptionPanel(theme)}>
       {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
       <input
-        className={recipeBrowserStyles.textField(theme)}
+        className={recipeBrowserStyles.textField}
         maxLength={120}
         placeholder={label}
         type="text"
@@ -341,7 +341,7 @@ function CreateOptionPanel({
       />
       <div className={recipeBrowserStyles.createOptionActions}>
         <button
-          className={recipeBrowserStyles.secondaryButton(theme)}
+          className={recipeBrowserStyles.secondaryButton}
           disabled={isSaving}
           type="button"
           onClick={onCancel}
@@ -349,7 +349,7 @@ function CreateOptionPanel({
           {cancelLabel}
         </button>
         <button
-          className={recipeBrowserStyles.primaryButton(theme)}
+          className={recipeBrowserStyles.primaryButton}
           disabled={isSaving}
           type="button"
           onClick={onSave}

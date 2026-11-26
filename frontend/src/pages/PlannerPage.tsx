@@ -492,7 +492,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
         {loadError !== null && (
           <LoadErrorPanel
             message={loadError}
-            theme={theme}
             title={t.planner.couldNotLoadMealPlan}
             onRetry={retryFailedLoads}
           />
@@ -567,7 +566,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
                           {t.planner.peopleEatingThisWeek}
                         </span>
                         <input
-                          className={confirmationDialogStyles.numberInput(theme)}
+                          className={confirmationDialogStyles.numberInput}
                           min={1}
                           step={1}
                           type="number"
@@ -615,7 +614,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
                         : t.planner.moveMealAmountLabel(pendingMealMove.unit === null ? "" : t.enums.measurementUnits[pendingMealMove.unit])}
                     </span>
                     <input
-                      className={confirmationDialogStyles.numberInput(theme)}
+                      className={confirmationDialogStyles.numberInput}
                       max={pendingMealMove.maxValue}
                       min={1}
                       step={1}

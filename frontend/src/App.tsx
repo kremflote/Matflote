@@ -43,7 +43,7 @@ function App() {
   }, [theme]);
 
   return (
-    <div className={appStyles.shell(theme)} data-theme={theme === "dark" ? "dark" : "light"}>
+    <div className={appStyles.shell} data-theme={theme === "dark" ? "dark" : "light"}>
       <Header
         activePage={activePage}
         onPageChange={setActivePage}

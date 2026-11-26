@@ -37,10 +37,10 @@ function Header({
   const themeLabel = theme === "dark" ? t.theme.switchToLight : t.theme.switchToDark;
 
   return (
-    <header className={headerStyles.shell(theme)}>
+    <header className={headerStyles.shell}>
       <div className={headerStyles.inner}>
         <button
-          className={headerStyles.logo(theme)}
+          className={headerStyles.logo}
           type="button"
           aria-label={t.nav.home}
           onClick={() => onPageChange("weekPlanner")}
@@ -48,7 +48,7 @@ function Header({
           MATFLOTE
         </button>
 
-        <nav className={headerStyles.nav(theme)} aria-label={t.nav.primary}>
+        <nav className={headerStyles.nav} aria-label={t.nav.primary}>
           {navItems.map((item) => {
             const label = t.nav[item.labelKey];
 
@@ -56,7 +56,7 @@ function Header({
               <button
                 aria-current={activePage === item.id ? "page" : undefined}
                 aria-label={label}
-                className={headerStyles.navButton(theme, activePage === item.id)}
+                className={headerStyles.navButton(activePage === item.id)}
                 key={item.id}
                 onClick={() => onPageChange(item.id)}
                 title={label}
@@ -73,7 +73,7 @@ function Header({
           <button
             aria-current={activePage === "settings" ? "page" : undefined}
             aria-label={t.nav.settings}
-            className={headerStyles.settingsButton(theme, activePage === "settings")}
+            className={headerStyles.settingsButton(activePage === "settings")}
             onClick={() => onPageChange("settings")}
             title={t.nav.settings}
             type="button"
@@ -83,13 +83,13 @@ function Header({
           <button
             aria-label={themeLabel}
             aria-pressed={isLightSide}
-            className={headerStyles.themeButton(theme)}
+            className={headerStyles.themeButton}
             onClick={toggleTheme}
             title={themeLabel}
             type="button"
           >
-            <span className={headerStyles.themeTrack(theme)}>
-              <span className={headerStyles.themeThumb(theme)}>
+            <span className={headerStyles.themeTrack}>
+              <span className={headerStyles.themeThumb}>
                 <HeaderIcon icon={theme === "dark" ? "moon" : "sun"} />
               </span>
             </span>

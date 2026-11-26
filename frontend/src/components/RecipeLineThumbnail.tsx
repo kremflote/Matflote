@@ -24,9 +24,9 @@ function RecipeLineThumbnail({
 }: RecipeLineThumbnailProps) {
   const imageUrl = getThumbnailSrc(recipe);
   const compactClassName = mode === "compact" ? thumbnailStyles.ingredientShellCompact : "";
-  const sharedClassName = `${thumbnailStyles.ingredientShell(theme)} ${compactClassName} ${className} ${
-    selected ? thumbnailStyles.ingredientSelectedColorBorder(theme) : ""
-  } ${onClick ? `cursor-pointer ${siteColorClasses[theme].ingredientThumbnailInteractive}` : ""}`;
+  const sharedClassName = `${thumbnailStyles.ingredientShell} ${compactClassName} ${className} ${
+    selected ? thumbnailStyles.ingredientSelectedColorBorder : ""
+  } ${onClick ? `cursor-pointer ${siteColorClasses.ingredientThumbnailInteractive}` : ""}`;
   const style = {
     color: theme === "dark" ? colorPalette.ivory : colorPalette.ingredientIconText,
   };

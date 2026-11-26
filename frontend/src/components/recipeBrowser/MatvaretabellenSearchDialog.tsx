@@ -74,16 +74,16 @@ function MatvaretabellenSearchDialog({
     <Modal
       backdropClassName={recipeBrowserStyles.modalBackdrop}
       bodyClassName={recipeBrowserStyles.nestedIngredientModalBody}
-      closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+      closeButtonClassName={recipeBrowserStyles.modalCloseButton}
       closeLabel={t.common.close}
       footer={(
-        <button className={recipeBrowserStyles.secondaryButton(theme)} type="button" onClick={onCancel}>
+        <button className={recipeBrowserStyles.secondaryButton} type="button" onClick={onCancel}>
           {t.common.cancel}
         </button>
       )}
       footerClassName={recipeBrowserStyles.formActions}
       headerClassName={recipeBrowserStyles.modalHeader}
-      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel(theme)}
+      panelClassName={recipeBrowserStyles.nestedIngredientModalPanel}
       title={t.scanner.searchMatvaretabellenTitle}
       titleClassName={recipeBrowserStyles.modalTitle}
       titleId={titleId}
@@ -92,7 +92,7 @@ function MatvaretabellenSearchDialog({
       <div className={recipeBrowserStyles.matvareSearchForm}>
         <SearchField
           aria-label={t.scanner.searchMatvaretabellenPlaceholder}
-          inputClassName={recipeBrowserStyles.textField(theme)}
+          inputClassName={recipeBrowserStyles.textField}
           placeholder={t.scanner.searchMatvaretabellenPlaceholder}
           theme={theme}
           value={query}
@@ -100,7 +100,7 @@ function MatvaretabellenSearchDialog({
           onChange={setQuery}
         />
         <button
-          className={recipeBrowserStyles.primaryButton(theme)}
+          className={recipeBrowserStyles.primaryButton}
           disabled={isSearching || query.trim().length === 0}
           type="button"
           onClick={() => void handleSearch()}

@@ -65,7 +65,7 @@ export default function RecipeRatingSection({ recipe, theme }: RecipeRatingSecti
           ))}
           {rating !== null && (
             <button
-              className={recipeBrowserStyles.ratingButton(theme)}
+              className={recipeBrowserStyles.ratingButton}
               disabled={isSaving}
               type="button"
               onClick={() => void save(null, "")}
@@ -84,7 +84,7 @@ export default function RecipeRatingSection({ recipe, theme }: RecipeRatingSecti
           >
             <input
               aria-label={text.note}
-              className={recipeBrowserStyles.ratingNoteInput(theme)}
+              className={recipeBrowserStyles.ratingNoteInput}
               disabled={isSaving}
               maxLength={500}
               placeholder={text.notePlaceholder}
@@ -93,7 +93,7 @@ export default function RecipeRatingSection({ recipe, theme }: RecipeRatingSecti
               onChange={(event) => setNote(event.target.value)}
             />
             <button
-              className={recipeBrowserStyles.ratingButton(theme)}
+              className={recipeBrowserStyles.ratingButton}
               disabled={isSaving || note.trim() === (recipe.ratingNote ?? "")}
               type="submit"
             >

@@ -40,14 +40,14 @@ function IngredientThumbnail({
   const imageUrl = getThumbnailSrc(ingredient);
   const selectedClassName =
     selectedPresentation === "colorBorder"
-      ? thumbnailStyles.ingredientSelectedColorBorder(theme)
+      ? thumbnailStyles.ingredientSelectedColorBorder
       : selectedPresentation === "muted"
       ? thumbnailStyles.ingredientSelectedMuted
       : thumbnailStyles.ingredientSelectedOutline;
   const compactClassName = mode === "compact" ? thumbnailStyles.ingredientShellCompact : "";
-  const sharedClassName = `${thumbnailStyles.ingredientShell(theme)} ${compactClassName} ${className} ${
+  const sharedClassName = `${thumbnailStyles.ingredientShell} ${compactClassName} ${className} ${
     selected ? selectedClassName : ""
-  } ${disabled ? "cursor-not-allowed" : onClick ? `cursor-pointer ${siteColorClasses[theme].ingredientThumbnailInteractive}` : ""}`;
+  } ${disabled ? "cursor-not-allowed" : onClick ? `cursor-pointer ${siteColorClasses.ingredientThumbnailInteractive}` : ""}`;
   const style = {
     color: tone.text,
   };

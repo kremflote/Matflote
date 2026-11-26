@@ -284,12 +284,12 @@ function ScannerPage({ theme }: ScannerPageProps) {
         </header>
 
         <div className={scannerStyles.scannerSurface}>
-          <section className={scannerStyles.panel(theme)}>
-            <div className={scannerStyles.desktopScannerHint(theme)}>{t.scanner.mobileOnly}</div>
+          <section className={scannerStyles.panel}>
+            <div className={scannerStyles.desktopScannerHint}>{t.scanner.mobileOnly}</div>
 
             <div className={scannerStyles.scannerActions}>
               <button
-                className={scannerStyles.cameraButton(theme)}
+                className={scannerStyles.cameraButton}
                 disabled={isLoading}
                 onClick={isCameraOpen ? stopCamera : startCamera}
                 type="button"
@@ -298,7 +298,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
               </button>
               <button
                 aria-expanded={isManualEntryOpen}
-                className={scannerStyles.manualEntryButton(theme)}
+                className={scannerStyles.manualEntryButton}
                 type="button"
                 onClick={() => setIsManualEntryOpen((currentValue) => !currentValue)}
               >
@@ -314,7 +314,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
               <label className={scannerStyles.field}>
                 <span className={scannerStyles.label}>{t.scanner.eanLabel}</span>
                 <input
-                  className={scannerStyles.input(theme)}
+                  className={scannerStyles.input}
                   inputMode="numeric"
                   pattern="[0-9]*"
                   placeholder={t.scanner.eanPlaceholder}
@@ -323,7 +323,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
                 />
               </label>
               <button
-                className={scannerStyles.submitButton(theme)}
+                className={scannerStyles.submitButton}
                 disabled={isLoading}
                 type="submit"
               >
@@ -347,11 +347,11 @@ function ScannerPage({ theme }: ScannerPageProps) {
           </section>
 
           {isLoading && (
-            <div className={scannerStyles.emptyState(theme)}>{t.scanner.searching}</div>
+            <div className={scannerStyles.emptyState}>{t.scanner.searching}</div>
           )}
 
           {!isLoading && lookedUpEan !== null && products.length === 0 && error === null && (
-            <div className={scannerStyles.emptyState(theme)}>
+            <div className={scannerStyles.emptyState}>
               {t.scanner.noProductsFound(lookedUpEan)}
             </div>
           )}
@@ -389,12 +389,12 @@ function ScannerPage({ theme }: ScannerPageProps) {
         <Modal
           backdropClassName={scannerStyles.editorModalBackdrop}
           bodyClassName={scannerStyles.editorModalBody}
-          closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
+          closeButtonClassName={scannerStyles.editorModalCloseButton}
           closeLabel={t.common.close}
           footer={(
             <>
               <button
-                className={`${scannerStyles.manualEntryButton(theme)} ${scannerStyles.editorModalActionButton}`}
+                className={`${scannerStyles.manualEntryButton} ${scannerStyles.editorModalActionButton}`}
                 disabled={isSavingIngredient}
                 type="button"
                 onClick={() => setIsEditorOpen(false)}
@@ -402,7 +402,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
                 {t.common.cancel}
               </button>
               <button
-                className={`${scannerStyles.saveButton(theme)} ${scannerStyles.editorModalActionButton}`}
+                className={`${scannerStyles.saveButton} ${scannerStyles.editorModalActionButton}`}
                 disabled={isSavingIngredient}
                 type="button"
                 onClick={() => void saveIngredient()}
@@ -416,7 +416,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
           )}
           footerClassName={scannerStyles.editorModalFooter(theme)}
           headerClassName={scannerStyles.editorModalHeader}
-          panelClassName={scannerStyles.editorModalPanel(theme)}
+          panelClassName={scannerStyles.editorModalPanel}
           title={ingredientDraft.name || t.scanner.suggestedIngredient}
           titleClassName={scannerStyles.editorModalTitle}
           titleId={editorTitleId}
@@ -436,7 +436,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
         <SuccessToast
           closeLabel={t.common.close}
           message={successMessage}
-          theme={theme}
           onClose={() => setSuccessMessage(null)}
         />
       )}
@@ -497,7 +496,7 @@ function IngredientDraftEditor({
   useEffect(() => (imagePreview === null ? undefined : () => URL.revokeObjectURL(imagePreview.url)), [imagePreview]);
 
   return (
-    <section className={scannerStyles.ingredientEditor(theme)}>
+    <section className={scannerStyles.ingredientEditor}>
       <div className={scannerStyles.editorImageRow}>
         <input
           accept="image/jpeg,image/png,image/webp"
@@ -522,10 +521,10 @@ function IngredientDraftEditor({
             <img className={scannerStyles.productImage} src={imageUrl} alt="" />
           )}
         </div>
-        <label className={scannerStyles.editorImageButton(theme)} htmlFor={imageInputId}>
+        <label className={scannerStyles.editorImageButton} htmlFor={imageInputId}>
           {t.scanner.chooseImage}
         </label>
-        <span className={`${scannerStyles.autofillReservedHint(theme)} col-span-2`}>
+        <span className={`${scannerStyles.autofillReservedHint} col-span-2`}>
           {getAutofillSourceLabel(draft, "image", t.scanner.autofilledBy) ?? "\u00A0"}
         </span>
       </div>
@@ -538,11 +537,11 @@ function IngredientDraftEditor({
             theme={theme}
           />
           <input
-            className={scannerStyles.input(theme)}
+            className={scannerStyles.input}
             value={draft.name}
             onChange={(event) => onChange(clearAutofillSource({ ...draft, name: event.target.value }, "name"))}
           />
-          <span className={scannerStyles.autofillReservedHint(theme)}>
+          <span className={scannerStyles.autofillReservedHint}>
             {getAutofillSourceLabel(draft, "name", t.scanner.autofilledBy) ?? "\u00A0"}
           </span>
         </label>
@@ -555,7 +554,7 @@ function IngredientDraftEditor({
               theme={theme}
             />
           )}
-          helperClassName={scannerStyles.autofillReservedHint(theme)}
+          helperClassName={scannerStyles.autofillReservedHint}
           helperText={getAutofillSourceLabel(draft, "brand", t.scanner.autofilledBy)}
           labelClassName={scannerStyles.label}
           options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
@@ -663,7 +662,7 @@ function IngredientDraftEditor({
         </button>
         {showNutrition && (
           <NutritionEditor
-            fieldSubtitleClassName={scannerStyles.autofillReservedHint(theme)}
+            fieldSubtitleClassName={scannerStyles.autofillReservedHint}
             fieldSubtitles={nutritionFieldSubtitles}
             theme={theme}
             values={nutritionValues}
@@ -688,7 +687,7 @@ function IngredientDraftEditor({
           onAddTag={() => setIsTagCreateOpen(true)}
           onToggle={(tag) => onChange(clearAutofillSource({ ...draft, tags: toggleValue(draft.tags, tag) }, "tags"))}
         />
-        <span className={scannerStyles.autofillReservedHint(theme)}>
+        <span className={scannerStyles.autofillReservedHint}>
           {getAutofillSourceLabel(draft, "tags", t.scanner.autofilledBy) ?? "\u00A0"}
         </span>
       </section>
@@ -892,11 +891,11 @@ function ScannerAutofillInfoModal({
     <Modal
       backdropClassName={scannerStyles.editorModalBackdrop}
       bodyClassName={scannerStyles.infoModalBody}
-      closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
+      closeButtonClassName={scannerStyles.editorModalCloseButton}
       closeLabel={t.common.close}
       footer={(
         <button
-          className={scannerStyles.saveButton(theme)}
+          className={scannerStyles.saveButton}
           type="button"
           onClick={onClose}
         >
@@ -905,7 +904,7 @@ function ScannerAutofillInfoModal({
       )}
       footerClassName={scannerStyles.editorModalFooter(theme)}
       headerClassName={scannerStyles.editorModalHeader}
-      panelClassName={scannerStyles.infoModalPanel(theme)}
+      panelClassName={scannerStyles.infoModalPanel}
       title={t.scanner.autofillInfoTitle}
       titleClassName={scannerStyles.editorModalTitle}
       onClose={onClose}
@@ -938,16 +937,16 @@ function MatvaretabellenCandidateModal({
     <Modal
       backdropClassName={scannerStyles.editorModalBackdrop}
       bodyClassName={scannerStyles.matvareCandidateModalBody}
-      closeButtonClassName={scannerStyles.editorModalCloseButton(theme)}
+      closeButtonClassName={scannerStyles.editorModalCloseButton}
       closeLabel={t.common.close}
       footer={(
-        <button className={scannerStyles.manualEntryButton(theme)} type="button" onClick={onCancel}>
+        <button className={scannerStyles.manualEntryButton} type="button" onClick={onCancel}>
           {t.common.cancel}
         </button>
       )}
       footerClassName={scannerStyles.editorModalFooter(theme)}
       headerClassName={scannerStyles.editorModalHeader}
-      panelClassName={scannerStyles.matvareCandidateModalPanel(theme)}
+      panelClassName={scannerStyles.matvareCandidateModalPanel}
       title={t.scanner.chooseMatvaretabellenEntry}
       titleClassName={scannerStyles.editorModalTitle}
       titleId={titleId}

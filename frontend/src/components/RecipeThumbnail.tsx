@@ -4,7 +4,7 @@ import type { IRecipe } from "../interfaces/IRecipe";
 import { getThumbnailSrc } from "../utils/imageThumbnail";
 import type { TileIngredientLine } from "../utils/recipeTile";
 import RecipeFallbackTile from "./RecipeFallbackTile";
-import { thumbnailStyles, type SiteTheme } from "../styles/appStyles";
+import { thumbnailStyles } from "../styles/appStyles";
 
 type RecipeThumbnailProps = {
   recipe: Pick<IRecipe, "name" | "imageUrl"> & {
@@ -19,7 +19,6 @@ type RecipeThumbnailProps = {
   textScale?: "default" | "compact" | "micro";
   titleBandExtra?: ReactNode;
   titleBandExpanded?: boolean;
-  theme?: SiteTheme;
   onClick?: () => void;
 };
 
@@ -31,7 +30,6 @@ function RecipeThumbnail({
   textScale = "default",
   titleBandExtra,
   titleBandExpanded = false,
-  theme = "dark",
   onClick,
 }: RecipeThumbnailProps) {
   const { t } = useLanguage();
@@ -76,16 +74,16 @@ function RecipeThumbnail({
         />
       )}
 
-      <div className={thumbnailStyles.recipeImageOverlay(theme)} aria-hidden="true" />
+      <div className={thumbnailStyles.recipeImageOverlay} aria-hidden="true" />
 
-      <div className={`${titleBandLayoutClassName} ${thumbnailStyles.recipeTitleBand(theme)}`}>
+      <div className={`${titleBandLayoutClassName} ${thumbnailStyles.recipeTitleBand}`}>
         {titleBandExtra !== undefined && (
           <div className={thumbnailStyles.recipeTitleBandExtra}>
             {titleBandExtra}
           </div>
         )}
         <h3 className={titleClassName}>{recipe.name}</h3>
-        <p className={`${subtitleLayoutClassName} ${thumbnailStyles.recipeSubtitle(theme)}`}>{subtitle}</p>
+        <p className={`${subtitleLayoutClassName} ${thumbnailStyles.recipeSubtitle}`}>{subtitle}</p>
       </div>
     </>
   );

@@ -23,7 +23,7 @@ function RecipeBrowser({ mode, theme, onModeChange }: RecipeBrowserProps) {
           </div>
         }
         modeToggle={
-          <RecipeIngredientToggle value={mode} theme={theme} onChange={onModeChange} />
+          <RecipeIngredientToggle value={mode} onChange={onModeChange} />
         }
       />
     </main>

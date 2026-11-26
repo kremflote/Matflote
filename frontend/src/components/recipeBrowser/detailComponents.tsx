@@ -14,7 +14,7 @@ type DetailSectionProps = {
 
 export function DetailSection({ title, theme, children, headerAction, subtitle }: DetailSectionProps) {
   return (
-    <section className={recipeBrowserStyles.detailsPanel(theme)}>
+    <section className={recipeBrowserStyles.detailsPanel}>
       <div className={recipeBrowserStyles.detailSectionHeader}>
         <div className={recipeBrowserStyles.detailSectionTitleRow}>
           <h3 className={recipeBrowserStyles.detailSectionTitle}>{title}</h3>
@@ -50,7 +50,7 @@ type DetailTextWithMetaProps = DetailTextProps & {
 
 export function DetailTextWithMeta({ className = "", label, meta, theme, value }: DetailTextWithMetaProps) {
   return (
-    <section className={`${recipeBrowserStyles.detailsPanel(theme)} ${className}`}>
+    <section className={`${recipeBrowserStyles.detailsPanel} ${className}`}>
       <div className={recipeBrowserStyles.detailTextMetaHeader}>
         <h3 className={recipeBrowserStyles.detailSectionTitle}>{label}</h3>
         <span className={recipeBrowserStyles.helperText(theme)}>{meta}</span>

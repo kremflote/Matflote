@@ -88,7 +88,6 @@ function PlannerRecipePickerGrid({
                   subtitle: recipe.tags.slice(0, 2).map((tag) => t.enums.recipeTags[tag] ?? tag).join(" · "),
                 }}
                 interactiveEffect={false}
-                theme={theme}
                 onClick={() => {
                   const nextPortions = parsePositiveNumber(value) ?? recipe.portions;
                   if (selected) {
@@ -133,7 +132,7 @@ function PlannerRecipePickerGrid({
 
           return (
             <div
-              className={plannerPickerStyles.pickerIngredientCard(theme, visuallySelected)}
+              className={plannerPickerStyles.pickerIngredientCard(visuallySelected)}
               key={ingredient.ingredientId}
             >
               <IngredientThumbnail

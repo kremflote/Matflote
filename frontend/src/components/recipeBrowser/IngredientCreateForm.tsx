@@ -298,7 +298,7 @@ function IngredientCreateForm({
                   </span>
                 </span>
                 <input
-                  className={recipeBrowserStyles.textField(theme)}
+                  className={recipeBrowserStyles.textField}
                   maxLength={INGREDIENT_NAME_MAX_LENGTH}
                   required
                   type="text"
@@ -488,10 +488,10 @@ function IngredientCreateForm({
       )}
 
       <div className={recipeBrowserStyles.formActions}>
-        <button className={`${recipeBrowserStyles.secondaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="button" onClick={onCancel}>
+        <button className={`${recipeBrowserStyles.secondaryButton} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="button" onClick={onCancel}>
           {t.common.cancel}
         </button>
-        <button className={`${recipeBrowserStyles.primaryButton(theme)} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="submit">
+        <button className={`${recipeBrowserStyles.primaryButton} ${recipeBrowserStyles.formActionButton}`} disabled={isSaving} type="submit">
           {isSaving ? t.common.saving : isEditing ? t.cookbook.saveIngredient : t.cookbook.createIngredient}
         </button>
       </div>

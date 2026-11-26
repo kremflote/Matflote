@@ -1,10 +1,9 @@
 import { useEffect } from "react";
-import { toastStyles, type SiteTheme } from "../styles/appStyles";
+import { toastStyles } from "../styles/appStyles";
 
 type SuccessToastProps = {
   closeLabel: string;
   message: string;
-  theme: SiteTheme;
   durationMs?: number;
   onClose: () => void;
 };
@@ -13,7 +12,6 @@ function SuccessToast({
   durationMs = 2600,
   closeLabel,
   message,
-  theme,
   onClose,
 }: SuccessToastProps) {
   useEffect(() => {
@@ -23,11 +21,11 @@ function SuccessToast({
 
   return (
     <div className={toastStyles.viewport} role="status" aria-live="polite">
-      <div className={toastStyles.success(theme)}>
+      <div className={toastStyles.success}>
         <span>{message}</span>
         <button
           aria-label={closeLabel}
-          className={toastStyles.closeButton(theme)}
+          className={toastStyles.closeButton}
           type="button"
           onClick={onClose}
         >

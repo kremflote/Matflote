@@ -142,10 +142,10 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
     return (
       <Modal
         backdropClassName={recipeBrowserStyles.modalBackdrop}
-        closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+        closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
         closeLabel={t.common.close}
         headerClassName={recipeBrowserStyles.modalHeader}
-        panelClassName={recipeBrowserStyles.modalPanel(theme)}
+        panelClassName={recipeBrowserStyles.modalPanel}
         title={`${t.common.edit} ${activeDetail.recipe.name}`}
         titleClassName={recipeBrowserStyles.modalTitle}
         titleId={editTitleId}
@@ -167,10 +167,10 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
     return (
       <Modal
         backdropClassName={recipeBrowserStyles.modalBackdrop}
-        closeButtonClassName={recipeBrowserStyles.modalCloseAligned(theme)}
+        closeButtonClassName={recipeBrowserStyles.modalCloseAligned()}
         closeLabel={t.common.close}
         headerClassName={recipeBrowserStyles.modalHeader}
-        panelClassName={recipeBrowserStyles.modalPanel(theme)}
+        panelClassName={recipeBrowserStyles.modalPanel}
         title={`${t.common.edit} ${activeDetail.ingredient.ingredientName}`}
         titleClassName={recipeBrowserStyles.modalTitle}
         titleId={editTitleId}
@@ -217,13 +217,13 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
     <Modal
       backdropClassName={recipeBrowserStyles.detailModalBackdrop}
       bodyClassName={recipeBrowserStyles.detailBodyScrollArea}
-      closeButtonClassName={recipeBrowserStyles.detailCloseButton(theme)}
+      closeButtonClassName={recipeBrowserStyles.detailCloseButton()}
       closeLabel={t.common.close}
       footer={
         <>
           {detailHistory.length > 0 && (
             <button
-              className={recipeBrowserStyles.detailHeaderBackButton(theme)}
+              className={recipeBrowserStyles.detailHeaderBackButton()}
               disabled={isDeleting}
               type="button"
               onClick={navigateBack}
@@ -233,7 +233,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
           )}
           {activeDetail.kind === "recipe" && (
             <button
-              className={recipeBrowserStyles.detailHeaderEditButton(theme)}
+              className={recipeBrowserStyles.detailHeaderEditButton()}
               disabled={isExportingPdf || isDeleting}
               type="button"
               onClick={() => void handleExportPdf()}
@@ -242,7 +242,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
             </button>
           )}
           <button
-            className={recipeBrowserStyles.detailHeaderEditButton(theme)}
+            className={recipeBrowserStyles.detailHeaderEditButton()}
             type="button"
             onClick={() => {
               if (activeDetail.kind === "recipe") {
@@ -255,7 +255,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
             {t.common.edit}
           </button>
           <button
-            className={recipeBrowserStyles.detailHeaderRemoveButton(theme)}
+            className={recipeBrowserStyles.detailHeaderRemoveButton()}
             disabled={isDeleting}
             type="button"
             onClick={() => setIsConfirmingDelete(true)}
@@ -266,7 +266,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
       }
       footerClassName={recipeBrowserStyles.detailHeaderActionRow}
       headerClassName={recipeBrowserStyles.detailFrameHeader}
-      panelClassName={recipeBrowserStyles.detailModalPanel(theme)}
+      panelClassName={recipeBrowserStyles.detailModalPanel}
       title={detailTitle}
       titleClassName={recipeBrowserStyles.detailHeaderTitle}
       titleId={detailTitleId}

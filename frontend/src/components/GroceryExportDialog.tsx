@@ -163,7 +163,7 @@ function GroceryExportDialog({
     <Modal
       backdropClassName={groceryExportStyles.modalBackdrop}
       bodyClassName={groceryExportStyles.bodyFrame}
-      closeButtonClassName={groceryExportStyles.closeButton(theme)}
+      closeButtonClassName={groceryExportStyles.closeButton}
       closeLabel={t.common.close}
       description={t.planner.groceryExportDescription}
       descriptionClassName={groceryExportStyles.subtitle(theme)}
@@ -175,7 +175,7 @@ function GroceryExportDialog({
           </p>
           <div className={groceryExportStyles.actionGroup}>
             <button
-              className={groceryExportStyles.secondaryButton(theme)}
+              className={groceryExportStyles.secondaryButton}
               disabled={exportStatus === "exporting"}
               type="button"
               onClick={openRules}
@@ -183,7 +183,7 @@ function GroceryExportDialog({
               {t.planner.groceryExportManageRules}
             </button>
             <button
-              className={groceryExportStyles.secondaryButton(theme)}
+              className={groceryExportStyles.secondaryButton}
               disabled={exportStatus === "exporting"}
               type="button"
               onClick={onClose}
@@ -191,7 +191,7 @@ function GroceryExportDialog({
               {t.common.cancel}
             </button>
             <button
-              className={groceryExportStyles.primaryButton(theme)}
+              className={groceryExportStyles.primaryButton}
               disabled={isLoading || loadError !== null || selectedCount === 0 || exportStatus === "exporting"}
               type="button"
               onClick={() => void exportSelectedItems()}
@@ -203,25 +203,25 @@ function GroceryExportDialog({
       }
       footerClassName={groceryExportStyles.footer}
       headerClassName={groceryExportStyles.header}
-      panelClassName={groceryExportStyles.modalPanel(theme)}
+      panelClassName={groceryExportStyles.modalPanel}
       title={t.planner.groceryExportTitle}
       titleClassName={groceryExportStyles.title}
       titleId={titleId}
       onClose={onClose}
     >
         {isLoading && (
-          <div className={groceryExportStyles.emptyState(theme)}>{t.planner.groceryExportLoading}</div>
+          <div className={groceryExportStyles.emptyState}>{t.planner.groceryExportLoading}</div>
         )}
         {!isLoading && loadError !== null && (
           <p className={groceryExportStyles.statusError(theme)}>{loadError}</p>
         )}
         {!isLoading && loadError === null && itemCount === 0 && (
-          <div className={groceryExportStyles.emptyState(theme)}>{t.planner.groceryExportEmpty}</div>
+          <div className={groceryExportStyles.emptyState}>{t.planner.groceryExportEmpty}</div>
         )}
         {!isLoading && loadError === null && itemCount > 0 && (
           <div className={groceryExportStyles.list}>
             {groceryList.sections.map((section) => (
-              <section className={groceryExportStyles.section(theme)} key={section.name}>
+              <section className={groceryExportStyles.section} key={section.name}>
                 <h3 className={groceryExportStyles.sectionTitle(theme)}>
                   {t.planner.groceryExportSections[section.name] ?? section.name}
                 </h3>
@@ -306,21 +306,21 @@ function GroceryExportRulesDialog({
     <Modal
       backdropClassName={groceryExportStyles.rulesBackdrop}
       bodyClassName={groceryExportStyles.rulesBody}
-      closeButtonClassName={groceryExportStyles.closeButton(theme)}
+      closeButtonClassName={groceryExportStyles.closeButton}
       closeLabel={t.common.close}
       footer={
         <>
-          <button className={groceryExportStyles.secondaryButton(theme)} disabled={isSaving} type="button" onClick={onCancel}>
+          <button className={groceryExportStyles.secondaryButton} disabled={isSaving} type="button" onClick={onCancel}>
             {t.common.cancel}
           </button>
-          <button className={groceryExportStyles.primaryButton(theme)} disabled={isSaving} type="button" onClick={onSave}>
+          <button className={groceryExportStyles.primaryButton} disabled={isSaving} type="button" onClick={onSave}>
             {isSaving ? t.common.saving : t.common.save}
           </button>
         </>
       }
       footerClassName={groceryExportStyles.rulesFooter}
       headerClassName={groceryExportStyles.header}
-      panelClassName={groceryExportStyles.rulesPanel(theme)}
+      panelClassName={groceryExportStyles.rulesPanel}
       title={t.planner.groceryExportRulesTitle}
       titleClassName={groceryExportStyles.title}
       onClose={onCancel}

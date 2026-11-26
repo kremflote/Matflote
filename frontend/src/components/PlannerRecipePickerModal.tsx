@@ -512,7 +512,7 @@ function PlannerRecipePickerModal({
     <Modal
       backdropClassName={plannerPickerStyles.modalBackdrop}
       bodyClassName={plannerPickerStyles.bodyFrame}
-      closeButtonClassName={plannerPickerStyles.closeButton(theme)}
+      closeButtonClassName={plannerPickerStyles.closeButton}
       closeLabel={t.common.close}
       description={
         t.planner.selectMainDescription
@@ -542,7 +542,7 @@ function PlannerRecipePickerModal({
           </div>
           <div className={plannerPickerStyles.footerActions}>
             <button
-              className={plannerPickerStyles.mobileCancelButton(theme)}
+              className={plannerPickerStyles.mobileCancelButton}
               disabled={isSaving}
               type="button"
               onClick={onClose}
@@ -550,7 +550,7 @@ function PlannerRecipePickerModal({
               {t.common.cancel}
             </button>
             <button
-              className={plannerPickerStyles.primaryButton(theme)}
+              className={plannerPickerStyles.primaryButton}
               disabled={(mainRecipe === null && mainIngredient === null && entry === undefined) || isSaving}
               type="button"
               onClick={saveMealSlot}
@@ -571,7 +571,7 @@ function PlannerRecipePickerModal({
         <div className={plannerPickerStyles.controls}>
           <SearchField
             aria-label={browserMode === "recipes" ? t.browser.searchRecipes : t.browser.searchIngredients}
-            inputClassName={plannerPickerStyles.searchInput(theme)}
+            inputClassName={plannerPickerStyles.searchInput}
             placeholder={t.planner.mealPickerSearchPlaceholder}
             ref={searchInputRef}
             theme={theme}
@@ -580,7 +580,7 @@ function PlannerRecipePickerModal({
           />
           <button
             aria-label={t.filters.categories}
-            className={plannerPickerStyles.categoryButton(theme)}
+            className={plannerPickerStyles.categoryButton}
             type="button"
             onClick={() => setIsCategoryFilterOpen(true)}
           >
@@ -592,7 +592,7 @@ function PlannerRecipePickerModal({
           {browserMode === "recipes" && (
             <button
               aria-label={t.browser.openIngredientFilter}
-              className={plannerPickerStyles.filterButton(theme)}
+              className={plannerPickerStyles.filterButton}
               ref={ingredientFilterButtonRef}
               type="button"
               onClick={(event) => {
@@ -610,16 +610,16 @@ function PlannerRecipePickerModal({
               <FilterIcon />
             </button>
           )}
-          <div className={plannerPickerStyles.browserModeSwitch(theme)} role="group" aria-label={t.cookbook.cookbookSections}>
+          <div className={plannerPickerStyles.browserModeSwitch} role="group" aria-label={t.cookbook.cookbookSections}>
             <button
-              className={plannerPickerStyles.browserModeOption(theme, browserMode === "recipes")}
+              className={plannerPickerStyles.browserModeOption(browserMode === "recipes")}
               type="button"
               onClick={() => setBrowserMode("recipes")}
             >
               {t.cookbook.recipes}
             </button>
             <button
-              className={plannerPickerStyles.browserModeOption(theme, browserMode === "ingredients")}
+              className={plannerPickerStyles.browserModeOption(browserMode === "ingredients")}
               type="button"
               onClick={switchToIngredientBrowser}
             >
@@ -681,10 +681,10 @@ function PlannerRecipePickerModal({
           <Modal
             backdropClassName={recipeBrowserStyles.categoryFilterBackdrop}
             bodyClassName={recipeBrowserStyles.categoryFilterBody}
-            closeButtonClassName={recipeBrowserStyles.modalCloseButton(theme)}
+            closeButtonClassName={recipeBrowserStyles.modalCloseButton}
             closeLabel={t.common.close}
             headerClassName={recipeBrowserStyles.categoryFilterHeader}
-            panelClassName={recipeBrowserStyles.categoryFilterPanel(theme)}
+            panelClassName={recipeBrowserStyles.categoryFilterPanel}
             title={t.filters.categories}
             titleClassName={recipeBrowserStyles.modalTitle}
             titleId="planner-category-filter-title"
