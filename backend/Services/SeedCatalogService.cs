@@ -266,6 +266,14 @@ public class SeedCatalogService(
                 continue;
             }
 
+            // The image folder is served on the app's own origin, so an .html or .svg entry would become a page
+            // there (AUDIT S3); only the image types the app itself stores are extracted.
+            if (!ImageStorageUrls.IsImageFileName(entry.FullName))
+            {
+                logger.LogWarning("Skipped non-image file in seed catalog package: {EntryName}.", entry.FullName);
+                continue;
+            }
+
             var relativeImagePath = entry.FullName["images/".Length..].Replace('/', Path.DirectorySeparatorChar);
             var destinationPath = Path.GetFullPath(Path.Combine(storageRoot, relativeImagePath));
 

@@ -21,13 +21,21 @@ public class SeedPackageImportTests
         }
         """;
 
-    private static MultipartFormDataContent Package()
+    private static MultipartFormDataContent Package(params string[] extraEntries)
     {
         var zip = new MemoryStream();
         using (var archive = new ZipArchive(zip, ZipArchiveMode.Create, leaveOpen: true))
         {
-            using var writer = new StreamWriter(archive.CreateEntry("seed-catalog.json").Open(), Encoding.UTF8);
-            writer.Write(CatalogJson);
+            using (var writer = new StreamWriter(archive.CreateEntry("seed-catalog.json").Open(), Encoding.UTF8))
+            {
+                writer.Write(CatalogJson);
+            }
+
+            foreach (var name in extraEntries)
+            {
+                using var entry = archive.CreateEntry(name).Open();
+                entry.Write("content"u8);
+            }
         }
 
         var file = new ByteArrayContent(zip.ToArray());
@@ -69,5 +77,31 @@ public class SeedPackageImportTests
         await response.EnsureStatus(HttpStatusCode.NoContent);
         Assert.Equal(["Vegetable"], await TagNames(client));
         Assert.Empty((await client.GetJson<IngredientDto>($"/api/ingredients/{rice.IngredientId}")).Tags);
+    }
+
+    /// <summary>AUDIT S3: the image folder is served on the app's origin, so only image files are extracted.</summary>
+    [Fact]
+    public async Task An_import_extracts_only_image_files()
+    {
+        using var factory = new MatfloteFactory();
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsync("/api/seed-catalog/import-package", Package(
+            "images/recipes/a.jpg", "images/recipes/b.JPEG", "images/c.png", "images/d.webp",
+            "images/evil.html", "images/evil.svg", "images/recipes/script.js", "images/noextension"));
+
+        await response.EnsureStatus(HttpStatusCode.NoContent);
+        var root = Path.Combine(factory.Directory, "images");
+        foreach (var image in new[] { "recipes/a.jpg", "recipes/b.JPEG", "c.png", "d.webp" })
+        {
+            Assert.True(File.Exists(Path.Combine(root, image)), image);
+        }
+
+        foreach (var other in new[] { "evil.html", "evil.svg", "recipes/script.js", "noextension" })
+        {
+            Assert.False(File.Exists(Path.Combine(root, other)), other);
+        }
+
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/images/evil.html")).StatusCode);
     }
 }

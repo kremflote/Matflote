@@ -24,6 +24,9 @@ public static class ImageStorageUrls
     public static bool IsThumbnail(string relativePath) =>
         Path.GetFileNameWithoutExtension(relativePath).EndsWith(ThumbnailSuffix, StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>Whether a file name has one of the image types the app stores and serves (.jpg, .jpeg, .png, .webp).</summary>
+    public static bool IsImageFileName(string fileName) => GetContentType(Path.GetExtension(fileName)) is not null;
+
     public static string? GetContentType(string extension) =>
         extension.ToLowerInvariant() switch
         {
