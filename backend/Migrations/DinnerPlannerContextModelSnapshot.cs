@@ -15,7 +15,7 @@ namespace backend.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.15");
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.AppSetting", b =>
                 {
@@ -301,48 +301,6 @@ namespace backend.Migrations
                     b.HasIndex("BrandId");
 
                     b.ToTable("Ingredients");
-
-                    b.HasData(
-                        new
-                        {
-                            IngredientId = 1,
-                            Color = "#f6d4b8",
-                            Description = "Lean poultry cut with mild flavor. Useful as the main protein in bowls, salads, soups, and quick pan-fried dinners.",
-                            IngredientName = "Chicken breast",
-                            NutritionSource = "Manual"
-                        },
-                        new
-                        {
-                            IngredientId = 2,
-                            Color = "#f4ead2",
-                            Description = "Aromatic vegetable used to build flavor in sauces, marinades, soups, stir fries, and roasted dishes.",
-                            IngredientName = "Garlic",
-                            NutritionSource = "Manual"
-                        },
-                        new
-                        {
-                            IngredientId = 3,
-                            Color = "#fff7ef",
-                            Description = "Thick cultured dairy product. Works as a base for cold sauces, dressings, marinades, and high-protein breakfasts.",
-                            IngredientName = "Greek yogurt",
-                            NutritionSource = "Manual"
-                        },
-                        new
-                        {
-                            IngredientId = 4,
-                            Color = "#f6f0df",
-                            Description = "Neutral grain that works as a side or base for bowls, curries, stir fries, and meal prep portions.",
-                            IngredientName = "Rice",
-                            NutritionSource = "Manual"
-                        },
-                        new
-                        {
-                            IngredientId = 5,
-                            Color = "#f9dc5c",
-                            Description = "Bright acidic fruit used for sauces, dressings, marinades, desserts, and finishing cooked dishes.",
-                            IngredientName = "Lemon",
-                            NutritionSource = "Manual"
-                        });
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientTagAssignment", b =>
@@ -358,33 +316,6 @@ namespace backend.Migrations
                     b.HasIndex("IngredientTagDefinitionId");
 
                     b.ToTable("IngredientTagAssignments");
-
-                    b.HasData(
-                        new
-                        {
-                            IngredientId = 1,
-                            IngredientTagDefinitionId = 7
-                        },
-                        new
-                        {
-                            IngredientId = 2,
-                            IngredientTagDefinitionId = 1
-                        },
-                        new
-                        {
-                            IngredientId = 3,
-                            IngredientTagDefinitionId = 12
-                        },
-                        new
-                        {
-                            IngredientId = 4,
-                            IngredientTagDefinitionId = 13
-                        },
-                        new
-                        {
-                            IngredientId = 5,
-                            IngredientTagDefinitionId = 2
-                        });
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.IngredientTagCategory", b =>
@@ -2187,34 +2118,6 @@ namespace backend.Migrations
                     b.HasKey("RecipeId");
 
                     b.ToTable("Recipes");
-
-                    b.HasData(
-                        new
-                        {
-                            RecipeId = 1,
-                            Description = "Cold yogurt sauce with grated garlic and lemon. Best with chicken bowls, grilled meat, roasted vegetables, and rice.",
-                            ImageUrl = "/images/recipes/garlic-yogurt-sauce.jpg",
-                            Instructions = "Grate the garlic finely. Stir garlic, lemon juice, and a little lemon zest into the yogurt. Season with salt and let it rest for at least 10 minutes before serving.",
-                            Name = "Garlic yogurt sauce",
-                            Portions = 1m
-                        },
-                        new
-                        {
-                            RecipeId = 2,
-                            Description = "Weeknight bowl with pan-fried chicken, steamed rice, and fresh garlic yogurt sauce. Good as dinner and easy to scale for meal prep.",
-                            ImageUrl = "/images/recipes/chicken-rice-bowl.jpg",
-                            Instructions = "Rinse the rice and cook until tender. Slice the chicken breast, season lightly, and fry in a hot pan until cooked through. Spoon rice into bowls, add chicken, and finish with garlic yogurt sauce.",
-                            Name = "Chicken rice bowl",
-                            Portions = 1m
-                        },
-                        new
-                        {
-                            RecipeId = 3,
-                            Description = "Plain steamed rice for bowls, curries, stir fries, and saucy dishes.",
-                            Instructions = "Rinse the rice until the water runs mostly clear. Cook with the correct amount of water, then rest covered for 5 minutes before fluffing.",
-                            Name = "Steamed rice",
-                            Portions = 1m
-                        });
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.RecipeComponent", b =>
@@ -2291,56 +2194,6 @@ namespace backend.Migrations
                         .IsUnique();
 
                     b.ToTable("RecipeIngredients");
-
-                    b.HasData(
-                        new
-                        {
-                            RecipeIngredientId = 1,
-                            Amount = 200m,
-                            IngredientId = 3,
-                            RecipeId = 1,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 2,
-                            Amount = 3m,
-                            IngredientId = 2,
-                            RecipeId = 1,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 3,
-                            Amount = 30m,
-                            IngredientId = 5,
-                            RecipeId = 1,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 4,
-                            Amount = 400m,
-                            IngredientId = 1,
-                            RecipeId = 2,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 5,
-                            Amount = 250m,
-                            IngredientId = 4,
-                            RecipeId = 2,
-                            Unit = "Gram"
-                        },
-                        new
-                        {
-                            RecipeIngredientId = 6,
-                            Amount = 250m,
-                            IngredientId = 4,
-                            RecipeId = 3,
-                            Unit = "Gram"
-                        });
                 });
 
             modelBuilder.Entity("DinnerPlanner.Api.Models.RecipeTagAssignment", b =>

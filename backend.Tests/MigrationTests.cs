@@ -147,4 +147,34 @@ public class MigrationTests : IDisposable
 
         Assert.Equal(12 + 2, (await Strings("SELECT SystemKey FROM IngredientTagDefinitions WHERE SystemKey IS NOT NULL")).Count);
     }
+
+    [Fact]
+    public async Task Dropping_the_sample_rows_from_the_model_keeps_them_in_the_database()
+    {
+        await MigrateToJustBefore("_RemoveSampleSeedRowsFromModel");
+        // The owner may have renamed a sample and used it in a recipe of their own.
+        await Execute("""
+            UPDATE Ingredients SET IngredientName = 'Kyllingfilet' WHERE IngredientId = 1;
+            INSERT INTO Recipes (Name, Portions) VALUES ('Owner wraps', 2);
+            INSERT INTO RecipeIngredients (RecipeId, IngredientId, Amount, Unit, Preparation)
+                SELECT RecipeId, 1, 300, 'Gram', 'None' FROM Recipes WHERE Name = 'Owner wraps';
+            """);
+        const string everything = """
+            SELECT 'i' || IngredientId || IngredientName FROM Ingredients
+            UNION ALL SELECT 'r' || RecipeId || Name FROM Recipes
+            UNION ALL SELECT 'l' || RecipeIngredientId || '-' || RecipeId || '-' || IngredientId FROM RecipeIngredients
+            UNION ALL SELECT 't' || IngredientId || '-' || IngredientTagDefinitionId FROM IngredientTagAssignments
+            ORDER BY 1
+            """;
+        var before = await Strings(everything);
+        Assert.Contains("i1Kyllingfilet", before);
+
+        await using (var context = OpenContext())
+        {
+            await context.Database.MigrateAsync();
+            Assert.False(context.Database.HasPendingModelChanges());
+        }
+
+        Assert.Equal(before, await Strings(everything));
+    }
 }
