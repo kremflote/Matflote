@@ -67,8 +67,8 @@ export async function sendRequest(input: string, init?: RequestInit) {
 }
 
 /**
- * The error for a failed response. The server's own message is used when it sent one as JSON
- * (`{ "error": ... }` or ProblemDetails); anything else, such as a proxy's HTML error page,
+ * The error for a failed response. The server answers errors with ProblemDetails that carry the message in
+ * `error` (and `detail`), so that message is used; anything else, such as a proxy's HTML error page,
  * becomes a short message with the status, never the raw body.
  */
 export async function toApiError(response: Response) {

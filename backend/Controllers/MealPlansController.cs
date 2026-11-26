@@ -55,7 +55,7 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
         // An entry without items would only occupy the slot (AUDIT B5).
         if (request.Recipes.Count == 0)
         {
-            return BadRequest(new ApiErrorDto("A meal needs at least one recipe or ingredient in \"recipes\"."));
+            return BadRequest(new ApiError("A meal needs at least one recipe or ingredient in \"recipes\"."));
         }
 
         if (await EntryExists(request.Date, request.Slot))

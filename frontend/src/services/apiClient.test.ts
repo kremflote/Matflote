@@ -59,6 +59,10 @@ describe("apiRequest errors (F7)", () => {
     respondWith(new Response(JSON.stringify({ error: "Recipe name is required." }), { status: 400, headers: { "Content-Type": "application/json" } }));
     expect((await errorOf(apiRequest("/api/recipes"))).message).toBe("Recipe name is required.");
 
+    const problem = { title: "Conflict", status: 409, detail: "A recipe named \"Taco\" already exists (id 3).", error: "A recipe named \"Taco\" already exists (id 3)." };
+    respondWith(new Response(JSON.stringify(problem), { status: 409, headers: { "Content-Type": "application/problem+json" } }));
+    expect((await errorOf(apiRequest("/api/recipes"))).message).toBe(problem.error);
+
     respondWith(new Response(JSON.stringify({ title: "Not Found", status: 404 }), { status: 404, headers: { "Content-Type": "application/problem+json" } }));
     expect((await errorOf(apiRequest("/api/recipes/9"))).message).toBe("Not Found");
   });

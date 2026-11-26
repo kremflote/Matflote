@@ -56,8 +56,8 @@ public record IngredientUseRecipeDto(int RecipeId, string Name);
 public record IngredientUseMealDto(int MealPlanEntryId, DateOnly Date, MealSlot Slot);
 
 /// <summary>
-/// The 409 body of DELETE /api/ingredients/{id} when the ingredient is still used. Repoint the uses with
-/// POST /api/ingredients/{id}/replace-with/{otherId}, or edit them, before deleting.
+/// The uses that stop DELETE /api/ingredients/{id}: its 409 is ProblemDetails with <c>error</c>, <c>recipes</c> and
+/// <c>mealPlanEntries</c>. Repoint the uses with POST /api/ingredients/{id}/replace-with/{otherId}, or edit them, before deleting.
 /// </summary>
 public record IngredientInUseDto(
     string Error,

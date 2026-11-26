@@ -43,13 +43,13 @@ public class RecipesController(
         var cancellationToken = HttpContext.RequestAborted;
         if (await recipes.FindNameClashAsync(request.Name, exceptId: null, cancellationToken) is { } clash)
         {
-            return Conflict(new ApiErrorDto(clash));
+            return Conflict(new ApiError(clash));
         }
 
         var validation = await recipes.ValidateAsync(request, recipeId: null, cancellationToken);
         if (validation.Problems.Count > 0)
         {
-            return BadRequest(ApiErrorDto.From(validation.Problems));
+            return BadRequest(ApiError.From(validation.Problems));
         }
 
         var recipe = new Recipe();
@@ -77,18 +77,18 @@ public class RecipesController(
         if (CatalogNames.Key(request.Name) != CatalogNames.Key(recipe.Name)
             && await recipes.FindNameClashAsync(request.Name, exceptId: recipe.RecipeId, cancellationToken) is { } clash)
         {
-            return Conflict(new ApiErrorDto(clash));
+            return Conflict(new ApiError(clash));
         }
 
         var validation = await recipes.ValidateAsync(request, recipe.RecipeId, cancellationToken);
         if (validation.Problems.Count > 0)
         {
-            return BadRequest(ApiErrorDto.From(validation.Problems));
+            return BadRequest(ApiError.From(validation.Problems));
         }
 
         if (await recipes.WouldCreateComponentCycleAsync(recipe.RecipeId, validation.Components.Select(component => component.RecipeId), cancellationToken))
         {
-            return BadRequest(new ApiErrorDto(RecipeCatalogService.ComponentCycleMessage));
+            return BadRequest(new ApiError(RecipeCatalogService.ComponentCycleMessage));
         }
 
         recipes.Apply(recipe, request, validation);

@@ -33,13 +33,13 @@ public class IngredientsController(
         var cancellationToken = HttpContext.RequestAborted;
         if (await ingredients.FindNameClashAsync(request.IngredientName, request.BrandId, exceptId: null, cancellationToken) is { } clash)
         {
-            return Conflict(new ApiErrorDto(clash));
+            return Conflict(new ApiError(clash));
         }
 
         var (problems, knownTags) = await ingredients.ValidateAsync(request, cancellationToken);
         if (problems.Count > 0)
         {
-            return BadRequest(ApiErrorDto.From(problems));
+            return BadRequest(ApiError.From(problems));
         }
 
         var ingredient = new Ingredient();
@@ -67,13 +67,13 @@ public class IngredientsController(
         if (IngredientCatalogService.ChangesNameOrBrand(ingredient, request)
             && await ingredients.FindNameClashAsync(request.IngredientName, request.BrandId, exceptId: id, cancellationToken) is { } clash)
         {
-            return Conflict(new ApiErrorDto(clash));
+            return Conflict(new ApiError(clash));
         }
 
         var (problems, knownTags) = await ingredients.ValidateAsync(request, cancellationToken);
         if (problems.Count > 0)
         {
-            return BadRequest(ApiErrorDto.From(problems));
+            return BadRequest(ApiError.From(problems));
         }
 
         ingredients.Apply(ingredient, request, knownTags);
@@ -95,7 +95,14 @@ public class IngredientsController(
         var uses = await ingredientUsage.FindUsesAsync(id, ingredient.IngredientName, HttpContext.RequestAborted);
         if (uses.Recipes.Count > 0 || uses.MealPlanEntries.Count > 0)
         {
-            return Conflict(uses);
+            return Conflict(new ApiError(uses.Error)
+            {
+                Extensions = new Dictionary<string, object?>
+                {
+                    ["recipes"] = uses.Recipes,
+                    ["mealPlanEntries"] = uses.MealPlanEntries,
+                },
+            });
         }
 
         context.Ingredients.Remove(ingredient);
@@ -112,20 +119,20 @@ public class IngredientsController(
     {
         if (id == otherId)
         {
-            return BadRequest(new ApiErrorDto("An ingredient cannot replace itself."));
+            return BadRequest(new ApiError("An ingredient cannot replace itself."));
         }
 
         var source = await context.Ingredients.FindAsync(id);
         var target = await context.Ingredients.FindAsync(otherId);
         if (source is null || target is null)
         {
-            return NotFound(new ApiErrorDto($"No ingredient has id {(source is null ? id : otherId)}."));
+            return NotFound(new ApiError($"No ingredient has id {(source is null ? id : otherId)}."));
         }
 
         var (problems, moved, merged, mealItems) = await ingredientUsage.StageReplacementAsync(source, target, HttpContext.RequestAborted);
         if (problems.Count > 0)
         {
-            return Conflict(ApiErrorDto.From(problems));
+            return Conflict(ApiError.From(problems));
         }
 
         await context.SaveChangesAsync();

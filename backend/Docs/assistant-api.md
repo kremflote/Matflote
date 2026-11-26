@@ -21,6 +21,15 @@ Both write endpoints behave the same way:
 - Unknown JSON properties are rejected (`400`), so a misspelled field is reported instead of ignored.
 - `warnings` do not block the request. Read them: they flag things like an ingredient that was created without nutrition data.
 
+Two kinds of error response:
+
+- **Results.** The `422` of the write endpoints and the `404`/`409` of the undo are the result bodies shown below, with `errors` per item. Read them as results.
+- **Everything else** (`400` for a malformed request or a misspelled field, `404` for an unknown recipe id, `500`) is [ProblemDetails](https://www.rfc-editor.org/rfc/rfc9457), `application/problem+json`. Show `error`, which always holds the message (the same as `detail`, or `title` when there is no detail). A misspelled field is named under `errors`.
+
+```json
+{ "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5", "title": "Not Found", "status": 404, "detail": "No recipe has id 99.", "error": "No recipe has id 99." }
+```
+
 ## Rules that are easy to get wrong
 
 - **Units are weight or volume only**: `g`, `kg`, `ml`, `l`. `cl`, `dl`, `tsp`/`ts` and `tbsp`/`ss` are accepted and converted to ml. There is no "piece" unit: convert "2 onions" to grams. `conversionRules` in the context lists the household's own conversions (for example `1 yellow onion → 170 g`).

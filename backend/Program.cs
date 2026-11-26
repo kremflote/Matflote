@@ -1,5 +1,6 @@
 
 using DinnerPlanner.Api.Contexts;
+using DinnerPlanner.Api.Filters;
 using DinnerPlanner.Api.Models;
 using DinnerPlanner.Api.Services;
 using Microsoft.Data.Sqlite;
@@ -50,7 +51,9 @@ builder.Services.AddDbContext<DinnerPlannerContext>((services, options) =>
         services.GetRequiredService<SqlitePragmaInterceptor>());
 });
 
-builder.Services.AddControllers()
+builder.Services.AddProblemDetails(options =>
+    options.CustomizeProblemDetails = context => ProblemDetailsFields.AddError(context.ProblemDetails));
+builder.Services.AddControllers(options => options.Filters.Add<ProblemDetailsResultFilter>())
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -102,19 +105,21 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Every error is ProblemDetails (AUDIT C2): unhandled exceptions here, errors without a body (a 404 for a missing
+// image, say) through the status code pages, and controller errors through ProblemDetailsResultFilter.
 app.UseExceptionHandler(exceptionApp =>
 {
     exceptionApp.Run(async context =>
     {
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        context.Response.ContentType = "application/json";
-
-        await context.Response.WriteAsJsonAsync(new
+        await context.RequestServices.GetRequiredService<IProblemDetailsService>().WriteAsync(new ProblemDetailsContext
         {
-            Error = "An unexpected server error occurred."
+            HttpContext = context,
+            ProblemDetails = { Status = StatusCodes.Status500InternalServerError, Detail = "An unexpected server error occurred." },
         });
     });
 });
+app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {
