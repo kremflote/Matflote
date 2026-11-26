@@ -98,16 +98,7 @@ export interface INutritionFacts {
   vitaminCMilligrams: number | null;
   vitaminDMicrograms: number | null;
   vitaminEMilligrams: number | null;
-  vitamins: Vitamin[];
 }
-
-export type Vitamin =
-  | "VitaminA"
-  | "VitaminB9"
-  | "VitaminB12"
-  | "VitaminC"
-  | "VitaminD"
-  | "VitaminE";
 
 export type NutritionDataSource =
   | "None"

@@ -177,4 +177,36 @@ public class MigrationTests : IDisposable
 
         Assert.Equal(before, await Strings(everything));
     }
+
+    [Fact]
+    public async Task Dropping_the_unused_nutrition_fields_keeps_every_ingredient_and_its_other_values()
+    {
+        await MigrateToJustBefore("_DropUnusedNutritionFields");
+        await Execute("""
+            INSERT INTO Ingredients (IngredientName, NutritionSource, NutritionPer100_Calories, NutritionPer100_VitaminCMilligrams,
+                NutritionPer100_VitaminKMicrograms, NutritionPer100_CholineMilligrams, NutritionPer100_Vitamins, Color)
+            VALUES ('Owner kale', 'Matvaretabellen', 49, 93.4, 389.6, 0.5, 'VitaminC', '#2f6b2f');
+            INSERT INTO Recipes (Name, Portions) VALUES ('Owner kale salad', 2);
+            INSERT INTO RecipeIngredients (RecipeId, IngredientId, Amount, Unit, Preparation)
+                SELECT r.RecipeId, i.IngredientId, 150, 'Gram', 'Raw' FROM Recipes r, Ingredients i
+                WHERE r.Name = 'Owner kale salad' AND i.IngredientName = 'Owner kale';
+            """);
+        const string kept = """
+            SELECT i.IngredientId || '|' || i.IngredientName || '|' || coalesce(i.NutritionPer100_Calories, '-') || '|'
+                || coalesce(i.NutritionPer100_VitaminCMilligrams, '-') || '|' || coalesce(i.Color, '-') || '|' || i.NutritionSource
+            FROM Ingredients i ORDER BY i.IngredientId
+            """;
+        var before = await Strings(kept);
+        var linesBefore = await Strings("SELECT RecipeIngredientId || '-' || RecipeId || '-' || IngredientId FROM RecipeIngredients ORDER BY 1");
+
+        await using (var context = OpenContext())
+        {
+            await context.Database.MigrateAsync();
+        }
+
+        Assert.Equal(before, await Strings(kept));
+        Assert.Contains(before, row => row!.Contains("|Owner kale|49|93.4|#2f6b2f|Matvaretabellen", StringComparison.Ordinal));
+        Assert.Equal(linesBefore, await Strings("SELECT RecipeIngredientId || '-' || RecipeId || '-' || IngredientId FROM RecipeIngredients ORDER BY 1"));
+        Assert.Empty(await Strings("SELECT name FROM pragma_table_info('Ingredients') WHERE name IN ('NutritionPer100_Vitamins', 'NutritionPer100_VitaminKMicrograms', 'NutritionPer100_CholineMilligrams')"));
+    }
 }

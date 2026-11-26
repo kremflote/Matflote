@@ -96,18 +96,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
                 nutrition.Property(value => value.VitaminCMilligrams).HasPrecision(8, 2);
                 nutrition.Property(value => value.VitaminDMicrograms).HasPrecision(8, 2);
                 nutrition.Property(value => value.VitaminEMilligrams).HasPrecision(8, 2);
-                nutrition.Property(value => value.VitaminKMicrograms).HasPrecision(8, 2);
-                nutrition.Property(value => value.CholineMilligrams).HasPrecision(8, 2);
-                nutrition.Property(value => value.Vitamins)
-                    .HasConversion(
-                        vitamins => string.Join(",", vitamins.Select(vitamin => vitamin.ToString())),
-                        value => ParseVitamins(value)
-                    )
-                    .Metadata.SetValueComparer(new ValueComparer<List<Vitamin>>(
-                        (first, second) => first != null && second != null && first.SequenceEqual(second),
-                        vitamins => vitamins.Aggregate(0, (hash, vitamin) => HashCode.Combine(hash, vitamin.GetHashCode())),
-                        vitamins => vitamins.ToList()
-                    ));
             });
         });
 
@@ -454,21 +442,6 @@ public class DinnerPlannerContext(DbContextOptions<DinnerPlannerContext> options
             new { IngredientTagDefinitionId = 19, Name = "Frozen", IngredientTagCategoryId = 3, SortOrder = 600 }
         );
     }
-
-    private static List<Vitamin> ParseVitamins(string? value) =>
-        string.IsNullOrWhiteSpace(value)
-            ? []
-            : value
-                .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(vitaminName =>
-                    Enum.TryParse(vitaminName, out Vitamin vitamin)
-                        ? (Vitamin?)vitamin
-                        : null
-                )
-                .Where(vitamin => vitamin.HasValue)
-                .Select(vitamin => vitamin!.Value)
-                .Distinct()
-                .ToList();
 
     private static IReadOnlyCollection<object> CreateNutritionReferenceProfiles()
     {

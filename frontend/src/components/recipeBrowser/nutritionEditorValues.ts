@@ -1,5 +1,3 @@
-import type { Vitamin } from "../../interfaces/IIngredient";
-
 /** The nutrition editor's fields, as typed (strings, empty when unknown). */
 export type NutritionEditorValues = {
   calories: string;
@@ -22,31 +20,3 @@ export type NutritionEditorValues = {
   vitaminDMicrograms: string;
   vitaminEMilligrams: string;
 };
-
-export function deriveVitaminsFromNutritionValues(values: NutritionEditorValues): Vitamin[] {
-  const vitamins: Vitamin[] = [];
-
-  if (hasValue(values.vitaminAMicrograms)) {
-    vitamins.push("VitaminA");
-  }
-  if (hasValue(values.vitaminB9Micrograms)) {
-    vitamins.push("VitaminB9");
-  }
-  if (hasValue(values.vitaminB12Micrograms)) {
-    vitamins.push("VitaminB12");
-  }
-  if (hasValue(values.vitaminCMilligrams)) {
-    vitamins.push("VitaminC");
-  }
-  if (hasValue(values.vitaminDMicrograms)) {
-    vitamins.push("VitaminD");
-  }
-  if (hasValue(values.vitaminEMilligrams)) {
-    vitamins.push("VitaminE");
-  }
-  return vitamins;
-}
-
-function hasValue(value: string) {
-  return value.trim().length > 0;
-}

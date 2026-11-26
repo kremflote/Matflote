@@ -2297,10 +2297,6 @@ namespace backend.Migrations
                                 .HasPrecision(8, 2)
                                 .HasColumnType("TEXT");
 
-                            b1.Property<decimal?>("CholineMilligrams")
-                                .HasPrecision(8, 2)
-                                .HasColumnType("TEXT");
-
                             b1.Property<decimal?>("DietaryFiberGrams")
                                 .HasPrecision(8, 2)
                                 .HasColumnType("TEXT");
@@ -2363,14 +2359,6 @@ namespace backend.Migrations
 
                             b1.Property<decimal?>("VitaminEMilligrams")
                                 .HasPrecision(8, 2)
-                                .HasColumnType("TEXT");
-
-                            b1.Property<decimal?>("VitaminKMicrograms")
-                                .HasPrecision(8, 2)
-                                .HasColumnType("TEXT");
-
-                            b1.Property<string>("Vitamins")
-                                .IsRequired()
                                 .HasColumnType("TEXT");
 
                             b1.HasKey("IngredientId");

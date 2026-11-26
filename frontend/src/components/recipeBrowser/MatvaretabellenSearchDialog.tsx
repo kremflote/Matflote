@@ -194,7 +194,6 @@ function toIngredientNutrition(nutrition: IProductLookupNutrition): INutritionFa
     vitaminCMilligrams: nutrition.vitaminCMilligrams,
     vitaminDMicrograms: nutrition.vitaminDMicrograms,
     vitaminEMilligrams: nutrition.vitaminEMilligrams,
-    vitamins: [],
   };
 }
 

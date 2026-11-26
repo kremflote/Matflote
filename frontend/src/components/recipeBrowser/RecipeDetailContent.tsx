@@ -327,7 +327,6 @@ function addRecipeNutrition(
     total.vitaminCMilligrams = addScaled(total.vitaminCMilligrams, nutrition.vitaminCMilligrams, factor);
     total.vitaminDMicrograms = addScaled(total.vitaminDMicrograms, nutrition.vitaminDMicrograms, factor);
     total.vitaminEMilligrams = addScaled(total.vitaminEMilligrams, nutrition.vitaminEMilligrams, factor);
-    total.vitamins = Array.from(new Set([...total.vitamins, ...nutrition.vitamins]));
   });
 
   recipe.components.forEach((component) => {
@@ -410,7 +409,6 @@ function createEmptyNutrition(): INutritionFacts {
     vitaminCMilligrams: null,
     vitaminDMicrograms: null,
     vitaminEMilligrams: null,
-    vitamins: [],
   };
 }
 

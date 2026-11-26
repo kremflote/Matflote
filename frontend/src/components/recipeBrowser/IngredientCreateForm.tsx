@@ -15,7 +15,7 @@ import ImageCropPicker from "./ImageCropPicker";
 import IngredientTagCreateDialog from "./IngredientTagCreateDialog";
 import MatvaretabellenSearchDialog, { type MatvaretabellenNutritionCandidate } from "./MatvaretabellenSearchDialog";
 import NutritionEditor from "./NutritionEditor";
-import { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "./nutritionEditorValues";
+import type { NutritionEditorValues } from "./nutritionEditorValues";
 import TagPickerDialog from "./TagPickerDialog";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 
@@ -172,7 +172,6 @@ function IngredientCreateForm({
           vitaminCMilligrams: nullableNumber(vitaminCMilligrams),
           vitaminDMicrograms: nullableNumber(vitaminDMicrograms),
           vitaminEMilligrams: nullableNumber(vitaminEMilligrams),
-          vitamins: deriveVitaminsFromNutritionValues(nutritionValues),
         },
         nutritionSource,
         nutritionSourceLabel,

@@ -2,7 +2,6 @@ import type {
   KnownTag,
   MeasurementUnit,
   NutritionDataSource,
-  Vitamin,
 } from "../interfaces/IIngredient";
 import type { MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import type { IngredientPreparation } from "../interfaces/IRecipe";
@@ -15,7 +14,6 @@ type EnumLabels = {
   mealSlots: Record<MealSlot, string>;
   measurementUnits: Record<MeasurementUnit, string>;
   recipeTags: Record<string, string | undefined>;
-  vitamins: Record<Vitamin, string>;
   viewModes: Record<PlannerViewMode, string>;
 };
 

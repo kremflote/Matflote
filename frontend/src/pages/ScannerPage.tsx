@@ -24,7 +24,7 @@ import MatvaretabellenSearchDialog, {
   type MatvaretabellenNutritionCandidate,
 } from "../components/recipeBrowser/MatvaretabellenSearchDialog";
 import NutritionEditor from "../components/recipeBrowser/NutritionEditor";
-import { deriveVitaminsFromNutritionValues, type NutritionEditorValues } from "../components/recipeBrowser/nutritionEditorValues";
+import type { NutritionEditorValues } from "../components/recipeBrowser/nutritionEditorValues";
 
 type ScannerPageProps = {
   theme: SiteTheme;
@@ -225,7 +225,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
         brandId: brand?.brandId ?? null,
         imageUrl: uploadedImage?.url ?? ingredientDraft.imageUrl,
         tags: ingredientDraft.tags,
-        nutritionPer100: withDerivedVitamins(ingredientDraft.nutritionPer100),
+        nutritionPer100: ingredientDraft.nutritionPer100,
         nutritionSource: ingredientDraft.nutritionSource,
         nutritionSourceLabel: ingredientDraft.nutritionSourceLabel,
         matvaretabellenFoodId: ingredientDraft.matvaretabellenFoodId,
@@ -1056,7 +1056,6 @@ function mergeNutrition(primary: INutritionFacts | null, supplement: INutritionF
     vitaminCMilligrams: primary.vitaminCMilligrams ?? supplement.vitaminCMilligrams,
     vitaminDMicrograms: primary.vitaminDMicrograms ?? supplement.vitaminDMicrograms,
     vitaminEMilligrams: primary.vitaminEMilligrams ?? supplement.vitaminEMilligrams,
-    vitamins: primary.vitamins,
   };
 
   return { nutrition, usedSupplement: hasSupplementFilledMissingValue(primary, supplement) };
@@ -1082,18 +1081,6 @@ function hasSupplementFilledMissingValue(primary: INutritionFacts, supplement: I
     || (primary.vitaminCMilligrams === null && supplement.vitaminCMilligrams !== null)
     || (primary.vitaminDMicrograms === null && supplement.vitaminDMicrograms !== null)
     || (primary.vitaminEMilligrams === null && supplement.vitaminEMilligrams !== null);
-}
-
-function withDerivedVitamins(nutrition: INutritionFacts | null): INutritionFacts | null {
-  if (nutrition === null) {
-    return null;
-  }
-
-  const values = nutritionToEditorValues(nutrition);
-  return {
-    ...nutrition,
-    vitamins: deriveVitaminsFromNutritionValues(values),
-  };
 }
 
 function CandidateImage({ candidate, theme }: { candidate: IngredientCandidate; theme: SiteTheme }) {
@@ -1358,7 +1345,6 @@ function toIngredientNutrition(nutrition: IProductLookupNutrition | null): INutr
     vitaminCMilligrams: nutrition.vitaminCMilligrams,
     vitaminDMicrograms: nutrition.vitaminDMicrograms,
     vitaminEMilligrams: nutrition.vitaminEMilligrams,
-    vitamins: [],
   };
 }
 
@@ -1383,7 +1369,6 @@ function emptyNutritionFacts(): INutritionFacts {
     vitaminCMilligrams: null,
     vitaminDMicrograms: null,
     vitaminEMilligrams: null,
-    vitamins: [],
   };
 }
 
