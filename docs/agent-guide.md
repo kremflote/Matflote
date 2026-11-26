@@ -152,5 +152,6 @@ in the web app.
 ## Approval
 
 Reading (`GET`) never changes anything. The requests that write are `POST /api/assistant/recipes`,
-`PUT /api/assistant/meal-plan` and `POST /api/assistant/meal-plan/undo` without `"dryRun": true`. Whether those may
-run without asking first is the owner's decision for the environment the agent runs in.
+`PUT /api/assistant/meal-plan` and `POST /api/assistant/meal-plan/undo` without `"dryRun": true`. The owner has
+approved these writes: you may send them without asking first, as long as you follow the house rules above
+(dry run first, and ask before replacing a week that already has meals).
