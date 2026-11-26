@@ -38,7 +38,6 @@ function GenerateHarness({ onConfirm }: { onConfirm: (people: number) => void })
             </label>
           }
           confirmLabel="Go"
-          theme="dark"
           title="Generate week"
           tone="default"
           onCancel={() => setIsOpen(false)}

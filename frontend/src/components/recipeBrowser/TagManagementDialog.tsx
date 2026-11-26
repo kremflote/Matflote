@@ -512,7 +512,6 @@ function TagManagementDialog({
           body={t.common.deleteNamed(formatCategoryName(categoryPendingDelete.name))}
           confirmLabel={t.common.remove}
           isBusy={isDeletingCategory}
-          theme={theme}
           title={t.common.removeNamed(formatCategoryName(categoryPendingDelete.name))}
           onCancel={() => setCategoryPendingDelete(null)}
           onConfirm={() => void deleteCategory()}

@@ -2,7 +2,7 @@ import { useId, useMemo, useState } from "react";
 import { useLanguage } from "../../contexts";
 import type { IIngredient, IIngredientInUse } from "../../interfaces/IIngredient";
 import { ingredientService } from "../../services";
-import { controlStyles, type SiteTheme } from "../../styles/appStyles";
+import { controlStyles } from "../../styles/appStyles";
 import { confirmationDialogStyles } from "../../styles/confirmationDialogStyles";
 import { parseDateInputValue } from "../../utils/plannerDate";
 import ConfirmationDialog from "../ConfirmationDialog";
@@ -11,7 +11,6 @@ type IngredientInUseDialogProps = {
   ingredient: IIngredient;
   ingredients: IIngredient[];
   uses: IIngredientInUse;
-  theme: SiteTheme;
   onCancel: () => void;
   /** Called after the uses were moved and the ingredient removed. */
   onReplaced: () => void | Promise<void>;
@@ -21,7 +20,7 @@ type IngredientInUseDialogProps = {
  * Shown when an ingredient cannot be removed because recipes or planned meals use it (AUDIT B1):
  * lists the uses and offers to move them to another ingredient, which removes this one.
  */
-function IngredientInUseDialog({ ingredient, ingredients, uses, theme, onCancel, onReplaced }: IngredientInUseDialogProps) {
+function IngredientInUseDialog({ ingredient, ingredients, uses, onCancel, onReplaced }: IngredientInUseDialogProps) {
   const { t } = useLanguage();
   const selectId = useId();
   const [replacementId, setReplacementId] = useState<number | null>(null);
@@ -70,7 +69,7 @@ function IngredientInUseDialog({ ingredient, ingredients, uses, theme, onCancel,
           <p>{t.cookbook.ingredientInUseBody(uses.recipes.length, uses.mealPlanEntries.length)}</p>
           {uses.recipes.length > 0 && (
             <div>
-              <p className={confirmationDialogStyles.fieldTitle(theme)}>{t.cookbook.ingredientInUseRecipes}</p>
+              <p className={confirmationDialogStyles.fieldTitle}>{t.cookbook.ingredientInUseRecipes}</p>
               <ul className={listClassName}>
                 {uses.recipes.map((recipe) => (
                   <li key={recipe.recipeId}>{recipe.name}</li>
@@ -80,7 +79,7 @@ function IngredientInUseDialog({ ingredient, ingredients, uses, theme, onCancel,
           )}
           {uses.mealPlanEntries.length > 0 && (
             <div>
-              <p className={confirmationDialogStyles.fieldTitle(theme)}>{t.cookbook.ingredientInUseMeals}</p>
+              <p className={confirmationDialogStyles.fieldTitle}>{t.cookbook.ingredientInUseMeals}</p>
               <ul className={listClassName}>
                 {uses.mealPlanEntries.map((meal) => (
                   <li key={meal.mealPlanEntryId}>
@@ -91,7 +90,7 @@ function IngredientInUseDialog({ ingredient, ingredients, uses, theme, onCancel,
             </div>
           )}
           <label className={confirmationDialogStyles.fieldLabel} htmlFor={selectId}>
-            <span className={confirmationDialogStyles.fieldTitle(theme)}>{t.cookbook.replaceWith}</span>
+            <span className={confirmationDialogStyles.fieldTitle}>{t.cookbook.replaceWith}</span>
             <select
               className={controlStyles.formField}
               disabled={isReplacing}
@@ -107,14 +106,13 @@ function IngredientInUseDialog({ ingredient, ingredients, uses, theme, onCancel,
               ))}
             </select>
           </label>
-          <p className={confirmationDialogStyles.fieldHelp(theme)}>{t.cookbook.replaceWithHelp}</p>
+          <p className={confirmationDialogStyles.fieldHelp}>{t.cookbook.replaceWithHelp}</p>
           {error !== null && <p role="alert">{error}</p>}
         </div>
       }
       confirmLabel={t.cookbook.replaceAndRemove}
       isBusy={isReplacing}
       isConfirmDisabled={replacementId === null}
-      theme={theme}
       title={t.cookbook.ingredientInUseTitle(ingredient.ingredientName)}
       onCancel={onCancel}
       onConfirm={() => void replace()}

@@ -2,16 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "../../contexts";
 import type { IAssistantWriteLogEntry } from "../../interfaces/IAssistant";
 import { assistantService } from "../../services";
-import { settingsStyles, type SiteTheme } from "../../styles/appStyles";
+import { settingsStyles } from "../../styles/appStyles";
 import ConfirmationDialog from "../ConfirmationDialog";
 import { describeLogCounts, describeLogTitle, formatLogTime } from "./assistantLogFormat";
 
-type AssistantLogPanelProps = {
-  theme: SiteTheme;
-};
-
 /** The latest writes through the assistant API, with Undo for the newest meal plan change. */
-export default function AssistantLogPanel({ theme }: AssistantLogPanelProps) {
+export default function AssistantLogPanel() {
   const { locale, t } = useLanguage();
   const text = t.assistantLog;
   const [entries, setEntries] = useState<IAssistantWriteLogEntry[] | null>(null);
@@ -127,7 +123,6 @@ export default function AssistantLogPanel({ theme }: AssistantLogPanelProps) {
           body={conflict ? text.conflict : text.undoBody(`${describeLogTitle(pendingUndo, t, locale)}: ${describeLogCounts(pendingUndo, t)}.`)}
           confirmLabel={isUndoing ? text.undoing : conflict ? text.undoAnyway : text.undo}
           isBusy={isUndoing}
-          theme={theme}
           title={text.undoTitle}
           tone={conflict ? "danger" : "default"}
           onCancel={() => {

@@ -50,7 +50,7 @@ describe("AssistantLogPanel", () => {
   it("lists the latest writes and offers Undo on the newest meal plan change only", async () => {
     stubFetch((url) => (url.pathname === "/api/assistant/log" ? jsonResponse([mealPlanWrite, importWrite]) : undefined));
 
-    renderWithProviders(<AssistantLogPanel theme="dark" />);
+    renderWithProviders(<AssistantLogPanel />);
 
     const rows = await screen.findAllByRole("listitem");
     expect(rows).toHaveLength(2);
@@ -76,7 +76,7 @@ describe("AssistantLogPanel", () => {
       return undefined;
     });
 
-    renderWithProviders(<AssistantLogPanel theme="dark" />);
+    renderWithProviders(<AssistantLogPanel />);
     fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
 
     const dialog = await screen.findByRole("dialog");

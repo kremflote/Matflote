@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { useIngredientTagCategories, useLanguage } from "../contexts";
 import type { IGroceryList, IGroceryListItem } from "../interfaces/IGroceryList";
 import { ApiError, appSettingsService, groceryListService } from "../services";
-import { groceryExportStyles, type SiteTheme } from "../styles/appStyles";
+import { groceryExportStyles } from "../styles/appStyles";
 import {
   buildSystemTagNameLookup,
   getAllCategoryTagNames,
@@ -16,7 +16,6 @@ type GroceryExportDialogProps = {
   groceryList: IGroceryList;
   isLoading: boolean;
   loadError: string | null;
-  theme: SiteTheme;
   onClose: () => void;
 };
 
@@ -24,7 +23,6 @@ function GroceryExportDialog({
   groceryList,
   isLoading,
   loadError,
-  theme,
   onClose,
 }: GroceryExportDialogProps) {
   const { t } = useLanguage();
@@ -166,11 +164,11 @@ function GroceryExportDialog({
       closeButtonClassName={groceryExportStyles.closeButton}
       closeLabel={t.common.close}
       description={t.planner.groceryExportDescription}
-      descriptionClassName={groceryExportStyles.subtitle(theme)}
+      descriptionClassName={groceryExportStyles.subtitle}
       descriptionId={descriptionId}
       footer={
         <>
-          <p className={groceryExportStyles.countText(theme)}>
+          <p className={groceryExportStyles.countText}>
             {t.planner.groceryExportSelectedCount(selectedCount, itemCount)}
           </p>
           <div className={groceryExportStyles.actionGroup}>
@@ -222,7 +220,7 @@ function GroceryExportDialog({
           <div className={groceryExportStyles.list}>
             {groceryList.sections.map((section) => (
               <section className={groceryExportStyles.section} key={section.name}>
-                <h3 className={groceryExportStyles.sectionTitle(theme)}>
+                <h3 className={groceryExportStyles.sectionTitle}>
                   {t.planner.groceryExportSections[section.name] ?? section.name}
                 </h3>
                 {section.items.map((item) => {
@@ -232,18 +230,18 @@ function GroceryExportDialog({
                   return (
                     <button
                       aria-pressed={selected}
-                      className={groceryExportStyles.itemButton(theme, selected)}
+                      className={groceryExportStyles.itemButton(selected)}
                       key={itemKey}
                       type="button"
                       onClick={() => toggleItem(section.name, item)}
                     >
-                      <span className={groceryExportStyles.checkbox(theme, selected)} aria-hidden="true">
+                      <span className={groceryExportStyles.checkbox(selected)} aria-hidden="true">
                         ✓
                       </span>
                       <span className={groceryExportStyles.itemText}>
                         <span className={groceryExportStyles.itemName}>{item.ingredientName}</span>
                         {item.sourceRecipes.length > 0 && (
-                          <span className={groceryExportStyles.itemSources(theme)}>
+                          <span className={groceryExportStyles.itemSources}>
                             {t.planner.groceryExportSources(item.sourceRecipes.join(", "))}
                           </span>
                         )}
@@ -261,7 +259,7 @@ function GroceryExportDialog({
           <p className={groceryExportStyles.statusError}>{exportError}</p>
         )}
         {exportMessage !== null && (
-          <p className={groceryExportStyles.statusSuccess(theme)}>{exportMessage}</p>
+          <p className={groceryExportStyles.statusSuccess}>{exportMessage}</p>
         )}
         {isRulesOpen && (
           <GroceryExportRulesDialog
@@ -269,7 +267,6 @@ function GroceryExportDialog({
             excludedTags={draftExcludedTags}
             isSaving={isRulesSaving}
             rulesError={rulesError}
-            theme={theme}
             onCancel={() => setIsRulesOpen(false)}
             onSave={() => void saveRules()}
             onToggleTag={(tag) => setDraftExcludedTags((currentTags) => toggleTag(currentTags, tag))}
@@ -284,7 +281,6 @@ type GroceryExportRulesDialogProps = {
   excludedTags: string[];
   isSaving: boolean;
   rulesError: string | null;
-  theme: SiteTheme;
   onCancel: () => void;
   onSave: () => void;
   onToggleTag: (tag: string) => void;
@@ -295,7 +291,6 @@ function GroceryExportRulesDialog({
   excludedTags,
   isSaving,
   rulesError,
-  theme,
   onCancel,
   onSave,
   onToggleTag,
@@ -325,7 +320,7 @@ function GroceryExportRulesDialog({
       titleClassName={groceryExportStyles.title}
       onClose={onCancel}
     >
-      <p className={groceryExportStyles.subtitle(theme)}>{t.planner.groceryExportRulesDescription}</p>
+      <p className={groceryExportStyles.subtitle}>{t.planner.groceryExportRulesDescription}</p>
       <div className={groceryExportStyles.ruleTagGrid}>
         {availableTags.map((tag) => {
           const selected = excludedTags.some((currentTag) => currentTag.toLowerCase() === tag.toLowerCase());
@@ -333,7 +328,7 @@ function GroceryExportRulesDialog({
           return (
             <button
               aria-pressed={selected}
-              className={groceryExportStyles.ruleTagButton(theme, selected)}
+              className={groceryExportStyles.ruleTagButton(selected)}
               key={tag}
               type="button"
               onClick={() => onToggleTag(tag)}

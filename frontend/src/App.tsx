@@ -53,7 +53,7 @@ function App() {
       {activePage === "weekPlanner" && <PlannerPage theme={theme} />}
       {activePage === "cookbook" && <CookbookPage theme={theme} />}
       <Suspense fallback={null}>
-        {activePage === "settings" && <SettingsPage theme={theme} />}
+        {activePage === "settings" && <SettingsPage />}
         {activePage === "scanner" && <ScannerPage theme={theme} />}
         {activePage === "nutrition" && <NutritionPage />}
       </Suspense>

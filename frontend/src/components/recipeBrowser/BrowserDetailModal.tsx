@@ -296,7 +296,6 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
             body={activeDetail.kind === "recipe" ? t.cookbook.removeRecipeBody : t.cookbook.removeIngredientBody}
             confirmLabel={t.common.remove}
             isBusy={isDeleting}
-            theme={theme}
             title={t.common.removeNamed(getDetailName(activeDetail))}
             onCancel={() => setIsConfirmingDelete(false)}
             onConfirm={() => void handleRemove()}
@@ -306,7 +305,6 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
           <IngredientInUseDialog
             ingredient={activeDetail.ingredient}
             ingredients={ingredients}
-            theme={theme}
             uses={ingredientInUse}
             onCancel={() => setIngredientInUse(null)}
             onReplaced={async () => {

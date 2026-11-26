@@ -12,13 +12,9 @@ import { useLanguage } from "../contexts";
 import type { IAppSettings } from "../interfaces/IAppSettings";
 import type { IImageCleanupReport } from "../interfaces/IMaintenance";
 import { ApiError, appSettingsService, maintenanceService, nutritionService } from "../services";
-import { pageStyles, settingsStyles, type SiteTheme } from "../styles/appStyles";
+import { pageStyles, settingsStyles } from "../styles/appStyles";
 
-type SettingsPageProps = {
-  theme: SiteTheme;
-};
-
-const SettingsPage = ({ theme }: SettingsPageProps) => {
+const SettingsPage = () => {
   const { t } = useLanguage();
   const [appSettings, setAppSettings] = useState<IAppSettings | null>(null);
   const [exportForm, setExportForm] = useState<ExportSettingsForm>({
@@ -252,7 +248,7 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
           )}
         </div>
         <PlanningPreferencesPanel />
-        <AssistantLogPanel theme={theme} />
+        <AssistantLogPanel />
         <ExportSettingsPanel
           appSettings={appSettings}
           exportForm={exportForm}

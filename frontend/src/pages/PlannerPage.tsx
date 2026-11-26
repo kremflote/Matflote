@@ -529,7 +529,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           groceryList={groceryListPreview}
           isLoading={isGroceryListLoading}
           loadError={groceryListLoadError}
-          theme={theme}
           onClose={closeGroceryExportDialog}
         />
       )}
@@ -559,7 +558,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
                     <p>{t.planner.generateRangeBody(t.planner.rangeNames[viewMode])}</p>
                     <div className={confirmationDialogStyles.settingsGroup}>
                       <label className={confirmationDialogStyles.fieldLabel}>
-                        <span className={confirmationDialogStyles.fieldTitle(theme)}>
+                        <span className={confirmationDialogStyles.fieldTitle}>
                           {t.planner.peopleEatingThisWeek}
                         </span>
                         <input
@@ -579,7 +578,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           }
           confirmLabel={pendingPlannerAction === "clear" ? t.common.clear : t.planner.generateMealPlan}
           isBusy={plannerAction !== null}
-          theme={theme}
           title={
             pendingPlannerAction === "clear"
               ? t.planner.clearRange(t.planner.rangeNames[viewMode])
@@ -605,7 +603,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
               {pendingMealMove.amountKind !== "none" && (
                 <div className={confirmationDialogStyles.settingsGroup}>
                   <label className={confirmationDialogStyles.fieldLabel}>
-                    <span className={confirmationDialogStyles.fieldTitle(theme)}>
+                    <span className={confirmationDialogStyles.fieldTitle}>
                       {pendingMealMove.amountKind === "portions"
                         ? t.planner.moveMealPortionsLabel
                         : t.planner.moveMealAmountLabel(pendingMealMove.unit === null ? "" : t.enums.measurementUnits[pendingMealMove.unit])}
@@ -635,7 +633,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           }
           confirmLabel={t.planner.moveMealConfirm}
           isBusy={mealPlanIsSaving}
-          theme={theme}
           title={t.planner.moveMealTitle}
           onCancel={() => setPendingMealMove(null)}
           onConfirm={() => void moveMealToEmptySlot()}
@@ -646,7 +643,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           body={t.planner.removeMealBody}
           confirmLabel={t.common.remove}
           isBusy={mealPlanIsSaving}
-          theme={theme}
           title={t.planner.removeMealTitle}
           tone="danger"
           onCancel={() => setPendingMealDelete(null)}

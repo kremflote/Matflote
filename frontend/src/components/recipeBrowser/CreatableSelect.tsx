@@ -240,7 +240,6 @@ function CreatableSelect({
             body={t.common.deleteNamed(optionPendingDelete.name)}
             confirmLabel={t.common.remove}
             isBusy={deletingOptionId === optionPendingDelete.id}
-            theme={theme}
             title={t.common.removeNamed(optionPendingDelete.name)}
             onCancel={() => setOptionPendingDelete(null)}
             onConfirm={() => void deleteOption(optionPendingDelete)}

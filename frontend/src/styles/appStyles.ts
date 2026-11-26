@@ -752,80 +752,25 @@ export const groceryExportStyles = {
   modalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   header: "flex items-start justify-between gap-4",
   title: "text-2xl font-bold leading-tight",
-  subtitle: (theme: SiteTheme) =>
-    `mt-1 text-sm font-semibold leading-[1.45] ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  subtitle: "mt-1 text-sm font-semibold leading-[1.45] text-[#556145] dark:text-neutral-400",
   closeButton: controlStyles.modalCloseButton,
   bodyFrame: "grid min-h-0 gap-3",
   list: "grid max-h-[44vh] gap-4 overflow-y-auto pr-1",
   section: `grid gap-2 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
-  sectionTitle: (theme: SiteTheme) =>
-    `text-xs font-extrabold uppercase leading-tight ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-700"
-    }`,
-  itemButton: (theme: SiteTheme, selected: boolean) =>
-    `grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${focusBase} ${siteColorClasses.focus} ${
-      selected
-        ? siteColorClasses.plannerControl
-        : theme === "dark"
-          ? "border-white/[0.08] bg-transparent text-neutral-400"
-          : theme === "paletteLight"
-            ? "border-[#7A8864]/20 bg-transparent text-[#556145]"
-            : "border-neutral-200 bg-transparent text-neutral-500"
-    }`,
-  checkbox: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-5 w-5 items-center justify-center rounded-sm border text-xs font-bold ${
-      selected
-        ? theme === "dark"
-          ? "border-white bg-white text-neutral-950"
-          : theme === "paletteLight"
-            ? "border-[#7A8864] bg-[#64714F] text-[#FAF7F2]"
-            : "border-neutral-900 bg-neutral-900 text-white"
-        : theme === "dark"
-          ? "border-white/[0.18] text-transparent"
-          : theme === "paletteLight"
-            ? "border-[#7A8864]/35 text-transparent"
-            : "border-neutral-300 text-transparent"
-    }`,
+  sectionTitle: "text-xs font-extrabold uppercase leading-tight text-[#556145] dark:text-neutral-300",
+  itemButton: (selected: boolean) =>
+    `grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.plannerControl}` : "border-[#7A8864]/20 bg-transparent text-[#556145] dark:border-white/[0.08] dark:text-neutral-400"}`,
+  checkbox: (selected: boolean) =>
+    `inline-flex h-5 w-5 items-center justify-center rounded-sm border text-xs font-bold ${selected ? "border-[#7A8864] bg-[#64714F] text-[#FAF7F2] dark:border-white dark:bg-white dark:text-neutral-950" : "border-[#7A8864]/35 text-transparent dark:border-white/[0.18]"}`,
   itemText: "min-w-0",
   itemName: "truncate text-sm font-bold leading-tight",
-  itemSources: (theme: SiteTheme) =>
-    `mt-0 block truncate text-xs font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  itemSources: "mt-0 block truncate text-xs font-semibold leading-tight text-[#556145] dark:text-neutral-400",
   itemAmount: "whitespace-nowrap text-xs font-extrabold",
   emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   statusError: plannerPickerStyles.statusError,
-  statusSuccess: (theme: SiteTheme) =>
-    `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
-      theme === "dark"
-        ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/30 bg-[#7A8864]/10 text-[#556145]"
-          : "border-emerald-200 bg-emerald-50 text-emerald-700"
-    }`,
+  statusSuccess: `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-[#7A8864]/30 bg-[#7A8864]/10 text-[#556145] dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-200`,
   footer: "flex flex-wrap items-center justify-between gap-4 border-t pt-4",
-  countText: (theme: SiteTheme) =>
-    `text-sm font-bold ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-700"
-    }`,
+  countText: "text-sm font-bold text-[#556145] dark:text-neutral-300",
   actionGroup: "flex flex-wrap items-center justify-end gap-4",
   secondaryButton: controlStyles.secondaryButton,
   primaryButton: controlStyles.primaryButton,
@@ -834,18 +779,6 @@ export const groceryExportStyles = {
   rulesBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
   rulesFooter: "flex items-center justify-end gap-3 border-t pt-4",
   ruleTagGrid: "grid grid-cols-2 gap-2 max-sm:grid-cols-1",
-  ruleTagButton: (theme: SiteTheme, selected: boolean) =>
-    `min-h-9 rounded-md border px-3 py-2 text-left text-xs font-bold transition-colors ${focusBase} ${siteColorClasses.focus} ${
-      selected
-        ? theme === "dark"
-          ? "border-emerald-300 bg-emerald-950 text-emerald-50 shadow-[inset_0_0_0_1px_rgba(110,231,183,0.75)]"
-          : theme === "paletteLight"
-            ? "border-[#3C4A2E] bg-[#64714F] text-[#FAF7F2] shadow-[inset_0_0_0_1px_#FAF7F2]"
-            : "border-emerald-900 bg-emerald-100 text-emerald-950 shadow-[inset_0_0_0_1px_#064E3B]"
-        : theme === "dark"
-          ? "border-white/[0.10] bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]"
-          : theme === "paletteLight"
-            ? "border-[#7A8864]/25 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]"
-            : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100"
-    }`,
+  ruleTagButton: (selected: boolean) =>
+    `min-h-9 rounded-md border px-3 py-2 text-left text-xs font-bold transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? "border-[#3C4A2E] bg-[#64714F] text-[#FAF7F2] shadow-[inset_0_0_0_1px_#FAF7F2] dark:border-emerald-300 dark:bg-emerald-950 dark:text-emerald-50 dark:shadow-[inset_0_0_0_1px_rgba(110,231,183,0.75)]" : "border-[#7A8864]/25 bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC] dark:border-white/[0.10] dark:bg-white/[0.04] dark:text-neutral-300 dark:hover:bg-white/[0.08]"}`,
 };

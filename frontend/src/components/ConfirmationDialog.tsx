@@ -1,6 +1,5 @@
 import { useId, type ReactNode } from "react";
 import { useLanguage } from "../contexts";
-import type { SiteTheme } from "../styles/appStyles";
 import { confirmationDialogStyles } from "../styles/confirmationDialogStyles";
 import Modal from "./Modal";
 
@@ -10,7 +9,6 @@ type ConfirmationDialogProps = {
   isBusy?: boolean;
   /** Disables the confirm button, for example until a required choice is made. */
   isConfirmDisabled?: boolean;
-  theme: SiteTheme;
   title: string;
   tone?: "danger" | "default";
   onCancel: () => void;
@@ -22,7 +20,6 @@ function ConfirmationDialog({
   confirmLabel,
   isBusy = false,
   isConfirmDisabled = false,
-  theme,
   title,
   tone = "danger",
   onCancel,
@@ -66,7 +63,7 @@ function ConfirmationDialog({
       titleId={titleId}
       onClose={onCancel}
     >
-      <div className={confirmationDialogStyles.body(theme)} id={bodyId}>{body}</div>
+      <div className={confirmationDialogStyles.body} id={bodyId}>{body}</div>
     </Modal>
   );
 }
