@@ -3,7 +3,7 @@ import type { IAppSettings } from "../../interfaces/IAppSettings";
 import type { IImageCleanupReport } from "../../interfaces/IMaintenance";
 import { supportedLanguages } from "../../i18n";
 import { API_BASE_URL } from "../../services/apiClient";
-import { settingsStyles, type SiteTheme } from "../../styles/appStyles";
+import { settingsStyles } from "../../styles/appStyles";
 import ThumbnailMaintenance from "./ThumbnailMaintenance";
 
 export type ExportSettingsForm = {
@@ -18,11 +18,7 @@ export type ExportSettingsForm = {
   vikunjaApiToken: string;
 };
 
-type LanguageSettingsPanelProps = {
-  theme: SiteTheme;
-};
-
-export function LanguageSettingsPanel({ theme }: LanguageSettingsPanelProps) {
+export function LanguageSettingsPanel() {
   const { language, setLanguage, t } = useLanguage();
 
   return (
@@ -33,7 +29,7 @@ export function LanguageSettingsPanel({ theme }: LanguageSettingsPanelProps) {
           <button
             aria-label={languageOption === "en" ? t.language.english : t.language.norwegian}
             aria-pressed={language === languageOption}
-            className={settingsStyles.languageButton(theme, language === languageOption)}
+            className={settingsStyles.languageButton(language === languageOption)}
             key={languageOption}
             type="button"
             onClick={() => setLanguage(languageOption)}
@@ -61,7 +57,6 @@ type ExportSettingsPanelProps = {
   isUpdatingNutritionReferences: boolean;
   settingsError: string | null;
   settingsSuccess: string | null;
-  theme: SiteTheme;
   onChange: (nextForm: ExportSettingsForm) => void;
   onSave: () => void;
   onTestKassalappConnection: () => void;
@@ -79,7 +74,6 @@ export function ExportSettingsPanel({
   isUpdatingNutritionReferences,
   settingsError,
   settingsSuccess,
-  theme,
   onChange,
   onSave,
   onTestKassalappConnection,
@@ -93,7 +87,7 @@ export function ExportSettingsPanel({
     <div className={settingsStyles.panel}>
       <div>
         <h2 className={settingsStyles.panelTitle}>{t.settings.integrationsTitle}</h2>
-        <p className={settingsStyles.panelBody(theme)}>{t.settings.integrationsBody}</p>
+        <p className={settingsStyles.panelBody}>{t.settings.integrationsBody}</p>
       </div>
       <form
         className={settingsStyles.form}
@@ -105,7 +99,7 @@ export function ExportSettingsPanel({
         <div className={settingsStyles.integrationBlock}>
           <div>
             <h3 className={settingsStyles.subsectionTitle}>{t.settings.todoListTitle}</h3>
-            <p className={settingsStyles.helpText(theme)}>{t.settings.exportBody}</p>
+            <p className={settingsStyles.helpText}>{t.settings.exportBody}</p>
           </div>
         <div className={settingsStyles.formGrid}>
           <label className={settingsStyles.fieldGroup}>
@@ -136,7 +130,7 @@ export function ExportSettingsPanel({
           <div className={settingsStyles.buttonGroup}>
             <button
               aria-pressed={exportForm.taskMode === "SingleTask"}
-              className={settingsStyles.languageButton(theme, exportForm.taskMode === "SingleTask")}
+              className={settingsStyles.languageButton(exportForm.taskMode === "SingleTask")}
               disabled={controlsDisabled}
               type="button"
               onClick={() => onChange({ ...exportForm, taskMode: "SingleTask" })}
@@ -145,7 +139,7 @@ export function ExportSettingsPanel({
             </button>
             <button
               aria-pressed={exportForm.taskMode === "SeparateTasks"}
-              className={settingsStyles.languageButton(theme, exportForm.taskMode === "SeparateTasks")}
+              className={settingsStyles.languageButton(exportForm.taskMode === "SeparateTasks")}
               disabled={controlsDisabled}
               type="button"
               onClick={() => onChange({ ...exportForm, taskMode: "SeparateTasks" })}
@@ -153,7 +147,7 @@ export function ExportSettingsPanel({
               {t.settings.exportModeSeparateTasks}
             </button>
           </div>
-          <span className={settingsStyles.helpText(theme)}>
+          <span className={settingsStyles.helpText}>
             {exportForm.taskMode === "SeparateTasks"
               ? t.settings.exportModeSeparateTasksHelp
               : t.settings.exportModeSingleTaskHelp}
@@ -181,7 +175,7 @@ export function ExportSettingsPanel({
             value={exportForm.vikunjaApiToken}
             onChange={(event) => onChange({ ...exportForm, vikunjaApiToken: event.target.value })}
           />
-          <span className={settingsStyles.helpText(theme)}>{t.settings.apiTokenHelp}</span>
+          <span className={settingsStyles.helpText}>{t.settings.apiTokenHelp}</span>
         </label>
         <div className={settingsStyles.inlineActionRow}>
           <button
@@ -198,7 +192,7 @@ export function ExportSettingsPanel({
         <div className={settingsStyles.integrationBlock}>
           <div>
             <h3 className={settingsStyles.subsectionTitle}>{t.settings.scannerIntegrationTitle}</h3>
-            <p className={settingsStyles.helpText(theme)}>{t.settings.scannerIntegrationBody}</p>
+            <p className={settingsStyles.helpText}>{t.settings.scannerIntegrationBody}</p>
           </div>
           <label className={settingsStyles.fieldGroup}>
             <span className={settingsStyles.label}>{t.settings.kassalappBaseUrl}</span>
@@ -222,7 +216,7 @@ export function ExportSettingsPanel({
               value={exportForm.kassalappApiKey}
               onChange={(event) => onChange({ ...exportForm, kassalappApiKey: event.target.value })}
             />
-            <span className={settingsStyles.helpText(theme)}>{t.settings.apiTokenHelp}</span>
+            <span className={settingsStyles.helpText}>{t.settings.apiTokenHelp}</span>
           </label>
           <div className={settingsStyles.inlineActionRow}>
             <button
@@ -239,7 +233,7 @@ export function ExportSettingsPanel({
         <div className={settingsStyles.integrationBlock}>
           <div>
             <h3 className={settingsStyles.subsectionTitle}>{t.settings.nutritionIntegrationTitle}</h3>
-            <p className={settingsStyles.helpText(theme)}>{t.settings.nutritionIntegrationBody}</p>
+            <p className={settingsStyles.helpText}>{t.settings.nutritionIntegrationBody}</p>
           </div>
           <label className={settingsStyles.fieldGroup}>
             <span className={settingsStyles.label}>{t.settings.helsedirektoratetBaseUrl}</span>
@@ -263,7 +257,7 @@ export function ExportSettingsPanel({
               value={exportForm.helsedirektoratetSubscriptionKey}
               onChange={(event) => onChange({ ...exportForm, helsedirektoratetSubscriptionKey: event.target.value })}
             />
-            <span className={settingsStyles.helpText(theme)}>{t.settings.apiTokenHelp}</span>
+            <span className={settingsStyles.helpText}>{t.settings.apiTokenHelp}</span>
           </label>
           <div className={settingsStyles.inlineActionRow}>
             <button
@@ -280,10 +274,10 @@ export function ExportSettingsPanel({
         <div className={settingsStyles.statusRow}>
           <div>
             {settingsError !== null && (
-              <p className={settingsStyles.statusText(theme, "error")}>{settingsError}</p>
+              <p className={settingsStyles.statusText("error")}>{settingsError}</p>
             )}
             {settingsSuccess !== null && (
-              <p className={settingsStyles.statusText(theme, "success")}>{settingsSuccess}</p>
+              <p className={settingsStyles.statusText("success")}>{settingsSuccess}</p>
             )}
           </div>
           <button
@@ -299,7 +293,7 @@ export function ExportSettingsPanel({
   );
 }
 
-export function CurrentProviderSummary({ appSettings, theme }: { appSettings: IAppSettings; theme: SiteTheme }) {
+export function CurrentProviderSummary({ appSettings }: { appSettings: IAppSettings; }) {
   const { t } = useLanguage();
   const modeLabel =
     appSettings.shoppingListExport.taskMode === "SeparateTasks"
@@ -309,16 +303,16 @@ export function CurrentProviderSummary({ appSettings, theme }: { appSettings: IA
   return (
     <section className={settingsStyles.currentProviderCard} aria-label={t.settings.currentProvider}>
       <div className={settingsStyles.currentProviderDetails}>
-        <ProviderSummaryItem label={t.settings.provider} theme={theme} value={appSettings.shoppingListExport.provider} />
-        <ProviderSummaryItem label={t.settings.currentProviderMode} theme={theme} value={modeLabel} />
+        <ProviderSummaryItem label={t.settings.provider} value={appSettings.shoppingListExport.provider} />
+        <ProviderSummaryItem label={t.settings.currentProviderMode} value={modeLabel} />
       </div>
     </section>
   );
 }
 
-function ProviderSummaryItem({ label, theme, value }: { label: string; theme: SiteTheme; value: string }) {
+function ProviderSummaryItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className={settingsStyles.currentProviderItem(theme)}>
+    <div className={settingsStyles.currentProviderItem}>
       <div className={settingsStyles.currentProviderLabel}>{label}</div>
       <div className={settingsStyles.currentProviderValue}>{value}</div>
     </div>
@@ -330,7 +324,6 @@ type MaintenancePanelProps = {
   isCleaningImages: boolean;
   isImportingSeedCatalog: boolean;
   isLoadingImageReport: boolean;
-  theme: SiteTheme;
   onCleanupImages: () => void;
   onImportSeedCatalog: (file: File) => void;
   onLoadImageReport: () => void;
@@ -341,7 +334,6 @@ export function MaintenancePanel({
   isCleaningImages,
   isImportingSeedCatalog,
   isLoadingImageReport,
-  theme,
   onCleanupImages,
   onImportSeedCatalog,
   onLoadImageReport,
@@ -355,7 +347,7 @@ export function MaintenancePanel({
     <div className={settingsStyles.panel}>
       <div>
         <h2 className={settingsStyles.panelTitle}>{t.settings.maintenanceTitle}</h2>
-        <p className={settingsStyles.panelBody(theme)}>{t.settings.maintenanceBody}</p>
+        <p className={settingsStyles.panelBody}>{t.settings.maintenanceBody}</p>
       </div>
       <div className={settingsStyles.statusRow}>
         <a
@@ -398,10 +390,10 @@ export function MaintenancePanel({
         </button>
       </div>
       <div className={settingsStyles.statusRow}>
-        <ThumbnailMaintenance theme={theme} />
+        <ThumbnailMaintenance />
       </div>
       {imageCleanupReport !== null && (
-        <p className={settingsStyles.panelBody(theme)}>
+        <p className={settingsStyles.panelBody}>
           {t.settings.imageCleanupSummary(
             imageCleanupReport.unusedUploadedImages.length,
             imageCleanupReport.untrackedImageFiles.length,

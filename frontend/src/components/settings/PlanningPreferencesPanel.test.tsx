@@ -48,7 +48,7 @@ describe("PlanningPreferencesPanel", () => {
       return url.pathname === "/api/ingredient-tag-categories" ? jsonResponse(categories) : undefined;
     });
 
-    renderWithProviders(<PlanningPreferencesPanel theme="dark" />);
+    renderWithProviders(<PlanningPreferencesPanel />);
 
     const fish = (await screen.findByLabelText("Fish dinners per week, at least")) as HTMLInputElement;
     expect(fish.value).toBe("1");
@@ -82,7 +82,7 @@ describe("PlanningPreferencesPanel", () => {
       return undefined;
     });
 
-    renderWithProviders(<PlanningPreferencesPanel theme="dark" />);
+    renderWithProviders(<PlanningPreferencesPanel />);
     fireEvent.click(await screen.findByRole("button", { name: "Save preferences" }));
 
     await waitFor(() => expect(screen.getByText(/Could not save the planning preferences/)).toBeTruthy());
@@ -91,7 +91,7 @@ describe("PlanningPreferencesPanel", () => {
   it("says so when the preferences cannot be loaded", async () => {
     stubFetch((url) => (url.pathname === "/api/app-settings/planning-preferences" ? new Response("", { status: 500 }) : undefined));
 
-    renderWithProviders(<PlanningPreferencesPanel theme="dark" />);
+    renderWithProviders(<PlanningPreferencesPanel />);
 
     expect(await screen.findByText("Could not load the planning preferences.")).toBeTruthy();
   });

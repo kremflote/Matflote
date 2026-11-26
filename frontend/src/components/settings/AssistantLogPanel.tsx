@@ -77,14 +77,14 @@ export default function AssistantLogPanel({ theme }: AssistantLogPanelProps) {
       <div className={settingsStyles.statusRow}>
         <div>
           <h2 className={settingsStyles.panelTitle}>{text.title}</h2>
-          <p className={settingsStyles.panelBody(theme)}>{text.body}</p>
+          <p className={settingsStyles.panelBody}>{text.body}</p>
         </div>
         <button className={settingsStyles.secondaryButton} disabled={isUndoing} type="button" onClick={() => void load()}>
           {text.refresh}
         </button>
       </div>
 
-      {entries !== null && entries.length === 0 && <p className={settingsStyles.helpText(theme)}>{text.empty}</p>}
+      {entries !== null && entries.length === 0 && <p className={settingsStyles.helpText}>{text.empty}</p>}
       {entries !== null && entries.length > 0 && (
         <ul className="grid gap-2" aria-label={text.title}>
           {entries.map((entry) => {
@@ -93,7 +93,7 @@ export default function AssistantLogPanel({ theme }: AssistantLogPanelProps) {
               <li className="flex flex-wrap items-center justify-between gap-3 border-b pb-3 last:border-b-0 last:pb-0" key={entry.id}>
                 <div className="grid min-w-0 gap-1">
                   <span className={settingsStyles.label}>{describeLogTitle(entry, t, locale)}</span>
-                  <span className={settingsStyles.helpText(theme)} title={entry.summary}>
+                  <span className={settingsStyles.helpText} title={entry.summary}>
                     {formatLogTime(entry.at, locale)}
                     {counts.length > 0 && ` · ${counts}`}
                     {entry.undoneAt !== undefined && ` · ${text.undoneAt(formatLogTime(entry.undoneAt, locale))}`}
@@ -119,7 +119,7 @@ export default function AssistantLogPanel({ theme }: AssistantLogPanelProps) {
       )}
 
       {(error !== null || success !== null) && (
-        <p className={settingsStyles.statusText(theme, error !== null ? "error" : "success")}>{error ?? success}</p>
+        <p className={settingsStyles.statusText(error !== null ? "error" : "success")}>{error ?? success}</p>
       )}
 
       {pendingUndo !== null && (

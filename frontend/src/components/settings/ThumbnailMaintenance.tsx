@@ -2,18 +2,14 @@ import { useState } from "react";
 import { useIngredients, useLanguage, useRecipes } from "../../contexts";
 import { imageUploadService, maintenanceService } from "../../services";
 import { getApiAssetUrl } from "../../services/apiClient";
-import { settingsStyles, type SiteTheme } from "../../styles/appStyles";
+import { settingsStyles } from "../../styles/appStyles";
 import { createThumbnail } from "../../utils/imageThumbnail";
-
-type ThumbnailMaintenanceProps = {
-  theme: SiteTheme;
-};
 
 /**
  * Creates the missing thumbnails for images recipes and ingredients already use. The browser draws them,
  * the same way it does for a new upload, so the server needs no image library.
  */
-function ThumbnailMaintenance({ theme }: ThumbnailMaintenanceProps) {
+function ThumbnailMaintenance() {
   const { t } = useLanguage();
   const { refreshRecipes } = useRecipes();
   const { refreshIngredients } = useIngredients();
@@ -69,7 +65,7 @@ function ThumbnailMaintenance({ theme }: ThumbnailMaintenanceProps) {
         {progress === null ? t.settings.createThumbnails : t.settings.creatingThumbnails(progress.done, progress.total)}
       </button>
       {message !== null && (
-        <p className={settingsStyles.panelBody(theme)} role="status">
+        <p className={settingsStyles.panelBody} role="status">
           {message}
         </p>
       )}

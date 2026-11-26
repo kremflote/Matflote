@@ -244,14 +244,14 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
   return (
     <main className={pageStyles.shell}>
       <section className={settingsStyles.shell}>
-        <h1 className={settingsStyles.title(theme)}>{t.settings.pageTitle}</h1>
+        <h1 className={settingsStyles.title}>{t.settings.pageTitle}</h1>
         <div className={settingsStyles.quickSettingsRow}>
-          <LanguageSettingsPanel theme={theme} />
+          <LanguageSettingsPanel />
           {appSettings !== null && (
-            <CurrentProviderSummary appSettings={appSettings} theme={theme} />
+            <CurrentProviderSummary appSettings={appSettings} />
           )}
         </div>
-        <PlanningPreferencesPanel theme={theme} />
+        <PlanningPreferencesPanel />
         <AssistantLogPanel theme={theme} />
         <ExportSettingsPanel
           appSettings={appSettings}
@@ -263,7 +263,6 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
           isUpdatingNutritionReferences={isUpdatingNutritionReferences}
           settingsError={settingsError}
           settingsSuccess={settingsSuccess}
-          theme={theme}
           onChange={setExportForm}
           onSave={() => void saveExportSettings()}
           onTestKassalappConnection={() => void testKassalappConnection()}
@@ -275,7 +274,6 @@ const SettingsPage = ({ theme }: SettingsPageProps) => {
           isCleaningImages={isCleaningImages}
           isImportingSeedCatalog={isImportingSeedCatalog}
           isLoadingImageReport={isLoadingImageReport}
-          theme={theme}
           onCleanupImages={() => void cleanupImages()}
           onImportSeedCatalog={(file) => void importSeedCatalog(file)}
           onLoadImageReport={() => void loadImageCleanupReport()}

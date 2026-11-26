@@ -345,35 +345,15 @@ export const settingsStyles = {
   shell: pageStyles.contentShell,
   quickSettingsRow:
     "flex flex-wrap items-start justify-between gap-4 max-sm:grid max-sm:w-full max-sm:grid-cols-1",
-  title: (theme: SiteTheme) =>
-    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
+  title: "text-3xl font-bold leading-tight text-[#556145] dark:text-neutral-50",
   panel: `grid gap-4 rounded-md border p-6 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   panelTitle: "text-xl font-bold leading-tight",
-  panelBody: (theme: SiteTheme) =>
-    `text-sm font-semibold leading-[1.5] ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-600"
-    }`,
+  panelBody: "text-sm font-semibold leading-[1.5] text-[#556145] dark:text-neutral-300",
   languagePanel: `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   languagePanelTitle: "pl-2 text-sm font-bold leading-tight",
   languageOptions: "flex items-center gap-2",
-  languageButton: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-10 min-w-20 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold transition-colors max-sm:h-11 ${focusBase} ${siteColorClasses.focus} ${
-      selected
-        ? theme === "dark"
-          ? "border-white/[0.18] bg-white/[0.12] text-white"
-          : theme === "paletteLight"
-            ? "border-[#7A8864]/45 bg-[#FAF7F2] text-[#556145]"
-            : "border-neutral-900 bg-neutral-900 text-white"
-        : theme === "dark"
-          ? "border-white/[0.10] bg-white/[0.04] text-neutral-200 hover:bg-white/[0.08]"
-          : theme === "paletteLight"
-            ? "border-[#C8C0B5] bg-[#E5D5BC]/35 text-[#556145] hover:bg-[#E5D5BC]/55"
-            : "border-neutral-200 bg-neutral-50 text-neutral-800 hover:bg-neutral-100"
-    }`,
+  languageButton: (selected: boolean) =>
+    `inline-flex h-10 min-w-20 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold transition-colors max-sm:h-11 ${focusBase} ${siteColorClasses.focus} ${selected ? "border-[#7A8864]/45 bg-[#FAF7F2] text-[#556145] dark:border-white/[0.18] dark:bg-white/[0.12] dark:text-white" : "border-[#C8C0B5] bg-[#E5D5BC]/35 text-[#556145] hover:bg-[#E5D5BC]/55 dark:border-white/[0.10] dark:bg-white/[0.04] dark:text-neutral-200 dark:hover:bg-white/[0.08]"}`,
   languageFlag: "text-base leading-none",
   languageCode: "text-xs font-extrabold uppercase leading-none",
   form: "grid gap-4",
@@ -386,41 +366,17 @@ export const settingsStyles = {
   inlineActionRow: "flex flex-wrap items-center justify-start gap-3 max-sm:justify-center",
   textInput: controlStyles.formField,
   selectInput: controlStyles.formField,
-  helpText: (theme: SiteTheme) =>
-    `text-xs font-semibold leading-[1.45] ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  helpText: "text-xs font-semibold leading-[1.45] text-[#556145] dark:text-neutral-400",
   statusRow:
     "flex flex-wrap items-center justify-between gap-4 max-sm:grid max-sm:grid-cols-1 max-sm:justify-items-center max-sm:gap-2",
-  statusText: (theme: SiteTheme, tone: "error" | "success") =>
-    `text-sm font-bold ${
-      tone === "error"
-        ? theme === "dark"
-          ? "text-red-200"
-          : "text-red-700"
-        : theme === "dark"
-          ? "text-emerald-200"
-          : theme === "paletteLight"
-            ? "text-[#556145]"
-            : "text-emerald-700"
-    }`,
+  statusText: (tone: "error" | "success") =>
+    `text-sm font-bold ${tone === "error" ? "text-red-700 dark:text-red-200" : "text-[#556145] dark:text-emerald-200"}`,
   saveButton: `${controlStyles.primaryButton} max-sm:w-full max-sm:max-w-xs`,
   secondaryButton: `${controlStyles.secondaryButton} max-sm:w-full max-sm:max-w-xs`,
   currentProviderCard: `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   currentProviderTitle: "text-sm font-bold leading-tight",
   currentProviderDetails: "flex flex-wrap items-center gap-2",
-  currentProviderItem: (theme: SiteTheme) =>
-    `min-w-0 rounded-md border px-3 py-1.5 ${
-      theme === "dark"
-        ? "border-white/[0.08] bg-white/[0.04]"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2]/55"
-          : "border-neutral-200 bg-white"
-    }`,
+  currentProviderItem: "min-w-0 rounded-md border px-3 py-1.5 border-[#C8C0B5] bg-[#FAF7F2]/55 dark:border-white/[0.08] dark:bg-white/[0.04]",
   currentProviderLabel:
     "text-[10px] font-extrabold uppercase leading-tight",
   currentProviderValue:

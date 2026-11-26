@@ -2,14 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useIngredients, useIngredientTagCategories, useLanguage } from "../../contexts";
 import type { IPlanningPreferences } from "../../interfaces/IPlanningPreferences";
 import { ApiError, appSettingsService } from "../../services";
-import { controlStyles, settingsStyles, type SiteTheme } from "../../styles/appStyles";
-
-type PlanningPreferencesPanelProps = {
-  theme: SiteTheme;
-};
+import { controlStyles, settingsStyles } from "../../styles/appStyles";
 
 /** The household's planning preferences: loads and saves itself. */
-export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesPanelProps) {
+export default function PlanningPreferencesPanel() {
   const { t } = useLanguage();
   const { ingredients } = useIngredients();
   const { ingredientTagCategories } = useIngredientTagCategories();
@@ -53,7 +49,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
     return (
       <div className={settingsStyles.panel}>
         <h2 className={settingsStyles.panelTitle}>{text.title}</h2>
-        {error !== null && <p className={settingsStyles.statusText(theme, "error")}>{error}</p>}
+        {error !== null && <p className={settingsStyles.statusText("error")}>{error}</p>}
       </div>
     );
   }
@@ -116,7 +112,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
           onChange={(event) => onChange(clamp(Number(event.target.value), min, max))}
         />
       </label>
-      {help !== undefined && <span className={settingsStyles.helpText(theme)}>{help}</span>}
+      {help !== undefined && <span className={settingsStyles.helpText}>{help}</span>}
     </div>
   );
 
@@ -124,7 +120,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
     <div className={settingsStyles.panel}>
       <div>
         <h2 className={settingsStyles.panelTitle}>{text.title}</h2>
-        <p className={settingsStyles.panelBody(theme)}>{text.body}</p>
+        <p className={settingsStyles.panelBody}>{text.body}</p>
       </div>
       <form
         className={settingsStyles.form}
@@ -146,7 +142,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
             {tagNames.map((tagName) => (
               <button
                 aria-pressed={form.avoidTags.includes(tagName)}
-                className={settingsStyles.languageButton(theme, form.avoidTags.includes(tagName))}
+                className={settingsStyles.languageButton(form.avoidTags.includes(tagName))}
                 disabled={isSaving}
                 key={tagName}
                 type="button"
@@ -156,20 +152,20 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
               </button>
             ))}
           </div>
-          <span className={settingsStyles.helpText(theme)}>{text.avoidTagsHelp}</span>
+          <span className={settingsStyles.helpText}>{text.avoidTagsHelp}</span>
         </div>
 
         <div className={settingsStyles.fieldGroup}>
           <span className={settingsStyles.label} id="avoid-ingredients-label">{text.avoidIngredients}</span>
           <div className={settingsStyles.buttonGroup} aria-labelledby="avoid-ingredients-label" role="list">
             {form.avoidIngredients.length === 0 && (
-              <span className={settingsStyles.helpText(theme)}>{text.noIngredientsAvoided}</span>
+              <span className={settingsStyles.helpText}>{text.noIngredientsAvoided}</span>
             )}
             {form.avoidIngredients.map((name) => (
               <span role="listitem" key={name}>
                 <button
                   aria-label={text.removeIngredient(name)}
-                  className={settingsStyles.languageButton(theme, true)}
+                  className={settingsStyles.languageButton(true)}
                   disabled={isSaving}
                   type="button"
                   onClick={() => update({ avoidIngredients: form.avoidIngredients.filter((value) => value !== name) })}
@@ -203,7 +199,7 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
               {text.addIngredient}
             </button>
           </div>
-          <span className={settingsStyles.helpText(theme)}>{text.avoidIngredientsHelp}</span>
+          <span className={settingsStyles.helpText}>{text.avoidIngredientsHelp}</span>
         </div>
 
         <label className={settingsStyles.fieldGroup}>
@@ -220,8 +216,8 @@ export default function PlanningPreferencesPanel({ theme }: PlanningPreferencesP
 
         <div className={settingsStyles.statusRow}>
           <div>
-            {error !== null && <p className={settingsStyles.statusText(theme, "error")}>{error}</p>}
-            {success !== null && <p className={settingsStyles.statusText(theme, "success")}>{success}</p>}
+            {error !== null && <p className={settingsStyles.statusText("error")}>{error}</p>}
+            {success !== null && <p className={settingsStyles.statusText("success")}>{success}</p>}
           </div>
           <button className={settingsStyles.saveButton} disabled={isSaving} type="submit">
             {isSaving ? text.saving : text.save}
