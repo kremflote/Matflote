@@ -7,7 +7,7 @@ import { useBrands, useIngredientTagCategories, useIngredients, useLanguage } fr
 import type { IngredientTag, INutritionFacts, NutritionDataSource } from "../interfaces/IIngredient";
 import type { IBrand } from "../interfaces/ILookup";
 import type { IMatvaretabellenCandidate, IProductLookupNutrition, IProductLookupResult } from "../interfaces/IProductLookup";
-import { brandService, imageUploadService, ingredientService, ingredientTagCategoryService, productLookupService } from "../services";
+import { brandService, imageUploadService, ingredientService, productLookupService } from "../services";
 import { getApiAssetUrl } from "../services/apiClient";
 import { pageStyles, scannerStyles } from "../styles/appStyles";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../constants/validation";
@@ -26,6 +26,7 @@ import MatvaretabellenSearchDialog, {
 import NutritionEditor from "../components/recipeBrowser/NutritionEditor";
 import type { NutritionEditorValues } from "../components/recipeBrowser/nutritionEditorValues";
 import { numberToInputValue, parseOptionalNumber, toggleValue } from "../utils/formValues";
+import { tagManagementHandlers } from "../components/recipeBrowser/tagManagementHandlers";
 
 type IngredientCandidate = {
   id: string;
@@ -682,57 +683,14 @@ function IngredientDraftEditor({
           existingTags={[...knownIngredientTags, ...customTags]}
           initialMode="ingredients"
           onCancel={() => setIsTagCreateOpen(false)}
-          onCreate={async (tag, categoryId) => {
-            await ingredientTagCategoryService.createTag(categoryId, { name: tag });
-            await refreshIngredientTagCategories();
-            onChange(clearAutofillSource({ ...draft, tags: draft.tags.includes(tag) ? draft.tags : [...draft.tags, tag] }, "tags"));
-            setIsTagCreateOpen(false);
-          }}
-          onCreateCategory={async (name, mode) => {
-            const category = await ingredientTagCategoryService.create({
-              name,
-              showForIngredients: mode === "ingredients",
-              showForRecipes: mode === "recipes",
-            });
-            await refreshIngredientTagCategories();
-            return {
-              id: category.ingredientTagCategoryId,
-              name: category.name,
-              showForIngredients: category.showForIngredients,
-              showForRecipes: category.showForRecipes,
-            };
-          }}
-          onUpdateCategory={async (category) => {
-            await ingredientTagCategoryService.update(category.id, {
-              name: category.name,
-              showForIngredients: category.showForIngredients,
-              showForRecipes: category.showForRecipes,
-            });
-            await refreshIngredientTagCategories();
-          }}
-          onDeleteCategory={async (category) => {
-            await ingredientTagCategoryService.delete(category.id);
-            await refreshIngredientTagCategories();
-            await refreshIngredients();
-          }}
-          onUpdateTag={async (tagName, nextName) => {
-            await ingredientTagCategoryService.updateTag(tagName, { name: nextName });
-            await refreshIngredientTagCategories();
-            await refreshIngredients();
-          }}
-          onDeleteTag={async (tagName) => {
-            await ingredientTagCategoryService.deleteTag(tagName);
-            await refreshIngredientTagCategories();
-            await refreshIngredients();
-          }}
-          onMoveCategory={async (categoryId, direction) => {
-            await ingredientTagCategoryService.move(categoryId, direction);
-            await refreshIngredientTagCategories();
-          }}
-          onMoveTag={async (tagId, direction) => {
-            await ingredientTagCategoryService.moveTag(tagId, direction);
-            await refreshIngredientTagCategories();
-          }}
+          {...tagManagementHandlers({
+            refreshCategories: refreshIngredientTagCategories,
+            refreshTagUsers: refreshIngredients,
+            onTagCreated: (tag) => {
+              onChange(clearAutofillSource({ ...draft, tags: draft.tags.includes(tag) ? draft.tags : [...draft.tags, tag] }, "tags"));
+              setIsTagCreateOpen(false);
+            },
+          })}
         />
       )}
       {isMatvarePickerOpen && (

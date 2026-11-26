@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { useIngredientTagCategories, useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
 import type { IConversionRule } from "../../interfaces/IConversionRule";
-import { ApiError, conversionRuleService, imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
+import { ApiError, conversionRuleService, imageUploadService, recipeService } from "../../services";
 import { getAllCategoryTagNames, getRecipeVisibleTagCategories } from "../../utils/tagCatalog";
 import {
   formatRecipeTagGroupName,
@@ -28,6 +28,7 @@ import {
   type SelectedRecipeIngredient,
 } from "./recipeIngredientSelection";
 import { parseOptionalNumber, toggleValue } from "../../utils/formValues";
+import { tagManagementHandlers } from "./tagManagementHandlers";
 
 type RecipeCreateFormProps = {
   imageInputId: string;
@@ -641,63 +642,22 @@ function RecipeCreateForm({
           existingTags={[...knownRecipeTags, ...customRecipeTags]}
           initialMode="recipes"
           onCancel={() => setIsTagCreateOpen(false)}
-          onCreate={async (tag, categoryId) => {
-            await ingredientTagCategoryService.createTag(categoryId, { name: tag });
-            await refreshIngredientTagCategories();
-            setSelectedTags((currentTags) => currentTags.includes(tag) ? currentTags : [...currentTags, tag]);
-            setIsTagCreateOpen(false);
-          }}
-          onCreateCategory={async (name, mode) => {
-            const category = await ingredientTagCategoryService.create({
-              name,
-              showForIngredients: mode === "ingredients",
-              showForRecipes: mode === "recipes",
-            });
-            await refreshIngredientTagCategories();
-            return {
-              id: category.ingredientTagCategoryId,
-              name: category.name,
-              showForIngredients: category.showForIngredients,
-              showForRecipes: category.showForRecipes,
-            };
-          }}
-          onUpdateCategory={async (category) => {
-            await ingredientTagCategoryService.update(category.id, {
-              name: category.name,
-              showForIngredients: category.showForIngredients,
-              showForRecipes: category.showForRecipes,
-            });
-            await refreshIngredientTagCategories();
-          }}
-          onDeleteCategory={async (category) => {
-            await ingredientTagCategoryService.delete(category.id);
-            await refreshIngredientTagCategories();
-            await refreshRecipes();
-          }}
-          onUpdateTag={async (tagName, nextName) => {
-            await ingredientTagCategoryService.updateTag(tagName, { name: nextName });
-            await refreshIngredientTagCategories();
-            await refreshRecipes();
-            setSelectedTags((currentTags) =>
-              currentTags.map((tag) => tag.toLowerCase() === tagName.toLowerCase() ? nextName : tag),
-            );
-          }}
-          onDeleteTag={async (tagName) => {
-            await ingredientTagCategoryService.deleteTag(tagName);
-            await refreshIngredientTagCategories();
-            await refreshRecipes();
-            setSelectedTags((currentTags) =>
-              currentTags.filter((tag) => tag.toLowerCase() !== tagName.toLowerCase()),
-            );
-          }}
-          onMoveCategory={async (categoryId, direction) => {
-            await ingredientTagCategoryService.move(categoryId, direction);
-            await refreshIngredientTagCategories();
-          }}
-          onMoveTag={async (tagId, direction) => {
-            await ingredientTagCategoryService.moveTag(tagId, direction);
-            await refreshIngredientTagCategories();
-          }}
+          {...tagManagementHandlers({
+            refreshCategories: refreshIngredientTagCategories,
+            refreshTagUsers: refreshRecipes,
+            onTagCreated: (tag) => {
+              setSelectedTags((currentTags) => currentTags.includes(tag) ? currentTags : [...currentTags, tag]);
+              setIsTagCreateOpen(false);
+            },
+            onTagRenamed: (tagName, nextName) =>
+              setSelectedTags((currentTags) =>
+                currentTags.map((tag) => tag.toLowerCase() === tagName.toLowerCase() ? nextName : tag),
+              ),
+            onTagDeleted: (tagName) =>
+              setSelectedTags((currentTags) =>
+                currentTags.filter((tag) => tag.toLowerCase() !== tagName.toLowerCase()),
+              ),
+          })}
         />
       )}
     </form>
