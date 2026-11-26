@@ -31,6 +31,21 @@
   --color-near-black: #171717;
   --color-soft-gray: #F5F5F5;
   --breakpoint-desktop: 1100px;
+
+  /* Colours that differ by theme, for the pairs used most; the dark values are set below. */
+  --color-body: var(--color-olive-dark);
+  --color-secondary: var(--color-olive-dark);
+  --color-muted: var(--color-olive-dark);
+  --color-line: var(--color-stone);
+  --color-line-faint: var(--color-stone);
+}
+
+[data-theme="dark"] {
+  --color-body: var(--color-neutral-200);
+  --color-secondary: var(--color-neutral-300);
+  --color-muted: var(--color-neutral-400);
+  --color-line: color-mix(in oklab, var(--color-white) 10%, transparent);
+  --color-line-faint: color-mix(in oklab, var(--color-white) 8%, transparent);
 }
 
 html {

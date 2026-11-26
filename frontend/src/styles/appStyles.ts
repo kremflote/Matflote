@@ -30,7 +30,7 @@ export const siteColorClasses = {
   fixedHeader:
     "max-desktop:border-olive/35 max-desktop:bg-olive-surface dark:max-desktop:border-white/[0.14] dark:max-desktop:bg-neutral-950/95",
   nav:
-    "border-stone bg-ivory/55 dark:border-white/[0.08] dark:bg-white/[0.04]",
+    "border-line-faint bg-ivory/55 dark:bg-white/[0.04]",
   bottomNav:
     "max-desktop:border-olive/35 max-desktop:bg-olive-surface dark:max-desktop:border-white/[0.14] dark:max-desktop:bg-neutral-950/95",
   control:
@@ -54,9 +54,9 @@ export const siteColorClasses = {
   plannerDateItem:
     "bg-stone/70 dark:bg-white/[0.12]",
   plannerCounter:
-    "border-stone bg-champagne/60 text-olive-dark dark:border-white/[0.10] dark:bg-white/[0.06] dark:text-white",
+    "border-line bg-champagne/60 text-olive-dark dark:bg-white/[0.06] dark:text-white",
   plannerCounterMuted:
-    "text-olive-dark dark:text-neutral-300",
+    "text-secondary",
   plannerCounterAccent:
     "text-olive-dark dark:text-neutral-50",
   plannerToggle:
@@ -133,8 +133,8 @@ export const shadowClasses = {
 } as const;
 
 export const surfaceClasses = {
-  panel: "border-stone bg-champagne/30 dark:border-white/[0.10] dark:bg-white/[0.035]",
-  field: "border-stone bg-ivory text-olive-dark focus-visible:outline-olive dark:border-white/[0.10] dark:bg-neutral-900 dark:text-neutral-100 dark:focus-visible:outline-white",
+  panel: "border-line bg-champagne/30 dark:bg-white/[0.035]",
+  field: "border-line bg-ivory text-olive-dark focus-visible:outline-olive dark:bg-neutral-900 dark:text-neutral-100 dark:focus-visible:outline-white",
   modal: "border-stone bg-ivory text-olive-dark dark:border-white/[0.12] dark:bg-neutral-950 dark:text-neutral-100",
 } as const;
 
@@ -229,14 +229,14 @@ export const errorBoundaryStyles = {
     "inline-flex h-10 items-center justify-center justify-self-start rounded-md border border-white/[0.16] bg-white/[0.08] px-4 text-sm font-bold text-neutral-100 hover:bg-white/[0.14] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
 } as const;
 
-const autofillHintTextClasses = "text-[10px] font-extrabold uppercase leading-tight text-olive-dark dark:text-neutral-400";
+const autofillHintTextClasses = "text-[10px] font-extrabold uppercase leading-tight text-muted";
 
 export const controlStyles = {
-  modalCloseButton: `inline-flex h-9 w-9 shrink-0 -translate-y-1 items-center justify-center ${radiusClasses.figma6} p-0 transition-colors max-sm:h-11 max-sm:w-11 max-sm:-translate-y-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5 ${focusBase} ${siteColorClasses.focus} bg-champagne text-olive-dark hover:bg-stone dark:bg-white/[0.08] dark:text-neutral-200 dark:hover:bg-white/[0.14]`,
+  modalCloseButton: `inline-flex h-9 w-9 shrink-0 -translate-y-1 items-center justify-center ${radiusClasses.figma6} p-0 transition-colors max-sm:h-11 max-sm:w-11 max-sm:-translate-y-1.5 [&_svg]:h-3.5 [&_svg]:w-3.5 ${focusBase} ${siteColorClasses.focus} bg-champagne text-body hover:bg-stone dark:bg-white/[0.08] dark:hover:bg-white/[0.14]`,
   primaryButton: `inline-flex h-12 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} border-olive/35 bg-olive-surface text-ivory hover:bg-olive-dark dark:border-white/[0.12] dark:bg-white/[0.14] dark:text-white dark:hover:bg-white/[0.2]`,
-  secondaryButton: `inline-flex h-12 min-w-28 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} border-stone bg-transparent text-olive-dark hover:bg-champagne/55 dark:border-white/[0.10] dark:text-neutral-200 dark:hover:bg-white/[0.08]`,
+  secondaryButton: `inline-flex h-12 min-w-28 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} border-line bg-transparent text-body hover:bg-champagne/55 dark:hover:bg-white/[0.08]`,
   removeButton: `inline-flex h-12 min-w-32 items-center justify-center ${radiusClasses.figma6} border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} border-red-950 bg-red-950 text-ivory hover:bg-red-900 dark:text-white`,
-  compactSearchInput: `h-9 w-full ${radiusClasses.figma6} border px-3 text-sm font-semibold ${shadowClasses.subtle} outline-none placeholder:text-neutral-500 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none ${focusBase} ${siteColorClasses.focus} border-stone bg-ivory text-olive-dark dark:border-white/[0.10] dark:bg-neutral-200 dark:text-neutral-900`,
+  compactSearchInput: `h-9 w-full ${radiusClasses.figma6} border px-3 text-sm font-semibold ${shadowClasses.subtle} outline-none placeholder:text-neutral-500 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none ${focusBase} ${siteColorClasses.focus} border-line bg-ivory text-olive-dark dark:bg-neutral-200 dark:text-neutral-900`,
   formField: `h-12 min-w-0 w-full rounded-md border px-4 text-base font-normal outline-none placeholder:text-neutral-500 ${focusBase} ${surfaceClasses.field}`,
   compactTextField: `h-8 min-w-0 rounded-md border px-2 text-xs font-semibold outline-none placeholder:text-neutral-500 disabled:opacity-45 ${focusBase} ${surfaceClasses.field}`,
   textArea: `min-h-32 min-w-0 w-full resize-y rounded-md border px-4 py-3 text-base font-normal leading-[1.5] outline-none placeholder:text-neutral-500 ${focusBase} ${surfaceClasses.field}`,
@@ -292,12 +292,12 @@ export const settingsStyles = {
   title: "text-3xl font-bold leading-tight text-olive-dark dark:text-neutral-50",
   panel: `grid gap-4 rounded-md border p-6 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   panelTitle: "text-xl font-bold leading-tight",
-  panelBody: "text-sm font-semibold leading-[1.5] text-olive-dark dark:text-neutral-300",
+  panelBody: "text-sm font-semibold leading-[1.5] text-secondary",
   languagePanel: `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   languagePanelTitle: "pl-2 text-sm font-bold leading-tight",
   languageOptions: "flex items-center gap-2",
   languageButton: (selected: boolean) =>
-    `inline-flex h-10 min-w-20 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold transition-colors max-sm:h-11 ${focusBase} ${siteColorClasses.focus} ${selected ? "border-olive/45 bg-ivory text-olive-dark dark:border-white/[0.18] dark:bg-white/[0.12] dark:text-white" : "border-stone bg-champagne/35 text-olive-dark hover:bg-champagne/55 dark:border-white/[0.10] dark:bg-white/[0.04] dark:text-neutral-200 dark:hover:bg-white/[0.08]"}`,
+    `inline-flex h-10 min-w-20 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold transition-colors max-sm:h-11 ${focusBase} ${siteColorClasses.focus} ${selected ? "border-olive/45 bg-ivory text-olive-dark dark:border-white/[0.18] dark:bg-white/[0.12] dark:text-white" : "border-line bg-champagne/35 text-body hover:bg-champagne/55 dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"}`,
   languageFlag: "text-base leading-none",
   languageCode: "text-xs font-extrabold uppercase leading-none",
   form: "grid gap-4",
@@ -310,7 +310,7 @@ export const settingsStyles = {
   inlineActionRow: "flex flex-wrap items-center justify-start gap-3 max-sm:justify-center",
   textInput: controlStyles.formField,
   selectInput: controlStyles.formField,
-  helpText: "text-xs font-semibold leading-[1.45] text-olive-dark dark:text-neutral-400",
+  helpText: "text-xs font-semibold leading-[1.45] text-muted",
   statusRow:
     "flex flex-wrap items-center justify-between gap-4 max-sm:grid max-sm:grid-cols-1 max-sm:justify-items-center max-sm:gap-2",
   statusText: (tone: "error" | "success") =>
@@ -320,7 +320,7 @@ export const settingsStyles = {
   currentProviderCard: `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   currentProviderTitle: "text-sm font-bold leading-tight",
   currentProviderDetails: "flex flex-wrap items-center gap-2",
-  currentProviderItem: "min-w-0 rounded-md border px-3 py-1.5 border-stone bg-ivory/55 dark:border-white/[0.08] dark:bg-white/[0.04]",
+  currentProviderItem: "min-w-0 rounded-md border px-3 py-1.5 border-line-faint bg-ivory/55 dark:bg-white/[0.04]",
   currentProviderLabel:
     "text-[10px] font-extrabold uppercase leading-tight",
   currentProviderValue:
@@ -335,7 +335,7 @@ export const scannerStyles = {
   shell: pageStyles.contentShell,
   header: "grid gap-2",
   title: "text-3xl font-bold leading-tight text-olive-dark dark:text-neutral-50",
-  intro: "max-w-2xl text-sm font-semibold leading-[1.5] text-olive-dark dark:text-neutral-300",
+  intro: "max-w-2xl text-sm font-semibold leading-[1.5] text-secondary",
   introLink: "font-extrabold underline underline-offset-2 text-olive-dark dark:text-neutral-50",
   panel: `grid gap-4 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   desktopScannerHint: `hidden rounded-md border px-4 py-3 text-sm font-semibold leading-[1.45] desktop:block ${shadowClasses.subtle} ${surfaceClasses.panel}`,
@@ -350,14 +350,14 @@ export const scannerStyles = {
   sectionTitleRow: "flex flex-wrap items-center justify-between gap-2",
   autofillHint: autofillHintTextClasses,
   autofillReservedHint: `min-h-3 ${autofillHintTextClasses}`,
-  nutritionSourceText: "grid gap-1 text-xs font-semibold leading-tight text-olive-dark dark:text-neutral-400",
+  nutritionSourceText: "grid gap-1 text-xs font-semibold leading-tight text-muted",
   nutritionSourceRow: "grid gap-1",
   nutritionSourceLine: "flex flex-wrap items-center gap-x-1.5 gap-y-1",
   nutritionSourcePrimaryLine: "flex flex-wrap items-center justify-between gap-x-3 gap-y-1",
   nutritionSourceSupplementLine: "flex flex-wrap items-center justify-between gap-x-3 gap-y-1",
   nutritionSourceActions: "inline-flex items-center gap-3",
-  nutritionSourceLink: "text-xs font-bold leading-tight underline underline-offset-2 text-olive-dark hover:text-olive-ink dark:text-neutral-200 dark:hover:text-white",
-  sourceActionButton: `h-auto rounded-none border-0 bg-transparent p-0 text-xs font-extrabold underline underline-offset-2 transition-colors ${focusBase} ${siteColorClasses.focus} text-olive-dark hover:text-olive-ink dark:text-neutral-200 dark:hover:text-white`,
+  nutritionSourceLink: "text-xs font-bold leading-tight underline underline-offset-2 text-body hover:text-olive-ink dark:hover:text-white",
+  sourceActionButton: `h-auto rounded-none border-0 bg-transparent p-0 text-xs font-extrabold underline underline-offset-2 transition-colors ${focusBase} ${siteColorClasses.focus} text-body hover:text-olive-ink dark:hover:text-white`,
   nutritionSupplementWarning: "rounded-md border px-3 py-2 text-xs font-bold border-[#9B7A3D]/30 bg-champagne/65 text-[#5F4A24] dark:border-amber-300/25 dark:bg-amber-200/10 dark:text-amber-100",
   nutritionSupplementWarningRow: "flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs font-bold border-[#9B7A3D]/30 bg-champagne/65 text-[#5F4A24] dark:border-amber-300/25 dark:bg-amber-200/10 dark:text-amber-100",
   input: controlStyles.formField,
@@ -369,17 +369,17 @@ export const scannerStyles = {
   cameraVideo: "h-full w-full object-cover",
   cameraGuide:
     "pointer-events-none absolute inset-[18%] rounded-md border-2 border-white/80 shadow-[0_0_0_999px_rgba(0,0,0,0.22)]",
-  cameraStatus: "text-sm font-semibold leading-[1.45] text-olive-dark dark:text-neutral-300",
+  cameraStatus: "text-sm font-semibold leading-[1.45] text-secondary",
   statusError: `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-red-700/25 bg-red-700/10 text-red-800 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200`,
   emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   resultList: "grid gap-3",
   productCard: `grid grid-cols-[6rem_minmax(0,1fr)_auto] gap-4 rounded-md border p-3 max-sm:grid-cols-[5rem_minmax(0,1fr)] ${shadowClasses.subtle} ${surfaceClasses.panel}`,
-  productImageFrame: "aspect-square overflow-hidden rounded-md border border-stone bg-ivory dark:border-white/[0.10] dark:bg-neutral-900",
+  productImageFrame: "aspect-square overflow-hidden rounded-md border border-line bg-ivory dark:bg-neutral-900",
   productImage: "h-full w-full object-cover",
-  productImageFallback: "flex h-full w-full items-center justify-center px-2 text-center text-xs font-bold text-olive-dark dark:text-neutral-400",
+  productImageFallback: "flex h-full w-full items-center justify-center px-2 text-center text-xs font-bold text-muted",
   productMain: "grid min-w-0 content-start gap-2",
   productTitle: "min-w-0 text-lg font-bold leading-tight",
-  productMeta: "text-xs font-semibold leading-tight text-olive-dark dark:text-neutral-400",
+  productMeta: "text-xs font-semibold leading-tight text-muted",
   chipRow: "flex flex-wrap gap-2",
   chip: "rounded-md px-2 py-1 text-xs font-bold bg-champagne text-olive-dark dark:bg-white/[0.10] dark:text-neutral-100",
   nutritionGrid: "grid grid-cols-4 gap-2 max-md:grid-cols-2 max-sm:grid-cols-1",
@@ -387,25 +387,25 @@ export const scannerStyles = {
   candidateSection: "grid gap-3",
   candidateHeader: "flex flex-wrap items-baseline gap-3",
   candidateTitle: "text-lg font-bold leading-tight",
-  candidateSubtitle: "text-sm font-semibold leading-tight text-olive-dark dark:text-neutral-400",
+  candidateSubtitle: "text-sm font-semibold leading-tight text-muted",
   candidateList: "grid gap-2",
   candidateButton: (selected: boolean) =>
     `grid w-full grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 rounded-md border p-3 text-left transition-colors max-[380px]:grid-cols-[3.25rem_minmax(0,1fr)] ${shadowClasses.subtle} ${focusBase} ${siteColorClasses.focus} ${selected ? "border-olive/50 bg-champagne/55 dark:border-white/[0.28] dark:bg-white/[0.14]" : `${surfaceClasses.panel}`}`,
-  candidateImageFrame: "flex aspect-square w-16 overflow-hidden rounded-md border max-[380px]:w-14 border-stone bg-ivory dark:border-white/[0.10] dark:bg-neutral-900",
+  candidateImageFrame: "flex aspect-square w-16 overflow-hidden rounded-md border max-[380px]:w-14 border-line bg-ivory dark:bg-neutral-900",
   candidateTextStack: "grid min-w-0 gap-1",
   candidateName: "min-w-0 text-base font-bold leading-tight",
-  candidateMeta: "min-w-0 text-xs font-semibold leading-tight text-olive-dark dark:text-neutral-400",
+  candidateMeta: "min-w-0 text-xs font-semibold leading-tight text-muted",
   ingredientEditor: `grid gap-3 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   editorImageRow: "grid grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-3",
   editorImageLabel: "col-span-2 text-sm font-bold leading-tight",
-  editorImageFrame: `aspect-square w-[4.5rem] overflow-hidden rounded-md border ${shadowClasses.subtle} border-stone bg-ivory dark:border-white/[0.10] dark:bg-neutral-900`,
+  editorImageFrame: `aspect-square w-[4.5rem] overflow-hidden rounded-md border ${shadowClasses.subtle} border-line bg-ivory dark:bg-neutral-900`,
   editorImageButton: `${controlStyles.secondaryButton} h-12 min-w-0 cursor-pointer px-4 text-sm`,
   hiddenFileInput: "sr-only",
   compactFormGrid:
     "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-3 max-sm:grid-cols-1",
   groupedTagPanel: "grid gap-3",
   groupedTagSection: "grid gap-2 border-b pb-3 last:border-b-0 last:pb-0 border-olive/25 dark:border-white/[0.10]",
-  groupedTagTitle: "text-[11px] font-extrabold uppercase tracking-wide text-olive-dark dark:text-neutral-400",
+  groupedTagTitle: "text-[11px] font-extrabold uppercase tracking-wide text-muted",
   tagGrid: "grid grid-cols-2 gap-2",
   tagOption: `flex min-h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${surfaceClasses.field}`,
   colorRow: "grid grid-cols-[minmax(0,1fr)_3rem] items-end gap-3",
@@ -418,7 +418,7 @@ export const scannerStyles = {
   editorModalTitle: "text-2xl font-bold leading-tight max-sm:text-xl",
   editorModalCloseButton: controlStyles.modalCloseButton,
   editorModalBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
-  editorModalFooter: "flex flex-wrap items-center justify-end gap-3 border-t pt-3 max-sm:flex-nowrap max-sm:[padding-bottom:env(safe-area-inset-bottom)] border-stone dark:border-white/[0.10]",
+  editorModalFooter: "flex flex-wrap items-center justify-end gap-3 border-t pt-3 max-sm:flex-nowrap max-sm:[padding-bottom:env(safe-area-inset-bottom)] border-line",
   editorModalActionButton:
     "max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3 max-sm:text-sm",
   editorModalError: "basis-full rounded-md px-3 py-2 text-sm font-bold max-sm:text-xs bg-[#B44E3A]/10 text-[#8E321F] dark:bg-red-500/15 dark:text-red-100",
@@ -426,20 +426,20 @@ export const scannerStyles = {
   matvareCandidateModalBody: "grid min-h-0 gap-2 overflow-y-auto pr-1",
   infoModalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   infoModalBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
-  infoText: "text-sm font-semibold leading-[1.5] text-olive-dark dark:text-neutral-300",
-  infoList: "grid list-disc gap-2 pl-5 text-sm font-semibold leading-[1.45] text-olive-dark dark:text-neutral-300",
+  infoText: "text-sm font-semibold leading-[1.5] text-secondary",
+  infoList: "grid list-disc gap-2 pl-5 text-sm font-semibold leading-[1.45] text-secondary",
   matvareSearchForm: "grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]",
-  matvareCandidateButton: `grid gap-1 rounded-md border p-3 text-left transition-colors ${focusBase} ${siteColorClasses.focus} border-stone bg-ivory/70 text-olive-dark hover:bg-champagne/55 dark:border-white/[0.10] dark:bg-white/[0.05] dark:text-neutral-100 dark:hover:bg-white/[0.10]`,
+  matvareCandidateButton: `grid gap-1 rounded-md border p-3 text-left transition-colors ${focusBase} ${siteColorClasses.focus} border-line bg-ivory/70 text-olive-dark hover:bg-champagne/55 dark:bg-white/[0.05] dark:text-neutral-100 dark:hover:bg-white/[0.10]`,
   matvareCandidateName: "text-sm font-extrabold leading-tight",
-  matvareCandidateMeta: "text-xs font-bold text-olive-dark dark:text-neutral-300",
-  matvareCandidateMacros: "text-xs font-semibold leading-[1.4] text-olive-dark dark:text-neutral-400",
+  matvareCandidateMeta: "text-xs font-bold text-secondary",
+  matvareCandidateMacros: "text-xs font-semibold leading-[1.4] text-muted",
 } as const;
 
 export const nutritionStyles = {
   shell: pageStyles.contentShell,
   header: "grid gap-2",
   title: "text-3xl font-bold leading-tight text-olive-dark dark:text-neutral-50",
-  intro: "max-w-2xl text-sm font-semibold leading-[1.5] text-olive-dark dark:text-neutral-300",
+  intro: "max-w-2xl text-sm font-semibold leading-[1.5] text-secondary",
   panel: `grid grid-cols-3 items-end gap-3 rounded-md border p-4 max-md:grid-cols-2 max-sm:grid-cols-1 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   field: "grid gap-2",
   label: "text-sm font-bold leading-tight",
@@ -456,9 +456,9 @@ export const nutritionStyles = {
   dailyHeader: "flex flex-wrap items-baseline justify-between gap-2",
   dailyHeaderMeta: "flex flex-wrap items-baseline justify-end gap-3",
   dailyTitle: "text-base font-bold leading-tight",
-  dailySubtitle: "text-xs font-semibold leading-tight text-olive-dark dark:text-neutral-400",
+  dailySubtitle: "text-xs font-semibold leading-tight text-muted",
   dailyGrid: "grid grid-cols-7 gap-2 max-desktop:grid-cols-4 max-sm:grid-cols-2",
-  dailyItem: "grid gap-1 rounded-md border px-3 py-2 text-sm font-semibold border-stone bg-champagne/45 text-olive-dark dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-neutral-200",
+  dailyItem: "grid gap-1 rounded-md border px-3 py-2 text-sm font-semibold border-line-faint bg-champagne/45 text-body dark:bg-white/[0.05]",
   dailyDay: "text-xs font-bold uppercase",
   dailyCalories: "text-base font-extrabold leading-tight text-olive-dark dark:text-neutral-50",
   dailyAverage: "text-sm font-extrabold leading-tight text-olive-dark dark:text-neutral-50",
@@ -468,8 +468,8 @@ export const nutritionStyles = {
   itemTotal: "text-sm font-extrabold leading-tight text-olive-dark dark:text-neutral-50",
   progressTrack: "h-2 overflow-hidden rounded-full bg-[#D7CCBB] dark:bg-white/[0.10]",
   progressFill: "block h-full rounded-full bg-olive-dark dark:bg-emerald-300",
-  itemMeta: "text-xs font-semibold leading-tight text-olive-dark dark:text-neutral-400",
-  sourceText: "text-xs font-semibold leading-tight text-olive-dark dark:text-neutral-400",
+  itemMeta: "text-xs font-semibold leading-tight text-muted",
+  sourceText: "text-xs font-semibold leading-tight text-muted",
   sourceLink: `font-extrabold underline-offset-2 hover:underline ${siteColorClasses.plannerCounterAccent}`,
 } as const;
 
@@ -480,7 +480,7 @@ export const plannerControlsStyles = {
   shell: `mb-5 grid w-full grid-cols-12 items-center ${layoutClasses.gridGap} max-desktop:mb-6 max-desktop:grid-cols-1 max-desktop:gap-3`,
   datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap} desktop:gap-2 max-desktop:justify-between max-desktop:gap-2`,
   // The year floats above the range label without increasing the top-control row height.
-  dateYearRow: "pointer-events-none absolute inset-x-0 -top-4 z-0 flex h-0 justify-center overflow-visible text-sm font-bold leading-none text-olive-dark dark:text-neutral-400",
+  dateYearRow: "pointer-events-none absolute inset-x-0 -top-4 z-0 flex h-0 justify-center overflow-visible text-sm font-bold leading-none text-muted",
   datePrimary: `min-w-36 whitespace-nowrap text-center text-3xl font-bold leading-tight max-desktop:min-w-0 max-desktop:flex-1 max-desktop:truncate max-sm:text-2xl ${siteColorClasses.plannerCounterAccent}`,
   leftCell:
     "order-1 col-span-5 flex items-center justify-start max-desktop:hidden",
@@ -521,7 +521,7 @@ export const prepHelperStyles = {
   modalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   header: "flex items-start justify-between gap-4",
   title: "text-2xl font-bold leading-tight",
-  subtitle: "mt-1 text-sm font-semibold leading-[1.45] text-olive-dark dark:text-neutral-400",
+  subtitle: "mt-1 text-sm font-semibold leading-[1.45] text-muted",
   closeButton: `${controlStyles.modalCloseButton} max-sm:hidden`,
   bodyFrame: "grid min-h-0 gap-3",
   list: "grid max-h-[48vh] gap-3 overflow-y-auto pr-1",
@@ -531,13 +531,13 @@ export const prepHelperStyles = {
   itemAmount: "whitespace-nowrap text-sm font-extrabold",
   actionList: "flex flex-wrap gap-2",
   actionChip: "rounded-md border px-2 py-1 text-xs font-bold border-olive/25 bg-champagne/55 text-olive-dark dark:border-white/[0.10] dark:bg-white/[0.08] dark:text-neutral-100",
-  sourceText: "text-xs font-semibold leading-tight text-olive-dark dark:text-neutral-400",
+  sourceText: "text-xs font-semibold leading-tight text-muted",
   emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   footer: "flex items-center justify-end border-t pt-4",
   secondaryButton: controlStyles.secondaryButton,
 } as const;
 
-const plannerMutedText = "text-olive-dark dark:text-neutral-300";
+const plannerMutedText = "text-secondary";
 
 export const mealCalendarStyles = {
   shell: "flex w-full flex-col max-desktop:pb-8",
@@ -573,7 +573,7 @@ export const mealCalendarStyles = {
   dayMealGrid: (collapsed: boolean) =>
     `grid grid-cols-3 ${layoutClasses.calendarGap} max-desktop:grid-cols-1 max-desktop:gap-2 ${collapsed ? "hidden" : ""}`,
   mealSlot: (isToday: boolean, roomForTouchActions: boolean) =>
-    `group/meal-slot relative flex ${radiusClasses.figma6} border transition-colors duration-150 ${roomForTouchActions ? "min-h-24" : "h-[5.5rem] max-desktop:h-auto max-desktop:min-h-[5.5rem]"} ${isToday ? "border-olive-dark dark:border-white/[0.28]" : "border-stone dark:border-white/[0.08]"} bg-ivory/70 hover:bg-champagne/45 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]`,
+    `group/meal-slot relative flex ${radiusClasses.figma6} border transition-colors duration-150 ${roomForTouchActions ? "min-h-24" : "h-[5.5rem] max-desktop:h-auto max-desktop:min-h-[5.5rem]"} ${isToday ? "border-olive-dark dark:border-white/[0.28]" : "border-line-faint"} bg-ivory/70 hover:bg-champagne/45 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]`,
   mealSlotDropTarget: "data-[drag-active=true]:border-olive data-[drag-active=true]:border-2 dark:data-[drag-active=true]:border-emerald-300/70",
   mealSlotButton: `flex w-full min-w-0 cursor-pointer items-stretch rounded-md p-2 text-left disabled:cursor-not-allowed ${focusBase}`,
   // A slot whose plan could not be loaded: visibly not an empty, editable slot.
@@ -587,11 +587,11 @@ export const mealCalendarStyles = {
       : "flex shrink-0 flex-col justify-center p-1",
   // Mouse: small solid buttons over the card. Touch: 44 px ghost buttons in the card's own column.
   mealSlotActionButton: (compact: boolean) =>
-    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses.focus} ${compact ? "h-8 w-8 shadow-sm border-olive/45 bg-ivory text-olive-dark hover:bg-[#EFE6D8] dark:border-white/[0.16] dark:bg-neutral-950 dark:text-neutral-100 dark:hover:bg-neutral-900" : "h-11 w-11 border-transparent bg-transparent text-olive-dark dark:text-neutral-200"}`,
+    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses.focus} ${compact ? "h-8 w-8 shadow-sm border-olive/45 bg-ivory text-olive-dark hover:bg-[#EFE6D8] dark:border-white/[0.16] dark:bg-neutral-950 dark:text-neutral-100 dark:hover:bg-neutral-900" : "h-11 w-11 border-transparent bg-transparent text-body"}`,
   mealSlotDeleteButton: (compact: boolean) =>
     `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses.focus} ${compact ? "h-8 w-8 shadow-sm border-red-900/30 bg-red-900 text-ivory hover:bg-red-800 dark:border-red-400/35 dark:bg-red-950 dark:text-red-100 dark:hover:bg-red-900" : "h-11 w-11 border-transparent bg-transparent text-red-800 dark:text-red-300"}`,
   mealSlotDeleteIcon: "h-4 w-4",
-  mealSlotEmpty: "m-auto inline-flex items-center gap-1.5 rounded-md border border-dashed px-3 py-1.5 text-sm font-bold border-olive/45 text-olive-dark dark:border-white/[0.18] dark:text-neutral-300",
+  mealSlotEmpty: "m-auto inline-flex items-center gap-1.5 rounded-md border border-dashed px-3 py-1.5 text-sm font-bold border-olive/45 text-secondary dark:border-white/[0.18]",
   mealSlotEmptyPlus: "text-base leading-none",
   mealSlotContent: (hasImage: boolean) =>
     `grid w-full min-w-0 gap-2.5 ${hasImage ? "grid-cols-[4.5rem_minmax(0,1fr)]" : "grid-cols-[0.375rem_minmax(0,1fr)] gap-2"}`,
@@ -613,7 +613,7 @@ export const mealCalendarStyles = {
   monthGrid: `grid grid-cols-7 ${layoutClasses.calendarGap} max-desktop:grid-cols-1 max-desktop:gap-2`,
   monthHeaderCell: `px-2 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText}`,
   monthDayCell: (muted: boolean, isToday: boolean) =>
-    `group/day flex min-h-32 min-w-0 flex-col gap-1.5 ${radiusClasses.figma6} border p-1.5 transition-colors duration-150 max-desktop:min-h-0 max-desktop:flex-row max-desktop:items-start ${muted ? "border-dashed bg-transparent max-desktop:hidden" : ""} ${isToday ? "border-olive-dark dark:border-white/[0.32]" : "border-stone dark:border-white/[0.08]"} ${muted ? "" : "bg-ivory/70 dark:bg-white/[0.035]"}`,
+    `group/day flex min-h-32 min-w-0 flex-col gap-1.5 ${radiusClasses.figma6} border p-1.5 transition-colors duration-150 max-desktop:min-h-0 max-desktop:flex-row max-desktop:items-start ${muted ? "border-dashed bg-transparent max-desktop:hidden" : ""} ${isToday ? "border-olive-dark dark:border-white/[0.32]" : "border-line-faint"} ${muted ? "" : "bg-ivory/70 dark:bg-white/[0.035]"}`,
   monthDayNumberButton: (muted: boolean, isToday: boolean) =>
     `inline-flex h-7 min-w-7 items-center gap-1.5 self-start rounded-md px-1.5 text-sm font-extrabold leading-none disabled:cursor-default max-desktop:h-11 max-desktop:w-20 max-desktop:shrink-0 max-desktop:flex-col max-desktop:justify-center max-desktop:gap-0.5 ${focusBase} ${siteColorClasses.focus} ${isToday ? "bg-olive-dark text-ivory dark:bg-white dark:text-neutral-950" : `${muted ? `${plannerMutedText}` : `${siteColorClasses.plannerCounterAccent}`}`}`,
   monthDayName: "hidden text-[11px] font-extrabold uppercase tracking-wider max-desktop:block",
@@ -624,7 +624,7 @@ export const mealCalendarStyles = {
   monthMealChipText: "min-w-0 truncate",
   // Hidden until the day is hovered or has focus (mouse), or its date was tapped (touch).
   monthAddButton: (isRevealed: boolean) =>
-    `flex min-h-7 min-w-0 items-center gap-1 ${radiusClasses.figma6} border border-dashed px-1.5 py-1 text-left text-xs font-bold leading-tight transition-opacity disabled:cursor-not-allowed max-desktop:min-h-11 max-desktop:text-sm ${focusBase} ${siteColorClasses.focus} ${isRevealed ? "opacity-100" : "opacity-0 focus-visible:opacity-100 group-hover/day:opacity-100 group-focus-within/day:opacity-100 [@media(hover:none)]:hidden"} border-olive/55 text-olive-dark hover:bg-champagne/55 dark:border-white/[0.20] dark:text-neutral-200 dark:hover:bg-white/[0.08]`,
+    `flex min-h-7 min-w-0 items-center gap-1 ${radiusClasses.figma6} border border-dashed px-1.5 py-1 text-left text-xs font-bold leading-tight transition-opacity disabled:cursor-not-allowed max-desktop:min-h-11 max-desktop:text-sm ${focusBase} ${siteColorClasses.focus} ${isRevealed ? "opacity-100" : "opacity-0 focus-visible:opacity-100 group-hover/day:opacity-100 group-focus-within/day:opacity-100 [@media(hover:none)]:hidden"} border-olive/55 text-body hover:bg-champagne/55 dark:border-white/[0.20] dark:hover:bg-white/[0.08]`,
 };
 
 export const plannerPickerStyles = {
@@ -632,7 +632,7 @@ export const plannerPickerStyles = {
   modalPanel: `grid ${sizeClasses.plannerPickerModalMaxHeight} w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 max-sm:gap-3 max-sm:p-4 ${shadowClasses.overlay} border-stone bg-ivory text-olive-dark dark:border-white/[0.12] dark:bg-neutral-950 dark:text-neutral-100`,
   header: "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 max-sm:block",
   title: "text-2xl font-bold leading-tight max-sm:sr-only",
-  subtitle: "mt-1 text-sm font-semibold leading-[1.45] max-sm:hidden text-olive-dark dark:text-neutral-400",
+  subtitle: "mt-1 text-sm font-semibold leading-[1.45] max-sm:hidden text-muted",
   closeButton: `${controlStyles.modalCloseButton} max-sm:hidden`,
   bodyFrame: "grid min-h-0 gap-4 max-sm:gap-2",
   bodyScrollFrame: "grid min-h-0 overflow-y-auto pr-1",
@@ -650,8 +650,8 @@ export const plannerPickerStyles = {
   quickFilterRow:
     "col-span-full flex flex-wrap items-center gap-2 max-sm:col-span-3",
   quickFilterChip: (selected: boolean) =>
-    `inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? "border-olive-dark bg-olive-dark text-ivory dark:border-emerald-300/70 dark:bg-emerald-300 dark:text-neutral-950" : "border-olive/30 bg-ivory text-olive-dark hover:bg-[#EFE6D8] dark:border-white/[0.14] dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"}`,
-  selectedSummary: "flex min-h-9 min-w-0 items-center rounded-md px-3 py-2 text-sm font-bold leading-tight bg-champagne/45 text-olive-dark dark:bg-white/[0.06] dark:text-neutral-200",
+    `inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? "border-olive-dark bg-olive-dark text-ivory dark:border-emerald-300/70 dark:bg-emerald-300 dark:text-neutral-950" : "border-olive/30 bg-ivory text-body hover:bg-[#EFE6D8] dark:border-white/[0.14] dark:bg-neutral-900 dark:hover:bg-neutral-800"}`,
+  selectedSummary: "flex min-h-9 min-w-0 items-center rounded-md px-3 py-2 text-sm font-bold leading-tight bg-champagne/45 text-body dark:bg-white/[0.06]",
   selectedThumbnailList:
     "flex min-h-10 min-w-0 flex-1 flex-wrap items-center gap-2",
   selectedThumbnailButton: `inline-flex h-12 shrink-0 items-center gap-2 rounded-md border px-1.5 pr-2 ${shadowClasses.subtle} transition-colors ${focusBase} ${siteColorClasses.focus} border-olive/25 bg-champagne/55 hover:bg-champagne/75 dark:border-white/[0.10] dark:bg-white/[0.06] dark:hover:bg-white/[0.10]`,
@@ -678,14 +678,14 @@ export const plannerPickerStyles = {
   footer: "border-t pt-4",
   footerContent: "flex items-center justify-between gap-3 max-sm:grid max-sm:grid-cols-1",
   footerSelectionRow: "flex min-w-0 flex-1 items-center gap-3",
-  footerClearButton: "shrink-0 border-0 bg-transparent p-0 text-sm font-bold underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-40 text-olive-dark hover:text-olive-ink dark:text-neutral-300 dark:hover:text-white",
+  footerClearButton: "shrink-0 border-0 bg-transparent p-0 text-sm font-bold underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-40 text-secondary hover:text-olive-ink dark:hover:text-white",
   footerActions:
     "flex shrink-0 flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap max-sm:[&>button]:min-w-0 max-sm:[&>button]:flex-1 max-sm:[&>button]:px-3 max-sm:[&>button]:text-sm",
   secondaryButton: controlStyles.secondaryButton,
   mobileCancelButton: `hidden max-sm:inline-flex ${controlStyles.secondaryButton}`,
   primaryButton: controlStyles.primaryButton,
   removeButton: controlStyles.removeButton,
-  emptyState: `flex min-h-72 items-center justify-center ${radiusClasses.figma6} border p-8 text-center text-sm font-bold border-stone bg-ivory/70 text-olive-dark dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-neutral-300`,
+  emptyState: `flex min-h-72 items-center justify-center ${radiusClasses.figma6} border p-8 text-center text-sm font-bold border-line-faint bg-ivory/70 text-secondary dark:bg-white/[0.035]`,
   statusError: `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-red-700/25 bg-red-700/10 text-red-800 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200`,
   statusErrorWithOffset: () =>
     `mt-4 ${plannerPickerStyles.statusError}`,
@@ -696,25 +696,25 @@ export const groceryExportStyles = {
   modalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   header: "flex items-start justify-between gap-4",
   title: "text-2xl font-bold leading-tight",
-  subtitle: "mt-1 text-sm font-semibold leading-[1.45] text-olive-dark dark:text-neutral-400",
+  subtitle: "mt-1 text-sm font-semibold leading-[1.45] text-muted",
   closeButton: controlStyles.modalCloseButton,
   bodyFrame: "grid min-h-0 gap-3",
   list: "grid max-h-[44vh] gap-4 overflow-y-auto pr-1",
   section: `grid gap-2 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
-  sectionTitle: "text-xs font-extrabold uppercase leading-tight text-olive-dark dark:text-neutral-300",
+  sectionTitle: "text-xs font-extrabold uppercase leading-tight text-secondary",
   itemButton: (selected: boolean) =>
-    `grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.plannerControl}` : "border-olive/20 bg-transparent text-olive-dark dark:border-white/[0.08] dark:text-neutral-400"}`,
+    `grid min-h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.plannerControl}` : "border-olive/20 bg-transparent text-muted dark:border-white/[0.08]"}`,
   checkbox: (selected: boolean) =>
     `inline-flex h-5 w-5 items-center justify-center rounded-sm border text-xs font-bold ${selected ? "border-olive bg-olive-surface text-ivory dark:border-white dark:bg-white dark:text-neutral-950" : "border-olive/35 text-transparent dark:border-white/[0.18]"}`,
   itemText: "min-w-0",
   itemName: "truncate text-sm font-bold leading-tight",
-  itemSources: "mt-0 block truncate text-xs font-semibold leading-tight text-olive-dark dark:text-neutral-400",
+  itemSources: "mt-0 block truncate text-xs font-semibold leading-tight text-muted",
   itemAmount: "whitespace-nowrap text-xs font-extrabold",
   emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   statusError: plannerPickerStyles.statusError,
   statusSuccess: `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-olive/30 bg-olive/10 text-olive-dark dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-200`,
   footer: "flex flex-wrap items-center justify-between gap-4 border-t pt-4",
-  countText: "text-sm font-bold text-olive-dark dark:text-neutral-300",
+  countText: "text-sm font-bold text-secondary",
   actionGroup: "flex flex-wrap items-center justify-end gap-4",
   secondaryButton: controlStyles.secondaryButton,
   primaryButton: controlStyles.primaryButton,
@@ -724,5 +724,5 @@ export const groceryExportStyles = {
   rulesFooter: "flex items-center justify-end gap-3 border-t pt-4",
   ruleTagGrid: "grid grid-cols-2 gap-2 max-sm:grid-cols-1",
   ruleTagButton: (selected: boolean) =>
-    `min-h-9 rounded-md border px-3 py-2 text-left text-xs font-bold transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? "border-olive-ink bg-olive-surface text-ivory shadow-[inset_0_0_0_1px_#FAF7F2] dark:border-emerald-300 dark:bg-emerald-950 dark:text-emerald-50 dark:shadow-[inset_0_0_0_1px_rgba(110,231,183,0.75)]" : "border-olive/25 bg-ivory text-olive-dark hover:bg-champagne dark:border-white/[0.10] dark:bg-white/[0.04] dark:text-neutral-300 dark:hover:bg-white/[0.08]"}`,
+    `min-h-9 rounded-md border px-3 py-2 text-left text-xs font-bold transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? "border-olive-ink bg-olive-surface text-ivory shadow-[inset_0_0_0_1px_#FAF7F2] dark:border-emerald-300 dark:bg-emerald-950 dark:text-emerald-50 dark:shadow-[inset_0_0_0_1px_rgba(110,231,183,0.75)]" : "border-olive/25 bg-ivory text-secondary hover:bg-champagne dark:border-white/[0.10] dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"}`,
 };
