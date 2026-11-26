@@ -13,6 +13,7 @@ import {
 import MealSlot from "./MealSlot";
 import RecipeFallbackTile from "./RecipeFallbackTile";
 import { getRecipeTile } from "../utils/recipeTile";
+import { belowDesktopMediaQuery, desktopMediaQuery } from "../styles/breakpoints";
 
 type MealCalendarProps = {
   anchorDate: Date;
@@ -60,7 +61,7 @@ function MealCalendar({
   const weekDayLabels = t.calendar.weekdaysShort;
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 1100px)");
+    const mediaQuery = window.matchMedia(belowDesktopMediaQuery);
     const updateCanCollapseDays = () => setCanCollapseDays(mediaQuery.matches);
 
     updateCanCollapseDays();
@@ -70,7 +71,7 @@ function MealCalendar({
   }, []);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1101px)");
+    const mediaQuery = window.matchMedia(`(hover: hover) and (pointer: fine) and ${desktopMediaQuery}`);
     const updateCanUseDesktopInteractions = () => setCanUseDesktopInteractions(mediaQuery.matches);
 
     updateCanUseDesktopInteractions();

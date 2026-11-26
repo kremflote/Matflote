@@ -4,6 +4,7 @@ import IngredientThumbnail from "../IngredientThumbnail";
 import SearchField from "../SearchField";
 import type { IIngredient } from "../../interfaces/IIngredient";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
+import { desktopMinWidthPx } from "../../styles/breakpoints";
 
 const popoverWidth = 288;
 const popoverHeight = 360;
@@ -93,7 +94,7 @@ function getClampedPopoverPosition(x: number, y: number) {
   const viewportHeight = window.innerHeight;
   const effectivePopoverWidth = Math.min(popoverWidth, viewportWidth - viewportMargin * 2);
   const left = Math.max(viewportMargin, Math.min(x, viewportWidth - effectivePopoverWidth - viewportMargin));
-  const preferredTop = viewportWidth <= 1100 ? y - popoverHeight - 8 : y + 8;
+  const preferredTop = viewportWidth < desktopMinWidthPx ? y - popoverHeight - 8 : y + 8;
   const top = Math.max(viewportMargin, Math.min(preferredTop, viewportHeight - popoverHeight - viewportMargin));
 
   return { left, top };

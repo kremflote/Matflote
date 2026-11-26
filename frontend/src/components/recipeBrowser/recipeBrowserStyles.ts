@@ -13,38 +13,38 @@ export const recipeBrowserStyles = {
   title: "whitespace-nowrap text-3xl font-bold leading-tight text-olive-dark dark:text-neutral-50",
   // On phones and tablets the Recipes / Ingredients switch is the page's title row, with Add beside it.
   headerTitle:
-    "col-span-2 flex items-center max-[1100px]:sr-only",
+    "col-span-2 flex items-center max-desktop:sr-only",
   searchInput: controlStyles.compactSearchInput,
   headerControlsRow:
-    "grid grid-cols-12 items-center max-[1100px]:flex max-[1100px]:gap-2",
+    "grid grid-cols-12 items-center max-desktop:flex max-desktop:gap-2",
   searchControls:
-    "relative col-span-2 max-[1100px]:order-2 max-[1100px]:col-span-12 max-[1100px]:grid max-[1100px]:w-full max-[1100px]:grid-cols-[auto_minmax(0,1fr)] max-[1100px]:items-center max-[1100px]:gap-2",
+    "relative col-span-2 max-desktop:order-2 max-desktop:col-span-12 max-desktop:grid max-desktop:w-full max-desktop:grid-cols-[auto_minmax(0,1fr)] max-desktop:items-center max-desktop:gap-2",
   searchFieldShell:
-    "relative w-full max-[1100px]:col-start-2 max-[1100px]:row-start-1",
+    "relative w-full max-desktop:col-start-2 max-desktop:row-start-1",
   searchFieldInlineShell: "relative min-w-0 w-full",
   searchInputWithClear:
-    "pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none max-[1100px]:h-11 max-[1100px]:pr-11 max-[1100px]:text-base",
+    "pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none max-desktop:h-11 max-desktop:pr-11 max-desktop:text-base",
   searchInputClearPadding:
     "pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none",
-  searchClearButton: "absolute right-2 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md transition-colors max-[1100px]:right-0 max-[1100px]:h-11 max-[1100px]:w-11 [&_svg]:h-3 [&_svg]:w-3 max-[1100px]:[&_svg]:h-3.5 max-[1100px]:[&_svg]:w-3.5 text-olive-dark hover:bg-champagne hover:text-olive-dark dark:text-neutral-700 dark:hover:bg-neutral-300 dark:hover:text-neutral-950",
+  searchClearButton: "absolute right-2 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md transition-colors max-desktop:right-0 max-desktop:h-11 max-desktop:w-11 [&_svg]:h-3 [&_svg]:w-3 max-desktop:[&_svg]:h-3.5 max-desktop:[&_svg]:w-3.5 text-olive-dark hover:bg-champagne hover:text-olive-dark dark:text-neutral-700 dark:hover:bg-neutral-300 dark:hover:text-neutral-950",
   headerActions:
-    "col-span-10 flex items-center justify-end gap-3 pt-1 max-[1100px]:w-full max-[1100px]:flex-row-reverse max-[1100px]:gap-2 max-[1100px]:pt-0",
+    "col-span-10 flex items-center justify-end gap-3 pt-1 max-desktop:w-full max-desktop:flex-row-reverse max-desktop:gap-2 max-desktop:pt-0",
   headerActionButtonSlot: "flex shrink-0",
-  headerModeToggleSlot: `${sizeClasses.thumbnailControlWidth} max-[1100px]:w-auto max-[1100px]:min-w-0 max-[1100px]:flex-1`,
-  headerModeToggleStackedSlot: `hidden ${sizeClasses.thumbnailControlWidth} max-[1100px]:hidden`,
+  headerModeToggleSlot: `${sizeClasses.thumbnailControlWidth} max-desktop:w-auto max-desktop:min-w-0 max-desktop:flex-1`,
+  headerModeToggleStackedSlot: `hidden ${sizeClasses.thumbnailControlWidth} max-desktop:hidden`,
   filterButtonSlot:
-    "absolute left-[calc(100%+0.75rem)] top-0 flex h-9 w-9 shrink-0 items-center gap-2 max-[1100px]:static max-[1100px]:col-start-1 max-[1100px]:row-start-1 max-[1100px]:h-11 max-[1100px]:w-auto",
+    "absolute left-[calc(100%+0.75rem)] top-0 flex h-9 w-9 shrink-0 items-center gap-2 max-desktop:static max-desktop:col-start-1 max-desktop:row-start-1 max-desktop:h-11 max-desktop:w-auto",
   // Lets the search row stick to the page rather than to this short header element.
-  browserHeader: "max-[1100px]:contents",
+  browserHeader: "max-desktop:contents",
   // Docked under the header while the results scroll, instead of floating over them.
-  searchFilterRow: `mt-3 grid grid-cols-12 items-start gap-3 max-[1100px]:sticky max-[1100px]:top-16 max-[1100px]:z-30 max-[1100px]:-mx-4 max-[1100px]:mt-2 max-[1100px]:flex max-[1100px]:flex-col max-[1100px]:gap-2 max-[1100px]:px-4 max-[1100px]:py-2 ${siteColorClasses.stickyBar}`,
+  searchFilterRow: `mt-3 grid grid-cols-12 items-start gap-3 max-desktop:sticky max-desktop:top-16 max-desktop:z-30 max-desktop:-mx-4 max-desktop:mt-2 max-desktop:flex max-desktop:flex-col max-desktop:gap-2 max-desktop:px-4 max-desktop:py-2 ${siteColorClasses.stickyBar}`,
   activeFilterChips: (
     mode: "recipes" | "ingredients",
     hasVisibleFilters: boolean,
   ) =>
-    `col-span-10 flex min-h-9 flex-wrap items-start gap-2 max-[1100px]:order-1 max-[1100px]:col-span-12 ${
-      mode === "recipes" ? "pl-12 max-[1100px]:pl-0" : ""
-    } ${hasVisibleFilters ? "" : "max-[1100px]:hidden"}`,
+    `col-span-10 flex min-h-9 flex-wrap items-start gap-2 max-desktop:order-1 max-desktop:col-span-12 ${
+      mode === "recipes" ? "pl-12 max-desktop:pl-0" : ""
+    } ${hasVisibleFilters ? "" : "max-desktop:hidden"}`,
   browserBodyGrid: "mt-3 grid grid-cols-12 gap-3 max-sm:mt-3",
   embeddedBrowser: "grid min-h-0 gap-3",
   embeddedSearchFilterRow: "grid gap-3",
@@ -52,14 +52,14 @@ export const recipeBrowserStyles = {
     "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2",
   embeddedFilterButtonSlot: "flex items-center gap-2",
   embeddedBrowserBodyGrid:
-    "grid min-h-0 grid-cols-12 gap-3 max-[1100px]:grid-cols-1",
+    "grid min-h-0 grid-cols-12 gap-3 max-desktop:grid-cols-1",
   embeddedResultsWithFilters:
-    "col-span-10 min-h-0 overflow-y-auto pr-1 max-[1100px]:col-span-1",
+    "col-span-10 min-h-0 overflow-y-auto pr-1 max-desktop:col-span-1",
   embeddedRecipeGrid:
-    "grid grid-cols-3 gap-3 min-[641px]:max-[1100px]:grid-cols-4 max-md:grid-cols-2 max-[380px]:grid-cols-1",
+    "grid grid-cols-3 gap-3 min-[641px]:max-desktop:grid-cols-4 max-md:grid-cols-2 max-[380px]:grid-cols-1",
   embeddedCategoryFilterButton: `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
-  filterButton: `inline-flex h-9 w-9 items-center justify-center rounded-md border max-[1100px]:h-11 max-[1100px]:w-11 max-[1100px]:[&_svg]:h-5 max-[1100px]:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
-  categoryFilterButton: `hidden h-9 w-9 items-center justify-center rounded-md border p-0 max-[1100px]:h-11 max-[1100px]:w-11 max-[1100px]:[&_svg]:h-5 max-[1100px]:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors max-[1100px]:inline-flex ${siteColorClasses.cookbookFilterButton}`,
+  filterButton: `inline-flex h-9 w-9 items-center justify-center rounded-md border max-desktop:h-11 max-desktop:w-11 max-desktop:[&_svg]:h-5 max-desktop:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
+  categoryFilterButton: `hidden h-9 w-9 items-center justify-center rounded-md border p-0 max-desktop:h-11 max-desktop:w-11 max-desktop:[&_svg]:h-5 max-desktop:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors max-desktop:inline-flex ${siteColorClasses.cookbookFilterButton}`,
   filterChip: "inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-semibold transition-colors bg-champagne text-olive-dark hover:bg-stone dark:bg-white/[0.10] dark:text-neutral-200 dark:hover:bg-white/[0.16]",
   clearFilterChip: "inline-flex items-start rounded-md px-0 py-1 text-[10px] font-bold leading-none transition-colors text-olive-dark hover:text-olive-dark dark:text-neutral-400 dark:hover:text-white",
   ingredientPicker: `fixed z-[120] w-72 max-w-[calc(100vw_-_24px)] rounded-md border p-3 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
@@ -68,8 +68,8 @@ export const recipeBrowserStyles = {
   ingredientPickerList:
     "mt-3 flex max-h-72 flex-col gap-2 overflow-y-auto pr-1",
   ingredientPickerItem: "h-9 px-3",
-  addButton: `inline-flex h-9 w-32 items-center justify-center gap-1 rounded-md border px-3 text-xs font-extrabold ${shadowClasses.subtle} transition-colors max-[1100px]:h-[3.125rem] max-[1100px]:w-[3.125rem] max-[1100px]:px-0 max-[1100px]:text-xl ${siteColorClasses.cookbookAddButton}`,
-  addButtonLabel: "max-[1100px]:sr-only",
+  addButton: `inline-flex h-9 w-32 items-center justify-center gap-1 rounded-md border px-3 text-xs font-extrabold ${shadowClasses.subtle} transition-colors max-desktop:h-[3.125rem] max-desktop:w-[3.125rem] max-desktop:px-0 max-desktop:text-xl ${siteColorClasses.cookbookAddButton}`,
+  addButtonLabel: "max-desktop:sr-only",
   modalBackdrop: `fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   modalPanel: `grid ${sizeClasses.modalOuterMaxHeight} w-full max-w-3xl grid-rows-[auto_minmax(0,1fr)] gap-4 overflow-hidden rounded-md border p-6 ${responsiveClasses.mobileModalPanel} ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   modalCloseButton: controlStyles.modalCloseButton,
@@ -162,7 +162,7 @@ export const recipeBrowserStyles = {
   conversionRuleForm: "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-3 max-sm:grid-cols-1",
   inlineTextButton: "border-0 bg-transparent p-0 text-xs font-bold underline underline-offset-2 transition-colors text-olive-dark hover:text-olive-ink dark:text-neutral-300 dark:hover:text-white",
   recipeIngredientPickerRow:
-    "grid grid-cols-[auto_minmax(0,1fr)_6rem_8rem_10rem] items-center gap-2 max-[1100px]:grid-cols-[auto_minmax(0,1fr)_6rem] max-md:grid-cols-[auto_minmax(0,1fr)] max-sm:gap-y-2",
+    "grid grid-cols-[auto_minmax(0,1fr)_6rem_8rem_10rem] items-center gap-2 max-desktop:grid-cols-[auto_minmax(0,1fr)_6rem] max-md:grid-cols-[auto_minmax(0,1fr)] max-sm:gap-y-2",
   recipeIngredientControlGrid:
     "contents max-sm:col-span-2 max-sm:grid max-sm:grid-cols-2 max-sm:gap-2",
   recipeIngredientPreparationField: "max-sm:col-span-2",
@@ -174,7 +174,7 @@ export const recipeBrowserStyles = {
   mobileFormActionButton: "max-sm:h-11 max-sm:min-w-0 max-sm:px-3 max-sm:text-sm",
   desktopTagSection: "max-sm:hidden",
   imageUploadActionStack:
-    "absolute left-1/2 top-1/2 z-10 grid w-fit -translate-x-1/2 -translate-y-1/2 gap-2 max-[1100px]:static max-[1100px]:translate-x-0 max-[1100px]:translate-y-0 max-sm:absolute max-sm:left-1/2 max-sm:top-1/2 max-sm:w-[min(10rem,calc(100%-1rem))] max-sm:-translate-x-1/2 max-sm:-translate-y-1/2",
+    "absolute left-1/2 top-1/2 z-10 grid w-fit -translate-x-1/2 -translate-y-1/2 gap-2 max-desktop:static max-desktop:translate-x-0 max-desktop:translate-y-0 max-sm:absolute max-sm:left-1/2 max-sm:top-1/2 max-sm:w-[min(10rem,calc(100%-1rem))] max-sm:-translate-x-1/2 max-sm:-translate-y-1/2",
   imageUploadFloatingButton: `inline-flex h-9 w-fit cursor-pointer items-center justify-center gap-2 rounded-md border px-4 text-center text-[10px] font-bold leading-none ${shadowClasses.subtle} transition-colors max-sm:w-full max-sm:px-2 max-sm:text-xs border-stone bg-ivory/90 text-olive-dark hover:bg-ivory dark:border-white/[0.10] dark:bg-neutral-950/85 dark:text-neutral-200 dark:hover:bg-neutral-950`,
   imageCaptureButton: `hidden h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-md border px-2 text-center text-xs font-bold leading-none ${shadowClasses.subtle} transition-colors border-stone bg-ivory/90 text-olive-dark hover:bg-ivory dark:border-white/[0.10] dark:bg-neutral-950/85 dark:text-neutral-200 dark:hover:bg-neutral-950`,
   imageUploadIcon: "h-4 w-4",
@@ -222,11 +222,11 @@ export const recipeBrowserStyles = {
   statusError: "rounded-md border px-3 py-2 text-sm font-semibold border-red-700/25 bg-red-700/10 text-red-800 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200",
   statusErrorWithOffset: () =>
     `mt-4 ${recipeBrowserStyles.statusError}`,
-  cropPreview: "relative aspect-square w-full overflow-hidden rounded-md border max-[1100px]:h-[5.5rem] max-[1100px]:w-[5.5rem] max-sm:h-auto max-sm:w-full border-stone bg-ivory dark:border-white/[0.10] dark:bg-neutral-900",
-  tabs: `${segmentedToggleStyles.shell()} max-[1100px]:h-[3.125rem] max-[1100px]:p-0.5`,
+  cropPreview: "relative aspect-square w-full overflow-hidden rounded-md border max-desktop:h-[5.5rem] max-desktop:w-[5.5rem] max-sm:h-auto max-sm:w-full border-stone bg-ivory dark:border-white/[0.10] dark:bg-neutral-900",
+  tabs: `${segmentedToggleStyles.shell()} max-desktop:h-[3.125rem] max-desktop:p-0.5`,
   tab: (selected: boolean) =>
     `${segmentedToggleStyles.option(selected)}`,
-  filterRail: `col-span-2 rounded-md p-3 ${shadowClasses.subtle} max-[1100px]:hidden bg-champagne/45 dark:bg-white/[0.04]`,
+  filterRail: `col-span-2 rounded-md p-3 ${shadowClasses.subtle} max-desktop:hidden bg-champagne/45 dark:bg-white/[0.04]`,
   filterPanel: "grid max-h-[48vh] gap-0 overflow-y-auto rounded-md p-3 max-sm:max-h-[40vh] bg-champagne/45 dark:bg-white/[0.04]",
   filterGroup: "border-b pb-3 pt-3 first:pt-0 last:border-b-0 last:pb-0 border-olive/25 dark:border-white/[0.16]",
   filterLegend: "text-sm font-bold text-olive-dark dark:text-neutral-100",
@@ -276,9 +276,9 @@ export const recipeBrowserStyles = {
   manageTagActionButton: `inline-flex h-8 w-full min-w-0 items-center justify-center rounded-md border px-2 text-sm font-semibold outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55 ${siteColorClasses.focus} border-stone bg-transparent text-olive-dark hover:bg-champagne/55 dark:border-white/[0.10] dark:text-neutral-200 dark:hover:bg-white/[0.08]`,
   manageTagRemoveButton: (transparent = false) =>
     transparent ? `inline-flex h-8 w-full min-w-0 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold opacity-35 outline-none transition-colors disabled:cursor-not-allowed ${siteColorClasses.focus} text-olive-dark dark:text-neutral-400` : `inline-flex h-8 w-full min-w-0 items-center justify-center rounded-md border px-2 text-sm font-semibold outline-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55 ${siteColorClasses.focus} border-red-950 bg-red-950 text-ivory hover:bg-red-900 dark:text-white`,
-  resultsWithFilters: "col-span-10 max-[1100px]:col-span-12",
-  recipeGrid: `grid grid-cols-3 gap-3 min-[641px]:max-[1100px]:grid-cols-4 ${sizeClasses.portableBottomNavOffset} max-md:grid-cols-2 max-[380px]:grid-cols-1`,
-  ingredientGrid: `grid grid-cols-3 items-start gap-3 max-[1100px]:grid-cols-2 ${sizeClasses.portableBottomNavOffset} max-sm:grid-cols-1`,
+  resultsWithFilters: "col-span-10 max-desktop:col-span-12",
+  recipeGrid: `grid grid-cols-3 gap-3 min-[641px]:max-desktop:grid-cols-4 ${sizeClasses.portableBottomNavOffset} max-md:grid-cols-2 max-[380px]:grid-cols-1`,
+  ingredientGrid: `grid grid-cols-3 items-start gap-3 max-desktop:grid-cols-2 ${sizeClasses.portableBottomNavOffset} max-sm:grid-cols-1`,
   emptyFilterChipSlot: "h-9",
   recipeCard: `${shadowClasses.subtle} ring-1 ring-olive/20 dark:ring-white/[0.08]`,
   emptyState: "flex min-h-80 flex-col items-center justify-center rounded-md border p-8 text-center max-sm:min-h-56 max-sm:p-5 border-stone bg-ivory/70 text-olive-dark dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-neutral-200",
@@ -351,7 +351,7 @@ export const recipeBrowserStyles = {
   scaleField: "w-20",
   scaleInput: "w-full pr-6 max-sm:h-11 max-sm:text-base",
   imageCropper:
-    "relative grid gap-3 max-[1100px]:grid-cols-[5.5rem_minmax(0,8fr)] max-[1100px]:items-center max-sm:grid-cols-1 max-sm:items-start",
+    "relative grid gap-3 max-desktop:grid-cols-[5.5rem_minmax(0,8fr)] max-desktop:items-center max-sm:grid-cols-1 max-sm:items-start",
   hiddenFileInput: "sr-only",
   cropImage: "h-full w-full object-cover",
   cropFallback:

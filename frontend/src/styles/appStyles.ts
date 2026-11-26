@@ -20,7 +20,7 @@ export const colorPalette = {
 export const siteColorClasses = {
   // A bar that stays under the fixed header on narrow screens, in the page colour.
   stickyBar:
-    "max-[1100px]:bg-[#EAEBEB]/95 max-[1100px]:backdrop-blur-sm dark:max-[1100px]:bg-[#181818]/95",
+    "max-desktop:bg-[#EAEBEB]/95 max-desktop:backdrop-blur-sm dark:max-desktop:bg-[#181818]/95",
   page:
     "bg-ivory text-olive-dark before:bg-dusty-blue/20 dark:bg-[#111111] dark:text-neutral-50 dark:before:bg-white/[0.03]",
   header:
@@ -28,15 +28,15 @@ export const siteColorClasses = {
   headerForeground:
     "text-ivory dark:text-neutral-50",
   fixedHeader:
-    "max-[1100px]:border-olive/35 max-[1100px]:bg-olive-surface dark:max-[1100px]:border-white/[0.14] dark:max-[1100px]:bg-neutral-950/95",
+    "max-desktop:border-olive/35 max-desktop:bg-olive-surface dark:max-desktop:border-white/[0.14] dark:max-desktop:bg-neutral-950/95",
   nav:
     "border-stone bg-ivory/55 dark:border-white/[0.08] dark:bg-white/[0.04]",
   bottomNav:
-    "max-[1100px]:border-olive/35 max-[1100px]:bg-olive-surface dark:max-[1100px]:border-white/[0.14] dark:max-[1100px]:bg-neutral-950/95",
+    "max-desktop:border-olive/35 max-desktop:bg-olive-surface dark:max-desktop:border-white/[0.14] dark:max-desktop:bg-neutral-950/95",
   control:
-    "text-ivory hover:border-ivory/45 hover:bg-ivory/15 hover:text-ivory dark:border-white/[0.08] dark:bg-white/[0.055] dark:text-neutral-300 dark:hover:border-white/[0.16] dark:hover:bg-white/[0.14] dark:hover:text-neutral-50 dark:max-[1100px]:border-white/[0.16] dark:max-[1100px]:bg-neutral-800 dark:max-[1100px]:text-neutral-100",
+    "text-ivory hover:border-ivory/45 hover:bg-ivory/15 hover:text-ivory dark:border-white/[0.08] dark:bg-white/[0.055] dark:text-neutral-300 dark:hover:border-white/[0.16] dark:hover:bg-white/[0.14] dark:hover:text-neutral-50 dark:max-desktop:border-white/[0.16] dark:max-desktop:bg-neutral-800 dark:max-desktop:text-neutral-100",
   controlSelected:
-    "border-ivory/70 bg-ivory text-olive-dark dark:border-white/[0.18] dark:bg-white/[0.18] dark:text-neutral-50 dark:max-[1100px]:border-white/[0.24] dark:max-[1100px]:bg-neutral-700",
+    "border-ivory/70 bg-ivory text-olive-dark dark:border-white/[0.18] dark:bg-white/[0.18] dark:text-neutral-50 dark:max-desktop:border-white/[0.24] dark:max-desktop:bg-neutral-700",
   plannerControl:
     "border-olive/35 bg-ivory/35 text-olive-dark hover:bg-ivory/55 dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/[0.12]",
   plannerTooltip:
@@ -95,7 +95,7 @@ export const layoutClasses = {
 } as const;
 
 export const responsiveClasses = {
-  portablePagePadding: "max-[1100px]:py-8 max-sm:py-6",
+  portablePagePadding: "max-desktop:py-8 max-sm:py-6",
   mobileStack: "max-md:grid-cols-1 max-md:gap-4",
   mobileToolbarWrap: "max-md:flex-wrap max-md:justify-start max-sm:w-full",
   mobileModalBackdrop: "max-sm:p-3",
@@ -107,14 +107,14 @@ export const sizeClasses = {
   mealCalendarHeaderHeight: "h-14",
   mealCalendarCellHeight: "h-36",
   mealSlotContentInset: "h-[calc(100%_-_16px)] w-[calc(100%_-_16px)]",
-  portableFixedHeaderOffset: "max-[1100px]:pt-16",
-  portableBottomNavOffset: "max-[1100px]:pb-24",
+  portableFixedHeaderOffset: "max-desktop:pt-16",
+  portableBottomNavOffset: "max-desktop:pb-24",
   modalOuterMaxHeight: "max-h-[88vh]",
   modalFormBodyMaxHeight: "max-h-[56vh]",
   modalFormBodyMobileMaxHeight: "max-sm:max-h-[52vh]",
   plannerPickerBrowserHeight: "h-[44vh]",
   plannerPickerModalMaxHeight:
-    "max-h-[calc(100vh_-_48px)] max-[1100px]:max-h-[calc(100vh_-_200px)] max-sm:max-h-[calc(100vh_-_96px)]",
+    "max-h-[calc(100vh_-_48px)] max-desktop:max-h-[calc(100vh_-_200px)] max-sm:max-h-[calc(100vh_-_96px)]",
   plannerControlHeight: "h-9",
   thumbnailControlWidth: "w-64",
   dayLabelHeight: "h-auto",
@@ -256,19 +256,19 @@ export const appStyles = {
 };
 
 export const headerStyles = {
-  shell: `relative z-10 border-b max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:top-0 max-[1100px]:z-[60] ${shadowClasses.raised} ${siteColorClasses.header} ${siteColorClasses.fixedHeader}`,
+  shell: `relative z-10 border-b max-desktop:fixed max-desktop:inset-x-0 max-desktop:top-0 max-desktop:z-[60] ${shadowClasses.raised} ${siteColorClasses.header} ${siteColorClasses.fixedHeader}`,
   // 64 px high on narrow screens, matching the shell's top padding and the cookbook's docked search row.
-  inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-[1100px]:h-16 max-[1100px]:min-h-0 max-[1100px]:grid-cols-[1fr_auto] max-[1100px]:gap-x-4`,
+  inner: `${layoutClasses.contentWidth} grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-6 py-0 max-desktop:h-16 max-desktop:min-h-0 max-desktop:grid-cols-[1fr_auto] max-desktop:gap-x-4`,
   logo: `min-h-11 justify-self-start border-0 bg-transparent p-0 text-left no-underline ${typographyClasses.logo} ${siteColorClasses.headerForeground}`,
   actions: "flex items-center justify-end gap-2",
-  nav: `flex items-center justify-center gap-2 max-[1100px]:fixed max-[1100px]:inset-x-0 max-[1100px]:bottom-0 max-[1100px]:z-50 max-[1100px]:border-t max-[1100px]:px-6 max-[1100px]:pt-2 max-[1100px]:[padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))] max-sm:px-4 ${siteColorClasses.header} ${siteColorClasses.bottomNav}`,
+  nav: `flex items-center justify-center gap-2 max-desktop:fixed max-desktop:inset-x-0 max-desktop:bottom-0 max-desktop:z-50 max-desktop:border-t max-desktop:px-6 max-desktop:pt-2 max-desktop:[padding-bottom:calc(0.5rem+env(safe-area-inset-bottom))] max-sm:px-4 ${siteColorClasses.header} ${siteColorClasses.bottomNav}`,
   navButton: (selected: boolean) =>
-    `inline-flex h-16 min-w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border px-3 transition-colors duration-150 max-[1100px]:h-14 max-[1100px]:min-w-0 max-[1100px]:flex-1 max-[1100px]:px-2 ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.controlSelected}` : `${siteColorClasses.control}`}`,
-  icon: "h-8 w-8 fill-current max-[1100px]:h-5 max-[1100px]:w-5",
+    `inline-flex h-16 min-w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border px-3 transition-colors duration-150 max-desktop:h-14 max-desktop:min-w-0 max-desktop:flex-1 max-desktop:px-2 ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.controlSelected}` : `${siteColorClasses.control}`}`,
+  icon: "h-8 w-8 fill-current max-desktop:h-5 max-desktop:w-5",
   navLabel: "text-xs font-semibold leading-none max-sm:text-[11px]",
   settingsButton: (selected: boolean) =>
-    `inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border-0 transition-colors duration-150 max-[1100px]:h-11 max-[1100px]:w-11 ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.controlSelected}` : `${siteColorClasses.control}`}`,
-  themeButton: `inline-flex h-8 w-14 cursor-pointer items-center justify-center justify-self-end rounded-md border border-transparent bg-transparent p-0 max-[1100px]:h-11 ${focusBase} ${siteColorClasses.focus}`,
+    `inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border-0 transition-colors duration-150 max-desktop:h-11 max-desktop:w-11 ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.controlSelected}` : `${siteColorClasses.control}`}`,
+  themeButton: `inline-flex h-8 w-14 cursor-pointer items-center justify-center justify-self-end rounded-md border border-transparent bg-transparent p-0 max-desktop:h-11 ${focusBase} ${siteColorClasses.focus}`,
   // Exception to the rectangular control rule: the theme switch keeps the familiar rounded toggle shape.
   themeTrack: `relative h-8 w-14 rounded-full border ${siteColorClasses.switchTrack}`,
   themeThumb: `absolute left-[3px] top-[3px] inline-flex h-6 w-6 items-center justify-center rounded-full transition-transform duration-150 light:translate-x-6 ${siteColorClasses.switchThumb}`,
@@ -277,7 +277,7 @@ export const headerStyles = {
 
 export const pageStyles = {
   shell: `${layoutClasses.contentWidth} ${responsiveClasses.portablePagePadding} ${sizeClasses.portableBottomNavOffset} relative py-12`,
-  contentShell: "grid w-full gap-6 max-[1100px]:pb-20",
+  contentShell: "grid w-full gap-6 max-desktop:pb-20",
   plannerShell: `${layoutClasses.contentWidth} ${responsiveClasses.portablePagePadding} ${sizeClasses.portableBottomNavOffset} relative pb-12 pt-6`,
   showColumnDebugOverlay: false,
   columnDebugOverlay:
@@ -338,11 +338,11 @@ export const scannerStyles = {
   intro: "max-w-2xl text-sm font-semibold leading-[1.5] text-olive-dark dark:text-neutral-300",
   introLink: "font-extrabold underline underline-offset-2 text-olive-dark dark:text-neutral-50",
   panel: `grid gap-4 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
-  desktopScannerHint: `hidden rounded-md border px-4 py-3 text-sm font-semibold leading-[1.45] min-[1101px]:block ${shadowClasses.subtle} ${surfaceClasses.panel}`,
+  desktopScannerHint: `hidden rounded-md border px-4 py-3 text-sm font-semibold leading-[1.45] desktop:block ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   scannerSurface: "grid gap-4",
   lookupForm: (isOpenOnMobile: boolean) =>
     `grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 max-sm:grid-cols-1 ${
-      isOpenOnMobile ? "" : "max-[1100px]:hidden"
+      isOpenOnMobile ? "" : "max-desktop:hidden"
     }`,
   field: "grid gap-2",
   label: "text-sm font-bold leading-tight",
@@ -362,7 +362,7 @@ export const scannerStyles = {
   nutritionSupplementWarningRow: "flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs font-bold border-[#9B7A3D]/30 bg-champagne/65 text-[#5F4A24] dark:border-amber-300/25 dark:bg-amber-200/10 dark:text-amber-100",
   input: controlStyles.formField,
   submitButton: controlStyles.primaryButton,
-  scannerActions: "grid gap-3 min-[1101px]:hidden",
+  scannerActions: "grid gap-3 desktop:hidden",
   cameraButton: `${controlStyles.primaryButton} h-14 w-full text-base`,
   manualEntryButton: `${controlStyles.secondaryButton} h-9 w-fit justify-self-center px-3 text-xs`,
   cameraFrame: `relative aspect-video w-full overflow-hidden rounded-md border ${shadowClasses.subtle} border-stone bg-ivory dark:border-white/[0.12] dark:bg-neutral-950`,
@@ -451,13 +451,13 @@ export const nutritionStyles = {
   warningList: "mt-3 flex flex-wrap gap-2",
   warningChip: `${radiusClasses.figma6} border px-2 py-1 text-xs font-bold border-[#9B7A3D]/25 bg-ivory text-[#5F4A24] dark:border-amber-200/20 dark:bg-black/20 dark:text-amber-50`,
   emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
-  grid: "grid grid-cols-3 gap-3 max-[1100px]:grid-cols-2 max-sm:grid-cols-1",
+  grid: "grid grid-cols-3 gap-3 max-desktop:grid-cols-2 max-sm:grid-cols-1",
   dailyPanel: `grid gap-3 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   dailyHeader: "flex flex-wrap items-baseline justify-between gap-2",
   dailyHeaderMeta: "flex flex-wrap items-baseline justify-end gap-3",
   dailyTitle: "text-base font-bold leading-tight",
   dailySubtitle: "text-xs font-semibold leading-tight text-olive-dark dark:text-neutral-400",
-  dailyGrid: "grid grid-cols-7 gap-2 max-[1100px]:grid-cols-4 max-sm:grid-cols-2",
+  dailyGrid: "grid grid-cols-7 gap-2 max-desktop:grid-cols-4 max-sm:grid-cols-2",
   dailyItem: "grid gap-1 rounded-md border px-3 py-2 text-sm font-semibold border-stone bg-champagne/45 text-olive-dark dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-neutral-200",
   dailyDay: "text-xs font-bold uppercase",
   dailyCalories: "text-base font-extrabold leading-tight text-olive-dark dark:text-neutral-50",
@@ -474,28 +474,28 @@ export const nutritionStyles = {
 } as const;
 
 export const plannerControlsStyles = {
-  viewport: "mx-auto w-full max-[1100px]:w-[min(100%,36rem)] max-sm:w-full",
+  viewport: "mx-auto w-full max-desktop:w-[min(100%,36rem)] max-sm:w-full",
   /* Keep the planner content aligned with the cookbook grid using the shared spacing scale. */
   // One row on wide screens (actions, week, view switch) so the whole week fits under it on a 900 px screen.
-  shell: `mb-5 grid w-full grid-cols-12 items-center ${layoutClasses.gridGap} max-[1100px]:mb-6 max-[1100px]:grid-cols-1 max-[1100px]:gap-3`,
-  datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap} min-[1101px]:gap-2 max-[1100px]:justify-between max-[1100px]:gap-2`,
+  shell: `mb-5 grid w-full grid-cols-12 items-center ${layoutClasses.gridGap} max-desktop:mb-6 max-desktop:grid-cols-1 max-desktop:gap-3`,
+  datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap} desktop:gap-2 max-desktop:justify-between max-desktop:gap-2`,
   // The year floats above the range label without increasing the top-control row height.
   dateYearRow: "pointer-events-none absolute inset-x-0 -top-4 z-0 flex h-0 justify-center overflow-visible text-sm font-bold leading-none text-olive-dark dark:text-neutral-400",
-  datePrimary: `min-w-36 whitespace-nowrap text-center text-3xl font-bold leading-tight max-[1100px]:min-w-0 max-[1100px]:flex-1 max-[1100px]:truncate max-sm:text-2xl ${siteColorClasses.plannerCounterAccent}`,
+  datePrimary: `min-w-36 whitespace-nowrap text-center text-3xl font-bold leading-tight max-desktop:min-w-0 max-desktop:flex-1 max-desktop:truncate max-sm:text-2xl ${siteColorClasses.plannerCounterAccent}`,
   leftCell:
-    "order-1 col-span-5 flex items-center justify-start max-[1100px]:hidden",
+    "order-1 col-span-5 flex items-center justify-start max-desktop:hidden",
   centerCell:
-    "relative order-2 col-span-4 flex items-center justify-center pt-3 max-[1100px]:order-1 max-[1100px]:col-span-1 max-[1100px]:min-w-0 max-[1100px]:pt-4",
+    "relative order-2 col-span-4 flex items-center justify-center pt-3 max-desktop:order-1 max-desktop:col-span-1 max-desktop:min-w-0 max-desktop:pt-4",
   rightCell:
-    "order-3 col-span-3 flex items-center justify-end max-[1100px]:hidden",
+    "order-3 col-span-3 flex items-center justify-end max-desktop:hidden",
   counterActions: `grid w-full grid-cols-4 ${layoutClasses.calendarGap}`,
   actionSlotLeft: "min-w-0",
   actionSlotCenter: "min-w-0",
   actionSlotRight: "min-w-0",
-  iconOnlyButton: `${sizeClasses.plannerControlHeight} max-[1100px]:h-11 group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-1.5 ${radiusClasses.figma6} border px-2 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
-  iconButton: `${sizeClasses.plannerControlHeight} inline-flex aspect-square shrink-0 items-center justify-center ${radiusClasses.figma6} border max-[1100px]:h-11 transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
+  iconOnlyButton: `${sizeClasses.plannerControlHeight} max-desktop:h-11 group relative z-0 inline-flex w-full min-w-0 items-center justify-center gap-1.5 ${radiusClasses.figma6} border px-2 text-sm font-bold transition-colors duration-150 hover:z-30 focus-visible:z-30 disabled:cursor-not-allowed disabled:border-dashed max-sm:gap-1 max-sm:px-1.5 max-sm:text-xs ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
+  iconButton: `${sizeClasses.plannerControlHeight} inline-flex aspect-square shrink-0 items-center justify-center ${radiusClasses.figma6} border max-desktop:h-11 transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
   nextAndTodayGroup: "relative inline-flex gap-2",
-  todayButton: `${sizeClasses.plannerControlHeight} max-[1100px]:h-11 inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
+  todayButton: `${sizeClasses.plannerControlHeight} max-desktop:h-11 inline-flex shrink-0 whitespace-nowrap items-center justify-center ${radiusClasses.figma6} border px-3 text-sm font-bold transition-colors duration-150 disabled:cursor-default disabled:opacity-55 max-sm:px-2.5 max-sm:text-xs ${focusBase} ${siteColorClasses.focus} ${siteColorClasses.plannerControl}`,
   buttonIcon: "h-4 w-4 shrink-0 fill-current",
   // Below 1440 px the four actions are icons with tooltips, so no label is cut off.
   actionButtonLabel: "min-w-0 truncate leading-none max-[1439px]:sr-only",
@@ -505,9 +505,9 @@ export const plannerControlsStyles = {
   viewToggleOption: (selected: boolean) =>
     `${segmentedToggleStyles.option(selected)}`,
   mobileControlButton: (selected = false) =>
-    `hidden h-11 w-11 shrink-0 items-center justify-center ${radiusClasses.figma6} border p-0 max-[1100px]:inline-flex [&_svg]:h-5 [&_svg]:w-5 ${shadowClasses.subtle} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.plannerToggleSelected}` : "border-olive bg-ivory text-olive-dark hover:bg-champagne dark:border-neutral-700 dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-900"}`,
+    `hidden h-11 w-11 shrink-0 items-center justify-center ${radiusClasses.figma6} border p-0 max-desktop:inline-flex [&_svg]:h-5 [&_svg]:w-5 ${shadowClasses.subtle} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.plannerToggleSelected}` : "border-olive bg-ivory text-olive-dark hover:bg-champagne dark:border-neutral-700 dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-900"}`,
   mobileActionsBackdrop:
-    "fixed inset-0 z-[100] hidden items-center justify-center bg-black/35 p-4 max-[1100px]:flex",
+    "fixed inset-0 z-[100] hidden items-center justify-center bg-black/35 p-4 max-desktop:flex",
   mobileActionsPanel: `grid w-full max-w-xs grid-rows-[auto_minmax(0,1fr)] gap-3 ${radiusClasses.figma6} border p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   mobileActionsHeader: "flex items-center justify-between gap-3",
   mobileActionsTitle: "text-lg font-bold leading-tight",
@@ -540,19 +540,19 @@ export const prepHelperStyles = {
 const plannerMutedText = "text-olive-dark dark:text-neutral-300";
 
 export const mealCalendarStyles = {
-  shell: "flex w-full flex-col max-[1100px]:pb-8",
+  shell: "flex w-full flex-col max-desktop:pb-8",
   // Breakfast, lunch and dinner above the three columns; on narrow screens each card names its meal instead.
-  headerRow: `mb-2 grid grid-cols-3 ${layoutClasses.calendarGap} max-[1100px]:hidden`,
+  headerRow: `mb-2 grid grid-cols-3 ${layoutClasses.calendarGap} max-desktop:hidden`,
   headerLabel: `px-1 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText}`,
-  rows: "flex flex-col gap-2 max-[1100px]:gap-4",
-  row: "relative max-[1100px]:grid max-[1100px]:gap-2",
+  rows: "flex flex-col gap-2 max-desktop:gap-4",
+  row: "relative max-desktop:grid max-desktop:gap-2",
   dayCell: (isToday = false) =>
-    `absolute inset-y-0 right-full mr-2 flex w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-md border-0 p-0 max-[1100px]:static max-[1100px]:mr-0 max-[1100px]:min-h-11 max-[1100px]:w-full max-[1100px]:flex-row max-[1100px]:justify-between max-[1100px]:gap-2 max-[1100px]:px-2 max-[1100px]:py-1 ${isToday ? "bg-olive-dark text-ivory dark:bg-white/[0.12] dark:text-white" : `${siteColorClasses.plannerCounterAccent}`}`,
+    `absolute inset-y-0 right-full mr-2 flex w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-md border-0 p-0 max-desktop:static max-desktop:mr-0 max-desktop:min-h-11 max-desktop:w-full max-desktop:flex-row max-desktop:justify-between max-desktop:gap-2 max-desktop:px-2 max-desktop:py-1 ${isToday ? "bg-olive-dark text-ivory dark:bg-white/[0.12] dark:text-white" : `${siteColorClasses.plannerCounterAccent}`}`,
   dayCellButton: (isToday = false) =>
     `${mealCalendarStyles.dayCell(isToday)} cursor-pointer transition-opacity hover:opacity-80 ${focusBase} ${siteColorClasses.focus}`,
   dayTitleGroup: "flex items-center justify-center gap-1",
   dayHeaderTextGroup:
-    "flex flex-col items-center max-[1100px]:min-w-0 max-[1100px]:flex-row max-[1100px]:gap-1.5",
+    "flex flex-col items-center max-desktop:min-w-0 max-desktop:flex-row max-desktop:gap-1.5",
   dayToggleIcon: (collapsed: boolean) =>
     `flex h-5 w-5 items-center justify-center transition-transform ${
       collapsed ? "" : "rotate-90"
@@ -571,14 +571,14 @@ export const mealCalendarStyles = {
   dayPreviewImage: "h-full w-full object-cover",
   dayPreviewImageFallback: "block h-full w-full bg-stone dark:bg-neutral-700",
   dayMealGrid: (collapsed: boolean) =>
-    `grid grid-cols-3 ${layoutClasses.calendarGap} max-[1100px]:grid-cols-1 max-[1100px]:gap-2 ${collapsed ? "hidden" : ""}`,
+    `grid grid-cols-3 ${layoutClasses.calendarGap} max-desktop:grid-cols-1 max-desktop:gap-2 ${collapsed ? "hidden" : ""}`,
   mealSlot: (isToday: boolean, roomForTouchActions: boolean) =>
-    `group/meal-slot relative flex ${radiusClasses.figma6} border transition-colors duration-150 ${roomForTouchActions ? "min-h-24" : "h-[5.5rem] max-[1100px]:h-auto max-[1100px]:min-h-[5.5rem]"} ${isToday ? "border-olive-dark dark:border-white/[0.28]" : "border-stone dark:border-white/[0.08]"} bg-ivory/70 hover:bg-champagne/45 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]`,
+    `group/meal-slot relative flex ${radiusClasses.figma6} border transition-colors duration-150 ${roomForTouchActions ? "min-h-24" : "h-[5.5rem] max-desktop:h-auto max-desktop:min-h-[5.5rem]"} ${isToday ? "border-olive-dark dark:border-white/[0.28]" : "border-stone dark:border-white/[0.08]"} bg-ivory/70 hover:bg-champagne/45 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]`,
   mealSlotDropTarget: "data-[drag-active=true]:border-olive data-[drag-active=true]:border-2 dark:data-[drag-active=true]:border-emerald-300/70",
   mealSlotButton: `flex w-full min-w-0 cursor-pointer items-stretch rounded-md p-2 text-left disabled:cursor-not-allowed ${focusBase}`,
   // A slot whose plan could not be loaded: visibly not an empty, editable slot.
   mealSlotUnavailable: "opacity-45",
-  mealSlotDraggableButton: "min-[1101px]:cursor-grab min-[1101px]:active:cursor-grabbing",
+  mealSlotDraggableButton: "desktop:cursor-grab desktop:active:cursor-grabbing",
   // With a mouse the card's actions appear on hover or when the card has keyboard focus (F22); on
   // touch screens they are always shown, in their own column at the card's right edge.
   mealSlotActions: (revealOnHover: boolean) =>
@@ -603,28 +603,28 @@ export const mealCalendarStyles = {
   mealSlotSkeletonLine: (width: "short" | "title") =>
     `block h-3 animate-pulse rounded-full ${width === "title" ? "w-4/5" : "w-1/2"} bg-olive/28 dark:bg-white/[0.10]`,
   mealSlotDetails: "flex min-w-0 flex-col justify-between gap-1",
-  mealSlotEyebrow: `hidden text-[11px] font-extrabold uppercase leading-none tracking-wider max-[1100px]:block ${plannerMutedText}`,
+  mealSlotEyebrow: `hidden text-[11px] font-extrabold uppercase leading-none tracking-wider max-desktop:block ${plannerMutedText}`,
   mealSlotTitle: "min-w-0 overflow-hidden break-words text-[15px] font-bold leading-tight [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] text-olive-ink dark:text-neutral-50",
   mealSlotMetaRow: "flex min-w-0 items-center gap-2",
   mealSlotSecondary: `min-w-0 flex-1 truncate text-xs font-semibold leading-snug ${plannerMutedText}`,
   mealSlotPortions: "shrink-0 rounded-md px-1.5 py-0.5 text-xs font-extrabold leading-tight bg-champagne text-olive-ink dark:bg-white/[0.10] dark:text-neutral-50",
   // A month is a 7-column calendar on wide screens and a list of days on phones and tablets.
-  monthHeaderGrid: `mb-2 grid grid-cols-7 ${layoutClasses.calendarGap} max-[1100px]:hidden`,
-  monthGrid: `grid grid-cols-7 ${layoutClasses.calendarGap} max-[1100px]:grid-cols-1 max-[1100px]:gap-2`,
+  monthHeaderGrid: `mb-2 grid grid-cols-7 ${layoutClasses.calendarGap} max-desktop:hidden`,
+  monthGrid: `grid grid-cols-7 ${layoutClasses.calendarGap} max-desktop:grid-cols-1 max-desktop:gap-2`,
   monthHeaderCell: `px-2 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText}`,
   monthDayCell: (muted: boolean, isToday: boolean) =>
-    `group/day flex min-h-32 min-w-0 flex-col gap-1.5 ${radiusClasses.figma6} border p-1.5 transition-colors duration-150 max-[1100px]:min-h-0 max-[1100px]:flex-row max-[1100px]:items-start ${muted ? "border-dashed bg-transparent max-[1100px]:hidden" : ""} ${isToday ? "border-olive-dark dark:border-white/[0.32]" : "border-stone dark:border-white/[0.08]"} ${muted ? "" : "bg-ivory/70 dark:bg-white/[0.035]"}`,
+    `group/day flex min-h-32 min-w-0 flex-col gap-1.5 ${radiusClasses.figma6} border p-1.5 transition-colors duration-150 max-desktop:min-h-0 max-desktop:flex-row max-desktop:items-start ${muted ? "border-dashed bg-transparent max-desktop:hidden" : ""} ${isToday ? "border-olive-dark dark:border-white/[0.32]" : "border-stone dark:border-white/[0.08]"} ${muted ? "" : "bg-ivory/70 dark:bg-white/[0.035]"}`,
   monthDayNumberButton: (muted: boolean, isToday: boolean) =>
-    `inline-flex h-7 min-w-7 items-center gap-1.5 self-start rounded-md px-1.5 text-sm font-extrabold leading-none disabled:cursor-default max-[1100px]:h-11 max-[1100px]:w-20 max-[1100px]:shrink-0 max-[1100px]:flex-col max-[1100px]:justify-center max-[1100px]:gap-0.5 ${focusBase} ${siteColorClasses.focus} ${isToday ? "bg-olive-dark text-ivory dark:bg-white dark:text-neutral-950" : `${muted ? `${plannerMutedText}` : `${siteColorClasses.plannerCounterAccent}`}`}`,
-  monthDayName: "hidden text-[11px] font-extrabold uppercase tracking-wider max-[1100px]:block",
+    `inline-flex h-7 min-w-7 items-center gap-1.5 self-start rounded-md px-1.5 text-sm font-extrabold leading-none disabled:cursor-default max-desktop:h-11 max-desktop:w-20 max-desktop:shrink-0 max-desktop:flex-col max-desktop:justify-center max-desktop:gap-0.5 ${focusBase} ${siteColorClasses.focus} ${isToday ? "bg-olive-dark text-ivory dark:bg-white dark:text-neutral-950" : `${muted ? `${plannerMutedText}` : `${siteColorClasses.plannerCounterAccent}`}`}`,
+  monthDayName: "hidden text-[11px] font-extrabold uppercase tracking-wider max-desktop:block",
   monthDayNumber: (isToday: boolean) => (isToday ? "font-black" : ""),
   monthDayMeals: "grid min-w-0 flex-1 content-start gap-1",
-  monthMealChip: `flex min-h-7 min-w-0 items-center gap-1.5 ${radiusClasses.figma6} px-1.5 py-1 text-left text-xs font-bold leading-tight transition-colors disabled:cursor-not-allowed disabled:opacity-45 max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses.focus} bg-champagne/70 text-olive-ink hover:bg-champagne dark:bg-white/[0.10] dark:text-neutral-50 dark:hover:bg-white/[0.16]`,
+  monthMealChip: `flex min-h-7 min-w-0 items-center gap-1.5 ${radiusClasses.figma6} px-1.5 py-1 text-left text-xs font-bold leading-tight transition-colors disabled:cursor-not-allowed disabled:opacity-45 max-desktop:min-h-11 max-desktop:text-sm ${focusBase} ${siteColorClasses.focus} bg-champagne/70 text-olive-ink hover:bg-champagne dark:bg-white/[0.10] dark:text-neutral-50 dark:hover:bg-white/[0.16]`,
   monthMealChipDot: "h-3 w-1.5 shrink-0 rounded-full ring-1 ring-black/10",
   monthMealChipText: "min-w-0 truncate",
   // Hidden until the day is hovered or has focus (mouse), or its date was tapped (touch).
   monthAddButton: (isRevealed: boolean) =>
-    `flex min-h-7 min-w-0 items-center gap-1 ${radiusClasses.figma6} border border-dashed px-1.5 py-1 text-left text-xs font-bold leading-tight transition-opacity disabled:cursor-not-allowed max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses.focus} ${isRevealed ? "opacity-100" : "opacity-0 focus-visible:opacity-100 group-hover/day:opacity-100 group-focus-within/day:opacity-100 [@media(hover:none)]:hidden"} border-olive/55 text-olive-dark hover:bg-champagne/55 dark:border-white/[0.20] dark:text-neutral-200 dark:hover:bg-white/[0.08]`,
+    `flex min-h-7 min-w-0 items-center gap-1 ${radiusClasses.figma6} border border-dashed px-1.5 py-1 text-left text-xs font-bold leading-tight transition-opacity disabled:cursor-not-allowed max-desktop:min-h-11 max-desktop:text-sm ${focusBase} ${siteColorClasses.focus} ${isRevealed ? "opacity-100" : "opacity-0 focus-visible:opacity-100 group-hover/day:opacity-100 group-focus-within/day:opacity-100 [@media(hover:none)]:hidden"} border-olive/55 text-olive-dark hover:bg-champagne/55 dark:border-white/[0.20] dark:text-neutral-200 dark:hover:bg-white/[0.08]`,
 };
 
 export const plannerPickerStyles = {
@@ -639,12 +639,12 @@ export const plannerPickerStyles = {
   controls:
     "mt-2 grid grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] items-start gap-3 max-md:grid-cols-[13rem_auto_auto_minmax(0,1fr)_14rem] max-sm:mt-0 max-sm:grid-cols-[minmax(0,1fr)_auto_auto] max-sm:gap-2",
   searchInput: controlStyles.compactSearchInput,
-  categoryButton: `inline-flex h-9 w-auto items-center justify-center rounded-md border px-3 text-xs font-extrabold max-[1100px]:w-9 max-[1100px]:px-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
+  categoryButton: `inline-flex h-9 w-auto items-center justify-center rounded-md border px-3 text-xs font-extrabold max-desktop:w-9 max-desktop:px-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
   filterButton: `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 text-xs font-extrabold ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
   browserModeSwitch: `${segmentedToggleStyles.shell()} col-start-5 h-9 w-full justify-self-end max-sm:order-first max-sm:col-span-3 max-sm:col-start-auto`,
   browserModeOption: (selected: boolean) =>
     `${segmentedToggleStyles.option(selected)}`,
-  categoryButtonLabel: "max-[1100px]:sr-only",
+  categoryButtonLabel: "max-desktop:sr-only",
   ingredientFilterChips:
     "col-span-full flex flex-wrap items-start gap-2 max-sm:col-span-3",
   quickFilterRow:
