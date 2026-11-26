@@ -12,8 +12,8 @@ const ScannerPage = lazy(() => import("./pages/ScannerPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
 const pageIds: PageId[] = ["weekPlanner", "cookbook", "scanner", "nutrition", "settings"];
-// "light" was a neutral theme the header could no longer switch to; a browser that still has it gets the light theme.
-const storedThemes = ["dark", "paletteLight", "light"] as const;
+// The light theme was stored as "paletteLight" before, when an unreachable neutral theme was called "light".
+const storedThemes = ["dark", "light", "paletteLight"] as const;
 
 function App() {
   // The page comes from the address (#/planner, #/cookbook/recipe/12, ...). Without one, the page
@@ -31,7 +31,7 @@ function App() {
     }
   }, [route, storedPage]);
   const [theme, setTheme] = useState<SiteTheme>(() =>
-    getLocalPreference(localPreferenceKeys.theme, storedThemes, "dark") === "dark" ? "dark" : "paletteLight",
+    getLocalPreference(localPreferenceKeys.theme, storedThemes, "dark") === "dark" ? "dark" : "light",
   );
 
   useEffect(() => {
@@ -43,7 +43,7 @@ function App() {
   }, [theme]);
 
   return (
-    <div className={appStyles.shell} data-theme={theme === "dark" ? "dark" : "light"}>
+    <div className={appStyles.shell} data-theme={theme}>
       <Header
         activePage={activePage}
         onPageChange={setActivePage}

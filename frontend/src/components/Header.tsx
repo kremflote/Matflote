@@ -30,7 +30,7 @@ function Header({
   const { t } = useLanguage();
 
   function toggleTheme() {
-    onThemeChange(theme === "dark" ? "paletteLight" : "dark");
+    onThemeChange(theme === "dark" ? "light" : "dark");
   }
 
   const isLightSide = theme !== "dark";

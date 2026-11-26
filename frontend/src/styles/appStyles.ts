@@ -1,4 +1,5 @@
-export type SiteTheme = "dark" | "paletteLight";
+/** Set as data-theme on the app shell; styles follow it with the dark: and light: variants (see index.css). */
+export type SiteTheme = "dark" | "light";
 
 // Contrast (WCAG): #7A8864 is 3.55:1 on #FAF7F2, so it is kept for borders and accents. Text in the
 // light theme uses oliveDark (#556145, 6.18:1 on #FAF7F2, 4.58:1 on champagne), and olive surfaces that
