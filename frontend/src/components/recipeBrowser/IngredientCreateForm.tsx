@@ -17,6 +17,7 @@ import NutritionEditor from "./NutritionEditor";
 import type { NutritionEditorValues } from "./nutritionEditorValues";
 import TagPickerDialog from "./TagPickerDialog";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
+import { numberToInputValue, parseOptionalNumber, toggleValue } from "../../utils/formValues";
 
 type IngredientCreateFormProps = {
   initialIngredient?: IIngredient | null;
@@ -150,25 +151,25 @@ function IngredientCreateForm({
         imageUrl: upload?.url ?? initialIngredient?.imageUrl ?? null,
         tags: selectedTags,
         nutritionPer100: {
-          calories: nullableNumber(calories),
-          carbohydrateGrams: nullableNumber(carbohydrateGrams),
-          proteinGrams: nullableNumber(proteinGrams),
-          fatGrams: nullableNumber(fatGrams),
-          saltGrams: nullableNumber(saltGrams),
-          dietaryFiberGrams: nullableNumber(dietaryFiberGrams),
-          saturatedFatGrams: nullableNumber(saturatedFatGrams),
-          transFatGrams: nullableNumber(transFatGrams),
-          monounsaturatedFatGrams: nullableNumber(monounsaturatedFatGrams),
-          polyunsaturatedFatGrams: nullableNumber(polyunsaturatedFatGrams),
-          omega3Grams: nullableNumber(omega3Grams),
-          omega6Grams: nullableNumber(omega6Grams),
-          cholesterolMilligrams: nullableNumber(cholesterolMilligrams),
-          vitaminAMicrograms: nullableNumber(vitaminAMicrograms),
-          vitaminB9Micrograms: nullableNumber(vitaminB9Micrograms),
-          vitaminB12Micrograms: nullableNumber(vitaminB12Micrograms),
-          vitaminCMilligrams: nullableNumber(vitaminCMilligrams),
-          vitaminDMicrograms: nullableNumber(vitaminDMicrograms),
-          vitaminEMilligrams: nullableNumber(vitaminEMilligrams),
+          calories: parseOptionalNumber(calories),
+          carbohydrateGrams: parseOptionalNumber(carbohydrateGrams),
+          proteinGrams: parseOptionalNumber(proteinGrams),
+          fatGrams: parseOptionalNumber(fatGrams),
+          saltGrams: parseOptionalNumber(saltGrams),
+          dietaryFiberGrams: parseOptionalNumber(dietaryFiberGrams),
+          saturatedFatGrams: parseOptionalNumber(saturatedFatGrams),
+          transFatGrams: parseOptionalNumber(transFatGrams),
+          monounsaturatedFatGrams: parseOptionalNumber(monounsaturatedFatGrams),
+          polyunsaturatedFatGrams: parseOptionalNumber(polyunsaturatedFatGrams),
+          omega3Grams: parseOptionalNumber(omega3Grams),
+          omega6Grams: parseOptionalNumber(omega6Grams),
+          cholesterolMilligrams: parseOptionalNumber(cholesterolMilligrams),
+          vitaminAMicrograms: parseOptionalNumber(vitaminAMicrograms),
+          vitaminB9Micrograms: parseOptionalNumber(vitaminB9Micrograms),
+          vitaminB12Micrograms: parseOptionalNumber(vitaminB12Micrograms),
+          vitaminCMilligrams: parseOptionalNumber(vitaminCMilligrams),
+          vitaminDMicrograms: parseOptionalNumber(vitaminDMicrograms),
+          vitaminEMilligrams: parseOptionalNumber(vitaminEMilligrams),
         },
         nutritionSource,
         nutritionSourceLabel,
@@ -487,26 +488,6 @@ function IngredientCreateForm({
       </div>
     </form>
   );
-}
-
-function nullableNumber(value: string) {
-  const trimmedValue = value.trim();
-  if (trimmedValue.length === 0) {
-    return null;
-  }
-
-  const parsedValue = Number(trimmedValue);
-  return Number.isFinite(parsedValue) ? parsedValue : null;
-}
-
-function numberToInputValue(value: number | null | undefined) {
-  return value === null || value === undefined ? "" : value.toString();
-}
-
-function toggleValue<TValue>(values: TValue[], value: TValue) {
-  return values.includes(value)
-    ? values.filter((currentValue) => currentValue !== value)
-    : [...values, value];
 }
 
 export default IngredientCreateForm;

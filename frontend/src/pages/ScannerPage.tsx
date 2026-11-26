@@ -25,6 +25,7 @@ import MatvaretabellenSearchDialog, {
 } from "../components/recipeBrowser/MatvaretabellenSearchDialog";
 import NutritionEditor from "../components/recipeBrowser/NutritionEditor";
 import type { NutritionEditorValues } from "../components/recipeBrowser/nutritionEditorValues";
+import { numberToInputValue, parseOptionalNumber, toggleValue } from "../utils/formValues";
 
 type IngredientCandidate = {
   id: string;
@@ -936,7 +937,7 @@ function updateNutritionDraft(draft: IngredientDraft, key: keyof NutritionEditor
     nutritionPer100: {
       ...emptyNutritionFacts(),
       ...draft.nutritionPer100,
-      [key]: nullableNumber(value),
+      [key]: parseOptionalNumber(value),
     },
   };
 }
@@ -1362,26 +1363,6 @@ function nutritionToEditorValues(nutrition: INutritionFacts | null): NutritionEd
     vitaminDMicrograms: numberToInputValue(nutrition?.vitaminDMicrograms),
     vitaminEMilligrams: numberToInputValue(nutrition?.vitaminEMilligrams),
   };
-}
-
-function nullableNumber(value: string) {
-  const trimmed = value.trim().replace(",", ".");
-  if (trimmed.length === 0) {
-    return null;
-  }
-
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function numberToInputValue(value: number | null | undefined) {
-  return value === null || value === undefined ? "" : value.toString();
-}
-
-function toggleValue<TValue>(values: TValue[], value: TValue) {
-  return values.includes(value)
-    ? values.filter((currentValue) => currentValue !== value)
-    : [...values, value];
 }
 
 export default ScannerPage;

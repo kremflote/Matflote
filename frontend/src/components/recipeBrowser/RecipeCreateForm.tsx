@@ -27,6 +27,7 @@ import {
   type SelectedRecipeComponent,
   type SelectedRecipeIngredient,
 } from "./recipeIngredientSelection";
+import { parseOptionalNumber, toggleValue } from "../../utils/formValues";
 
 type RecipeCreateFormProps = {
   imageInputId: string;
@@ -242,7 +243,7 @@ function RecipeCreateForm({
       return;
     }
 
-    const parsedPortions = nullableNumber(portions);
+    const parsedPortions = parseOptionalNumber(portions);
     if (parsedPortions === null || parsedPortions <= 0) {
       setError(t.cookbook.portionsRequired);
       return;
@@ -250,7 +251,7 @@ function RecipeCreateForm({
 
     const parsedComponents = selectedComponents.map((component) => ({
       ...component,
-      amount: nullableNumber(component.amount),
+      amount: parseOptionalNumber(component.amount),
     }));
     if (parsedComponents.some((component) => component.amount === null || component.amount <= 0)) {
       setError(t.cookbook.recipeComponentAmountRequired);
@@ -273,7 +274,7 @@ function RecipeCreateForm({
         portions: parsedPortions,
         ingredients: selectedIngredients.map((ingredient) => ({
           ingredientId: ingredient.ingredientId,
-          amount: nullableNumber(ingredient.amount),
+          amount: parseOptionalNumber(ingredient.amount),
           unit: ingredient.unit,
           preparation: ingredient.preparation,
         })),
@@ -897,25 +898,9 @@ function ConversionHelperDialog({ onClose }: ConversionHelperDialogProps) {
   );
 }
 
-function toggleValue<T>(values: T[], value: T) {
-  return values.includes(value)
-    ? values.filter((currentValue) => currentValue !== value)
-    : [...values, value];
-}
-
 function nullableText(value: string) {
   const trimmedValue = value.trim();
   return trimmedValue.length === 0 ? null : trimmedValue;
-}
-
-function nullableNumber(value: string) {
-  const trimmedValue = value.trim();
-  if (trimmedValue.length === 0) {
-    return null;
-  }
-
-  const parsedValue = Number(trimmedValue);
-  return Number.isFinite(parsedValue) ? parsedValue : null;
 }
 
 export default RecipeCreateForm;
