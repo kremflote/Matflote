@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import LoadErrorPanel from "../components/LoadErrorPanel";
 import MealCalendar from "../components/MealCalendar";
 import ConfirmationDialog from "../components/ConfirmationDialog";
+import { MoveMealDialog, RangeActionDialog } from "./planner/PlannerDialogs";
 import GroceryExportDialog from "../components/GroceryExportDialog";
 import PlannerControls from "../components/PlannerControls";
 import PlannerRecipePickerModal from "../components/PlannerRecipePickerModal";
@@ -9,12 +10,9 @@ import PrepHelperDialog from "../components/PrepHelperDialog";
 import BrowserDetailModal from "../components/recipeBrowser/BrowserDetailModal";
 import { useIngredientTagCategories, useIngredients, useLanguage, useMealPlan, useRecipes } from "../contexts";
 import type { IGroceryList } from "../interfaces/IGroceryList";
-import type { MeasurementUnit } from "../interfaces/IIngredient";
-import type { IMealPlanEntry, IMealPlanRecipe, MealSlot, PlannerViewMode } from "../interfaces/IMeal";
-import { appSettingsService, groceryListService } from "../services";
-import type { MealPlanEntryRequest, MealPlanRecipeRequest } from "../services/mealPlanService";
+import type { IMealPlanEntry, MealSlot, PlannerViewMode } from "../interfaces/IMeal";
+import { groceryListService } from "../services";
 import { pageStyles, plannerControlsStyles } from "../styles/appStyles";
-import { confirmationDialogStyles } from "../styles/confirmationDialogStyles";
 import {
   getLocalNumberPreference,
   getLocalPreference,
@@ -37,35 +35,29 @@ import {
   stripTime,
   toDateInputValue,
 } from "../utils/plannerDate";
-import {
-  defaultDinnerMinimums,
-  generateMealPlanEntriesWithIssues,
-  type DinnerMinimums,
-  type MealPlanGenerationIssue,
-} from "../utils/plannerGenerator";
+import { generateMealPlanEntriesWithIssues } from "../utils/plannerGenerator";
 import { buildPrepHelperItems, getPrepIngredientTagNames } from "../utils/plannerPrepHelper";
 import { useRouteDetail } from "../utils/hashRoute";
 import { buildSystemTagNameLookup } from "../utils/tagCatalog";
+import {
+  defaultPeopleEating,
+  type SelectedPlannerSlot,
+  type PendingMealMove,
+  getMealPlanEntryKey,
+  getMealEntryLabel,
+  createPendingMealMove,
+  toMealPlanRequest,
+  scaleMealPlanRecipes,
+  normalizeMoveValue,
+  createEmptyGroceryList,
+  normalizePeopleEating,
+  getPlannerActionError,
+  formatGenerationIssues,
+  loadDinnerMinimums,
+} from "./planner/plannerMeals";
 
 const visibleMealSlots: MealSlot[] = ["Breakfast", "Lunch", "Dinner"];
 const plannerViewModes: PlannerViewMode[] = ["week", "month"];
-const defaultPeopleEating = 2;
-
-type SelectedPlannerSlot = {
-  date: string;
-  slot: MealSlot;
-};
-
-type PendingMealMove = {
-  amountKind: "amount" | "none" | "portions";
-  label: string;
-  maxValue: number;
-  source: SelectedPlannerSlot;
-  sourceEntry: IMealPlanEntry;
-  target: SelectedPlannerSlot;
-  unit: MeasurementUnit | null;
-  value: number;
-};
 
 const PlannerPage = () => {
   const { locale, t } = useLanguage();
@@ -543,41 +535,11 @@ const PlannerPage = () => {
         />
       )}
       {pendingPlannerAction !== null && (
-        <ConfirmationDialog
-          body={
-            pendingPlannerAction === "clear"
-              ? t.planner.clearRangeBody(t.planner.rangeNames[viewMode])
-              : (
-                  <>
-                    <p>{t.planner.generateRangeBody(t.planner.rangeNames[viewMode])}</p>
-                    <div className={confirmationDialogStyles.settingsGroup}>
-                      <label className={confirmationDialogStyles.fieldLabel}>
-                        <span className={confirmationDialogStyles.fieldTitle}>
-                          {t.planner.peopleEatingThisWeek}
-                        </span>
-                        <input
-                          className={confirmationDialogStyles.numberInput}
-                          min={1}
-                          step={1}
-                          type="number"
-                          value={generatePeopleEating}
-                          onChange={(event) =>
-                            setGeneratePeopleEating(normalizePeopleEating(Number(event.currentTarget.value)))
-                          }
-                        />
-                      </label>
-                    </div>
-                  </>
-                )
-          }
-          confirmLabel={pendingPlannerAction === "clear" ? t.common.clear : t.planner.generateMealPlan}
+        <RangeActionDialog
+          action={pendingPlannerAction}
           isBusy={plannerAction !== null}
-          title={
-            pendingPlannerAction === "clear"
-              ? t.planner.clearRange(t.planner.rangeNames[viewMode])
-              : t.planner.generateCurrent(t.planner.rangeNames[viewMode])
-          }
-          tone={pendingPlannerAction === "clear" ? "danger" : "default"}
+          peopleEating={generatePeopleEating}
+          rangeName={t.planner.rangeNames[viewMode]}
           onCancel={() => setPendingPlannerAction(null)}
           onConfirm={() => {
             if (pendingPlannerAction === "clear") {
@@ -587,49 +549,18 @@ const PlannerPage = () => {
 
             void generateCurrentRange();
           }}
+          onPeopleEatingChange={setGeneratePeopleEating}
         />
       )}
       {pendingMealMove !== null && (
-        <ConfirmationDialog
-          body={
-            <>
-              <p>{t.planner.moveMealBody(pendingMealMove.label)}</p>
-              {pendingMealMove.amountKind !== "none" && (
-                <div className={confirmationDialogStyles.settingsGroup}>
-                  <label className={confirmationDialogStyles.fieldLabel}>
-                    <span className={confirmationDialogStyles.fieldTitle}>
-                      {pendingMealMove.amountKind === "portions"
-                        ? t.planner.moveMealPortionsLabel
-                        : t.planner.moveMealAmountLabel(pendingMealMove.unit === null ? "" : t.enums.measurementUnits[pendingMealMove.unit])}
-                    </span>
-                    <input
-                      className={confirmationDialogStyles.numberInput}
-                      max={pendingMealMove.maxValue}
-                      min={1}
-                      step={1}
-                      type="number"
-                      value={pendingMealMove.value}
-                      onChange={(event) =>
-                        setPendingMealMove((currentMove) =>
-                          currentMove === null
-                            ? null
-                            : {
-                                ...currentMove,
-                                value: normalizeMoveValue(Number(event.currentTarget.value), currentMove.maxValue),
-                              },
-                        )
-                      }
-                    />
-                  </label>
-                </div>
-              )}
-            </>
-          }
-          confirmLabel={t.planner.moveMealConfirm}
+        <MoveMealDialog
           isBusy={mealPlanIsSaving}
-          title={t.planner.moveMealTitle}
+          move={pendingMealMove}
           onCancel={() => setPendingMealMove(null)}
           onConfirm={() => void moveMealToEmptySlot()}
+          onValueChange={(value) =>
+            setPendingMealMove((currentMove) => (currentMove === null ? null : { ...currentMove, value }))
+          }
         />
       )}
       {pendingMealDelete !== null && (
@@ -647,198 +578,4 @@ const PlannerPage = () => {
   );
 };
 
-function getMealPlanEntryKey(date: string, slot: MealSlot) {
-  return `${date}::${slot}`;
-}
-
-function getMainMealItem(entry: IMealPlanEntry) {
-  const sortedItems = entry.recipes.slice().sort((first, second) => first.sortOrder - second.sortOrder);
-
-  return sortedItems.find((plannedRecipe) => plannedRecipe.role === "Main") ?? sortedItems[0];
-}
-
-function getMealEntryLabel(
-  entry: IMealPlanEntry,
-  recipesById: ReadonlyMap<number, { name: string }>,
-  ingredientsById: ReadonlyMap<number, { ingredientName: string }>,
-  t: ReturnType<typeof useLanguage>["t"],
-) {
-  const mainItem = getMainMealItem(entry);
-  const recipe = mainItem?.recipeId === null || mainItem === undefined ? undefined : recipesById.get(mainItem.recipeId);
-  const ingredient = mainItem?.ingredientId === null || mainItem === undefined ? undefined : ingredientsById.get(mainItem.ingredientId);
-
-  return recipe?.name ?? ingredient?.ingredientName ?? t.planner.recipeFallback(mainItem?.recipeId ?? mainItem?.ingredientId ?? 0);
-}
-
-function createPendingMealMove({
-  label,
-  source,
-  sourceEntry,
-  target,
-}: {
-  label: string;
-  source: SelectedPlannerSlot;
-  sourceEntry: IMealPlanEntry;
-  target: SelectedPlannerSlot;
-}): PendingMealMove {
-  const mainItem = getMainMealItem(sourceEntry);
-
-  if (mainItem?.recipeId !== null && mainItem?.recipeId !== undefined && mainItem.portions !== null && mainItem.portions > 0) {
-    return {
-      amountKind: "portions",
-      label,
-      maxValue: mainItem.portions,
-      source,
-      sourceEntry,
-      target,
-      unit: null,
-      value: mainItem.portions,
-    };
-  }
-
-  if (mainItem?.ingredientId !== null && mainItem?.ingredientId !== undefined && mainItem.amount !== null && mainItem.amount > 0) {
-    return {
-      amountKind: "amount",
-      label,
-      maxValue: mainItem.amount,
-      source,
-      sourceEntry,
-      target,
-      unit: mainItem.unit,
-      value: mainItem.amount,
-    };
-  }
-
-  return {
-    amountKind: "none",
-    label,
-    maxValue: 1,
-    source,
-    sourceEntry,
-    target,
-    unit: null,
-    value: 1,
-  };
-}
-
-function toMealPlanRequest(entry: IMealPlanEntry, date: string, slot: MealSlot): MealPlanEntryRequest {
-  return {
-    date,
-    slot,
-    notes: entry.notes,
-    recipes: toMealPlanRecipeRequests(entry.recipes),
-  };
-}
-
-function toMealPlanRecipeRequests(recipes: IMealPlanRecipe[]): MealPlanRecipeRequest[] {
-  return recipes
-    .slice()
-    .sort((first, second) => first.sortOrder - second.sortOrder)
-    .map((recipe, index) => ({
-      recipeId: recipe.recipeId,
-      ingredientId: recipe.ingredientId,
-      role: index === 0 ? "Main" : recipe.role,
-      sortOrder: index,
-      portions: recipe.portions,
-      amount: recipe.amount,
-      unit: recipe.unit,
-    }));
-}
-
-function scaleMealPlanRecipes(recipes: IMealPlanRecipe[], ratio: number): MealPlanRecipeRequest[] {
-  if (ratio <= 0) {
-    return [];
-  }
-
-  return recipes
-    .slice()
-    .sort((first, second) => first.sortOrder - second.sortOrder)
-    .map((recipe, index) => ({
-      recipeId: recipe.recipeId,
-      ingredientId: recipe.ingredientId,
-      role: index === 0 ? "Main" : recipe.role,
-      sortOrder: index,
-      portions: recipe.portions === null ? null : roundPlannerQuantity(recipe.portions * ratio),
-      amount: recipe.amount === null ? null : roundPlannerQuantity(recipe.amount * ratio),
-      unit: recipe.unit,
-    }))
-    .filter((recipe) => recipe.portions === null || recipe.portions > 0)
-    .filter((recipe) => recipe.amount === null || recipe.amount > 0);
-}
-
-function roundPlannerQuantity(value: number) {
-  return Math.round(value * 10) / 10;
-}
-
-function normalizeMoveValue(value: number, maxValue: number) {
-  if (!Number.isFinite(value)) {
-    return maxValue;
-  }
-
-  return Math.max(1, Math.min(maxValue, Math.round(value)));
-}
-
-function createEmptyGroceryList(from: string, to: string): IGroceryList {
-  return {
-    from,
-    to,
-    generatedAt: new Date().toISOString(),
-    sections: [],
-  };
-}
-
-function normalizePeopleEating(value: number) {
-  if (!Number.isFinite(value)) {
-    return defaultPeopleEating;
-  }
-
-  return Math.max(1, Math.min(24, Math.round(value)));
-}
-
-function getPlannerActionError(_error: unknown, fallbackMessage: string) {
-  return fallbackMessage;
-}
-
-function formatGenerationIssues(
-  issues: MealPlanGenerationIssue[],
-  t: ReturnType<typeof useLanguage>["t"],
-) {
-  if (issues.length === 0) {
-    return null;
-  }
-
-  return issues
-    .map((issue) => {
-      switch (issue.code) {
-        case "MissingSystemTag":
-          return t.planner.generationIssues.missingSystemTag(t.enums.mealSlots[issue.slot]);
-        case "NoTaggedRecipes":
-          return t.planner.generationIssues.noTaggedRecipes(t.enums.mealSlots[issue.slot], issue.tagName);
-        case "NoRecipeWithEnoughPortions":
-          return t.planner.generationIssues.noRecipeWithEnoughPortions(
-            t.enums.mealSlots[issue.slot],
-            issue.tagName,
-            issue.peopleEating,
-          );
-        case "NoAvailableDinnerRecipes":
-          return t.planner.generationIssues.noAvailableDinnerRecipes;
-        case "NoEmptySlots":
-          return t.planner.generationIssues.noEmptySlots;
-        case "NoToppingIngredients":
-          return t.planner.generationIssues.noToppingIngredients(issue.tagName);
-      }
-    })
-    .join(" ");
-}
-
 export default PlannerPage;
-
-/** The fish and chicken minimums from Settings, read when generating so the planner page does not load them on every visit. */
-async function loadDinnerMinimums(): Promise<DinnerMinimums> {
-  try {
-    const preferences = await appSettingsService.getPlanningPreferences();
-    return { fish: preferences.minFishDinnersPerWeek, chicken: preferences.minChickenDinnersPerWeek };
-  } catch (_error) {
-    return defaultDinnerMinimums;
-  }
-}
