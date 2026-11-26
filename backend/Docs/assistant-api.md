@@ -2,7 +2,7 @@
 
 A small, name-based API for AI agents and scripts that create recipes and plan meals.
 It sits next to the regular API (which the web app uses and which works with numeric IDs).
-All paths below are relative to the MATFLOTE base URL: the address the web app is opened at, for example `https://<hostname>`
+All paths below are relative to the MATFLOTE base URL: the address the web app is opened at, for example `https://matflote.mariuskristensen.no`
 (the web app's nginx passes `/api` on to the backend), or the backend directly at `http://<server>:8080`.
 
 This guide is served at `GET /api/assistant`.

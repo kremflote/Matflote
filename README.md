@@ -46,12 +46,12 @@ Created with assistance of ChatGPT 5.5.
 
 ## Deployment On The Home Server
 
-MATFLOTE runs on a Raspberry Pi 4 (arm64, Debian 13) behind Nginx Proxy Manager and is reached only over Tailscale, as `https://<hostname>`. It runs as two containers:
+MATFLOTE runs on a Raspberry Pi 4 (arm64, Debian 13) behind Nginx Proxy Manager and is reached only over Tailscale, as `https://matflote.mariuskristensen.no`. It runs as two containers:
 
 - `matflote-frontend`: this repo's nginx (`frontend/Dockerfile`). It serves the built frontend, compresses responses, sets cache headers, and proxies `/api`, `/images` and `/health` to the backend at `http://backend:8080`.
 - `matflote-backend`: the .NET 10 API (`backend/Dockerfile`). It owns the SQLite database and the image files and runs database migrations when it starts.
 
-Requests go `https://<hostname>` → Nginx Proxy Manager (TLS) → `http://matflote-frontend:80` → `http://backend:8080`.
+Requests go `https://matflote.mariuskristensen.no` → Nginx Proxy Manager (TLS) → `http://matflote-frontend:80` → `http://backend:8080`.
 
 The server does **not** use this repo's `docker-compose.yml`. The server's own `~/infra/docker-compose.yml` builds both services from a checkout of this repo at `~/infra/matflote`, and keeps the data in bind-mounted folders:
 
@@ -118,7 +118,7 @@ In the MATFLOTE proxy host, keep **Cache Assets** switched **off**. When it is o
 The live database is in WAL mode, so copying `dinnerplanner.db` while the backend runs can give an inconsistent file. Ask the backend for a consistent copy instead, just before the file backup runs:
 
 ```bash
-curl -fsS -X POST https://<hostname>/api/maintenance/backup
+curl -fsS -X POST https://matflote.mariuskristensen.no/api/maintenance/backup
 ```
 
 It writes `/data/backups/dinnerplanner.latest.db` (on the Pi: `~/infra/config/matflote/data/backups/dinnerplanner.latest.db`), replacing the previous copy, and answers with the path, size and time:
@@ -152,7 +152,7 @@ That downloads a zip containing catalog JSON plus image files. It is the easiest
 Import that package into another MATFLOTE instance:
 
 ```bash
-curl -i -X POST -F "file=@matflote-export-package.zip" "https://<hostname>/api/seed-catalog/import-package"
+curl -i -X POST -F "file=@matflote-export-package.zip" "https://matflote.mariuskristensen.no/api/seed-catalog/import-package"
 ```
 
 The import is additive. Matching ingredients and recipes are left alone, so it is useful for seeding or moving curated data, not for replacing a whole household database.

@@ -5,9 +5,8 @@ in it over HTTP. Read it to the end before the first request.
 
 ## Where it is
 
-- **Base URL:** `https://<hostname>` — the address the web app is opened at. *(Owner: replace `<hostname>` with the
-  MATFLOTE host name, the same one the browser uses through Tailscale.)*
-- Every path below goes after the base URL, for example `https://<hostname>/api/assistant/context`.
+- **Base URL:** `https://matflote.mariuskristensen.no`, the address the web app is opened at (reachable over Tailscale only).
+- Every path below goes after the base URL, for example `https://matflote.mariuskristensen.no/api/assistant/context`.
 - No login and no API key. Send and expect JSON (`Content-Type: application/json`).
 - The full reference is served at `GET /api/assistant`. You should not need it for the session below.
 
