@@ -46,18 +46,6 @@ export const recipeBrowserStyles = {
       mode === "recipes" ? "pl-12 max-desktop:pl-0" : ""
     } ${hasVisibleFilters ? "" : "max-desktop:hidden"}`,
   browserBodyGrid: "mt-3 grid grid-cols-12 gap-3 max-sm:mt-3",
-  embeddedBrowser: "grid min-h-0 gap-3",
-  embeddedSearchFilterRow: "grid gap-3",
-  embeddedSearchControls:
-    "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2",
-  embeddedFilterButtonSlot: "flex items-center gap-2",
-  embeddedBrowserBodyGrid:
-    "grid min-h-0 grid-cols-12 gap-3 max-desktop:grid-cols-1",
-  embeddedResultsWithFilters:
-    "col-span-10 min-h-0 overflow-y-auto pr-1 max-desktop:col-span-1",
-  embeddedRecipeGrid:
-    "grid grid-cols-3 gap-3 min-[641px]:max-desktop:grid-cols-4 max-md:grid-cols-2 max-[380px]:grid-cols-1",
-  embeddedCategoryFilterButton: `inline-flex h-9 w-9 items-center justify-center rounded-md border p-0 ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
   filterButton: `inline-flex h-9 w-9 items-center justify-center rounded-md border max-desktop:h-11 max-desktop:w-11 max-desktop:[&_svg]:h-5 max-desktop:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors ${siteColorClasses.cookbookFilterButton}`,
   categoryFilterButton: `hidden h-9 w-9 items-center justify-center rounded-md border p-0 max-desktop:h-11 max-desktop:w-11 max-desktop:[&_svg]:h-5 max-desktop:[&_svg]:w-5 ${shadowClasses.subtle} transition-colors max-desktop:inline-flex ${siteColorClasses.cookbookFilterButton}`,
   filterChip: "inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-semibold transition-colors bg-champagne text-body hover:bg-stone dark:bg-white/[0.10] dark:hover:bg-white/[0.16]",
@@ -110,11 +98,6 @@ export const recipeBrowserStyles = {
   numberField: "relative",
   numberFieldInput: `${controlStyles.formField} w-full pr-10`,
   numberFieldSuffix: "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted",
-  colorFieldButton: `${controlStyles.formField} flex w-full cursor-pointer items-center justify-between gap-3 text-left`,
-  colorSwatch: "h-5 w-5 shrink-0 rounded-md border border-white/25",
-  colorPickerPanel: "grid gap-3 rounded-md border p-3 border-line bg-champagne/35 dark:bg-white/[0.04]",
-  colorPickerInput:
-    "h-12 w-full cursor-pointer rounded-md border-0 bg-transparent p-0",
   createOptionPanel: "grid gap-3 rounded-md border p-3 border-line bg-champagne/35 dark:bg-white/[0.04]",
   textArea: `${controlStyles.textArea} max-sm:h-9 max-sm:min-h-9 max-sm:resize-none max-sm:px-3 max-sm:py-2 max-sm:text-sm max-sm:leading-tight`,
   ratingBody: "grid gap-3",
@@ -126,10 +109,6 @@ export const recipeBrowserStyles = {
   ratingButton: `${controlStyles.secondaryButton} h-10 min-w-0 px-4 text-sm`,
   helperText: "text-xs font-semibold leading-[1.45] text-muted",
   inlineHint: "ml-2 text-[10px] font-semibold text-muted",
-  checkboxGrid:
-    "grid max-h-44 grid-cols-2 gap-2 overflow-y-auto rounded-md p-2 max-md:grid-cols-1",
-  tagCheckboxGrid:
-    "grid grid-cols-3 gap-2 rounded-md p-2 max-md:grid-cols-2 max-sm:grid-cols-1",
   groupedTagPanel: "grid gap-3 rounded-md p-2",
   groupedTagSection: "grid gap-2 border-b pb-3 last:border-b-0 last:pb-0 border-olive/25 dark:border-white/[0.10]",
   groupedTagTitle: "text-[11px] font-extrabold uppercase tracking-wide border-olive/25 text-muted dark:border-white/[0.10]",
@@ -144,10 +123,6 @@ export const recipeBrowserStyles = {
   selectedIngredientSummaryItem: `grid max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md border p-1.5 ${shadowClasses.subtle} max-sm:grid-cols-1 border-line bg-champagne/35 dark:bg-white/[0.04]`,
   selectedIngredientThumbnail: "min-w-0 max-w-44 max-sm:max-w-full",
   selectedIngredientMeta: "grid min-w-20 gap-0.5 text-right text-[10px] font-bold leading-tight max-sm:grid-cols-2 max-sm:text-left text-secondary",
-  selectedComponentThumbnails: "flex flex-wrap gap-2",
-  selectedComponentThumbnail: "w-20 max-sm:w-16",
-  selectedComponentThumbnailCard:
-    "[&_h3]:text-xs [&_p]:text-[9px] max-sm:[&_h3]:text-[10px] max-sm:[&_p]:text-[8px]",
   componentRecipeSelected: `after:pointer-events-none after:absolute after:inset-0 after:z-20 after:rounded-md after:ring-2 after:ring-inset ${siteColorClasses.selectedThumbnailRing}`,
   conversionHelperIntro: "text-sm font-semibold leading-snug text-secondary",
   conversionHelperSource: "text-xs font-semibold leading-snug text-muted",
@@ -168,7 +143,6 @@ export const recipeBrowserStyles = {
   recipeIngredientPreparationField: "max-sm:col-span-2",
   compactTextField: `${controlStyles.compactTextField}`,
   checkboxGridPanel: "bg-champagne/45 dark:bg-white/[0.04]",
-  detailsToggle: "inline-flex h-9 w-fit cursor-pointer items-center justify-center rounded-md border px-4 text-xs font-bold transition-colors border-line bg-champagne/45 text-body hover:bg-stone/70 dark:bg-white/[0.06] dark:hover:bg-white/[0.12]",
   detailsToggleFull: "inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-md border px-6 text-base font-semibold transition-colors border-line bg-champagne/45 text-body hover:bg-stone/70 dark:bg-white/[0.06] dark:hover:bg-white/[0.12]",
   mobileFormActionRow: "hidden max-sm:grid max-sm:grid-cols-2 max-sm:gap-2",
   mobileFormActionButton: "max-sm:h-11 max-sm:min-w-0 max-sm:px-3 max-sm:text-sm",
@@ -180,14 +154,6 @@ export const recipeBrowserStyles = {
   imageUploadIcon: "h-4 w-4",
   desktopUploadLabel: "max-sm:hidden",
   mobileUploadLabel: "hidden max-sm:inline",
-  compactIngredientImageControl:
-    "relative grid max-md:min-h-0 max-md:grid-cols-[5.5rem_minmax(0,8fr)] max-md:items-center max-md:gap-3",
-  compactIngredientImagePreview: `flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border ${shadowClasses.subtle} max-md:h-[5.5rem] max-md:min-h-0 max-md:w-[5.5rem] border-stone bg-ivory dark:border-white/[0.14] dark:bg-white/[0.08]`,
-  compactIngredientImage: "",
-  compactIngredientImageFallback:
-    "text-xl font-black leading-none opacity-55 max-md:text-xs",
-  compactIngredientImageButton: () =>
-    `${recipeBrowserStyles.imageUploadFloatingButton} absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-md:static max-md:translate-x-0 max-md:translate-y-0`,
   detailsPanel: `grid content-start gap-4 rounded-md border p-3 ${surfaceClasses.panel}`,
   formActions:
     "flex flex-wrap items-center justify-end gap-3 pt-2 max-sm:flex-nowrap",
@@ -209,8 +175,6 @@ export const recipeBrowserStyles = {
     `${recipeBrowserStyles.modalCloseButton} ml-auto`,
   detailBodyScrollArea: "grid min-h-0 content-start gap-4 overflow-y-auto overscroll-contain pr-1",
   detailFrameHeader: "flex items-start justify-between gap-4",
-  detailHeaderDescription: "mt-2",
-  detailHeaderShell: "grid gap-2 max-sm:pr-12",
   detailHeaderTitleRow: "flex flex-wrap items-center gap-2",
   detailHeaderActionRow:
     "flex flex-wrap items-center justify-end gap-3 pt-2 max-sm:flex-nowrap",
@@ -238,8 +202,6 @@ export const recipeBrowserStyles = {
   disabledFilterOption: "cursor-not-allowed opacity-40 text-olive-dark dark:text-neutral-500",
   checkbox: "h-4 w-4 rounded border-neutral-400 accent-neutral-500",
   addTagButton: "flex items-center justify-start gap-2 rounded-md border-0 bg-transparent p-0 text-left text-xs font-semibold transition-colors before:flex before:h-4 before:w-4 before:items-center before:justify-center before:rounded before:text-[10px] before:font-bold before:content-['+'] disabled:cursor-not-allowed disabled:opacity-45 text-secondary hover:text-olive before:bg-olive-surface before:text-ivory dark:hover:text-neutral-100 dark:before:bg-white/[0.10] dark:before:text-neutral-200",
-  tagCategorySelectRow:
-    "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 max-sm:grid-cols-1",
   manageTagModeRow: "flex justify-end max-sm:justify-start",
   manageTagsList: "grid gap-3",
   manageTagCategoryShell: "grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-2 max-sm:grid-cols-12",
@@ -256,8 +218,6 @@ export const recipeBrowserStyles = {
     emphasis === "category" ? "border-olive/35 dark:border-white/[0.16]" : "border-olive/18 dark:border-white/[0.08]",
   manageTagCategoryRow: (collapsed = false) =>
     `grid gap-2 ${collapsed ? "" : "border-b pb-3"}`,
-  manageTagVisibilityRow:
-    "grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-2 max-sm:grid-cols-[2rem_minmax(0,1fr)] max-sm:items-start",
   manageTagCategoryEditRow:
     "grid grid-cols-[4rem_minmax(0,1fr)_5.25rem_5.25rem] items-center gap-2 max-sm:grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)] max-sm:items-start [&>div]:max-sm:row-span-2 [&>div]:max-sm:grid-cols-1 [&>input]:max-sm:col-span-2 [&>input]:max-sm:col-start-2 [&>button]:max-sm:row-start-2 [&>button]:max-sm:w-full [&>button:nth-of-type(1)]:max-sm:col-start-2 [&>button:nth-of-type(2)]:max-sm:col-start-3",
   manageTagVisibilityGroup: "col-start-2 grid w-56 max-w-full grid-cols-2 gap-1 justify-self-end rounded-md border p-1 max-sm:justify-self-start border-olive/35 bg-champagne/45 dark:border-white/[0.12] dark:bg-white/[0.05]",
@@ -290,8 +250,6 @@ export const recipeBrowserStyles = {
   recipeDetailImageFrame:
     "aspect-square overflow-hidden rounded-md bg-neutral-800 max-md:aspect-[16/9] max-md:w-full",
   detailImage: "h-full w-full object-cover",
-  detailImageFallback:
-    "flex h-full w-full items-center justify-center px-4 text-center text-sm font-bold text-neutral-400",
   recipeDetailDescriptionWrap: "grid content-start",
   recipeDetailDescriptionPanel:
     "content-start",
@@ -312,12 +270,7 @@ export const recipeBrowserStyles = {
   detailIngredientSection: "grid gap-2",
   detailIngredientSectionTitle: "text-[11px] font-extrabold uppercase tracking-wide text-muted",
   detailIngredientSectionTitleButton: `cursor-pointer border-0 bg-transparent p-0 text-[11px] font-extrabold uppercase tracking-wide underline-offset-2 hover:underline ${siteColorClasses.plannerCounterAccent}`,
-  detailComponentGroups: "grid gap-3",
-  detailComponentGroup: "grid gap-2 border-b pb-3 last:border-b-0 last:pb-0 border-line-faint",
-  detailComponentGrid: "grid grid-cols-3 gap-2 max-sm:grid-cols-2",
-  detailComponentThumbnail: "min-w-0",
   detailRowLabel: "font-bold",
-  detailRowValue: "shrink-0",
   detailIngredientRow: "grid min-h-14 w-full grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-2 rounded-md p-1.5 text-left text-sm font-semibold transition-colors bg-champagne/45 text-body hover:bg-champagne/70 dark:bg-white/[0.05] dark:hover:bg-white/[0.09]",
   detailIngredientImageFrame: "flex aspect-square h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line bg-ivory dark:bg-white/[0.08]",
   detailIngredientImage: "h-full w-full object-cover",
@@ -361,7 +314,6 @@ export const recipeBrowserStyles = {
   sliderField: "grid gap-1 text-xs font-bold",
   createOptionActions: "flex items-center justify-end gap-3",
   customSelectOptionLabel: "min-w-0 truncate",
-  colorPickerActions: "flex items-center justify-end gap-3",
   filterIcon: "h-6 w-6",
   categoryFilterBackdrop: `fixed inset-0 z-[110] flex items-center justify-center bg-black/45 p-4 ${responsiveClasses.mobileModalBackdrop}`,
   categoryFilterPanel: `grid max-h-[64vh] w-full max-w-md grid-rows-[auto_minmax(0,1fr)] gap-3 overflow-hidden rounded-md border p-6 max-sm:max-h-[56vh] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,

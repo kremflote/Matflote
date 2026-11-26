@@ -29,8 +29,6 @@ export const siteColorClasses = {
     "text-ivory dark:text-neutral-50",
   fixedHeader:
     "max-desktop:border-olive/35 max-desktop:bg-olive-surface dark:max-desktop:border-white/[0.14] dark:max-desktop:bg-neutral-950/95",
-  nav:
-    "border-line-faint bg-ivory/55 dark:bg-white/[0.04]",
   bottomNav:
     "max-desktop:border-olive/35 max-desktop:bg-olive-surface dark:max-desktop:border-white/[0.14] dark:max-desktop:bg-neutral-950/95",
   control:
@@ -51,12 +49,6 @@ export const siteColorClasses = {
     "border-[#9BCB4F] dark:border-[#B8F07A]",
   selectedThumbnailRing:
     "after:ring-[#9BCB4F] dark:after:ring-[#B8F07A]",
-  plannerDateItem:
-    "bg-stone/70 dark:bg-white/[0.12]",
-  plannerCounter:
-    "border-line bg-champagne/60 text-olive-dark dark:bg-white/[0.06] dark:text-white",
-  plannerCounterMuted:
-    "text-secondary",
   plannerCounterAccent:
     "text-olive-dark dark:text-neutral-50",
   plannerToggle:
@@ -69,20 +61,13 @@ export const siteColorClasses = {
     "border-olive/35 bg-olive-dark dark:border-white/[0.14] dark:bg-white/[0.12]",
   switchThumb:
     "bg-ivory text-add-gold dark:bg-neutral-50 dark:text-[#111111]",
-  dayCell:
-    "bg-olive-surface text-ivory dark:bg-black/30 dark:text-white",
-  mealHeaderCell:
-    "bg-olive-surface text-ivory dark:bg-black/30 dark:text-white",
   focus:
     "focus-visible:outline-olive dark:focus-visible:outline-white",
 } as const;
 
 export const typographyClasses = {
   app: "font-['Nunito_Variable','Nunito',system-ui,sans-serif]",
-  hero: "font-['Segoe_Print','Bradley_Hand','Comic_Sans_MS',cursive]",
   logo: "font-['Ubuntu',sans-serif] text-[46px] font-bold leading-none max-sm:text-[34px]",
-  dayLabel: "text-2xl font-extralight tracking-normal",
-  mealHeaderLabel: "text-2xl font-extralight tracking-wide",
 } as const;
 
 export const layoutClasses = {
@@ -91,22 +76,15 @@ export const layoutClasses = {
   calendarGap: "gap-3",
   gridGap: "gap-6",
   controlGap: "gap-4",
-  tightControlGap: "gap-2",
 } as const;
 
 export const responsiveClasses = {
   portablePagePadding: "max-desktop:py-8 max-sm:py-6",
-  mobileStack: "max-md:grid-cols-1 max-md:gap-4",
-  mobileToolbarWrap: "max-md:flex-wrap max-md:justify-start max-sm:w-full",
   mobileModalBackdrop: "max-sm:p-3",
   mobileModalPanel: "max-sm:max-h-[calc(100vh_-_16px)] max-sm:p-4",
-  mobileTouchTarget: "max-sm:min-h-10",
 } as const;
 
 export const sizeClasses = {
-  mealCalendarHeaderHeight: "h-14",
-  mealCalendarCellHeight: "h-36",
-  mealSlotContentInset: "h-[calc(100%_-_16px)] w-[calc(100%_-_16px)]",
   portableFixedHeaderOffset: "max-desktop:pt-16",
   portableBottomNavOffset: "max-desktop:pb-24",
   modalOuterMaxHeight: "max-h-[88vh]",
@@ -117,8 +95,6 @@ export const sizeClasses = {
     "max-h-[calc(100vh_-_48px)] max-desktop:max-h-[calc(100vh_-_200px)] max-sm:max-h-[calc(100vh_-_96px)]",
   plannerControlHeight: "h-9",
   thumbnailControlWidth: "w-64",
-  dayLabelHeight: "h-auto",
-  mealSlotPlaceholder: "h-12 w-12",
   viewportModalMaxHeight: "max-h-[calc(100vh_-_48px)]",
 } as const;
 
@@ -148,7 +124,6 @@ export const thumbnailStyles = {
   recipeShellInteractive:
     "cursor-pointer transition-transform hover:scale-[1.01]",
   recipeImage: "h-full w-full object-cover",
-  recipeImageFallback: "h-full w-full bg-neutral-700",
   // The imageless tile scales its initials with its own width (container query units).
   recipeTile:
     "@container relative flex h-full w-full overflow-hidden select-none ring-1 ring-inset ring-black/10",
@@ -190,7 +165,6 @@ export const thumbnailStyles = {
   ingredientImage: "h-full w-full object-cover",
   ingredientImageFallback:
     "flex h-full w-full items-center justify-center text-xs font-black leading-none",
-  ingredientDot: "h-3 w-3 rounded-md",
   ingredientContent: "grid min-w-0 content-center gap-0.5",
   ingredientFooter: "col-span-full min-w-0",
   ingredientName: "min-w-0 truncate text-sm font-bold leading-tight",
@@ -251,8 +225,6 @@ export const segmentedToggleStyles = {
 
 export const appStyles = {
   shell: `relative min-h-screen overflow-x-clip before:pointer-events-none before:absolute before:inset-0 before:content-[''] ${sizeClasses.portableFixedHeaderOffset} ${typographyClasses.app} ${siteColorClasses.page}`,
-  overlay: "relative min-h-screen",
-  contentBackground: "bg-transparent",
 };
 
 export const headerStyles = {
@@ -318,17 +290,12 @@ export const settingsStyles = {
   saveButton: `${controlStyles.primaryButton} max-sm:w-full max-sm:max-w-xs`,
   secondaryButton: `${controlStyles.secondaryButton} max-sm:w-full max-sm:max-w-xs`,
   currentProviderCard: `flex w-fit flex-wrap items-center gap-4 rounded-md border p-2 max-sm:w-full max-sm:justify-between ${shadowClasses.subtle} ${surfaceClasses.panel}`,
-  currentProviderTitle: "text-sm font-bold leading-tight",
   currentProviderDetails: "flex flex-wrap items-center gap-2",
   currentProviderItem: "min-w-0 rounded-md border px-3 py-1.5 border-line-faint bg-ivory/55 dark:bg-white/[0.04]",
   currentProviderLabel:
     "text-[10px] font-extrabold uppercase leading-tight",
   currentProviderValue:
     "mt-0.5 min-w-0 truncate text-sm font-bold leading-tight",
-  systemGrid: "grid gap-4",
-  systemRow: `grid grid-cols-[10rem_minmax(0,1fr)] gap-4 rounded-md border px-4 py-2 text-sm max-sm:grid-cols-1 ${surfaceClasses.field}`,
-  systemLabel: "font-bold",
-  systemValue: "min-w-0 break-words font-semibold",
 } as const;
 
 export const scannerStyles = {
@@ -347,8 +314,6 @@ export const scannerStyles = {
   field: "grid gap-2",
   label: "text-sm font-bold leading-tight",
   labelRow: "flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1",
-  sectionTitleRow: "flex flex-wrap items-center justify-between gap-2",
-  autofillHint: autofillHintTextClasses,
   autofillReservedHint: `min-h-3 ${autofillHintTextClasses}`,
   nutritionSourceText: "grid gap-1 text-xs font-semibold leading-tight text-muted",
   nutritionSourceRow: "grid gap-1",
@@ -358,7 +323,6 @@ export const scannerStyles = {
   nutritionSourceActions: "inline-flex items-center gap-3",
   nutritionSourceLink: "text-xs font-bold leading-tight underline underline-offset-2 text-body hover:text-olive-ink dark:hover:text-white",
   sourceActionButton: `h-auto rounded-none border-0 bg-transparent p-0 text-xs font-extrabold underline underline-offset-2 transition-colors ${focusBase} ${siteColorClasses.focus} text-body hover:text-olive-ink dark:hover:text-white`,
-  nutritionSupplementWarning: "rounded-md border px-3 py-2 text-xs font-bold border-[#9B7A3D]/30 bg-champagne/65 text-[#5F4A24] dark:border-amber-300/25 dark:bg-amber-200/10 dark:text-amber-100",
   nutritionSupplementWarningRow: "flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs font-bold border-[#9B7A3D]/30 bg-champagne/65 text-[#5F4A24] dark:border-amber-300/25 dark:bg-amber-200/10 dark:text-amber-100",
   input: controlStyles.formField,
   submitButton: controlStyles.primaryButton,
@@ -372,18 +336,8 @@ export const scannerStyles = {
   cameraStatus: "text-sm font-semibold leading-[1.45] text-secondary",
   statusError: `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-red-700/25 bg-red-700/10 text-red-800 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200`,
   emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
-  resultList: "grid gap-3",
-  productCard: `grid grid-cols-[6rem_minmax(0,1fr)_auto] gap-4 rounded-md border p-3 max-sm:grid-cols-[5rem_minmax(0,1fr)] ${shadowClasses.subtle} ${surfaceClasses.panel}`,
-  productImageFrame: "aspect-square overflow-hidden rounded-md border border-line bg-ivory dark:bg-neutral-900",
   productImage: "h-full w-full object-cover",
   productImageFallback: "flex h-full w-full items-center justify-center px-2 text-center text-xs font-bold text-muted",
-  productMain: "grid min-w-0 content-start gap-2",
-  productTitle: "min-w-0 text-lg font-bold leading-tight",
-  productMeta: "text-xs font-semibold leading-tight text-muted",
-  chipRow: "flex flex-wrap gap-2",
-  chip: "rounded-md px-2 py-1 text-xs font-bold bg-champagne text-olive-dark dark:bg-white/[0.10] dark:text-neutral-100",
-  nutritionGrid: "grid grid-cols-4 gap-2 max-md:grid-cols-2 max-sm:grid-cols-1",
-  nutritionItem: `rounded-md border px-2 py-1 text-xs font-semibold ${surfaceClasses.panel}`,
   candidateSection: "grid gap-3",
   candidateHeader: "flex flex-wrap items-baseline gap-3",
   candidateTitle: "text-lg font-bold leading-tight",
@@ -403,14 +357,6 @@ export const scannerStyles = {
   hiddenFileInput: "sr-only",
   compactFormGrid:
     "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-3 max-sm:grid-cols-1",
-  groupedTagPanel: "grid gap-3",
-  groupedTagSection: "grid gap-2 border-b pb-3 last:border-b-0 last:pb-0 border-olive/25 dark:border-white/[0.10]",
-  groupedTagTitle: "text-[11px] font-extrabold uppercase tracking-wide text-muted",
-  tagGrid: "grid grid-cols-2 gap-2",
-  tagOption: `flex min-h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${surfaceClasses.field}`,
-  colorRow: "grid grid-cols-[minmax(0,1fr)_3rem] items-end gap-3",
-  colorInput:
-    "h-12 w-full cursor-pointer rounded-md border border-transparent bg-transparent p-0",
   saveButton: controlStyles.primaryButton,
   editorModalBackdrop: modalLayoutClasses.centeredBackdrop,
   editorModalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
@@ -428,11 +374,6 @@ export const scannerStyles = {
   infoModalBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
   infoText: "text-sm font-semibold leading-[1.5] text-secondary",
   infoList: "grid list-disc gap-2 pl-5 text-sm font-semibold leading-[1.45] text-secondary",
-  matvareSearchForm: "grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]",
-  matvareCandidateButton: `grid gap-1 rounded-md border p-3 text-left transition-colors ${focusBase} ${siteColorClasses.focus} border-line bg-ivory/70 text-olive-dark hover:bg-champagne/55 dark:bg-white/[0.05] dark:text-neutral-100 dark:hover:bg-white/[0.10]`,
-  matvareCandidateName: "text-sm font-extrabold leading-tight",
-  matvareCandidateMeta: "text-xs font-bold text-secondary",
-  matvareCandidateMacros: "text-xs font-semibold leading-[1.4] text-muted",
 } as const;
 
 export const nutritionStyles = {
@@ -651,7 +592,6 @@ export const plannerPickerStyles = {
     "col-span-full flex flex-wrap items-center gap-2 max-sm:col-span-3",
   quickFilterChip: (selected: boolean) =>
     `inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? "border-olive-dark bg-olive-dark text-ivory dark:border-emerald-300/70 dark:bg-emerald-300 dark:text-neutral-950" : "border-olive/30 bg-ivory text-body hover:bg-[#EFE6D8] dark:border-white/[0.14] dark:bg-neutral-900 dark:hover:bg-neutral-800"}`,
-  selectedSummary: "flex min-h-9 min-w-0 items-center rounded-md px-3 py-2 text-sm font-bold leading-tight bg-champagne/45 text-body dark:bg-white/[0.06]",
   selectedThumbnailList:
     "flex min-h-10 min-w-0 flex-1 flex-wrap items-center gap-2",
   selectedThumbnailButton: `inline-flex h-12 shrink-0 items-center gap-2 rounded-md border px-1.5 pr-2 ${shadowClasses.subtle} transition-colors ${focusBase} ${siteColorClasses.focus} border-olive/25 bg-champagne/55 hover:bg-champagne/75 dark:border-white/[0.10] dark:bg-white/[0.06] dark:hover:bg-white/[0.10]`,
@@ -660,7 +600,6 @@ export const plannerPickerStyles = {
   selectedThumbnailFallback: "block h-full w-full bg-champagne/45 dark:bg-neutral-800",
   selectedThumbnailAmount: "whitespace-nowrap text-sm font-black leading-none text-olive-dark dark:text-neutral-100",
   bodyGrid: `mt-4 grid ${sizeClasses.plannerPickerBrowserHeight} overflow-y-auto pr-1 max-sm:mt-2`,
-  filterRail: `max-h-[52vh] overflow-y-auto rounded-md p-3 max-sm:max-h-[44vh] ${shadowClasses.subtle} bg-champagne/45 dark:bg-white/[0.04]`,
   recipeGrid: "grid grid-cols-4 gap-3 max-sm:grid-cols-2",
   ingredientGrid: "grid auto-rows-max grid-cols-2 content-start items-start gap-2 max-sm:grid-cols-1",
   pickerCardShell: "relative h-fit min-w-0",
@@ -681,10 +620,8 @@ export const plannerPickerStyles = {
   footerClearButton: "shrink-0 border-0 bg-transparent p-0 text-sm font-bold underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-40 text-secondary hover:text-olive-ink dark:hover:text-white",
   footerActions:
     "flex shrink-0 flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap max-sm:[&>button]:min-w-0 max-sm:[&>button]:flex-1 max-sm:[&>button]:px-3 max-sm:[&>button]:text-sm",
-  secondaryButton: controlStyles.secondaryButton,
   mobileCancelButton: `hidden max-sm:inline-flex ${controlStyles.secondaryButton}`,
   primaryButton: controlStyles.primaryButton,
-  removeButton: controlStyles.removeButton,
   emptyState: `flex min-h-72 items-center justify-center ${radiusClasses.figma6} border p-8 text-center text-sm font-bold border-line-faint bg-ivory/70 text-secondary dark:bg-white/[0.035]`,
   statusError: `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-red-700/25 bg-red-700/10 text-red-800 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200`,
   statusErrorWithOffset: () =>
