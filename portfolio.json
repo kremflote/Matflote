@@ -1,0 +1,19 @@
+{
+  "title": "Matflote",
+  "description": "Personlig verktøy for middagsplanlegging, kokebok, handleliste og lokal matdata.",
+  "category": "personal",
+  "featured": true,
+  "legacyId": 8,
+  "thumbnail": "docs/images/matflotethumbnail.jpg",
+  "screenshots": [
+    "docs/images/cookbooklight.png",
+    "docs/images/mobilecookbooklight.png",
+    "docs/images/mobileplannerlight.png",
+    "docs/images/nutritionlight.png",
+    "docs/images/plannerlight.png",
+    "docs/images/priceslight.png"
+  ],
+  "sections": [
+    "Current App Features"
+  ]
+}
