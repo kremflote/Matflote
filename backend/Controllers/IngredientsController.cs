@@ -15,86 +15,48 @@ namespace DinnerPlanner.Api.Controllers;
 [Route("api/[controller]")]
 public class IngredientsController(
     DinnerPlannerContext context,
-    IngredientUsageService ingredientUsage,
-    ImageThumbnails imageThumbnails) : ControllerBase
+    IngredientCatalogService ingredients,
+    IngredientUsageService ingredientUsage) : ControllerBase
 {
     [HttpGet]
     [CatalogETag(CatalogGroup.Ingredients)]
-    public async Task<ActionResult<IEnumerable<IngredientDto>>> GetIngredients()
-    {
-        var ingredients = await context.Ingredients
-            .AsNoTracking()
-            .Include(ingredient => ingredient.Brand)
-            .Include(ingredient => ingredient.Tags)
-                .ThenInclude(tag => tag.TagDefinition)
-            .OrderBy(ingredient => ingredient.IngredientName)
-            .ToListAsync();
-
-        var thumbnails = await imageThumbnails.LoadAsync(HttpContext.RequestAborted);
-        return Ok(ingredients.Select(ingredient => ToDto(ingredient, thumbnails)));
-    }
+    public async Task<ActionResult<IEnumerable<IngredientDto>>> GetIngredients() =>
+        Ok(await ingredients.ListAsync(HttpContext.RequestAborted));
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<IngredientDto>> GetIngredient(int id)
-    {
-        var ingredient = await context.Ingredients
-            .AsNoTracking()
-            .Include(ingredient => ingredient.Brand)
-            .Include(ingredient => ingredient.Tags)
-                .ThenInclude(tag => tag.TagDefinition)
-            .FirstOrDefaultAsync(ingredient => ingredient.IngredientId == id);
-
-        return ingredient is null ? NotFound() : Ok(ToDto(ingredient, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
-    }
+    public async Task<ActionResult<IngredientDto>> GetIngredient(int id) =>
+        await ingredients.GetAsync(id, HttpContext.RequestAborted) is { } ingredient ? Ok(ingredient) : NotFound();
 
     [HttpPost]
     public async Task<ActionResult<IngredientDto>> CreateIngredient(IngredientRequest request)
     {
-        if (await FindIngredientWithSameName(request.IngredientName, request.BrandId, exceptId: null) is { } clash)
+        var cancellationToken = HttpContext.RequestAborted;
+        if (await ingredients.FindNameClashAsync(request.IngredientName, request.BrandId, exceptId: null, cancellationToken) is { } clash)
         {
-            return Conflict(DescribeNameClash(clash));
+            return Conflict(new ApiErrorDto(clash));
         }
 
-        var (problems, knownTags) = await ValidateRequestAsync(request);
+        var (problems, knownTags) = await ingredients.ValidateAsync(request, cancellationToken);
         if (problems.Count > 0)
         {
             return BadRequest(ApiErrorDto.From(problems));
         }
 
-        var ingredient = new Ingredient
-        {
-            IngredientName = request.IngredientName,
-            Description = request.Description,
-            BrandId = request.BrandId,
-            ImageUrl = request.ImageUrl,
-            Tags = knownTags
-                .Select(tag => new IngredientTagAssignment
-                {
-                    IngredientTagDefinitionId = tag.IngredientTagDefinitionId
-                })
-                .ToList(),
-            NutritionPer100 = request.NutritionPer100,
-            NutritionSource = NormalizeNutritionSource(request.NutritionPer100, request.NutritionSource),
-            NutritionSourceLabel = request.NutritionSourceLabel,
-            MatvaretabellenFoodId = request.MatvaretabellenFoodId,
-            NutritionMatchedName = request.NutritionMatchedName,
-            NutritionMatchConfidence = request.NutritionMatchConfidence,
-            Color = request.Color
-        };
-
+        var ingredient = new Ingredient();
+        ingredients.Apply(ingredient, request, knownTags);
         context.Ingredients.Add(ingredient);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(cancellationToken);
 
-        var created = await LoadIngredient(ingredient.IngredientId);
-        return CreatedAtAction(nameof(GetIngredient), new { id = ingredient.IngredientId }, ToDto(created!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
+        return CreatedAtAction(nameof(GetIngredient), new { id = ingredient.IngredientId }, await ingredients.GetAsync(ingredient.IngredientId, cancellationToken));
     }
 
     [HttpPut("{id:int}")]
     public async Task<ActionResult<IngredientDto>> UpdateIngredient(int id, IngredientRequest request)
     {
+        var cancellationToken = HttpContext.RequestAborted;
         var ingredient = await context.Ingredients
             .Include(ingredient => ingredient.Tags)
-            .FirstOrDefaultAsync(ingredient => ingredient.IngredientId == id);
+            .FirstOrDefaultAsync(ingredient => ingredient.IngredientId == id, cancellationToken);
         if (ingredient is null)
         {
             return NotFound();
@@ -102,43 +64,22 @@ public class IngredientsController(
 
         // Only a change of name or brand can clash; an ingredient that already shares both with another one
         // (possible in data from before this check) can still be saved.
-        var renamed = CatalogNames.Key(request.IngredientName) != CatalogNames.Key(ingredient.IngredientName)
-            || request.BrandId != ingredient.BrandId;
-        if (renamed && await FindIngredientWithSameName(request.IngredientName, request.BrandId, exceptId: id) is { } clash)
+        if (IngredientCatalogService.ChangesNameOrBrand(ingredient, request)
+            && await ingredients.FindNameClashAsync(request.IngredientName, request.BrandId, exceptId: id, cancellationToken) is { } clash)
         {
-            return Conflict(DescribeNameClash(clash));
+            return Conflict(new ApiErrorDto(clash));
         }
 
-        var (problems, knownTags) = await ValidateRequestAsync(request);
+        var (problems, knownTags) = await ingredients.ValidateAsync(request, cancellationToken);
         if (problems.Count > 0)
         {
             return BadRequest(ApiErrorDto.From(problems));
         }
 
-        ingredient.IngredientName = request.IngredientName;
-        ingredient.Description = request.Description;
-        ingredient.BrandId = request.BrandId;
-        ingredient.ImageUrl = request.ImageUrl;
-        context.IngredientTagAssignments.RemoveRange(ingredient.Tags);
-        ingredient.Tags = knownTags
-            .Select(tag => new IngredientTagAssignment
-            {
-                IngredientId = ingredient.IngredientId,
-                IngredientTagDefinitionId = tag.IngredientTagDefinitionId
-            })
-            .ToList();
-        ingredient.NutritionPer100 = request.NutritionPer100;
-        ingredient.NutritionSource = NormalizeNutritionSource(request.NutritionPer100, request.NutritionSource);
-        ingredient.NutritionSourceLabel = request.NutritionSourceLabel;
-        ingredient.MatvaretabellenFoodId = request.MatvaretabellenFoodId;
-        ingredient.NutritionMatchedName = request.NutritionMatchedName;
-        ingredient.NutritionMatchConfidence = request.NutritionMatchConfidence;
-        ingredient.Color = request.Color;
+        ingredients.Apply(ingredient, request, knownTags);
+        await context.SaveChangesAsync(cancellationToken);
 
-        await context.SaveChangesAsync();
-
-        var updated = await LoadIngredient(ingredient.IngredientId);
-        return Ok(ToDto(updated!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)));
+        return Ok(await ingredients.GetAsync(ingredient.IngredientId, cancellationToken));
     }
 
     /// <summary>Deletes an unused ingredient. One that recipes or planned meals use is refused with 409 and the list of uses.</summary>
@@ -189,79 +130,11 @@ public class IngredientsController(
 
         await context.SaveChangesAsync();
 
-        var replacement = await LoadIngredient(otherId);
         return Ok(new IngredientReplacementResultDto(
             id,
-            ToDto(replacement!, await imageThumbnails.LoadAsync(HttpContext.RequestAborted)),
+            (await ingredients.GetAsync(otherId, HttpContext.RequestAborted))!,
             moved,
             merged,
             mealItems));
     }
-
-    /// <summary>
-    /// Another ingredient with the same brand (or also without one) whose name is the same apart from case and spacing
-    /// (AUDIT B4). Compared in memory, because SQLite's lower() only folds A to Z.
-    /// </summary>
-    private async Task<(int IngredientId, string Name, string? Brand)?> FindIngredientWithSameName(string name, int? brandId, int? exceptId)
-    {
-        var key = CatalogNames.Key(name);
-        var sameBrand = await context.Ingredients
-            .AsNoTracking()
-            .Where(ingredient => ingredient.BrandId == brandId && ingredient.IngredientId != exceptId)
-            .Select(ingredient => new { ingredient.IngredientId, ingredient.IngredientName, Brand = ingredient.Brand == null ? null : ingredient.Brand.Name })
-            .ToListAsync(HttpContext.RequestAborted);
-        var match = sameBrand.FirstOrDefault(ingredient => CatalogNames.Key(ingredient.IngredientName) == key);
-        return match is null ? null : (match.IngredientId, match.IngredientName, match.Brand);
-    }
-
-    private static ApiErrorDto DescribeNameClash((int IngredientId, string Name, string? Brand) clash) =>
-        new(clash.Brand is null
-            ? $"An ingredient named \"{clash.Name}\" without a brand already exists (id {clash.IngredientId})."
-            : $"An ingredient named \"{clash.Name}\" from {clash.Brand} already exists (id {clash.IngredientId}).");
-
-    /// <summary>An unknown brand or tag is an error rather than being dropped (AUDIT B2).</summary>
-    private async Task<(List<string> Problems, List<IngredientTagDefinition> Tags)> ValidateRequestAsync(IngredientRequest request)
-    {
-        var problems = new List<string>();
-        if (!await BrandExists(request.BrandId))
-        {
-            problems.Add($"No brand found with ID {request.BrandId}.");
-        }
-
-        var tagIndex = await TagIndex.LoadAsync(context, HttpContext.RequestAborted);
-        var tags = tagIndex.Resolve(request.Tags ?? [], TagUse.Ingredient, problems, warnings: [], TagIndex.CreateFirstHint);
-        return (problems, tags);
-    }
-
-    private async Task<bool> BrandExists(int? brandId) =>
-        brandId is null || await context.Brands.AnyAsync(brand => brand.BrandId == brandId);
-
-    private Task<Ingredient?> LoadIngredient(int id) =>
-        context.Ingredients
-            .AsNoTracking()
-            .Include(ingredient => ingredient.Brand)
-            .Include(ingredient => ingredient.Tags)
-                .ThenInclude(tag => tag.TagDefinition)
-            .FirstOrDefaultAsync(ingredient => ingredient.IngredientId == id);
-
-    private static NutritionDataSource NormalizeNutritionSource(NutritionFacts? nutrition, NutritionDataSource? source) =>
-        nutrition is null ? NutritionDataSource.None : source ?? NutritionDataSource.Manual;
-
-    private static IngredientDto ToDto(Ingredient ingredient, IReadOnlyDictionary<string, string> thumbnails) => new(
-        ingredient.IngredientId,
-        ingredient.IngredientName,
-        ingredient.Description,
-        ingredient.BrandId,
-        ingredient.Brand is null ? null : new BrandDto(ingredient.Brand.BrandId, ingredient.Brand.Name),
-        ingredient.ImageUrl,
-        ImageThumbnails.Find(thumbnails, ingredient.ImageUrl),
-        ingredient.Tags.Select(ingredientTag => ingredientTag.TagDefinition.Name).OrderBy(tag => tag).ToList(),
-        ingredient.NutritionPer100,
-        ingredient.NutritionSource,
-        ingredient.NutritionSourceLabel,
-        ingredient.MatvaretabellenFoodId,
-        ingredient.NutritionMatchedName,
-        ingredient.NutritionMatchConfidence,
-        ingredient.Color
-    );
 }

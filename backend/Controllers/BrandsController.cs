@@ -24,7 +24,7 @@ public class BrandsController(DinnerPlannerContext context) : ControllerBase
             .OrderBy(brand => brand.Name)
             .ToListAsync();
 
-        return Ok(brands.Select(ToDto));
+        return Ok(brands.Select(CatalogMapping.ToDto));
     }
 
     [HttpPost]
@@ -44,14 +44,14 @@ public class BrandsController(DinnerPlannerContext context) : ControllerBase
 
         if (existingBrand is not null)
         {
-            return Ok(ToDto(existingBrand));
+            return Ok(CatalogMapping.ToDto(existingBrand));
         }
 
         var brand = new Brand { Name = name };
         context.Brands.Add(brand);
         await context.SaveChangesAsync();
 
-        return Ok(ToDto(brand));
+        return Ok(CatalogMapping.ToDto(brand));
     }
 
     [HttpDelete("{id:int}")]
@@ -67,6 +67,4 @@ public class BrandsController(DinnerPlannerContext context) : ControllerBase
         await context.SaveChangesAsync();
         return NoContent();
     }
-
-    private static BrandDto ToDto(Brand brand) => new(brand.BrandId, brand.Name);
 }
