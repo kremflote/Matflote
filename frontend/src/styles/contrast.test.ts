@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { contrastRatio } from "../utils/colorContrast";
+import css from "../index.css?raw";
 import { colorPalette } from "./appStyles";
 
 // Backgrounds as they appear on screen: the light page is #FAF7F2 under a 20% #A9BDD1 wash, cards are
@@ -15,7 +16,7 @@ const textPairs: Array<[string, string, string]> = [
   ["light: olive text on the page", colorPalette.oliveDark, lightPage],
   ["light: olive text on a card", colorPalette.oliveDark, lightCard],
   ["light: olive text on champagne", colorPalette.oliveDark, colorPalette.champagne],
-  ["light: dark olive text on champagne chips", "#3C4A2E", colorPalette.champagne],
+  ["light: dark olive text on champagne chips", colorPalette.oliveInk, colorPalette.champagne],
   ["light: ivory on the header and olive buttons", colorPalette.ivory, colorPalette.oliveSurface],
   ["light: ivory on hovered olive buttons and title bands", colorPalette.ivory, colorPalette.oliveDark],
   ["dark: secondary text on the page", "#D4D4D4", darkPage],
@@ -31,5 +32,15 @@ describe("text contrast of the theme colours (WCAG AA, 4.5:1)", () => {
 
   it("keeps the old olive out of text: it is below 4.5:1 on ivory", () => {
     expect(contrastRatio(colorPalette.olive, colorPalette.ivory)).toBeLessThan(4.5);
+  });
+});
+
+describe("the palette in code", () => {
+  // index.css defines the colours once; the few that code needs as values must say the same.
+  const kebab = (name: string) => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+
+  it.each(Object.entries(colorPalette))("%s matches index.css", (name, value) => {
+    const match = css.match(new RegExp(`--color-${kebab(name)}:\\s*(#[0-9A-Fa-f]{6});`));
+    expect(match?.[1].toUpperCase()).toBe(value.toUpperCase());
   });
 });

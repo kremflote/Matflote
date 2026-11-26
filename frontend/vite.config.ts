@@ -9,5 +9,7 @@ export default defineConfig({
   test: {
     // The planner works in local time; run the tests in the household's time zone so daylight saving changes are covered.
     env: { TZ: "Europe/Oslo" },
+    // styles/contrast.test.ts reads the palette from index.css as text.
+    css: { include: [/index\.css/] },
   },
 });

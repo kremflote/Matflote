@@ -8,6 +8,31 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 @custom-variant light (&:where([data-theme=light], [data-theme=light] *));
 
+/*
+ * The palette (AUDIT F17) and the width where the layout switches between phone/tablet (a fixed header and a
+ * bottom navigation) and desktop (AUDIT F19). Contrast: olive (#7A8864) is 3.55:1 on ivory, so it is kept for
+ * borders and accents; light-theme text uses olive-dark (6.18:1 on ivory, 4.58:1 on champagne), and olive
+ * surfaces that carry ivory text use olive-surface (4.89:1). See styles/contrast.test.ts.
+ */
+@theme {
+  --color-dusty-blue: #A9BDD1;
+  --color-olive: #7A8864;
+  --color-olive-surface: #64714F;
+  --color-olive-dark: #556145;
+  --color-olive-deep: #6A7658;
+  --color-olive-ink: #3C4A2E;
+  --color-stone: #C8C0B5;
+  --color-champagne: #E5D5BC;
+  --color-ivory: #FAF7F2;
+  --color-ingredient-icon: #F8F0D7;
+  --color-ingredient-icon-text: #333929;
+  --color-add-gold: #FFD64F;
+  --color-add-gold-hover: #EEC642;
+  --color-near-black: #171717;
+  --color-soft-gray: #F5F5F5;
+  --breakpoint-desktop: 1100px;
+}
+
 html {
   scrollbar-gutter: stable;
 }
