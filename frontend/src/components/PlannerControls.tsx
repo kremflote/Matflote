@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLanguage } from "../contexts";
 import type { PlannerViewMode } from "../interfaces/IMeal";
-import { plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
+import { plannerControlsStyles } from "../styles/appStyles";
 import Modal from "./Modal";
 
 type PlannerControlsProps = {
@@ -14,7 +14,6 @@ type PlannerControlsProps = {
   isRangeBusy?: boolean;
   /** The visible week or month holds today, so the Today button has nothing to do. */
   isShowingToday?: boolean;
-  theme?: SiteTheme;
   viewMode: PlannerViewMode;
   onNextRange: () => void;
   onPreviousRange: () => void;
@@ -35,7 +34,6 @@ function PlannerControls({
   isMobileToolsHidden = false,
   isRangeBusy = false,
   isShowingToday = false,
-  theme = "dark",
   viewMode,
   onNextRange,
   onPreviousRange,
@@ -132,7 +130,7 @@ function PlannerControls({
       <div className={plannerControlsStyles.centerCell}>
         <time
           aria-label={t.planner.yearLabel(anchorYear)}
-          className={plannerControlsStyles.dateYearRow(theme)}
+          className={plannerControlsStyles.dateYearRow}
           dateTime={anchorYear}
         >
           {anchorYear}
@@ -144,7 +142,7 @@ function PlannerControls({
               aria-haspopup="dialog"
               aria-expanded={isMobileActionsOpen}
               aria-label={t.planner.openPlannerActions}
-              className={plannerControlsStyles.mobileControlButton(theme)}
+              className={plannerControlsStyles.mobileControlButton()}
               disabled={isRangeBusy || isGenerateRangeRunning || isClearRangeRunning}
               title={t.planner.plannerTools}
               type="button"

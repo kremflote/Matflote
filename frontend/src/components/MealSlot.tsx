@@ -2,7 +2,7 @@ import { useLanguage } from "../contexts";
 import type { IIngredient } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, MealSlot as MealSlotId } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
-import { colorPalette, mealCalendarStyles, type SiteTheme } from "../styles/appStyles";
+import { colorPalette, mealCalendarStyles } from "../styles/appStyles";
 import { getThumbnailSrc } from "../utils/imageThumbnail";
 import { getMainIngredientNames, getRecipeColorBarBackground, getRecipeTile } from "../utils/recipeTile";
 
@@ -25,7 +25,6 @@ type MealSlotProps = {
   onOpenRecipe: (recipe: IRecipe) => void;
   slot: MealSlotId;
   recipesById: Map<number, IRecipe>;
-  theme?: SiteTheme;
 };
 
 function MealSlot({
@@ -45,7 +44,6 @@ function MealSlot({
   onOpenRecipe,
   recipesById,
   slot,
-  theme = "dark",
 }: MealSlotProps) {
   const { t } = useLanguage();
   const plannedItems =
@@ -87,7 +85,7 @@ function MealSlot({
 
   return (
     <div
-      className={`${mealCalendarStyles.mealSlot(theme, isToday, showsTouchActions)} ${mealCalendarStyles.mealSlotDropTarget(theme)}`}
+      className={`${mealCalendarStyles.mealSlot(isToday, showsTouchActions)} ${mealCalendarStyles.mealSlotDropTarget}`}
       onDragOver={(event) => {
         if (!canUseDesktopInteractions) {
           return;
@@ -138,11 +136,11 @@ function MealSlot({
         }}
       >
         {isLoading ? (
-          <MealSlotSkeleton theme={theme} />
+          <MealSlotSkeleton />
         ) : hasMeal && mainName !== undefined ? (
           <span className={mealCalendarStyles.mealSlotContent(mainImageSrc !== null)}>
             {mainImageSrc !== null ? (
-              <span className={mealCalendarStyles.mealSlotImageFrame(theme)}>
+              <span className={mealCalendarStyles.mealSlotImageFrame}>
                 <img
                   alt=""
                   className={mealCalendarStyles.mealSlotImage}
@@ -161,14 +159,14 @@ function MealSlot({
               />
             )}
             <span className={mealCalendarStyles.mealSlotDetails}>
-              <span className={mealCalendarStyles.mealSlotEyebrow(theme)}>{slotLabel}</span>
-              <span className={mealCalendarStyles.mealSlotTitle(theme)}>{mainName}</span>
+              <span className={mealCalendarStyles.mealSlotEyebrow}>{slotLabel}</span>
+              <span className={mealCalendarStyles.mealSlotTitle}>{mainName}</span>
               <span className={mealCalendarStyles.mealSlotMetaRow}>
-                <span className={mealCalendarStyles.mealSlotSecondary(theme)} title={secondaryText || undefined}>
+                <span className={mealCalendarStyles.mealSlotSecondary} title={secondaryText || undefined}>
                   {secondaryText}
                 </span>
                 {mainItem?.portions !== null && mainItem?.portions !== undefined && (
-                  <span className={mealCalendarStyles.mealSlotPortions(theme)}>
+                  <span className={mealCalendarStyles.mealSlotPortions}>
                     {t.planner.portionsCount(mainItem.portions)}
                   </span>
                 )}
@@ -176,7 +174,7 @@ function MealSlot({
             </span>
           </span>
         ) : (
-          <span className={mealCalendarStyles.mealSlotEmpty(theme)}>
+          <span className={mealCalendarStyles.mealSlotEmpty}>
             <span aria-hidden="true" className={mealCalendarStyles.mealSlotEmptyPlus}>+</span>
             {slotLabel}
           </span>
@@ -187,7 +185,7 @@ function MealSlot({
           {mainRecipe !== undefined && (
             <button
               aria-label={t.planner.openRecipe}
-              className={mealCalendarStyles.mealSlotActionButton(theme, canUseDesktopInteractions)}
+              className={mealCalendarStyles.mealSlotActionButton(canUseDesktopInteractions)}
               title={t.planner.openRecipe}
               type="button"
               onClick={() => onOpenRecipe(mainRecipe)}
@@ -197,7 +195,7 @@ function MealSlot({
           )}
           <button
             aria-label={t.planner.removeMeal}
-            className={mealCalendarStyles.mealSlotDeleteButton(theme, canUseDesktopInteractions)}
+            className={mealCalendarStyles.mealSlotDeleteButton(canUseDesktopInteractions)}
             title={t.planner.removeMeal}
             type="button"
             onClick={() => onDeleteRequest(date, slot)}
@@ -210,13 +208,13 @@ function MealSlot({
   );
 }
 
-function MealSlotSkeleton({ theme }: { theme: SiteTheme }) {
+function MealSlotSkeleton() {
   return (
     <span className={mealCalendarStyles.mealSlotContent(true)} aria-hidden="true">
-      <span className={mealCalendarStyles.mealSlotSkeletonImage(theme)} />
+      <span className={mealCalendarStyles.mealSlotSkeletonImage} />
       <span className={mealCalendarStyles.mealSlotSkeletonDetails}>
-        <span className={mealCalendarStyles.mealSlotSkeletonLine(theme, "title")} />
-        <span className={mealCalendarStyles.mealSlotSkeletonLine(theme, "short")} />
+        <span className={mealCalendarStyles.mealSlotSkeletonLine("title")} />
+        <span className={mealCalendarStyles.mealSlotSkeletonLine("short")} />
       </span>
     </span>
   );

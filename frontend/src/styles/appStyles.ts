@@ -536,14 +536,7 @@ export const plannerControlsStyles = {
   shell: `mb-5 grid w-full grid-cols-12 items-center ${layoutClasses.gridGap} max-[1100px]:mb-6 max-[1100px]:grid-cols-1 max-[1100px]:gap-3`,
   datePrimaryRow: `flex w-full items-center justify-center ${layoutClasses.controlGap} min-[1101px]:gap-2 max-[1100px]:justify-between max-[1100px]:gap-2`,
   // The year floats above the range label without increasing the top-control row height.
-  dateYearRow: (theme: SiteTheme) =>
-    `pointer-events-none absolute inset-x-0 -top-4 z-0 flex h-0 justify-center overflow-visible text-sm font-bold leading-none ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  dateYearRow: "pointer-events-none absolute inset-x-0 -top-4 z-0 flex h-0 justify-center overflow-visible text-sm font-bold leading-none text-[#556145] dark:text-neutral-400",
   datePrimary: `min-w-36 whitespace-nowrap text-center text-3xl font-bold leading-tight max-[1100px]:min-w-0 max-[1100px]:flex-1 max-[1100px]:truncate max-sm:text-2xl ${siteColorClasses.plannerCounterAccent}`,
   leftCell:
     "order-1 col-span-5 flex items-center justify-start max-[1100px]:hidden",
@@ -567,16 +560,8 @@ export const plannerControlsStyles = {
   viewToggle: `${segmentedToggleStyles.shell("w-full max-w-64")}`,
   viewToggleOption: (selected: boolean) =>
     `${segmentedToggleStyles.option(selected)}`,
-  mobileControlButton: (theme: SiteTheme, selected = false) =>
-    `hidden h-11 w-11 shrink-0 items-center justify-center ${radiusClasses.figma6} border p-0 max-[1100px]:inline-flex [&_svg]:h-5 [&_svg]:w-5 ${shadowClasses.subtle} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${
-      selected
-        ? siteColorClasses.plannerToggleSelected
-        : theme === "dark"
-          ? "border-neutral-700 bg-neutral-950 text-white hover:bg-neutral-900"
-          : theme === "paletteLight"
-            ? "border-[#7A8864] bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC]"
-            : "border-neutral-300 bg-neutral-200 text-neutral-950 hover:bg-neutral-300"
-    }`,
+  mobileControlButton: (selected = false) =>
+    `hidden h-11 w-11 shrink-0 items-center justify-center ${radiusClasses.figma6} border p-0 max-[1100px]:inline-flex [&_svg]:h-5 [&_svg]:w-5 ${shadowClasses.subtle} transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-55 ${focusBase} ${siteColorClasses.focus} ${selected ? `${siteColorClasses.plannerToggleSelected}` : "border-[#7A8864] bg-[#FAF7F2] text-[#556145] hover:bg-[#E5D5BC] dark:border-neutral-700 dark:bg-neutral-950 dark:text-white dark:hover:bg-neutral-900"}`,
   mobileActionsBackdrop:
     "fixed inset-0 z-[100] hidden items-center justify-center bg-black/35 p-4 max-[1100px]:flex",
   mobileActionsPanel: `grid w-full max-w-xs grid-rows-[auto_minmax(0,1fr)] gap-3 ${radiusClasses.figma6} border p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
@@ -584,14 +569,7 @@ export const plannerControlsStyles = {
   mobileActionsTitle: "text-lg font-bold leading-tight",
   mobileActionsCloseButton: controlStyles.modalCloseButton,
   mobileActionsBody: "grid min-h-0 gap-2",
-  statusError: (theme: SiteTheme) =>
-    `mb-4 ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
-      theme === "dark"
-        ? "border-red-400/30 bg-red-500/10 text-red-200"
-        : theme === "paletteLight"
-          ? "border-red-700/25 bg-red-700/10 text-red-800"
-          : "border-red-200 bg-red-50 text-red-700"
-    }`,
+  statusError: `mb-4 ${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-red-700/25 bg-red-700/10 text-red-800 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200`,
 };
 
 export const prepHelperStyles = {
@@ -599,14 +577,7 @@ export const prepHelperStyles = {
   modalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   header: "flex items-start justify-between gap-4",
   title: "text-2xl font-bold leading-tight",
-  subtitle: (theme: SiteTheme) =>
-    `mt-1 text-sm font-semibold leading-[1.45] ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  subtitle: "mt-1 text-sm font-semibold leading-[1.45] text-[#556145] dark:text-neutral-400",
   closeButton: `${controlStyles.modalCloseButton} max-sm:hidden`,
   bodyFrame: "grid min-h-0 gap-3",
   list: "grid max-h-[48vh] gap-3 overflow-y-auto pr-1",
@@ -615,50 +586,26 @@ export const prepHelperStyles = {
   itemName: "text-base font-bold leading-tight",
   itemAmount: "whitespace-nowrap text-sm font-extrabold",
   actionList: "flex flex-wrap gap-2",
-  actionChip: (theme: SiteTheme) =>
-    `rounded-md border px-2 py-1 text-xs font-bold ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-white/[0.08] text-neutral-100"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/25 bg-[#E5D5BC]/55 text-[#556145]"
-          : "border-neutral-200 bg-neutral-100 text-neutral-800"
-    }`,
-  sourceText: (theme: SiteTheme) =>
-    `text-xs font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  actionChip: "rounded-md border px-2 py-1 text-xs font-bold border-[#7A8864]/25 bg-[#E5D5BC]/55 text-[#556145] dark:border-white/[0.10] dark:bg-white/[0.08] dark:text-neutral-100",
+  sourceText: "text-xs font-semibold leading-tight text-[#556145] dark:text-neutral-400",
   emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   footer: "flex items-center justify-end border-t pt-4",
   secondaryButton: controlStyles.secondaryButton,
 } as const;
 
-const plannerMutedText = (theme: SiteTheme) =>
-  theme === "dark" ? "text-neutral-300" : theme === "paletteLight" ? "text-[#556145]" : "text-neutral-600";
+const plannerMutedText = "text-[#556145] dark:text-neutral-300";
 
 export const mealCalendarStyles = {
   shell: "flex w-full flex-col max-[1100px]:pb-8",
   // Breakfast, lunch and dinner above the three columns; on narrow screens each card names its meal instead.
   headerRow: `mb-2 grid grid-cols-3 ${layoutClasses.calendarGap} max-[1100px]:hidden`,
-  headerLabel: (theme: SiteTheme) =>
-    `px-1 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText(theme)}`,
+  headerLabel: `px-1 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText}`,
   rows: "flex flex-col gap-2 max-[1100px]:gap-4",
   row: "relative max-[1100px]:grid max-[1100px]:gap-2",
-  dayCell: (theme: SiteTheme, isToday = false) =>
-    `absolute inset-y-0 right-full mr-2 flex w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-md border-0 p-0 max-[1100px]:static max-[1100px]:mr-0 max-[1100px]:min-h-11 max-[1100px]:w-full max-[1100px]:flex-row max-[1100px]:justify-between max-[1100px]:gap-2 max-[1100px]:px-2 max-[1100px]:py-1 ${
-      isToday
-        ? theme === "dark"
-          ? "bg-white/[0.12] text-white"
-          : theme === "paletteLight"
-            ? "bg-[#556145] text-[#FAF7F2]"
-            : "bg-neutral-900 text-white"
-        : siteColorClasses.plannerCounterAccent
-    }`,
-  dayCellButton: (theme: SiteTheme, isToday = false) =>
-    `${mealCalendarStyles.dayCell(theme, isToday)} cursor-pointer transition-opacity hover:opacity-80 ${focusBase} ${siteColorClasses.focus}`,
+  dayCell: (isToday = false) =>
+    `absolute inset-y-0 right-full mr-2 flex w-[4.5rem] flex-col items-center justify-center gap-0.5 rounded-md border-0 p-0 max-[1100px]:static max-[1100px]:mr-0 max-[1100px]:min-h-11 max-[1100px]:w-full max-[1100px]:flex-row max-[1100px]:justify-between max-[1100px]:gap-2 max-[1100px]:px-2 max-[1100px]:py-1 ${isToday ? "bg-[#556145] text-[#FAF7F2] dark:bg-white/[0.12] dark:text-white" : `${siteColorClasses.plannerCounterAccent}`}`,
+  dayCellButton: (isToday = false) =>
+    `${mealCalendarStyles.dayCell(isToday)} cursor-pointer transition-opacity hover:opacity-80 ${focusBase} ${siteColorClasses.focus}`,
   dayTitleGroup: "flex items-center justify-center gap-1",
   dayHeaderTextGroup:
     "flex flex-col items-center max-[1100px]:min-w-0 max-[1100px]:flex-row max-[1100px]:gap-1.5",
@@ -669,34 +616,21 @@ export const mealCalendarStyles = {
   dayToggleSvg: "h-3.5 w-3.5 fill-current",
   dayLabel: (isToday: boolean) =>
     `text-xl leading-none tracking-normal ${isToday ? "font-extrabold" : "font-light"}`,
-  dayDate: (theme: SiteTheme, isToday = false) =>
-    `text-sm font-semibold leading-none ${isToday ? "" : plannerMutedText(theme)}`,
+  dayDate: (isToday = false) =>
+    `text-sm font-semibold leading-none ${isToday ? "" : `${plannerMutedText}`}`,
   todayBadge: "text-[10px] font-extrabold uppercase leading-none tracking-wider",
   // On phones a collapsed day shows small previews of its planned meals.
   dayPreviewStrip: "flex items-center -space-x-1.5",
-  dayPreviewSummary: (theme: SiteTheme, isToday = false) =>
-    `mr-1 text-xs font-bold ${isToday ? "" : plannerMutedText(theme)}`,
-  dayPreviewFilled: (theme: SiteTheme) =>
-    `block h-8 w-8 overflow-hidden rounded-full border-2 ${
-      theme === "dark" ? "border-neutral-900" : theme === "paletteLight" ? "border-[#FAF7F2]" : "border-white"
-    }`,
+  dayPreviewSummary: (isToday = false) =>
+    `mr-1 text-xs font-bold ${isToday ? "" : `${plannerMutedText}`}`,
+  dayPreviewFilled: "block h-8 w-8 overflow-hidden rounded-full border-2 border-[#FAF7F2] dark:border-neutral-900",
   dayPreviewImage: "h-full w-full object-cover",
-  dayPreviewImageFallback: (theme: SiteTheme) =>
-    `block h-full w-full ${theme === "dark" ? "bg-neutral-700" : theme === "paletteLight" ? "bg-[#C8C0B5]" : "bg-neutral-200"}`,
+  dayPreviewImageFallback: "block h-full w-full bg-[#C8C0B5] dark:bg-neutral-700",
   dayMealGrid: (collapsed: boolean) =>
     `grid grid-cols-3 ${layoutClasses.calendarGap} max-[1100px]:grid-cols-1 max-[1100px]:gap-2 ${collapsed ? "hidden" : ""}`,
-  mealSlot: (theme: SiteTheme, isToday: boolean, roomForTouchActions: boolean) =>
-    `group/meal-slot relative flex ${radiusClasses.figma6} border transition-colors duration-150 ${
-      roomForTouchActions ? "min-h-24" : "h-[5.5rem] max-[1100px]:h-auto max-[1100px]:min-h-[5.5rem]"
-    } ${
-      theme === "dark"
-        ? `${isToday ? "border-white/[0.28]" : "border-white/[0.08]"} bg-white/[0.035] hover:bg-white/[0.06]`
-        : theme === "paletteLight"
-          ? `${isToday ? "border-[#556145]" : "border-[#C8C0B5]"} bg-[#FAF7F2]/70 hover:bg-[#E5D5BC]/45`
-          : `${isToday ? "border-neutral-900" : "border-neutral-200"} bg-white hover:bg-neutral-50`
-    }`,
-  mealSlotDropTarget: (theme: SiteTheme) =>
-    `${theme === "dark" ? "data-[drag-active=true]:border-emerald-300/70" : theme === "paletteLight" ? "data-[drag-active=true]:border-[#7A8864]" : "data-[drag-active=true]:border-emerald-700"} data-[drag-active=true]:border-2`,
+  mealSlot: (isToday: boolean, roomForTouchActions: boolean) =>
+    `group/meal-slot relative flex ${radiusClasses.figma6} border transition-colors duration-150 ${roomForTouchActions ? "min-h-24" : "h-[5.5rem] max-[1100px]:h-auto max-[1100px]:min-h-[5.5rem]"} ${isToday ? "border-[#556145] dark:border-white/[0.28]" : "border-[#C8C0B5] dark:border-white/[0.08]"} bg-[#FAF7F2]/70 hover:bg-[#E5D5BC]/45 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]`,
+  mealSlotDropTarget: "data-[drag-active=true]:border-[#7A8864] data-[drag-active=true]:border-2 dark:data-[drag-active=true]:border-emerald-300/70",
   mealSlotButton: `flex w-full min-w-0 cursor-pointer items-stretch rounded-md p-2 text-left disabled:cursor-not-allowed ${focusBase}`,
   // A slot whose plan could not be loaded: visibly not an empty, editable slot.
   mealSlotUnavailable: "opacity-45",
@@ -708,170 +642,53 @@ export const mealCalendarStyles = {
       ? "pointer-events-none absolute right-1.5 top-1.5 z-10 flex gap-1 opacity-0 transition-opacity group-hover/meal-slot:pointer-events-auto group-hover/meal-slot:opacity-100 group-focus-within/meal-slot:pointer-events-auto group-focus-within/meal-slot:opacity-100"
       : "flex shrink-0 flex-col justify-center p-1",
   // Mouse: small solid buttons over the card. Touch: 44 px ghost buttons in the card's own column.
-  mealSlotActionButton: (theme: SiteTheme, compact: boolean) =>
-    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses.focus} ${
-      compact
-        ? `h-8 w-8 shadow-sm ${
-            theme === "dark"
-              ? "border-white/[0.16] bg-neutral-950 text-neutral-100 hover:bg-neutral-900"
-              : theme === "paletteLight"
-                ? "border-[#7A8864]/45 bg-[#FAF7F2] text-[#556145] hover:bg-[#EFE6D8]"
-                : "border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`
-        : `h-11 w-11 border-transparent bg-transparent ${
-            theme === "dark" ? "text-neutral-200" : theme === "paletteLight" ? "text-[#556145]" : "text-neutral-700"
-          }`
-    }`,
-  mealSlotDeleteButton: (theme: SiteTheme, compact: boolean) =>
-    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses.focus} ${
-      compact
-        ? `h-8 w-8 shadow-sm ${
-            theme === "dark"
-              ? "border-red-400/35 bg-red-950 text-red-100 hover:bg-red-900"
-              : theme === "paletteLight"
-                ? "border-red-900/30 bg-red-900 text-[#FAF7F2] hover:bg-red-800"
-                : "border-red-800/30 bg-red-700 text-white hover:bg-red-800"
-          }`
-        : `h-11 w-11 border-transparent bg-transparent ${theme === "dark" ? "text-red-300" : "text-red-800"}`
-    }`,
+  mealSlotActionButton: (compact: boolean) =>
+    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses.focus} ${compact ? "h-8 w-8 shadow-sm border-[#7A8864]/45 bg-[#FAF7F2] text-[#556145] hover:bg-[#EFE6D8] dark:border-white/[0.16] dark:bg-neutral-950 dark:text-neutral-100 dark:hover:bg-neutral-900" : "h-11 w-11 border-transparent bg-transparent text-[#556145] dark:text-neutral-200"}`,
+  mealSlotDeleteButton: (compact: boolean) =>
+    `inline-flex items-center justify-center rounded-md border ${focusBase} ${siteColorClasses.focus} ${compact ? "h-8 w-8 shadow-sm border-red-900/30 bg-red-900 text-[#FAF7F2] hover:bg-red-800 dark:border-red-400/35 dark:bg-red-950 dark:text-red-100 dark:hover:bg-red-900" : "h-11 w-11 border-transparent bg-transparent text-red-800 dark:text-red-300"}`,
   mealSlotDeleteIcon: "h-4 w-4",
-  mealSlotEmpty: (theme: SiteTheme) =>
-    `m-auto inline-flex items-center gap-1.5 rounded-md border border-dashed px-3 py-1.5 text-sm font-bold ${
-      theme === "dark"
-        ? "border-white/[0.18] text-neutral-300"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/45 text-[#556145]"
-          : "border-neutral-300 text-neutral-600"
-    }`,
+  mealSlotEmpty: "m-auto inline-flex items-center gap-1.5 rounded-md border border-dashed px-3 py-1.5 text-sm font-bold border-[#7A8864]/45 text-[#556145] dark:border-white/[0.18] dark:text-neutral-300",
   mealSlotEmptyPlus: "text-base leading-none",
   mealSlotContent: (hasImage: boolean) =>
     `grid w-full min-w-0 gap-2.5 ${hasImage ? "grid-cols-[4.5rem_minmax(0,1fr)]" : "grid-cols-[0.375rem_minmax(0,1fr)] gap-2"}`,
   mealSlotColorBar: "block w-1.5 rounded-full",
-  mealSlotImageFrame: (theme: SiteTheme) =>
-    `block h-[4.5rem] w-[4.5rem] self-center overflow-hidden rounded-md ${
-      theme === "dark"
-        ? "bg-neutral-800"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/45"
-          : "bg-neutral-100"
-    }`,
+  mealSlotImageFrame: "block h-[4.5rem] w-[4.5rem] self-center overflow-hidden rounded-md bg-[#E5D5BC]/45 dark:bg-neutral-800",
   mealSlotImage: "h-full w-full object-cover",
-  mealSlotSkeletonImage: (theme: SiteTheme) =>
-    `block h-[4.5rem] w-[4.5rem] animate-pulse rounded-md ${
-      theme === "dark"
-        ? "bg-white/[0.08]"
-        : theme === "paletteLight"
-          ? "bg-[#C8C0B5]/65"
-          : "bg-neutral-200"
-    }`,
+  mealSlotSkeletonImage: "block h-[4.5rem] w-[4.5rem] animate-pulse rounded-md bg-[#C8C0B5]/65 dark:bg-white/[0.08]",
   mealSlotSkeletonDetails: "grid min-w-0 content-start gap-2 pt-1",
-  mealSlotSkeletonLine: (theme: SiteTheme, width: "short" | "title") =>
-    `block h-3 animate-pulse rounded-full ${
-      width === "title" ? "w-4/5" : "w-1/2"
-    } ${
-      theme === "dark"
-        ? "bg-white/[0.10]"
-        : theme === "paletteLight"
-          ? "bg-[#7A8864]/28"
-          : "bg-neutral-300"
-    }`,
+  mealSlotSkeletonLine: (width: "short" | "title") =>
+    `block h-3 animate-pulse rounded-full ${width === "title" ? "w-4/5" : "w-1/2"} bg-[#7A8864]/28 dark:bg-white/[0.10]`,
   mealSlotDetails: "flex min-w-0 flex-col justify-between gap-1",
-  mealSlotEyebrow: (theme: SiteTheme) =>
-    `hidden text-[11px] font-extrabold uppercase leading-none tracking-wider max-[1100px]:block ${plannerMutedText(theme)}`,
-  mealSlotTitle: (theme: SiteTheme) =>
-    `min-w-0 overflow-hidden break-words text-[15px] font-bold leading-tight [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] ${
-      theme === "dark"
-        ? "text-neutral-50"
-        : theme === "paletteLight"
-          ? "text-[#3C4A2E]"
-          : "text-neutral-900"
-    }`,
+  mealSlotEyebrow: `hidden text-[11px] font-extrabold uppercase leading-none tracking-wider max-[1100px]:block ${plannerMutedText}`,
+  mealSlotTitle: "min-w-0 overflow-hidden break-words text-[15px] font-bold leading-tight [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] text-[#3C4A2E] dark:text-neutral-50",
   mealSlotMetaRow: "flex min-w-0 items-center gap-2",
-  mealSlotSecondary: (theme: SiteTheme) =>
-    `min-w-0 flex-1 truncate text-xs font-semibold leading-snug ${plannerMutedText(theme)}`,
-  mealSlotPortions: (theme: SiteTheme) =>
-    `shrink-0 rounded-md px-1.5 py-0.5 text-xs font-extrabold leading-tight ${
-      theme === "dark"
-        ? "bg-white/[0.10] text-neutral-50"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC] text-[#3C4A2E]"
-          : "bg-neutral-100 text-neutral-800"
-    }`,
+  mealSlotSecondary: `min-w-0 flex-1 truncate text-xs font-semibold leading-snug ${plannerMutedText}`,
+  mealSlotPortions: "shrink-0 rounded-md px-1.5 py-0.5 text-xs font-extrabold leading-tight bg-[#E5D5BC] text-[#3C4A2E] dark:bg-white/[0.10] dark:text-neutral-50",
   // A month is a 7-column calendar on wide screens and a list of days on phones and tablets.
   monthHeaderGrid: `mb-2 grid grid-cols-7 ${layoutClasses.calendarGap} max-[1100px]:hidden`,
   monthGrid: `grid grid-cols-7 ${layoutClasses.calendarGap} max-[1100px]:grid-cols-1 max-[1100px]:gap-2`,
-  monthHeaderCell: (theme: SiteTheme) =>
-    `px-2 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText(theme)}`,
-  monthDayCell: (theme: SiteTheme, muted: boolean, isToday: boolean) =>
-    `group/day flex min-h-32 min-w-0 flex-col gap-1.5 ${radiusClasses.figma6} border p-1.5 transition-colors duration-150 max-[1100px]:min-h-0 max-[1100px]:flex-row max-[1100px]:items-start ${
-      muted ? "border-dashed bg-transparent max-[1100px]:hidden" : ""
-    } ${
-      theme === "dark"
-        ? `${isToday ? "border-white/[0.32]" : "border-white/[0.08]"} ${muted ? "" : "bg-white/[0.035]"}`
-        : theme === "paletteLight"
-          ? `${isToday ? "border-[#556145]" : "border-[#C8C0B5]"} ${muted ? "" : "bg-[#FAF7F2]/70"}`
-          : `${isToday ? "border-neutral-900" : "border-neutral-200"} ${muted ? "" : "bg-white"}`
-    }`,
-  monthDayNumberButton: (theme: SiteTheme, muted: boolean, isToday: boolean) =>
-    `inline-flex h-7 min-w-7 items-center gap-1.5 self-start rounded-md px-1.5 text-sm font-extrabold leading-none disabled:cursor-default max-[1100px]:h-11 max-[1100px]:w-20 max-[1100px]:shrink-0 max-[1100px]:flex-col max-[1100px]:justify-center max-[1100px]:gap-0.5 ${focusBase} ${siteColorClasses.focus} ${
-      isToday
-        ? theme === "dark"
-          ? "bg-white text-neutral-950"
-          : theme === "paletteLight"
-            ? "bg-[#556145] text-[#FAF7F2]"
-            : "bg-neutral-900 text-white"
-        : muted
-          ? plannerMutedText(theme)
-          : siteColorClasses.plannerCounterAccent
-    }`,
+  monthHeaderCell: `px-2 text-xs font-extrabold uppercase tracking-wider ${plannerMutedText}`,
+  monthDayCell: (muted: boolean, isToday: boolean) =>
+    `group/day flex min-h-32 min-w-0 flex-col gap-1.5 ${radiusClasses.figma6} border p-1.5 transition-colors duration-150 max-[1100px]:min-h-0 max-[1100px]:flex-row max-[1100px]:items-start ${muted ? "border-dashed bg-transparent max-[1100px]:hidden" : ""} ${isToday ? "border-[#556145] dark:border-white/[0.32]" : "border-[#C8C0B5] dark:border-white/[0.08]"} ${muted ? "" : "bg-[#FAF7F2]/70 dark:bg-white/[0.035]"}`,
+  monthDayNumberButton: (muted: boolean, isToday: boolean) =>
+    `inline-flex h-7 min-w-7 items-center gap-1.5 self-start rounded-md px-1.5 text-sm font-extrabold leading-none disabled:cursor-default max-[1100px]:h-11 max-[1100px]:w-20 max-[1100px]:shrink-0 max-[1100px]:flex-col max-[1100px]:justify-center max-[1100px]:gap-0.5 ${focusBase} ${siteColorClasses.focus} ${isToday ? "bg-[#556145] text-[#FAF7F2] dark:bg-white dark:text-neutral-950" : `${muted ? `${plannerMutedText}` : `${siteColorClasses.plannerCounterAccent}`}`}`,
   monthDayName: "hidden text-[11px] font-extrabold uppercase tracking-wider max-[1100px]:block",
   monthDayNumber: (isToday: boolean) => (isToday ? "font-black" : ""),
   monthDayMeals: "grid min-w-0 flex-1 content-start gap-1",
-  monthMealChip: (theme: SiteTheme) =>
-    `flex min-h-7 min-w-0 items-center gap-1.5 ${radiusClasses.figma6} px-1.5 py-1 text-left text-xs font-bold leading-tight transition-colors disabled:cursor-not-allowed disabled:opacity-45 max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses.focus} ${
-      theme === "dark"
-        ? "bg-white/[0.10] text-neutral-50 hover:bg-white/[0.16]"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/70 text-[#3C4A2E] hover:bg-[#E5D5BC]"
-          : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
-    }`,
+  monthMealChip: `flex min-h-7 min-w-0 items-center gap-1.5 ${radiusClasses.figma6} px-1.5 py-1 text-left text-xs font-bold leading-tight transition-colors disabled:cursor-not-allowed disabled:opacity-45 max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses.focus} bg-[#E5D5BC]/70 text-[#3C4A2E] hover:bg-[#E5D5BC] dark:bg-white/[0.10] dark:text-neutral-50 dark:hover:bg-white/[0.16]`,
   monthMealChipDot: "h-3 w-1.5 shrink-0 rounded-full ring-1 ring-black/10",
   monthMealChipText: "min-w-0 truncate",
   // Hidden until the day is hovered or has focus (mouse), or its date was tapped (touch).
-  monthAddButton: (theme: SiteTheme, isRevealed: boolean) =>
-    `flex min-h-7 min-w-0 items-center gap-1 ${radiusClasses.figma6} border border-dashed px-1.5 py-1 text-left text-xs font-bold leading-tight transition-opacity disabled:cursor-not-allowed max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses.focus} ${
-      isRevealed
-        ? "opacity-100"
-        : "opacity-0 focus-visible:opacity-100 group-hover/day:opacity-100 group-focus-within/day:opacity-100 [@media(hover:none)]:hidden"
-    } ${
-      theme === "dark"
-        ? "border-white/[0.20] text-neutral-200 hover:bg-white/[0.08]"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/55 text-[#556145] hover:bg-[#E5D5BC]/55"
-          : "border-neutral-300 text-neutral-700 hover:bg-neutral-100"
-    }`,
+  monthAddButton: (isRevealed: boolean) =>
+    `flex min-h-7 min-w-0 items-center gap-1 ${radiusClasses.figma6} border border-dashed px-1.5 py-1 text-left text-xs font-bold leading-tight transition-opacity disabled:cursor-not-allowed max-[1100px]:min-h-11 max-[1100px]:text-sm ${focusBase} ${siteColorClasses.focus} ${isRevealed ? "opacity-100" : "opacity-0 focus-visible:opacity-100 group-hover/day:opacity-100 group-focus-within/day:opacity-100 [@media(hover:none)]:hidden"} border-[#7A8864]/55 text-[#556145] hover:bg-[#E5D5BC]/55 dark:border-white/[0.20] dark:text-neutral-200 dark:hover:bg-white/[0.08]`,
 };
 
 export const plannerPickerStyles = {
   modalBackdrop: modalLayoutClasses.centeredBackdrop,
-  modalPanel: (theme: SiteTheme) =>
-    `grid ${sizeClasses.plannerPickerModalMaxHeight} w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 max-sm:gap-3 max-sm:p-4 ${shadowClasses.overlay} ${
-      theme === "dark"
-        ? "border-white/[0.12] bg-neutral-950 text-neutral-100"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
-          : "border-neutral-200 bg-white text-neutral-900"
-    }`,
+  modalPanel: `grid ${sizeClasses.plannerPickerModalMaxHeight} w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-6 max-sm:gap-3 max-sm:p-4 ${shadowClasses.overlay} border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] dark:border-white/[0.12] dark:bg-neutral-950 dark:text-neutral-100`,
   header: "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 max-sm:block",
   title: "text-2xl font-bold leading-tight max-sm:sr-only",
-  subtitle: (theme: SiteTheme) =>
-    `mt-1 text-sm font-semibold leading-[1.45] max-sm:hidden ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  subtitle: "mt-1 text-sm font-semibold leading-[1.45] max-sm:hidden text-[#556145] dark:text-neutral-400",
   closeButton: `${controlStyles.modalCloseButton} max-sm:hidden`,
   bodyFrame: "grid min-h-0 gap-4 max-sm:gap-2",
   bodyScrollFrame: "grid min-h-0 overflow-y-auto pr-1",
@@ -888,72 +705,18 @@ export const plannerPickerStyles = {
     "col-span-full flex flex-wrap items-start gap-2 max-sm:col-span-3",
   quickFilterRow:
     "col-span-full flex flex-wrap items-center gap-2 max-sm:col-span-3",
-  quickFilterChip: (theme: SiteTheme, selected: boolean) =>
-    `inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses.focus} ${
-      selected
-        ? theme === "dark"
-          ? "border-emerald-300/70 bg-emerald-300 text-neutral-950"
-          : theme === "paletteLight"
-            ? "border-[#556145] bg-[#556145] text-[#FAF7F2]"
-            : "border-emerald-700 bg-emerald-700 text-white"
-        : theme === "dark"
-          ? "border-white/[0.14] bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
-          : theme === "paletteLight"
-            ? "border-[#7A8864]/30 bg-[#FAF7F2] text-[#556145] hover:bg-[#EFE6D8]"
-            : "border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50"
-    }`,
-  selectedSummary: (theme: SiteTheme) =>
-    `flex min-h-9 min-w-0 items-center rounded-md px-3 py-2 text-sm font-bold leading-tight ${
-      theme === "dark"
-        ? "bg-white/[0.06] text-neutral-200"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/45 text-[#556145]"
-          : "bg-neutral-100 text-neutral-800"
-    }`,
+  quickFilterChip: (selected: boolean) =>
+    `inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-extrabold transition-colors ${focusBase} ${siteColorClasses.focus} ${selected ? "border-[#556145] bg-[#556145] text-[#FAF7F2] dark:border-emerald-300/70 dark:bg-emerald-300 dark:text-neutral-950" : "border-[#7A8864]/30 bg-[#FAF7F2] text-[#556145] hover:bg-[#EFE6D8] dark:border-white/[0.14] dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"}`,
+  selectedSummary: "flex min-h-9 min-w-0 items-center rounded-md px-3 py-2 text-sm font-bold leading-tight bg-[#E5D5BC]/45 text-[#556145] dark:bg-white/[0.06] dark:text-neutral-200",
   selectedThumbnailList:
     "flex min-h-10 min-w-0 flex-1 flex-wrap items-center gap-2",
-  selectedThumbnailButton: (theme: SiteTheme) =>
-    `inline-flex h-12 shrink-0 items-center gap-2 rounded-md border px-1.5 pr-2 ${shadowClasses.subtle} transition-colors ${focusBase} ${siteColorClasses.focus} ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-white/[0.06] hover:bg-white/[0.10]"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/25 bg-[#E5D5BC]/55 hover:bg-[#E5D5BC]/75"
-          : "border-neutral-200 bg-white hover:bg-neutral-50"
-    }`,
-  selectedThumbnailFrame: (theme: SiteTheme) =>
-    `block h-9 w-9 shrink-0 overflow-hidden rounded-md ${
-      theme === "dark"
-        ? "bg-neutral-800"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/45"
-          : "bg-neutral-100"
-    }`,
+  selectedThumbnailButton: `inline-flex h-12 shrink-0 items-center gap-2 rounded-md border px-1.5 pr-2 ${shadowClasses.subtle} transition-colors ${focusBase} ${siteColorClasses.focus} border-[#7A8864]/25 bg-[#E5D5BC]/55 hover:bg-[#E5D5BC]/75 dark:border-white/[0.10] dark:bg-white/[0.06] dark:hover:bg-white/[0.10]`,
+  selectedThumbnailFrame: "block h-9 w-9 shrink-0 overflow-hidden rounded-md bg-[#E5D5BC]/45 dark:bg-neutral-800",
   selectedThumbnailImage: "h-full w-full object-cover",
-  selectedThumbnailFallback: (theme: SiteTheme) =>
-    `block h-full w-full ${
-      theme === "dark"
-        ? "bg-neutral-800"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/45"
-          : "bg-neutral-100"
-    }`,
-  selectedThumbnailAmount: (theme: SiteTheme) =>
-    `whitespace-nowrap text-sm font-black leading-none ${
-      theme === "dark"
-        ? "text-neutral-100"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-900"
-    }`,
+  selectedThumbnailFallback: "block h-full w-full bg-[#E5D5BC]/45 dark:bg-neutral-800",
+  selectedThumbnailAmount: "whitespace-nowrap text-sm font-black leading-none text-[#556145] dark:text-neutral-100",
   bodyGrid: `mt-4 grid ${sizeClasses.plannerPickerBrowserHeight} overflow-y-auto pr-1 max-sm:mt-2`,
-  filterRail: (theme: SiteTheme) =>
-    `max-h-[52vh] overflow-y-auto rounded-md p-3 max-sm:max-h-[44vh] ${shadowClasses.subtle} ${
-      theme === "dark"
-        ? "bg-white/[0.04]"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC]/45"
-          : "bg-neutral-100"
-    }`,
+  filterRail: `max-h-[52vh] overflow-y-auto rounded-md p-3 max-sm:max-h-[44vh] ${shadowClasses.subtle} bg-[#E5D5BC]/45 dark:bg-white/[0.04]`,
   recipeGrid: "grid grid-cols-4 gap-3 max-sm:grid-cols-2",
   ingredientGrid: "grid auto-rows-max grid-cols-2 content-start items-start gap-2 max-sm:grid-cols-1",
   pickerCardShell: "relative h-fit min-w-0",
@@ -962,69 +725,26 @@ export const plannerPickerStyles = {
     `relative grid min-w-0 rounded-md ${selected ? `after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:content-[''] ${siteColorClasses.selectedThumbnailRing}` : ""}`,
   pickerIngredientThumbnail: "shadow-none",
   pickerIngredientControls: "px-2 pb-2 pt-2",
-  recipeCard: (theme: SiteTheme, selected: boolean) =>
-    `${shadowClasses.subtle} ${
-      selected
-        ? `after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:content-[''] ${siteColorClasses.selectedThumbnailRing}`
-        : theme === "dark"
-          ? "ring-1 ring-white/[0.08]"
-          : theme === "paletteLight"
-            ? "ring-1 ring-[#7A8864]/20"
-            : "ring-1 ring-neutral-200"
-    }`,
+  recipeCard: (selected: boolean) =>
+    `${shadowClasses.subtle} ${selected ? `after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-md after:ring-2 after:ring-inset after:content-[''] ${siteColorClasses.selectedThumbnailRing}` : "ring-1 ring-[#7A8864]/20 dark:ring-white/[0.08]"}`,
   pickerInlineControls: "flex min-w-0 items-center gap-1.5",
   pickerInlineLabel: "min-w-0 flex-1",
-  pickerOverlayInput: (theme: SiteTheme) =>
-    `h-7 w-full min-w-0 rounded-md border px-2 text-xs font-bold outline-none ${
-      theme === "dark"
-        ? "border-white/[0.14] bg-neutral-900 text-white"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
-          : "border-neutral-300 bg-white text-neutral-900"
-    }`,
-  pickerOverlayUnitSelect: (theme: SiteTheme) =>
-    `h-7 min-w-[5.75rem] shrink-0 rounded-md border px-2 text-xs font-bold outline-none ${
-      theme === "dark"
-        ? "border-white/[0.14] bg-neutral-900 text-white"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2] text-[#556145]"
-          : "border-neutral-300 bg-white text-neutral-900"
-    }`,
+  pickerOverlayInput: "h-7 w-full min-w-0 rounded-md border px-2 text-xs font-bold outline-none border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] dark:border-white/[0.14] dark:bg-neutral-900 dark:text-white",
+  pickerOverlayUnitSelect: "h-7 min-w-[5.75rem] shrink-0 rounded-md border px-2 text-xs font-bold outline-none border-[#C8C0B5] bg-[#FAF7F2] text-[#556145] dark:border-white/[0.14] dark:bg-neutral-900 dark:text-white",
   footer: "border-t pt-4",
   footerContent: "flex items-center justify-between gap-3 max-sm:grid max-sm:grid-cols-1",
   footerSelectionRow: "flex min-w-0 flex-1 items-center gap-3",
-  footerClearButton: (theme: SiteTheme) =>
-    `shrink-0 border-0 bg-transparent p-0 text-sm font-bold underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-40 ${
-      theme === "dark"
-        ? "text-neutral-300 hover:text-white"
-        : theme === "paletteLight"
-          ? "text-[#556145] hover:text-[#3C4A2E]"
-          : "text-neutral-700 hover:text-neutral-950"
-    }`,
+  footerClearButton: "shrink-0 border-0 bg-transparent p-0 text-sm font-bold underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-40 text-[#556145] hover:text-[#3C4A2E] dark:text-neutral-300 dark:hover:text-white",
   footerActions:
     "flex shrink-0 flex-wrap items-center justify-end gap-3 max-sm:flex-nowrap max-sm:[&>button]:min-w-0 max-sm:[&>button]:flex-1 max-sm:[&>button]:px-3 max-sm:[&>button]:text-sm",
   secondaryButton: controlStyles.secondaryButton,
   mobileCancelButton: `hidden max-sm:inline-flex ${controlStyles.secondaryButton}`,
   primaryButton: controlStyles.primaryButton,
   removeButton: controlStyles.removeButton,
-  emptyState: (theme: SiteTheme) =>
-    `flex min-h-72 items-center justify-center ${radiusClasses.figma6} border p-8 text-center text-sm font-bold ${
-      theme === "dark"
-        ? "border-white/[0.08] bg-white/[0.035] text-neutral-300"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2]/70 text-[#556145]"
-          : "border-neutral-200 bg-neutral-50 text-neutral-700"
-    }`,
-  statusError: (theme: SiteTheme) =>
-    `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
-      theme === "dark"
-        ? "border-red-400/30 bg-red-500/10 text-red-200"
-        : theme === "paletteLight"
-          ? "border-red-700/25 bg-red-700/10 text-red-800"
-          : "border-red-200 bg-red-50 text-red-700"
-    }`,
-  statusErrorWithOffset: (theme: SiteTheme) =>
-    `mt-4 ${plannerPickerStyles.statusError(theme)}`,
+  emptyState: `flex min-h-72 items-center justify-center ${radiusClasses.figma6} border p-8 text-center text-sm font-bold border-[#C8C0B5] bg-[#FAF7F2]/70 text-[#556145] dark:border-white/[0.08] dark:bg-white/[0.035] dark:text-neutral-300`,
+  statusError: `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-red-700/25 bg-red-700/10 text-red-800 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200`,
+  statusErrorWithOffset: () =>
+    `mt-4 ${plannerPickerStyles.statusError}`,
 };
 
 export const groceryExportStyles = {

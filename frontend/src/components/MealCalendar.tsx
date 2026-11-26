@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "../contexts";
 import type { IIngredient } from "../interfaces/IIngredient";
-import { mealCalendarStyles, type SiteTheme } from "../styles/appStyles";
+import { mealCalendarStyles } from "../styles/appStyles";
 import type { IMealPlanEntry, MealSlot as MealSlotId, PlannerViewMode } from "../interfaces/IMeal";
 import type { IRecipe } from "../interfaces/IRecipe";
 import { getThumbnailSrc } from "../utils/imageThumbnail";
@@ -30,7 +30,6 @@ type MealCalendarProps = {
   onOpenRecipe: (recipe: IRecipe) => void;
   onSlotClick: (date: string, slot: MealSlotId) => void;
   recipesById: Map<number, IRecipe>;
-  theme?: SiteTheme;
   viewMode: PlannerViewMode;
 };
 
@@ -49,7 +48,6 @@ function MealCalendar({
   onOpenRecipe,
   onSlotClick,
   recipesById,
-  theme = "dark",
   viewMode,
 }: MealCalendarProps) {
   const { locale, t } = useLanguage();
@@ -106,7 +104,7 @@ function MealCalendar({
       <section className={mealCalendarStyles.shell} aria-busy={isLoading} aria-label={t.planner.mealCalendar}>
         <div className={mealCalendarStyles.monthHeaderGrid} aria-hidden="true">
           {weekDayLabels.map((day) => (
-            <div className={mealCalendarStyles.monthHeaderCell(theme)} key={day}>
+            <div className={mealCalendarStyles.monthHeaderCell} key={day}>
               {day}
             </div>
           ))}
@@ -123,14 +121,14 @@ function MealCalendar({
             return (
               <div
                 aria-current={isToday ? "date" : undefined}
-                className={mealCalendarStyles.monthDayCell(theme, muted, isToday)}
+                className={mealCalendarStyles.monthDayCell(muted, isToday)}
                 key={dateKey}
               >
                 {/* On touch screens a tap on the date shows the day's add buttons; a mouse reveals them on hover. */}
                 <button
                   aria-expanded={isRevealed}
                   aria-label={t.planner.showAddMeals(formatLongDate(date, locale))}
-                  className={mealCalendarStyles.monthDayNumberButton(theme, muted, isToday)}
+                  className={mealCalendarStyles.monthDayNumberButton(muted, isToday)}
                   disabled={isDisabled}
                   type="button"
                   onClick={() => setRevealedMonthDateKey(isRevealed ? null : dateKey)}
@@ -150,7 +148,6 @@ function MealCalendar({
                       onClick={() => onSlotClick(dateKey, slot)}
                       recipesById={recipesById}
                       slot={slot}
-                      theme={theme}
                       t={t}
                     />
                   ))}
@@ -169,7 +166,7 @@ function MealCalendar({
     <section className={mealCalendarStyles.shell} aria-busy={isLoading} aria-label={t.planner.mealCalendar}>
       <div className={mealCalendarStyles.headerRow} aria-hidden="true">
         {mealSlots.map((meal) => (
-          <div className={mealCalendarStyles.headerLabel(theme)} key={meal}>
+          <div className={mealCalendarStyles.headerLabel} key={meal}>
             {t.enums.mealSlots[meal]}
           </div>
         ))}
@@ -196,7 +193,7 @@ function MealCalendar({
                       ? t.planner.expandDay(dayLabel, dayDate)
                       : t.planner.collapseDay(dayLabel, dayDate)
                   }
-                  className={mealCalendarStyles.dayCellButton(theme, isToday)}
+                  className={mealCalendarStyles.dayCellButton(isToday)}
                   type="button"
                   onClick={() => toggleDay(dateKey)}
                 >
@@ -207,13 +204,13 @@ function MealCalendar({
                       </span>
                       <span className={mealCalendarStyles.dayLabel(isToday)}>{dayLabel}</span>
                     </span>
-                    <span className={mealCalendarStyles.dayDate(theme, isToday)}>{dayDate}</span>
+                    <span className={mealCalendarStyles.dayDate(isToday)}>{dayDate}</span>
                     {isToday && <span className={mealCalendarStyles.todayBadge}>{t.planner.today}</span>}
                   </span>
                   {/* A folded day shows what is planned in it; an open day shows the cards themselves. */}
                   {isCollapsed && (
                     <span className={mealCalendarStyles.dayPreviewStrip} aria-hidden="true">
-                      <span className={mealCalendarStyles.dayPreviewSummary(theme, isToday)}>
+                      <span className={mealCalendarStyles.dayPreviewSummary(isToday)}>
                         {t.planner.plannedMealsCount(plannedEntries.length, mealSlots.length)}
                       </span>
                       {plannedEntries.map((entry) => (
@@ -222,16 +219,15 @@ function MealCalendar({
                           ingredientsById={ingredientsById}
                           key={`${dateKey}-${entry.slot}-preview`}
                           recipesById={recipesById}
-                          theme={theme}
                         />
                       ))}
                     </span>
                   )}
                 </button>
               ) : (
-                <div className={mealCalendarStyles.dayCell(theme, isToday)}>
+                <div className={mealCalendarStyles.dayCell(isToday)}>
                   <span className={mealCalendarStyles.dayLabel(isToday)}>{dayLabel}</span>
-                  <span className={mealCalendarStyles.dayDate(theme, isToday)}>{dayDate}</span>
+                  <span className={mealCalendarStyles.dayDate(isToday)}>{dayDate}</span>
                   {isToday && <span className={mealCalendarStyles.todayBadge}>{t.planner.today}</span>}
                 </div>
               )}
@@ -255,7 +251,6 @@ function MealCalendar({
                     onClick={() => onSlotClick(dateKey, meal)}
                     recipesById={recipesById}
                     slot={meal}
-                    theme={theme}
                   />
                 ))}
               </div>
@@ -279,10 +274,9 @@ type DayMealPreviewProps = {
   entry?: IMealPlanEntry;
   ingredientsById: Map<number, IIngredient>;
   recipesById: Map<number, IRecipe>;
-  theme: SiteTheme;
 };
 
-function DayMealPreview({ entry, ingredientsById, recipesById, theme }: DayMealPreviewProps) {
+function DayMealPreview({ entry, ingredientsById, recipesById }: DayMealPreviewProps) {
   const plannedRecipes = entry?.recipes.slice().sort((first, second) => first.sortOrder - second.sortOrder) ?? [];
   const mainRecipe =
     plannedRecipes.find((plannedRecipe) => plannedRecipe.role === "Main") ?? plannedRecipes[0];
@@ -295,7 +289,7 @@ function DayMealPreview({ entry, ingredientsById, recipesById, theme }: DayMealP
   }
 
   return (
-    <span className={mealCalendarStyles.dayPreviewFilled(theme)}>
+    <span className={mealCalendarStyles.dayPreviewFilled}>
       {imageUrl ? (
         <img
           alt=""
@@ -308,7 +302,7 @@ function DayMealPreview({ entry, ingredientsById, recipesById, theme }: DayMealP
         <RecipeFallbackTile recipe={recipe} />
       ) : (
         <span
-          className={mealCalendarStyles.dayPreviewImageFallback(theme)}
+          className={mealCalendarStyles.dayPreviewImageFallback}
           style={{ backgroundColor: ingredient?.color ?? undefined }}
         />
       )}
@@ -326,11 +320,10 @@ type MonthMealSummaryProps = {
   onClick: () => void;
   recipesById: Map<number, IRecipe>;
   slot: MealSlotId;
-  theme: SiteTheme;
   t: ReturnType<typeof useLanguage>["t"];
 };
 
-function MonthMealSummary({ dateLabel, entry, ingredientsById, isDisabled, isRevealed, onClick, recipesById, slot, theme, t }: MonthMealSummaryProps) {
+function MonthMealSummary({ dateLabel, entry, ingredientsById, isDisabled, isRevealed, onClick, recipesById, slot, t }: MonthMealSummaryProps) {
   const plannedRecipes = entry?.recipes ?? [];
   const sortedPlannedRecipes = plannedRecipes
     .slice()
@@ -346,7 +339,7 @@ function MonthMealSummary({ dateLabel, entry, ingredientsById, isDisabled, isRev
     return (
       <button
         aria-label={t.planner.mealSlotLabel(dateLabel, slotLabel, null)}
-        className={mealCalendarStyles.monthAddButton(theme, isRevealed)}
+        className={mealCalendarStyles.monthAddButton(isRevealed)}
         disabled={isDisabled}
         title={t.planner.addMeal(slotLabel)}
         type="button"
@@ -365,7 +358,7 @@ function MonthMealSummary({ dateLabel, entry, ingredientsById, isDisabled, isRev
   return (
     <button
       aria-label={accessibleName}
-      className={mealCalendarStyles.monthMealChip(theme)}
+      className={mealCalendarStyles.monthMealChip}
       disabled={isDisabled}
       title={title}
       type="button"

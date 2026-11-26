@@ -58,7 +58,7 @@ function PlannerRecipePickerGrid({
 
   if (isEmpty) {
     return (
-      <div className={plannerPickerStyles.emptyState(theme)}>
+      <div className={plannerPickerStyles.emptyState}>
         {browserMode === "recipes" ? t.planner.noMatchingRecipesFound : t.browser.noIngredientsFound}
       </div>
     );
@@ -79,7 +79,7 @@ function PlannerRecipePickerGrid({
             <div className={plannerPickerStyles.pickerCardShell} key={recipe.recipeId}>
               <RecipeThumbnail
                 ariaPressed={visuallySelected}
-                className={plannerPickerStyles.recipeCard(theme, visuallySelected)}
+                className={plannerPickerStyles.recipeCard(visuallySelected)}
                 recipe={{
                   imageUrl: recipe.imageUrl,
                   thumbnailUrl: recipe.thumbnailUrl,
@@ -104,7 +104,6 @@ function PlannerRecipePickerGrid({
                 <div className={plannerPickerStyles.pickerFloatingControls}>
                   <PickerInlineControls
                     inputLabel={t.cookbook.portions}
-                    theme={theme}
                     value={value}
                     onValueChange={(nextValue) => {
                       setActiveOverlay({ kind: "recipe", id: recipe.recipeId, value: nextValue });
@@ -160,7 +159,6 @@ function PlannerRecipePickerGrid({
                 <div className={plannerPickerStyles.pickerIngredientControls}>
                   <PickerInlineControls
                     inputLabel={t.cookbook.amount}
-                    theme={theme}
                     unit={unit}
                     value={value}
                     onUnitChange={(nextUnit) => {
@@ -189,7 +187,6 @@ function PlannerRecipePickerGrid({
 
 type PickerOverlayProps = {
   inputLabel: string;
-  theme: SiteTheme;
   unit?: MeasurementUnit;
   value: string;
   onUnitChange?: (unit: MeasurementUnit) => void;
@@ -198,7 +195,6 @@ type PickerOverlayProps = {
 
 function PickerInlineControls({
   inputLabel,
-  theme,
   unit,
   value,
   onUnitChange,
@@ -211,7 +207,7 @@ function PickerInlineControls({
       <label className={plannerPickerStyles.pickerInlineLabel}>
         <span className="sr-only">{inputLabel}</span>
         <input
-          className={plannerPickerStyles.pickerOverlayInput(theme)}
+          className={plannerPickerStyles.pickerOverlayInput}
           min="0"
           step="0.25"
           type="number"
@@ -221,7 +217,7 @@ function PickerInlineControls({
       </label>
       {unit !== undefined && onUnitChange !== undefined && (
         <select
-          className={plannerPickerStyles.pickerOverlayUnitSelect(theme)}
+          className={plannerPickerStyles.pickerOverlayUnitSelect}
           value={unit}
           onChange={(event) => onUnitChange(event.target.value as MeasurementUnit)}
         >

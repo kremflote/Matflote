@@ -517,17 +517,16 @@ function PlannerRecipePickerModal({
       description={
         t.planner.selectMainDescription
       }
-      descriptionClassName={plannerPickerStyles.subtitle(theme)}
+      descriptionClassName={plannerPickerStyles.subtitle}
       footer={
         <div className={plannerPickerStyles.footerContent}>
           <div className={plannerPickerStyles.footerSelectionRow}>
             <PlannerRecipePickerSelection
               items={selectedPickerItems}
-              theme={theme}
               onRemoveItem={removeSelectedPickerItem}
             />
             <button
-              className={plannerPickerStyles.footerClearButton(theme)}
+              className={plannerPickerStyles.footerClearButton}
               disabled={
                 mainRecipeSelection === null &&
                 mainIngredientSelection === null &&
@@ -562,7 +561,7 @@ function PlannerRecipePickerModal({
       }
       footerClassName={plannerPickerStyles.footer}
       headerClassName={plannerPickerStyles.header}
-      panelClassName={plannerPickerStyles.modalPanel(theme)}
+      panelClassName={plannerPickerStyles.modalPanel}
       title={t.planner.chooseMainDish}
       titleClassName={plannerPickerStyles.title}
       titleId={titleId}
@@ -657,7 +656,7 @@ function PlannerRecipePickerModal({
             {browserMode === "recipes"
               ? quickRecipeFilters.map((tag) => (
                   <button
-                    className={plannerPickerStyles.quickFilterChip(theme, selectedMainRecipeTags.includes(tag))}
+                    className={plannerPickerStyles.quickFilterChip(selectedMainRecipeTags.includes(tag))}
                     key={tag}
                     type="button"
                     onClick={() => toggleTagFilter(tag, setSelectedMainRecipeTags)}
@@ -667,7 +666,7 @@ function PlannerRecipePickerModal({
                 ))
               : quickIngredientFilters.map((tag) => (
                   <button
-                    className={plannerPickerStyles.quickFilterChip(theme, selectedIngredientTags.includes(tag))}
+                    className={plannerPickerStyles.quickFilterChip(selectedIngredientTags.includes(tag))}
                     key={tag}
                     type="button"
                     onClick={() => toggleTagFilter(tag, setSelectedIngredientTags)}
@@ -746,7 +745,7 @@ function PlannerRecipePickerModal({
         </div>
 
         {saveError !== null && (
-          <p className={plannerPickerStyles.statusErrorWithOffset(theme)}>{saveError}</p>
+          <p className={plannerPickerStyles.statusErrorWithOffset()}>{saveError}</p>
         )}
 
     </Modal>

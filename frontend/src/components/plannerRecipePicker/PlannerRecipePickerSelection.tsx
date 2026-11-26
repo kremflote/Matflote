@@ -1,10 +1,8 @@
-import type { SiteTheme } from "../../styles/appStyles";
 import { plannerPickerStyles } from "../../styles/appStyles";
 import { getThumbnailSrc } from "../../utils/imageThumbnail";
 
 type PlannerRecipePickerSelectionProps = {
   items: PlannerPickerSelectedItem[];
-  theme: SiteTheme;
   onRemoveItem: (item: PlannerPickerSelectedItem) => void;
 };
 
@@ -19,7 +17,6 @@ export type PlannerPickerSelectedItem = {
 
 function PlannerRecipePickerSelection({
   items,
-  theme,
   onRemoveItem,
 }: PlannerRecipePickerSelectionProps) {
   return (
@@ -30,20 +27,20 @@ function PlannerRecipePickerSelection({
         return (
           <button
             aria-label={item.name}
-            className={plannerPickerStyles.selectedThumbnailButton(theme)}
+            className={plannerPickerStyles.selectedThumbnailButton}
             key={`${item.kind}-${item.id}`}
             title={item.name}
             type="button"
             onClick={() => onRemoveItem(item)}
           >
-            <span className={plannerPickerStyles.selectedThumbnailFrame(theme)}>
+            <span className={plannerPickerStyles.selectedThumbnailFrame}>
               {imageUrl === null ? (
-                <span className={plannerPickerStyles.selectedThumbnailFallback(theme)} />
+                <span className={plannerPickerStyles.selectedThumbnailFallback} />
               ) : (
                 <img alt="" className={plannerPickerStyles.selectedThumbnailImage} src={imageUrl} decoding="async" />
               )}
             </span>
-            <span className={plannerPickerStyles.selectedThumbnailAmount(theme)}>
+            <span className={plannerPickerStyles.selectedThumbnailAmount}>
               {item.valueLabel}
             </span>
           </button>

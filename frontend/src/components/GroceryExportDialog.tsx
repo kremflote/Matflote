@@ -213,7 +213,7 @@ function GroceryExportDialog({
           <div className={groceryExportStyles.emptyState}>{t.planner.groceryExportLoading}</div>
         )}
         {!isLoading && loadError !== null && (
-          <p className={groceryExportStyles.statusError(theme)}>{loadError}</p>
+          <p className={groceryExportStyles.statusError}>{loadError}</p>
         )}
         {!isLoading && loadError === null && itemCount === 0 && (
           <div className={groceryExportStyles.emptyState}>{t.planner.groceryExportEmpty}</div>
@@ -258,7 +258,7 @@ function GroceryExportDialog({
         )}
 
         {exportError !== null && (
-          <p className={groceryExportStyles.statusError(theme)}>{exportError}</p>
+          <p className={groceryExportStyles.statusError}>{exportError}</p>
         )}
         {exportMessage !== null && (
           <p className={groceryExportStyles.statusSuccess(theme)}>{exportMessage}</p>
@@ -344,7 +344,7 @@ function GroceryExportRulesDialog({
         })}
       </div>
       {rulesError !== null && (
-        <p className={groceryExportStyles.statusError(theme)}>{rulesError}</p>
+        <p className={groceryExportStyles.statusError}>{rulesError}</p>
       )}
     </Modal>
   );

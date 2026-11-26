@@ -475,7 +475,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           isMobileToolsHidden={selectedSlot !== null}
           isRangeBusy={isMealPlanBusy}
           isShowingToday={visibleRange.from === getVisibleRange(new Date(), viewMode).from}
-          theme={theme}
           viewMode={viewMode}
           onClearRange={requestClearCurrentRange}
           onExportRange={openGroceryExportDialog}
@@ -487,7 +486,7 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           onViewModeChange={changeViewMode}
         />
         {plannerActionError !== null && (
-          <p className={plannerControlsStyles.statusError(theme)}>{plannerActionError}</p>
+          <p className={plannerControlsStyles.statusError}>{plannerActionError}</p>
         )}
         {loadError !== null && (
           <LoadErrorPanel
@@ -511,7 +510,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           onOpenRecipe={(recipe) => openDetail({ kind: "recipe", id: recipe.recipeId })}
           onSlotClick={(date, slot) => setSelectedSlot({ date, slot })}
           recipesById={recipesById}
-          theme={theme}
           viewMode={viewMode}
         />
       </div>
@@ -539,7 +537,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
         <PrepHelperDialog
           from={prepRange.from}
           items={prepHelperItems}
-          theme={theme}
           to={prepRange.to}
           onClose={() => setIsPrepHelperOpen(false)}
         />

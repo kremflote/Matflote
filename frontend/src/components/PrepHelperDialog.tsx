@@ -1,14 +1,13 @@
 import { useId } from "react";
 import { useLanguage } from "../contexts";
 import type { MeasurementUnit } from "../interfaces/IIngredient";
-import { prepHelperStyles, type SiteTheme } from "../styles/appStyles";
+import { prepHelperStyles } from "../styles/appStyles";
 import type { PrepHelperItem } from "../utils/plannerPrepHelper";
 import Modal from "./Modal";
 
 type PrepHelperDialogProps = {
   from: string;
   items: PrepHelperItem[];
-  theme: SiteTheme;
   to: string;
   onClose: () => void;
 };
@@ -16,7 +15,6 @@ type PrepHelperDialogProps = {
 function PrepHelperDialog({
   from,
   items,
-  theme,
   to,
   onClose,
 }: PrepHelperDialogProps) {
@@ -30,7 +28,7 @@ function PrepHelperDialog({
       closeButtonClassName={prepHelperStyles.closeButton}
       closeLabel={t.common.close}
       description={t.planner.prepHelperDescription(from, to)}
-      descriptionClassName={prepHelperStyles.subtitle(theme)}
+      descriptionClassName={prepHelperStyles.subtitle}
       descriptionId={descriptionId}
       footer={
         <button
@@ -63,7 +61,7 @@ function PrepHelperDialog({
                 <div className={prepHelperStyles.itemHeader}>
                   <div>
                     <h3 className={prepHelperStyles.itemName}>{item.ingredientName}</h3>
-                    <p className={prepHelperStyles.sourceText(theme)}>
+                    <p className={prepHelperStyles.sourceText}>
                       {t.planner.prepHelperSources(item.sources.join(", "))}
                     </p>
                   </div>
@@ -73,7 +71,7 @@ function PrepHelperDialog({
                 </div>
                 <div className={prepHelperStyles.actionList}>
                   {item.actions.map((action) => (
-                    <span className={prepHelperStyles.actionChip(theme)} key={action}>
+                    <span className={prepHelperStyles.actionChip} key={action}>
                       {action}
                     </span>
                   ))}
