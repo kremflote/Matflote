@@ -1,6 +1,3 @@
-// MATFLOTE: API controller for SeedCatalog-related frontend and integration requests.
-// Note: Controllers stay thin where possible and delegate heavier business rules to services or EF model helpers.
-
 using DinnerPlanner.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
