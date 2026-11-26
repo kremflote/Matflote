@@ -22,15 +22,19 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
-builder.Services.AddCors(options =>
+// Production is same-origin through nginx, so only the Vite dev server (another port) needs CORS (AUDIT S1).
+if (builder.Environment.IsDevelopment())
 {
-    options.AddDefaultPolicy(policy =>
+    builder.Services.AddCors(options =>
     {
-        policy.AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
     });
-});
+}
 
 builder.Services.AddSingleton<CatalogVersion>();
 builder.Services.AddSingleton<CatalogVersionInterceptor>();
@@ -110,7 +114,11 @@ app.UseExceptionHandler(exceptionApp =>
     });
 });
 
-app.UseCors();
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors();
+}
+
 // No HTTPS redirection: TLS ends at the reverse proxy, and the app only ever sees plain HTTP from nginx.
 app.UseDefaultFiles();
 app.UseStaticFiles(new StaticFileOptions
