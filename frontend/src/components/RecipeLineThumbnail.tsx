@@ -1,13 +1,12 @@
 import type { IRecipe } from "../interfaces/IRecipe";
 import { getThumbnailSrc } from "../utils/imageThumbnail";
-import { colorPalette, siteColorClasses, thumbnailStyles, type SiteTheme } from "../styles/appStyles";
+import { colorPalette, siteColorClasses, thumbnailStyles } from "../styles/appStyles";
 
 type RecipeLineThumbnailProps = {
   recipe: Pick<IRecipe, "name" | "imageUrl"> & {
     thumbnailUrl?: string | null;
     subtitle?: string | null;
   };
-  theme?: SiteTheme;
   selected?: boolean;
   mode?: "default" | "compact";
   className?: string;
@@ -16,7 +15,6 @@ type RecipeLineThumbnailProps = {
 
 function RecipeLineThumbnail({
   recipe,
-  theme = "dark",
   selected = false,
   mode = "default",
   className = "",
@@ -24,12 +22,9 @@ function RecipeLineThumbnail({
 }: RecipeLineThumbnailProps) {
   const imageUrl = getThumbnailSrc(recipe);
   const compactClassName = mode === "compact" ? thumbnailStyles.ingredientShellCompact : "";
-  const sharedClassName = `${thumbnailStyles.ingredientShell} ${compactClassName} ${className} ${
+  const sharedClassName = `${thumbnailStyles.ingredientShell} ${thumbnailStyles.ingredientShellText} ${compactClassName} ${className} ${
     selected ? thumbnailStyles.ingredientSelectedColorBorder : ""
   } ${onClick ? `cursor-pointer ${siteColorClasses.ingredientThumbnailInteractive}` : ""}`;
-  const style = {
-    color: theme === "dark" ? colorPalette.ivory : colorPalette.ingredientIconText,
-  };
 
   const content = (
     <>
@@ -68,7 +63,7 @@ function RecipeLineThumbnail({
       <button
         aria-pressed={selected}
         className={sharedClassName}
-        style={style}
+       
         type="button"
         onClick={onClick}
       >
@@ -78,7 +73,7 @@ function RecipeLineThumbnail({
   }
 
   return (
-    <article className={sharedClassName} style={style} aria-label={recipe.name}>
+    <article className={sharedClassName} aria-label={recipe.name}>
       {content}
     </article>
   );

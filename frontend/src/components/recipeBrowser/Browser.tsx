@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { RecipeTag } from "../../interfaces/IRecipe";
-import type { SiteTheme } from "../../styles/appStyles";
 import Modal from "../Modal";
 import ActiveFilterChips from "./ActiveFilterChips";
 import BrowserDetailModal from "./BrowserDetailModal";
@@ -22,12 +21,11 @@ import { toBrowserDetailKey, type BrowserDetail, type BrowserMode } from "./type
 
 type BrowserProps = {
   mode: BrowserMode;
-  theme: SiteTheme;
   headerActions: ReactNode;
   modeToggle: ReactNode;
 };
 
-function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
+function Browser({ mode, headerActions, modeToggle }: BrowserProps) {
   const { t } = useLanguage();
   const { recipes, recipeIsLoading, initError: recipeError, refreshRecipes } = useRecipes();
   const {
@@ -139,7 +137,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             {modeToggle}
           </div>
           <div className={recipeBrowserStyles.headerTitle}>
-            <h1 className={recipeBrowserStyles.title(theme)}>
+            <h1 className={recipeBrowserStyles.title}>
               {mode === "recipes" ? t.cookbook.allRecipes : t.cookbook.allIngredients}
             </h1>
           </div>
@@ -164,7 +162,7 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
               {searchTerm.length > 0 && (
                 <button
                   aria-label={t.common.clear}
-                  className={recipeBrowserStyles.searchClearButton(theme)}
+                  className={recipeBrowserStyles.searchClearButton}
                   type="button"
                   onClick={() => setSearchTerm("")}
                 >
@@ -222,7 +220,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             selectedRecipeTags={selectedRecipeTags}
             selectedIngredientTags={selectedIngredientTags}
             selectedIngredients={selectedIngredients}
-            theme={theme}
             onClear={clearFilters}
             onRemoveRecipeTag={(value) =>
               setSelectedRecipeTags((currentValues) => currentValues.filter((currentValue) => currentValue !== value))
@@ -245,7 +242,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             popoverRef={ingredientPickerRef}
             searchTerm={ingredientPickerSearch}
             selectedIngredientIds={selectedIngredientIds}
-            theme={theme}
             x={ingredientPickerPosition.x}
             y={ingredientPickerPosition.y}
             onSearchChange={setIngredientPickerSearch}
@@ -279,7 +275,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             selectedIngredientTags={selectedIngredientTags}
             setSelectedRecipeTags={setSelectedRecipeTags}
             setSelectedIngredientTags={setSelectedIngredientTags}
-            theme={theme}
             variant="panel"
           />
         </Modal>
@@ -292,7 +287,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
           selectedIngredientTags={selectedIngredientTags}
           setSelectedRecipeTags={setSelectedRecipeTags}
           setSelectedIngredientTags={setSelectedIngredientTags}
-          theme={theme}
         />
 
         <div className={recipeBrowserStyles.resultsWithFilters}>
@@ -304,7 +298,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
             mode={mode}
             recipeError={recipeError}
             recipeIsLoading={recipeIsLoading}
-            theme={theme}
             onRetryIngredients={refreshIngredients}
             onRetryRecipes={refreshRecipes}
             onSelectDetail={selectDetail}
@@ -316,7 +309,6 @@ function Browser({ mode, theme, headerActions, modeToggle }: BrowserProps) {
         <BrowserDetailModal
           detail={selectedDetailKey}
           key={`${selectedDetailKey.kind}-${selectedDetailKey.id}`}
-          theme={theme}
           onClose={() => selectDetail(null)}
         />
       )}

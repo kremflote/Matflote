@@ -31,7 +31,7 @@ describe("CookbookPage when recipes cannot be loaded (F7)", () => {
           });
     });
 
-    renderWithProviders(<CookbookPage theme="dark" />);
+    renderWithProviders(<CookbookPage />);
 
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toContain("Could not load recipes");

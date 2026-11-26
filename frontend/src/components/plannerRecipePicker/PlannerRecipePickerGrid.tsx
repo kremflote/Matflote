@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLanguage } from "../../contexts";
 import type { IIngredient, MeasurementUnit } from "../../interfaces/IIngredient";
 import type { IRecipe } from "../../interfaces/IRecipe";
-import type { SiteTheme } from "../../styles/appStyles";
 import { plannerPickerStyles } from "../../styles/appStyles";
 import IngredientThumbnail from "../IngredientThumbnail";
 import RecipeThumbnail from "../RecipeThumbnail";
@@ -15,7 +14,6 @@ type PlannerRecipePickerGridProps = {
   recipes: IRecipe[];
   selectedIngredients: SelectedIngredientValue[];
   selectedRecipes: SelectedRecipeValue[];
-  theme: SiteTheme;
   onSelectIngredient: (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => void;
   onSelectRecipe: (recipe: IRecipe, portions: number) => void;
   onUpdateIngredient: (ingredient: IIngredient, amount: number, unit: MeasurementUnit) => void;
@@ -44,7 +42,6 @@ function PlannerRecipePickerGrid({
   recipes,
   selectedIngredients,
   selectedRecipes,
-  theme,
   onSelectIngredient,
   onSelectRecipe,
   onUpdateIngredient,
@@ -137,7 +134,6 @@ function PlannerRecipePickerGrid({
               <IngredientThumbnail
                 className={plannerPickerStyles.pickerIngredientThumbnail}
                 ingredient={ingredient}
-                theme={theme}
                 onClick={() => {
                   const nextAmount = parsePositiveNumber(value) ?? defaultAmount;
                   if (selected) {

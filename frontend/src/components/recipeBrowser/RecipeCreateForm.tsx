@@ -3,7 +3,6 @@ import { useIngredientTagCategories, useIngredients, useLanguage, useRecipes } f
 import type { IRecipe, RecipeTag } from "../../interfaces/IRecipe";
 import type { IConversionRule } from "../../interfaces/IConversionRule";
 import { ApiError, conversionRuleService, imageUploadService, ingredientTagCategoryService, recipeService } from "../../services";
-import type { SiteTheme } from "../../styles/appStyles";
 import { getAllCategoryTagNames, getRecipeVisibleTagCategories } from "../../utils/tagCatalog";
 import {
   formatRecipeTagGroupName,
@@ -33,7 +32,6 @@ type RecipeCreateFormProps = {
   imageInputId: string;
   initialRecipe?: IRecipe | null;
   showRecipeDetails: boolean;
-  theme: SiteTheme;
   onToggleRecipeDetails?: () => void;
   onCreated: () => void;
   onCancel: () => void;
@@ -46,7 +44,6 @@ function RecipeCreateForm({
   imageInputId,
   initialRecipe = null,
   showRecipeDetails,
-  theme,
   onToggleRecipeDetails,
   onCreated,
   onCancel,
@@ -313,15 +310,15 @@ function RecipeCreateForm({
   return (
     <form className={recipeBrowserStyles.form} onSubmit={submitRecipe}>
       <div className={recipeBrowserStyles.formBodyScrollArea}>
-        {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
+        {error !== null && <p className={recipeBrowserStyles.statusError}>{error}</p>}
 
-        <div className={recipeBrowserStyles.recipeCreateScrollArea(theme)}>
+        <div className={recipeBrowserStyles.recipeCreateScrollArea}>
           <div className={recipeBrowserStyles.createFormTopGrid}>
             <div className={recipeBrowserStyles.createFormPrimaryFields}>
               <label className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>
-                  {t.cookbook.name}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-                  <span className={recipeBrowserStyles.inlineHint(theme)}>
+                <span className={recipeBrowserStyles.label}>
+                  {t.cookbook.name}<span className={recipeBrowserStyles.requiredMark}> *</span>
+                  <span className={recipeBrowserStyles.inlineHint}>
                     {name.length}/{RECIPE_NAME_MAX_LENGTH}
                   </span>
                 </span>
@@ -336,8 +333,8 @@ function RecipeCreateForm({
               </label>
 
               <label className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>
-                  {t.cookbook.portions}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
+                <span className={recipeBrowserStyles.label}>
+                  {t.cookbook.portions}<span className={recipeBrowserStyles.requiredMark}> *</span>
                 </span>
                 <input
                   className={recipeBrowserStyles.textField}
@@ -352,14 +349,13 @@ function RecipeCreateForm({
 
             </div>
             <div className={recipeBrowserStyles.createImageField}>
-              <span className={`${recipeBrowserStyles.label(theme)} ${recipeBrowserStyles.createImageLabel}`}>
+              <span className={`${recipeBrowserStyles.label} ${recipeBrowserStyles.createImageLabel}`}>
                 {t.cookbook.image}
               </span>
               <div className={recipeBrowserStyles.createImageControl}>
                 <ImageCropPicker
                   inputId={imageInputId}
                   initialImageUrl={initialRecipe?.imageUrl}
-                  theme={theme}
                   onCroppedFileChange={handleCroppedFileChange}
                 />
               </div>
@@ -369,7 +365,7 @@ function RecipeCreateForm({
           {onToggleRecipeDetails && (
             <button
               aria-expanded={showRecipeDetails}
-              className={recipeBrowserStyles.detailsToggleFull(theme)}
+              className={recipeBrowserStyles.detailsToggleFull}
               type="button"
               onClick={onToggleRecipeDetails}
             >
@@ -381,7 +377,7 @@ function RecipeCreateForm({
             <div className={recipeBrowserStyles.detailsPanel}>
               <div className={recipeBrowserStyles.formGrid}>
                 <label className={recipeBrowserStyles.field}>
-                  <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.description}</span>
+                  <span className={recipeBrowserStyles.label}>{t.cookbook.description}</span>
                   <textarea
                     className={recipeBrowserStyles.textArea}
                     maxLength={600}
@@ -391,7 +387,7 @@ function RecipeCreateForm({
                 </label>
 
                 <label className={recipeBrowserStyles.field}>
-                  <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.instructions}</span>
+                  <span className={recipeBrowserStyles.label}>{t.cookbook.instructions}</span>
                   <textarea
                     className={recipeBrowserStyles.textArea}
                     value={instructions}
@@ -403,18 +399,17 @@ function RecipeCreateForm({
           )}
 
           <section className={`${recipeBrowserStyles.field} ${recipeBrowserStyles.desktopTagSection}`}>
-            <span className={recipeBrowserStyles.label(theme)}>
+            <span className={recipeBrowserStyles.label}>
               {t.cookbook.tags}
-              <span className={recipeBrowserStyles.inlineHint(theme)}>{t.cookbook.optional}</span>
+              <span className={recipeBrowserStyles.inlineHint}>{t.cookbook.optional}</span>
             </span>
             <GroupedCheckboxPanel
               addActionLabel={t.common.manageTags}
               formatValue={(value) => t.enums.recipeTags[value] ?? formatLabel(value)}
               groupLabels={recipeTagGroupLabels}
               groups={groupedRecipeTags}
-              panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
+              panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel}`}
               selectedValues={selectedTags}
-              theme={theme}
               onAddTag={() => setIsTagCreateOpen(true)}
               onToggle={(value) => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
             />
@@ -422,7 +417,7 @@ function RecipeCreateForm({
 
           <div className={recipeBrowserStyles.mobileFormActionRow}>
             <button
-              className={`${recipeBrowserStyles.detailsToggleFull(theme)} ${recipeBrowserStyles.mobileFormActionButton}`}
+              className={`${recipeBrowserStyles.detailsToggleFull} ${recipeBrowserStyles.mobileFormActionButton}`}
               type="button"
               onClick={() => setIsTagPickerOpen(true)}
             >
@@ -432,14 +427,14 @@ function RecipeCreateForm({
 
           <section className={recipeBrowserStyles.field}>
             <div className={recipeBrowserStyles.fieldHeaderRow}>
-              <span className={recipeBrowserStyles.label(theme)}>
-                {t.cookbook.ingredients}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-                <span className={recipeBrowserStyles.inlineHint(theme)}>
+              <span className={recipeBrowserStyles.label}>
+                {t.cookbook.ingredients}<span className={recipeBrowserStyles.requiredMark}> *</span>
+                <span className={recipeBrowserStyles.inlineHint}>
                   {t.cookbook.recipeLinesHelp}
                 </span>
               </span>
               <button
-                className={recipeBrowserStyles.inlineHelperButton(theme)}
+                className={recipeBrowserStyles.inlineHelperButton}
                 type="button"
                 onClick={() => setIsConversionHelperOpen(true)}
               >
@@ -452,11 +447,11 @@ function RecipeCreateForm({
               onChange={setRecipeLinePickerMode}
             />
             <div className={recipeBrowserStyles.mobileIngredientSummary}>
-              <button className={recipeBrowserStyles.detailsToggleFull(theme)} type="button" onClick={openMobileIngredientPicker}>
+              <button className={recipeBrowserStyles.detailsToggleFull} type="button" onClick={openMobileIngredientPicker}>
                 {recipeLinePickerMode === "ingredients" ? t.cookbook.chooseIngredients : t.cookbook.chooseRecipes}
               </button>
               {selectedIngredients.length === 0 && selectedComponents.length === 0 ? (
-                <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noIngredientsSelected}</p>
+                <p className={recipeBrowserStyles.helperText}>{t.cookbook.noIngredientsSelected}</p>
               ) : null}
             </div>
             <div className={recipeBrowserStyles.desktopIngredientPicker}>
@@ -467,7 +462,6 @@ function RecipeCreateForm({
                   preparationLabels={t.enums.ingredientPreparations}
                   selectedIngredientIds={selectedIngredientIds}
                   selectedIngredients={selectedIngredients}
-                  theme={theme}
                   onAmountChange={(ingredientId, amount) =>
                     setSelectedIngredients((currentIngredients) =>
                       updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
@@ -497,7 +491,6 @@ function RecipeCreateForm({
                   recipes={visibleComponentRecipes}
                   selectedComponentIds={selectedComponentIds}
                   selectedComponents={selectedComponents}
-                  theme={theme}
                   onAmountChange={(recipeId, amount) =>
                     setSelectedComponents((currentComponents) =>
                       updateSelectedRecipeComponent(currentComponents, recipeId, { amount }),
@@ -569,7 +562,6 @@ function RecipeCreateForm({
               preparationLabels={t.enums.ingredientPreparations}
               selectedIngredientIds={mobileSelectedIngredientIds}
               selectedIngredients={mobileIngredientDraft}
-              theme={theme}
               onAmountChange={(ingredientId, amount) =>
                 setMobileIngredientDraft((currentIngredients) =>
                   updateSelectedIngredient(currentIngredients, ingredientId, { amount }),
@@ -599,7 +591,6 @@ function RecipeCreateForm({
               recipes={visibleMobileComponentRecipes}
               selectedComponentIds={mobileSelectedComponentIds}
               selectedComponents={mobileComponentDraft}
-              theme={theme}
               onAmountChange={(recipeId, amount) =>
                 setMobileComponentDraft((currentComponents) =>
                   updateSelectedRecipeComponent(currentComponents, recipeId, { amount }),
@@ -627,7 +618,6 @@ function RecipeCreateForm({
       )}
       {isConversionHelperOpen && (
         <ConversionHelperDialog
-          theme={theme}
           onClose={() => setIsConversionHelperOpen(false)}
         />
       )}
@@ -638,7 +628,6 @@ function RecipeCreateForm({
           groupLabels={recipeTagGroupLabels}
           groups={groupedRecipeTags}
           selectedValues={selectedTags}
-          theme={theme}
           title={t.cookbook.tags}
           onAddTag={() => setIsTagCreateOpen(true)}
           onClose={() => setIsTagPickerOpen(false)}
@@ -650,7 +639,6 @@ function RecipeCreateForm({
           categories={ingredientTagCategories}
           existingTags={[...knownRecipeTags, ...customRecipeTags]}
           initialMode="recipes"
-          theme={theme}
           onCancel={() => setIsTagCreateOpen(false)}
           onCreate={async (tag, categoryId) => {
             await ingredientTagCategoryService.createTag(categoryId, { name: tag });
@@ -716,7 +704,6 @@ function RecipeCreateForm({
 }
 
 type ConversionHelperDialogProps = {
-  theme: SiteTheme;
   onClose: () => void;
 };
 
@@ -736,7 +723,7 @@ function RecipeLineModeToggle({ className = "", mode, onChange }: RecipeLineMode
   );
 }
 
-function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps) {
+function ConversionHelperDialog({ onClose }: ConversionHelperDialogProps) {
   const { language, t } = useLanguage();
   const [rules, setRules] = useState<IConversionRule[]>([]);
   const [fromText, setFromText] = useState("");
@@ -829,13 +816,13 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
       titleClassName={recipeBrowserStyles.modalTitle}
       onClose={onClose}
     >
-      <p className={recipeBrowserStyles.conversionHelperIntro(theme)}>
+      <p className={recipeBrowserStyles.conversionHelperIntro}>
         {t.cookbook.conversionHelperIntro}
       </p>
-      <p className={recipeBrowserStyles.conversionHelperSource(theme)}>
+      <p className={recipeBrowserStyles.conversionHelperSource}>
         {t.cookbook.conversionHelperSourceText}{" "}
         <a
-          className={recipeBrowserStyles.conversionHelperSourceLink(theme)}
+          className={recipeBrowserStyles.conversionHelperSourceLink}
           href="https://www.matprat.no/artikler/mengde-mal-og-vekt/mal-og-vekt/"
           rel="noreferrer"
           target="_blank"
@@ -844,11 +831,11 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
         </a>
         .
       </p>
-      <section className={recipeBrowserStyles.conversionSection(theme)}>
-        <h3 className={recipeBrowserStyles.conversionSectionTitle(theme)}>{t.cookbook.conversions}</h3>
-        {rulesError !== null && <p className={recipeBrowserStyles.statusError(theme)}>{rulesError}</p>}
+      <section className={recipeBrowserStyles.conversionSection}>
+        <h3 className={recipeBrowserStyles.conversionSectionTitle}>{t.cookbook.conversions}</h3>
+        {rulesError !== null && <p className={recipeBrowserStyles.statusError}>{rulesError}</p>}
         {isLoadingRules ? (
-          <p className={recipeBrowserStyles.conversionHelperSource(theme)}>{t.common.working}</p>
+          <p className={recipeBrowserStyles.conversionHelperSource}>{t.common.working}</p>
         ) : (
           <div className={recipeBrowserStyles.conversionList}>
             {rules.map((rule) => {
@@ -856,12 +843,12 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
               const localizedToText = language === "nb" ? rule.toTextNb ?? rule.toText : rule.toText;
 
               return (
-                <div className={recipeBrowserStyles.conversionRow(theme)} key={rule.conversionRuleId}>
+                <div className={recipeBrowserStyles.conversionRow} key={rule.conversionRuleId}>
                   <span className={recipeBrowserStyles.conversionSource}>{localizedFromText}</span>
-                  <span className={recipeBrowserStyles.conversionArrow(theme)}>=</span>
+                  <span className={recipeBrowserStyles.conversionArrow}>=</span>
                   <span className={recipeBrowserStyles.conversionTarget}>{localizedToText}</span>
                   <button
-                    className={recipeBrowserStyles.inlineTextButton(theme)}
+                    className={recipeBrowserStyles.inlineTextButton}
                     type="button"
                     onClick={() => void deleteRule(rule.conversionRuleId)}
                   >
@@ -873,11 +860,11 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
           </div>
         )}
       </section>
-      <section className={recipeBrowserStyles.conversionSection(theme)}>
-        <h3 className={recipeBrowserStyles.conversionSectionTitle(theme)}>{t.cookbook.addConversionRule}</h3>
+      <section className={recipeBrowserStyles.conversionSection}>
+        <h3 className={recipeBrowserStyles.conversionSectionTitle}>{t.cookbook.addConversionRule}</h3>
         <div className={recipeBrowserStyles.conversionRuleForm}>
           <label className={recipeBrowserStyles.field}>
-            <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.conversionFrom}</span>
+            <span className={recipeBrowserStyles.label}>{t.cookbook.conversionFrom}</span>
             <input
               className={recipeBrowserStyles.textField}
               maxLength={120}
@@ -887,7 +874,7 @@ function ConversionHelperDialog({ theme, onClose }: ConversionHelperDialogProps)
             />
           </label>
           <label className={recipeBrowserStyles.field}>
-            <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.conversionTo}</span>
+            <span className={recipeBrowserStyles.label}>{t.cookbook.conversionTo}</span>
             <input
               className={recipeBrowserStyles.textField}
               maxLength={120}

@@ -1,10 +1,8 @@
 import { forwardRef, type InputHTMLAttributes, type KeyboardEventHandler } from "react";
-import type { SiteTheme } from "../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
 
 type SearchFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "type" | "value"> & {
   inputClassName: string;
-  theme: SiteTheme;
   value: string;
   onChange: (value: string) => void;
   onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
@@ -14,7 +12,6 @@ const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(function Sear
   {
     className = "",
     inputClassName,
-    theme,
     value,
     onChange,
     ...inputProps
@@ -34,7 +31,7 @@ const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(function Sear
       {value.length > 0 && (
         <button
           aria-label={inputProps["aria-label"]?.toString() ?? "Clear search"}
-          className={recipeBrowserStyles.searchClearButton(theme)}
+          className={recipeBrowserStyles.searchClearButton}
           type="button"
           onClick={() => onChange("")}
         >

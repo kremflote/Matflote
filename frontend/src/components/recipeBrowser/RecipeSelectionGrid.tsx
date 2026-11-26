@@ -1,12 +1,10 @@
 import { useLanguage } from "../../contexts";
 import type { IRecipe } from "../../interfaces/IRecipe";
-import type { SiteTheme } from "../../styles/appStyles";
 import RecipeThumbnail from "../RecipeThumbnail";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type RecipeSelectionGridProps = {
   recipes: IRecipe[];
-  theme: SiteTheme;
   getSubtitle?: (recipe: IRecipe) => string;
   gridClassName?: string;
   selectedRecipeIds?: number[];
@@ -15,7 +13,6 @@ type RecipeSelectionGridProps = {
 
 function RecipeSelectionGrid({
   recipes,
-  theme,
   getSubtitle,
   gridClassName = recipeBrowserStyles.recipeGrid,
   selectedRecipeIds = [],
@@ -31,7 +28,7 @@ function RecipeSelectionGrid({
         return (
           <RecipeThumbnail
             ariaPressed={selected}
-            className={`${recipeBrowserStyles.recipeCard(theme)} ${
+            className={`${recipeBrowserStyles.recipeCard} ${
               selected ? recipeBrowserStyles.componentRecipeSelected : ""
             }`}
             interactiveEffect={false}

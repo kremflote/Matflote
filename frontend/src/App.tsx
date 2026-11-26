@@ -50,11 +50,11 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
       />
-      {activePage === "weekPlanner" && <PlannerPage theme={theme} />}
-      {activePage === "cookbook" && <CookbookPage theme={theme} />}
+      {activePage === "weekPlanner" && <PlannerPage />}
+      {activePage === "cookbook" && <CookbookPage />}
       <Suspense fallback={null}>
         {activePage === "settings" && <SettingsPage />}
-        {activePage === "scanner" && <ScannerPage theme={theme} />}
+        {activePage === "scanner" && <ScannerPage />}
         {activePage === "nutrition" && <NutritionPage />}
       </Suspense>
     </div>

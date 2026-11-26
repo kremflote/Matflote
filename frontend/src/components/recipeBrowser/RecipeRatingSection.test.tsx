@@ -25,7 +25,7 @@ const recipe: IRecipe = {
 function RatingFromList() {
   const { recipes } = useRecipes();
   const current = recipes.find((item) => item.recipeId === recipe.recipeId);
-  return current === undefined ? null : <RecipeRatingSection recipe={current} theme="dark" />;
+  return current === undefined ? null : <RecipeRatingSection recipe={current} />;
 }
 
 beforeEach(() => {

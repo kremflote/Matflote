@@ -1,25 +1,23 @@
 import type { IIngredient } from "../../interfaces/IIngredient";
 import { useLanguage } from "../../contexts";
 import { getApiAssetUrl } from "../../services/apiClient";
-import type { SiteTheme } from "../../styles/appStyles";
 import { DetailSection, DetailText, NutritionGrid } from "./detailComponents";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type IngredientDetailContentProps = {
   ingredient: IIngredient;
-  theme: SiteTheme;
 };
 
-function IngredientDetailContent({ ingredient, theme }: IngredientDetailContentProps) {
+function IngredientDetailContent({ ingredient }: IngredientDetailContentProps) {
   const { t } = useLanguage();
   const imageUrl = getApiAssetUrl(ingredient.imageUrl);
 
   return (
     <div className={recipeBrowserStyles.detailShell}>
-      <DetailSection title={t.cookbook.overview} theme={theme}>
+      <DetailSection title={t.cookbook.overview}>
         <div className={recipeBrowserStyles.ingredientDetailOverviewGrid}>
           <div
-            className={recipeBrowserStyles.ingredientDetailImageFrame(theme)}
+            className={recipeBrowserStyles.ingredientDetailImageFrame}
             style={imageUrl === null ? { backgroundColor: ingredient.color ?? undefined } : undefined}
           >
             {imageUrl === null ? (
@@ -31,19 +29,18 @@ function IngredientDetailContent({ ingredient, theme }: IngredientDetailContentP
             )}
           </div>
           <div className={recipeBrowserStyles.ingredientDetailMetaStack}>
-            <IngredientMetaField label={t.cookbook.brand} theme={theme} value={ingredient.brand?.name ?? ""} />
+            <IngredientMetaField label={t.cookbook.brand} value={ingredient.brand?.name ?? ""} />
           </div>
         </div>
       </DetailSection>
 
       <DetailText
         label={t.cookbook.description}
-        theme={theme}
         value={ingredient.description || t.cookbook.noDescription}
       />
 
-      <DetailSection title={t.cookbook.dietaryInformationPer100g} theme={theme}>
-        <NutritionGrid nutrition={ingredient.nutritionPer100} theme={theme} />
+      <DetailSection title={t.cookbook.dietaryInformationPer100g}>
+        <NutritionGrid nutrition={ingredient.nutritionPer100} />
       </DetailSection>
     </div>
   );
@@ -51,14 +48,13 @@ function IngredientDetailContent({ ingredient, theme }: IngredientDetailContentP
 
 type IngredientMetaFieldProps = {
   label: string;
-  theme: SiteTheme;
   value: string;
 };
 
-function IngredientMetaField({ label, theme, value }: IngredientMetaFieldProps) {
+function IngredientMetaField({ label, value }: IngredientMetaFieldProps) {
   return (
-    <div className={recipeBrowserStyles.ingredientDetailMetaField(theme)}>
-      <span className={recipeBrowserStyles.ingredientDetailMetaLabel(theme)}>{label}</span>
+    <div className={recipeBrowserStyles.ingredientDetailMetaField}>
+      <span className={recipeBrowserStyles.ingredientDetailMetaLabel}>{label}</span>
       <span className={recipeBrowserStyles.ingredientDetailMetaValue}>{value}</span>
     </div>
   );

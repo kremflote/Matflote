@@ -68,7 +68,7 @@ describe("Removing an ingredient that is in use (B1)", () => {
     });
     const onClose = vi.fn();
 
-    renderWithProviders(<BrowserDetailModal detail={{ kind: "ingredient", id: 1 }} theme="dark" onClose={onClose} />);
+    renderWithProviders(<BrowserDetailModal detail={{ kind: "ingredient", id: 1 }} onClose={onClose} />);
 
     fireEvent.click(await screen.findByRole("button", { name: remove }));
     const confirmDialog = await screen.findByRole("dialog", { name: confirmTitle });

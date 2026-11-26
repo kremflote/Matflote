@@ -1,6 +1,5 @@
 import Modal from "../Modal";
 import { useLanguage } from "../../contexts";
-import type { SiteTheme } from "../../styles/appStyles";
 import { GroupedCheckboxPanel, type CheckboxGroup } from "./BrowserFilterGroups";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
@@ -10,7 +9,6 @@ type TagPickerDialogProps<TValue extends string> = {
   groupLabels: Record<string, string>;
   groups: CheckboxGroup<TValue>[];
   selectedValues: TValue[];
-  theme: SiteTheme;
   title: string;
   onAddTag: () => void;
   onClose: () => void;
@@ -23,7 +21,6 @@ function TagPickerDialog<TValue extends string>({
   groupLabels,
   groups,
   selectedValues,
-  theme,
   title,
   onAddTag,
   onClose,
@@ -54,9 +51,8 @@ function TagPickerDialog<TValue extends string>({
         formatValue={formatValue}
         groupLabels={groupLabels}
         groups={groups}
-        panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
+        panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel}`}
         selectedValues={selectedValues}
-        theme={theme}
         onAddTag={onAddTag}
         onToggle={onToggle}
       />

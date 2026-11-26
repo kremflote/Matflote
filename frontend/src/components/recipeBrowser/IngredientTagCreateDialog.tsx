@@ -1,7 +1,6 @@
 import { useLanguage } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { IIngredientTagCategory } from "../../interfaces/ILookup";
-import type { SiteTheme } from "../../styles/appStyles";
 import type { CreatableOption } from "./CreatableSelect";
 import { formatIngredientTagCategoryName } from "./formOptions";
 import TagManagementDialog from "./TagManagementDialog";
@@ -10,7 +9,6 @@ type IngredientTagCreateDialogProps = {
   categories: readonly IIngredientTagCategory[];
   existingTags: readonly IngredientTag[];
   initialMode?: "ingredients" | "recipes";
-  theme: SiteTheme;
   onCancel: () => void;
   onCreate: (tag: IngredientTag, categoryId: number) => Promise<void>;
   onCreateCategory: (name: string, mode: "ingredients" | "recipes") => Promise<CreatableOption>;
@@ -26,7 +24,6 @@ function IngredientTagCreateDialog({
   categories,
   existingTags,
   initialMode = "ingredients",
-  theme,
   onCancel,
   onCreate,
   onCreateCategory,
@@ -58,7 +55,6 @@ function IngredientTagCreateDialog({
         formatIngredientTagCategoryName(name, t.filters.ingredientTagGroups)
       }
       initialMode={initialMode}
-      theme={theme}
       onCancel={onCancel}
       onCreate={(tag, categoryId) => onCreate(tag as IngredientTag, categoryId)}
       onCreateCategory={onCreateCategory}

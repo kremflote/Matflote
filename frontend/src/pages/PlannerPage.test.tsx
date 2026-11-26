@@ -21,7 +21,7 @@ afterEach(() => {
   sessionStorage.clear();
 });
 
-const renderPlanner = () => renderWithProviders(<PlannerPage theme="dark" />);
+const renderPlanner = () => renderWithProviders(<PlannerPage />);
 // Each slot is named by its day and meal, for example "Wednesday, November 25, dinner: empty, add a meal".
 const mealSlotName = /, (breakfast|lunch|dinner): /;
 

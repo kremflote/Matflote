@@ -48,7 +48,7 @@ describe("BrowserDetailModal (F8)", () => {
     renderWithProviders(
       <>
         <RefreshButton />
-        <BrowserDetailModal detail={{ kind: "recipe", id: 7 }} theme="dark" onClose={() => undefined} />
+        <BrowserDetailModal detail={{ kind: "recipe", id: 7 }} onClose={() => undefined} />
       </>,
     );
 

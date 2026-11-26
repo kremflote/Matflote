@@ -2,7 +2,6 @@ import { useCallback, useId, useState, type FormEvent } from "react";
 import { useBrands, useIngredientTagCategories, useIngredients, useLanguage, useRecipes } from "../../contexts";
 import type { IIngredient, IngredientTag, NutritionDataSource } from "../../interfaces/IIngredient";
 import { ApiError, brandService, imageUploadService, ingredientService, ingredientTagCategoryService } from "../../services";
-import type { SiteTheme } from "../../styles/appStyles";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../../constants/validation";
 import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../../utils/tagCatalog";
 import {
@@ -21,14 +20,12 @@ import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type IngredientCreateFormProps = {
   initialIngredient?: IIngredient | null;
-  theme: SiteTheme;
   onCreated: (ingredientName?: string) => void;
   onCancel: () => void;
 };
 
 function IngredientCreateForm({
   initialIngredient = null,
-  theme,
   onCreated,
   onCancel,
 }: IngredientCreateFormProps) {
@@ -275,7 +272,6 @@ function IngredientCreateForm({
   };
   const nutritionPanel = (
     <NutritionEditor
-      theme={theme}
       values={nutritionValues}
       onChange={updateNutritionValue}
       onSearchMatvaretabellen={() => setIsMatvareSearchOpen(true)}
@@ -285,15 +281,15 @@ function IngredientCreateForm({
   return (
     <form className={recipeBrowserStyles.form} onSubmit={submitIngredient}>
       <div className={recipeBrowserStyles.formBodyScrollArea}>
-        {error !== null && <p className={recipeBrowserStyles.statusError(theme)}>{error}</p>}
+        {error !== null && <p className={recipeBrowserStyles.statusError}>{error}</p>}
 
-        <div className={recipeBrowserStyles.ingredientCreateScrollArea(theme)}>
+        <div className={recipeBrowserStyles.ingredientCreateScrollArea}>
           <div className={recipeBrowserStyles.createFormTopGrid}>
             <div className={recipeBrowserStyles.createFormPrimaryFields}>
               <label className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>
-                    {t.cookbook.name}<span className={recipeBrowserStyles.requiredMark(theme)}> *</span>
-                  <span className={recipeBrowserStyles.inlineHint(theme)}>
+                <span className={recipeBrowserStyles.label}>
+                    {t.cookbook.name}<span className={recipeBrowserStyles.requiredMark}> *</span>
+                  <span className={recipeBrowserStyles.inlineHint}>
                     {ingredientName.length}/{INGREDIENT_NAME_MAX_LENGTH}
                   </span>
                 </span>
@@ -312,7 +308,6 @@ function IngredientCreateForm({
                 label={t.cookbook.brand}
                 options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
                 placeholder={t.cookbook.selectBrand}
-                theme={theme}
                 value={brandId}
                 onChange={setBrandId}
                 onCreate={async (name) => {
@@ -329,10 +324,10 @@ function IngredientCreateForm({
               />
 
               <section className={recipeBrowserStyles.field}>
-                <span className={recipeBrowserStyles.label(theme)}>{t.cookbook.nutrition}</span>
+                <span className={recipeBrowserStyles.label}>{t.cookbook.nutrition}</span>
                 <div className={recipeBrowserStyles.mobileFormActionRow}>
                   <button
-                    className={`${recipeBrowserStyles.detailsToggleFull(theme)} ${recipeBrowserStyles.mobileFormActionButton}`}
+                    className={`${recipeBrowserStyles.detailsToggleFull} ${recipeBrowserStyles.mobileFormActionButton}`}
                     type="button"
                     onClick={() => setIsTagPickerOpen(true)}
                   >
@@ -340,7 +335,7 @@ function IngredientCreateForm({
                   </button>
                   <button
                     aria-expanded={showNutrition}
-                    className={`${recipeBrowserStyles.detailsToggleFull(theme)} ${recipeBrowserStyles.mobileFormActionButton}`}
+                    className={`${recipeBrowserStyles.detailsToggleFull} ${recipeBrowserStyles.mobileFormActionButton}`}
                     type="button"
                     onClick={() => setShowNutrition((currentValue) => !currentValue)}
                   >
@@ -349,7 +344,7 @@ function IngredientCreateForm({
                 </div>
                 <button
                   aria-expanded={showNutrition}
-                  className={`${recipeBrowserStyles.detailsToggleFull(theme)} max-sm:hidden`}
+                  className={`${recipeBrowserStyles.detailsToggleFull} max-sm:hidden`}
                   type="button"
                   onClick={() => setShowNutrition((currentValue) => !currentValue)}
                 >
@@ -360,14 +355,13 @@ function IngredientCreateForm({
             </div>
 
             <section className={recipeBrowserStyles.createImageField}>
-              <span className={`${recipeBrowserStyles.label(theme)} ${recipeBrowserStyles.createImageLabel}`}>
+              <span className={`${recipeBrowserStyles.label} ${recipeBrowserStyles.createImageLabel}`}>
                 {t.cookbook.image}
               </span>
               <div className={recipeBrowserStyles.createImageControl}>
                 <ImageCropPicker
                   inputId={imageInputId}
                   initialImageUrl={initialIngredient?.imageUrl}
-                  theme={theme}
                   onCroppedFileChange={handleCroppedFileChange}
                 />
               </div>
@@ -377,7 +371,7 @@ function IngredientCreateForm({
           {showNutrition && <div className="max-md:hidden">{nutritionPanel}</div>}
 
           <section className={`${recipeBrowserStyles.field} ${recipeBrowserStyles.desktopTagSection}`}>
-            <span className={recipeBrowserStyles.label(theme)}>
+            <span className={recipeBrowserStyles.label}>
               {t.cookbook.tags}
             </span>
             <GroupedCheckboxPanel
@@ -385,9 +379,8 @@ function IngredientCreateForm({
               formatValue={(value) => t.enums.ingredientTags[value] ?? formatLabel(value)}
               groupLabels={groupLabels}
               groups={groupedTags}
-              panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
+              panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel}`}
               selectedValues={selectedTags}
-              theme={theme}
               onAddTag={() => setIsTagCreateOpen(true)}
               onToggle={(value) => setSelectedTags((currentTags) => toggleValue(currentTags, value))}
             />
@@ -403,7 +396,6 @@ function IngredientCreateForm({
           groupLabels={groupLabels}
           groups={groupedTags}
           selectedValues={selectedTags}
-          theme={theme}
           title={t.cookbook.tags}
           onAddTag={() => setIsTagCreateOpen(true)}
           onClose={() => setIsTagPickerOpen(false)}
@@ -416,7 +408,6 @@ function IngredientCreateForm({
           categories={ingredientTagCategories}
           existingTags={[...knownIngredientTags, ...customTags]}
           initialMode="ingredients"
-          theme={theme}
           onCancel={() => setIsTagCreateOpen(false)}
           onCreate={async (tag, categoryId) => {
             await ingredientTagCategoryService.createTag(categoryId, { name: tag });
@@ -478,7 +469,6 @@ function IngredientCreateForm({
       {isMatvareSearchOpen && (
         <MatvaretabellenSearchDialog
           initialQuery={ingredientName}
-          theme={theme}
           onCancel={() => setIsMatvareSearchOpen(false)}
           onSelect={(candidate) => {
             applyMatvaretabellenNutrition(candidate);

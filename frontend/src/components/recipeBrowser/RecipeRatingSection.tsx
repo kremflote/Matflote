@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLanguage, useRecipes } from "../../contexts";
 import type { IRecipe } from "../../interfaces/IRecipe";
 import { ApiError, recipeService } from "../../services";
-import type { SiteTheme } from "../../styles/appStyles";
 import { DetailSection } from "./detailComponents";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
@@ -10,11 +9,10 @@ const ratingValues = [1, 2, 3, 4, 5] as const;
 
 type RecipeRatingSectionProps = {
   recipe: IRecipe;
-  theme: SiteTheme;
 };
 
 /** One to five stars and a short note. A star click saves at once; the note has its own Save button. */
-export default function RecipeRatingSection({ recipe, theme }: RecipeRatingSectionProps) {
+export default function RecipeRatingSection({ recipe }: RecipeRatingSectionProps) {
   const { t } = useLanguage();
   const { upsertRecipe } = useRecipes();
   const [note, setNote] = useState(recipe.ratingNote ?? "");
@@ -47,14 +45,14 @@ export default function RecipeRatingSection({ recipe, theme }: RecipeRatingSecti
   const rating = recipe.rating;
 
   return (
-    <DetailSection title={text.title} subtitle={rating === null ? text.notRated : text.star(rating)} theme={theme}>
+    <DetailSection title={text.title} subtitle={rating === null ? text.notRated : text.star(rating)}>
       <div className={recipeBrowserStyles.ratingBody}>
         <div aria-label={text.title} className={recipeBrowserStyles.ratingStars} role="group">
           {ratingValues.map((value) => (
             <button
               aria-label={text.star(value)}
               aria-pressed={rating === value}
-              className={recipeBrowserStyles.ratingStar(theme, rating !== null && value <= rating)}
+              className={recipeBrowserStyles.ratingStar(rating !== null && value <= rating)}
               disabled={isSaving}
               key={value}
               type="button"
@@ -101,7 +99,7 @@ export default function RecipeRatingSection({ recipe, theme }: RecipeRatingSecti
             </button>
           </form>
         )}
-        <p className={recipeBrowserStyles.helperText(theme)}>{error ?? text.help}</p>
+        <p className={recipeBrowserStyles.helperText}>{error ?? text.help}</p>
       </div>
     </DetailSection>
   );

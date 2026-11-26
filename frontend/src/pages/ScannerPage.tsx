@@ -9,7 +9,7 @@ import type { IBrand } from "../interfaces/ILookup";
 import type { IMatvaretabellenCandidate, IProductLookupNutrition, IProductLookupResult } from "../interfaces/IProductLookup";
 import { brandService, imageUploadService, ingredientService, ingredientTagCategoryService, productLookupService } from "../services";
 import { getApiAssetUrl } from "../services/apiClient";
-import { pageStyles, scannerStyles, type SiteTheme } from "../styles/appStyles";
+import { pageStyles, scannerStyles } from "../styles/appStyles";
 import { INGREDIENT_NAME_MAX_LENGTH } from "../constants/validation";
 import { getAllCategoryTagNames, getIngredientVisibleTagCategories } from "../utils/tagCatalog";
 import {
@@ -25,10 +25,6 @@ import MatvaretabellenSearchDialog, {
 } from "../components/recipeBrowser/MatvaretabellenSearchDialog";
 import NutritionEditor from "../components/recipeBrowser/NutritionEditor";
 import type { NutritionEditorValues } from "../components/recipeBrowser/nutritionEditorValues";
-
-type ScannerPageProps = {
-  theme: SiteTheme;
-};
 
 type IngredientCandidate = {
   id: string;
@@ -105,7 +101,7 @@ const nutritionEditorKeys: (keyof NutritionEditorValues)[] = [
   "vitaminEMilligrams",
 ];
 
-function ScannerPage({ theme }: ScannerPageProps) {
+function ScannerPage() {
   const { t } = useLanguage();
   const { brands, refreshBrands } = useBrands();
   const { refreshIngredients } = useIngredients();
@@ -424,7 +420,6 @@ function ScannerPage({ theme }: ScannerPageProps) {
         >
           <IngredientDraftEditor
             draft={ingredientDraft}
-            theme={theme}
             onChange={(nextDraft) => {
               setIngredientDraft(nextDraft);
               setEditorError(null);
@@ -445,11 +440,9 @@ function ScannerPage({ theme }: ScannerPageProps) {
 
 function IngredientDraftEditor({
   draft,
-  theme,
   onChange,
 }: {
   draft: IngredientDraft;
-  theme: SiteTheme;
   onChange: (draft: IngredientDraft) => void;
 }) {
   const { t } = useLanguage();
@@ -512,7 +505,6 @@ function IngredientDraftEditor({
         <FieldLabel
           className={scannerStyles.editorImageLabel}
           label={t.scanner.productImageLabel}
-          theme={theme}
         />
         <div className={scannerStyles.editorImageFrame}>
           {imageUrl === null ? (
@@ -534,7 +526,6 @@ function IngredientDraftEditor({
           <FieldLabel
             hint={`${draft.name.length}/${INGREDIENT_NAME_MAX_LENGTH}`}
             label={t.scanner.nameLabel}
-            theme={theme}
           />
           <input
             className={scannerStyles.input}
@@ -551,7 +542,6 @@ function IngredientDraftEditor({
           label={(
             <FieldLabel
               label={t.scanner.brandLabel}
-              theme={theme}
             />
           )}
           helperClassName={scannerStyles.autofillReservedHint}
@@ -559,7 +549,6 @@ function IngredientDraftEditor({
           labelClassName={scannerStyles.label}
           options={brands.map((brand) => ({ id: brand.brandId, name: brand.name }))}
           placeholder={t.cookbook.selectBrand}
-          theme={theme}
           value={draft.brandId}
           onChange={(brandId) => {
             const brandName = brands.find((brand) => brand.brandId === brandId)?.name ?? "";
@@ -652,7 +641,7 @@ function IngredientDraftEditor({
         )}
         <button
           aria-expanded={showNutrition}
-          className={recipeBrowserStyles.detailsToggleFull(theme)}
+          className={recipeBrowserStyles.detailsToggleFull}
           type="button"
           onClick={() => setShowNutrition((currentValue) => !currentValue)}
         >
@@ -662,7 +651,6 @@ function IngredientDraftEditor({
           <NutritionEditor
             fieldSubtitleClassName={scannerStyles.autofillReservedHint}
             fieldSubtitles={nutritionFieldSubtitles}
-            theme={theme}
             values={nutritionValues}
             onChange={(key, value) => onChange(clearNutritionAutofillSource(updateNutritionDraft(draft, key, value), key))}
           />
@@ -672,16 +660,14 @@ function IngredientDraftEditor({
       <section className={scannerStyles.field}>
           <FieldLabel
             label={t.scanner.selectTags}
-            theme={theme}
           />
         <GroupedCheckboxPanel
           addActionLabel={t.common.manageTags}
           formatValue={(value) => t.enums.ingredientTags[value] ?? value}
           groupLabels={groupLabels}
           groups={groupedTags}
-          panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel(theme)}`}
+          panelClassName={`${recipeBrowserStyles.groupedTagPanel} ${recipeBrowserStyles.checkboxGridPanel}`}
           selectedValues={draft.tags}
-          theme={theme}
           onAddTag={() => setIsTagCreateOpen(true)}
           onToggle={(tag) => onChange(clearAutofillSource({ ...draft, tags: toggleValue(draft.tags, tag) }, "tags"))}
         />
@@ -694,7 +680,6 @@ function IngredientDraftEditor({
           categories={ingredientTagCategories}
           existingTags={[...knownIngredientTags, ...customTags]}
           initialMode="ingredients"
-          theme={theme}
           onCancel={() => setIsTagCreateOpen(false)}
           onCreate={async (tag, categoryId) => {
             await ingredientTagCategoryService.createTag(categoryId, { name: tag });
@@ -752,7 +737,6 @@ function IngredientDraftEditor({
       {isMatvarePickerOpen && (
         <MatvaretabellenCandidateModal
           candidates={draft.matvaretabellenCandidates}
-          theme={theme}
           onCancel={() => setIsMatvarePickerOpen(false)}
           onSelect={(candidate) => {
             onChange(applyMatvaretabellenCandidate(draft, candidate));
@@ -763,7 +747,6 @@ function IngredientDraftEditor({
       {isMatvareSearchOpen && (
         <MatvaretabellenSearchDialog
           initialQuery={draft.name}
-          theme={theme}
           onCancel={() => setIsMatvareSearchOpen(false)}
           onSelect={(candidate, candidates) => {
             onChange(applyMatvaretabellenCandidate({
@@ -787,18 +770,16 @@ function FieldLabel({
   className,
   hint,
   label,
-  theme,
 }: {
   className?: string;
   hint?: string;
   label: string;
-  theme: SiteTheme;
 }) {
   return (
     <span className={`${scannerStyles.labelRow} ${className ?? ""}`.trim()}>
       <span className={scannerStyles.label}>{label}</span>
       {hint !== undefined && (
-        <span className={recipeBrowserStyles.inlineHint(theme)}>{hint}</span>
+        <span className={recipeBrowserStyles.inlineHint}>{hint}</span>
       )}
     </span>
   );
@@ -912,12 +893,10 @@ function ScannerAutofillInfoModal({
 
 function MatvaretabellenCandidateModal({
   candidates,
-  theme,
   onCancel,
   onSelect,
 }: {
   candidates: MatvaretabellenCandidate[];
-  theme: SiteTheme;
   onCancel: () => void;
   onSelect: (candidate: MatvaretabellenCandidate) => void;
 }) {
@@ -945,7 +924,6 @@ function MatvaretabellenCandidateModal({
     >
       <MatvaretabellenCandidateList
         candidates={candidates}
-        theme={theme}
         onSelect={onSelect}
       />
     </Modal>

@@ -13,7 +13,7 @@ import type { MeasurementUnit } from "../interfaces/IIngredient";
 import type { IMealPlanEntry, IMealPlanRecipe, MealSlot, PlannerViewMode } from "../interfaces/IMeal";
 import { appSettingsService, groceryListService } from "../services";
 import type { MealPlanEntryRequest, MealPlanRecipeRequest } from "../services/mealPlanService";
-import { pageStyles, plannerControlsStyles, type SiteTheme } from "../styles/appStyles";
+import { pageStyles, plannerControlsStyles } from "../styles/appStyles";
 import { confirmationDialogStyles } from "../styles/confirmationDialogStyles";
 import {
   getLocalNumberPreference,
@@ -47,10 +47,6 @@ import { buildPrepHelperItems, getPrepIngredientTagNames } from "../utils/planne
 import { useRouteDetail } from "../utils/hashRoute";
 import { buildSystemTagNameLookup } from "../utils/tagCatalog";
 
-type PlannerPageProps = {
-  theme: SiteTheme;
-};
-
 const visibleMealSlots: MealSlot[] = ["Breakfast", "Lunch", "Dinner"];
 const plannerViewModes: PlannerViewMode[] = ["week", "month"];
 const defaultPeopleEating = 2;
@@ -71,7 +67,7 @@ type PendingMealMove = {
   value: number;
 };
 
-const PlannerPage = ({ theme }: PlannerPageProps) => {
+const PlannerPage = () => {
   const { locale, t } = useLanguage();
   const [viewMode, setViewMode] = useState<PlannerViewMode>(() =>
     getLocalPreference(localPreferenceKeys.plannerViewMode, plannerViewModes, "week"),
@@ -519,7 +515,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
           entry={getEntryForSlot(selectedSlot.date, selectedSlot.slot)}
           recipes={recipes}
           slot={selectedSlot.slot}
-          theme={theme}
           onClose={() => setSelectedSlot(null)}
           onSave={saveMealPlanEntry}
         />
@@ -544,7 +539,6 @@ const PlannerPage = ({ theme }: PlannerPageProps) => {
         <BrowserDetailModal
           detail={{ kind: "recipe", id: activeRecipeId }}
           key={activeRecipeId}
-          theme={theme}
           onClose={closeDetail}
         />
       )}

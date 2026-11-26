@@ -5,7 +5,6 @@ import type { IIngredient, INutritionFacts, MeasurementUnit } from "../../interf
 import { getApiAssetUrl } from "../../services/apiClient";
 import { pickReadableTextColor } from "../../utils/colorContrast";
 import { getThumbnailSrc } from "../../utils/imageThumbnail";
-import type { SiteTheme } from "../../styles/appStyles";
 import { DetailSection, DetailText, DetailTextWithMeta, NutritionGrid } from "./detailComponents";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 import RecipeFallbackTile from "../RecipeFallbackTile";
@@ -14,7 +13,6 @@ import type { EnrichedRecipe } from "./types";
 type RecipeDetailContentProps = {
   allRecipes: EnrichedRecipe[];
   recipe: EnrichedRecipe;
-  theme: SiteTheme;
   onIngredientClick?: (ingredient: IIngredient) => void;
   onRecipeClick?: (recipeId: number) => void;
 };
@@ -22,7 +20,6 @@ type RecipeDetailContentProps = {
 function RecipeDetailContent({
   allRecipes,
   recipe,
-  theme,
   onIngredientClick,
   onRecipeClick,
 }: RecipeDetailContentProps) {
@@ -71,7 +68,6 @@ function RecipeDetailContent({
             className={recipeBrowserStyles.recipeDetailDescriptionPanel}
             label={t.cookbook.description}
             meta={recipe.tags.map((tag) => t.enums.recipeTags[tag] ?? tag).join(" · ")}
-            theme={theme}
             value={recipe.description || t.cookbook.noDescription}
           />
         </div>
@@ -80,10 +76,9 @@ function RecipeDetailContent({
       <div className={recipeBrowserStyles.recipeDetailSplitGrid}>
         <DetailSection
           title={t.cookbook.ingredients}
-          theme={theme}
           headerAction={
             <label className={recipeBrowserStyles.scaleLabel}>
-              <span className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.portions}</span>
+              <span className={recipeBrowserStyles.helperText}>{t.cookbook.portions}</span>
               <span className={`${recipeBrowserStyles.scaleField}`}>
                 <input
                   aria-label={t.cookbook.portions}
@@ -104,7 +99,6 @@ function RecipeDetailContent({
               amountMultiplier={amountMultiplier}
               ingredients={recipe.ingredients}
               title={t.cookbook.mainRecipe}
-              theme={theme}
               onIngredientClick={handleIngredientClick}
             />
             {recipe.components
@@ -125,7 +119,6 @@ function RecipeDetailContent({
                     recipeId={component.recipeId}
                     title={component.name}
                     titleLinkLabel={`${component.name} (${formatRecipeIngredientAmount(component.amount, component.unit, t.enums.measurementUnits, locale)})`}
-                    theme={theme}
                     onIngredientClick={handleIngredientClick}
                     onRecipeClick={onRecipeClick}
                   />
@@ -136,19 +129,17 @@ function RecipeDetailContent({
 
         <DetailText
           label={t.cookbook.instructions}
-          theme={theme}
           value={recipe.instructions || t.cookbook.noInstructions}
         />
       </div>
 
-      <RecipeRatingSection recipe={recipe} theme={theme} />
+      <RecipeRatingSection recipe={recipe} />
 
-      <DetailSection title={t.cookbook.dietaryInformation} subtitle={t.cookbook.per100g} theme={theme}>
+      <DetailSection title={t.cookbook.dietaryInformation} subtitle={t.cookbook.per100g}>
         <NutritionGrid
           nutrition={nutrition}
           recipePortions={recipe.portions}
           recipeTotalGrams={recipeTotalGrams}
-          theme={theme}
           variant="recipe"
         />
       </DetailSection>
@@ -162,7 +153,6 @@ type RecipeIngredientSectionProps = {
   recipeId?: number;
   title: string;
   titleLinkLabel?: string;
-  theme: SiteTheme;
   onIngredientClick?: (ingredientId: number) => void;
   onRecipeClick?: (recipeId: number) => void;
 };
@@ -173,7 +163,6 @@ function RecipeIngredientSection({
   recipeId,
   title,
   titleLinkLabel,
-  theme,
   onIngredientClick,
   onRecipeClick,
 }: RecipeIngredientSectionProps) {
@@ -181,7 +170,7 @@ function RecipeIngredientSection({
 
   return (
     <section className={recipeBrowserStyles.detailIngredientSection}>
-      <h3 className={recipeBrowserStyles.detailIngredientSectionTitle(theme)}>
+      <h3 className={recipeBrowserStyles.detailIngredientSectionTitle}>
         {titleLinkLabel !== undefined && recipeId !== undefined ? (
           <button
             className={recipeBrowserStyles.detailIngredientSectionTitleButton}
@@ -195,19 +184,19 @@ function RecipeIngredientSection({
         )}
       </h3>
       {ingredients.length === 0 ? (
-        <p className={recipeBrowserStyles.helperText(theme)}>{t.cookbook.noIngredientsAdded}</p>
+        <p className={recipeBrowserStyles.helperText}>{t.cookbook.noIngredientsAdded}</p>
       ) : (
         <div className={recipeBrowserStyles.detailRows}>
           {ingredients.map((recipeIngredient) => (
             <button
-              className={recipeBrowserStyles.detailIngredientRow(theme)}
+              className={recipeBrowserStyles.detailIngredientRow}
               key={recipeIngredient.recipeIngredientId}
               type="button"
               onClick={() => onIngredientClick?.(recipeIngredient.ingredient.ingredientId)}
             >
               <span
                 aria-hidden="true"
-                className={recipeBrowserStyles.detailIngredientImageFrame(theme)}
+                className={recipeBrowserStyles.detailIngredientImageFrame}
                 style={
                   recipeIngredient.ingredient.color
                     ? {

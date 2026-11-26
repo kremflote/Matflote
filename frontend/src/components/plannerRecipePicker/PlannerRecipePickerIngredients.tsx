@@ -1,7 +1,6 @@
 import { useLanguage } from "../../contexts";
 import type { IIngredient, IngredientTag } from "../../interfaces/IIngredient";
 import type { RecipeTag } from "../../interfaces/IRecipe";
-import type { SiteTheme } from "../../styles/appStyles";
 import { plannerPickerStyles } from "../../styles/appStyles";
 import IngredientPickerPopover, { FilterIcon } from "../recipeBrowser/IngredientFilterPopover";
 import FilterChip from "../recipeBrowser/FilterChip";
@@ -12,7 +11,6 @@ type IngredientFilterChipsProps = {
   selectedIngredientTags: IngredientTag[];
   selectedIngredients: IIngredient[];
   selectedRecipeTags: RecipeTag[];
-  theme: SiteTheme;
   onClear: () => void;
   onRemoveIngredient: (ingredientId: number) => void;
   onRemoveIngredientTag: (tag: IngredientTag) => void;
@@ -24,7 +22,6 @@ export function IngredientFilterChips({
   selectedIngredientTags,
   selectedIngredients,
   selectedRecipeTags,
-  theme,
   onClear,
   onRemoveIngredient,
   onRemoveIngredientTag,
@@ -45,7 +42,6 @@ export function IngredientFilterChips({
         <FilterChip
           key={ingredient.ingredientId}
           label={`${t.filters.includes}: ${ingredient.ingredientName}`}
-          theme={theme}
           onClick={() => onRemoveIngredient(ingredient.ingredientId)}
         />
       ))}
@@ -53,7 +49,6 @@ export function IngredientFilterChips({
         <FilterChip
           key={tag}
           label={t.enums.recipeTags[tag] ?? t.enums.ingredientTags[tag] ?? tag}
-          theme={theme}
           onClick={() => onRemoveRecipeTag(tag)}
         />
       ))}
@@ -61,11 +56,10 @@ export function IngredientFilterChips({
         <FilterChip
           key={tag}
           label={t.enums.ingredientTags[tag] ?? tag}
-          theme={theme}
           onClick={() => onRemoveIngredientTag(tag)}
         />
       ))}
-      <button className={recipeBrowserStyles.clearFilterChip(theme)} type="button" onClick={onClear}>
+      <button className={recipeBrowserStyles.clearFilterChip} type="button" onClick={onClear}>
         {t.common.clearFilters}
       </button>
     </div>

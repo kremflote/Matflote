@@ -4,7 +4,6 @@ import { useIngredientTagCategories, useIngredients, useLanguage, useMealPlan, u
 import type { IIngredient, IIngredientInUse } from "../../interfaces/IIngredient";
 import type { IRecipe } from "../../interfaces/IRecipe";
 import { getIngredientInUse, ingredientService, recipeService } from "../../services";
-import type { SiteTheme } from "../../styles/appStyles";
 import Modal from "../Modal";
 import IngredientCreateForm from "./IngredientCreateForm";
 import IngredientDetailContent from "./IngredientDetailContent";
@@ -21,11 +20,10 @@ type BrowserDetailModalProps = {
    * keeps an open edit form. Give the modal a `key` from this so opening another one starts afresh.
    */
   detail: BrowserDetailKey;
-  theme: SiteTheme;
   onClose: () => void;
 };
 
-function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps) {
+function BrowserDetailModal({ detail, onClose }: BrowserDetailModalProps) {
   const { language, t } = useLanguage();
   const editRecipeImageInputId = useId();
   const editTitleId = useId();
@@ -155,7 +153,6 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
           imageInputId={editRecipeImageInputId}
           initialRecipe={activeDetail.recipe}
           showRecipeDetails
-          theme={theme}
           onCancel={() => setIsEditingRecipe(false)}
           onCreated={onClose}
         />
@@ -178,7 +175,6 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
       >
         <IngredientCreateForm
           initialIngredient={activeDetail.ingredient}
-          theme={theme}
           onCancel={() => setIsEditingIngredient(false)}
           onCreated={onClose}
         />
@@ -194,7 +190,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
           {activeDetail.recipe.tags
             .filter((tag) => recipeTagNames.size === 0 || recipeTagNames.has(tag))
             .map((tag) => (
-              <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
+              <span className={recipeBrowserStyles.filterChip} key={tag}>
                 {t.enums.recipeTags[tag] ?? tag}
               </span>
             ))}
@@ -205,7 +201,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
         <span>{activeDetail.ingredient.ingredientName}</span>
         <span className={recipeBrowserStyles.detailHeaderTagList}>
           {activeDetail.ingredient.tags.map((tag) => (
-            <span className={recipeBrowserStyles.filterChip(theme)} key={tag}>
+            <span className={recipeBrowserStyles.filterChip} key={tag}>
               {t.enums.ingredientTags[tag] ?? tag}
             </span>
           ))}
@@ -272,14 +268,13 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
       titleId={detailTitleId}
       onClose={onClose}
     >
-          {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{deleteError}</p>}
-          {pdfError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset(theme)}>{pdfError}</p>}
+          {deleteError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset()}>{deleteError}</p>}
+          {pdfError !== null && <p className={recipeBrowserStyles.statusErrorWithOffset()}>{pdfError}</p>}
 
           {activeDetail.kind === "recipe" ? (
             <RecipeDetailContent
               allRecipes={recipes}
               recipe={activeDetail.recipe}
-              theme={theme}
               onIngredientClick={(ingredient) => navigateToDetail({ kind: "ingredient", ingredient })}
               onRecipeClick={(recipeId) => {
                 const recipe = recipes.find((currentRecipe) => currentRecipe.recipeId === recipeId);
@@ -289,7 +284,7 @@ function BrowserDetailModal({ detail, theme, onClose }: BrowserDetailModalProps)
               }}
             />
           ) : (
-            <IngredientDetailContent ingredient={activeDetail.ingredient} theme={theme} />
+            <IngredientDetailContent ingredient={activeDetail.ingredient} />
           )}
         {isConfirmingDelete && (
           <ConfirmationDialog

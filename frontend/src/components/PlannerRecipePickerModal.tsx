@@ -6,7 +6,7 @@ import type { IIngredientTagCategory } from "../interfaces/ILookup";
 import type { IMealPlanEntry, MealSlot } from "../interfaces/IMeal";
 import type { IRecipe, RecipeTag } from "../interfaces/IRecipe";
 import type { MealPlanEntryRequest } from "../services/mealPlanService";
-import { plannerPickerStyles, type SiteTheme } from "../styles/appStyles";
+import { plannerPickerStyles } from "../styles/appStyles";
 import { buildSystemTagNameLookup } from "../utils/tagCatalog";
 import { recipeBrowserStyles } from "./recipeBrowser/recipeBrowserStyles";
 import {
@@ -37,7 +37,6 @@ type PlannerRecipePickerModalProps = {
   entry?: IMealPlanEntry;
   recipes: IRecipe[];
   slot: MealSlot;
-  theme: SiteTheme;
   onClose: () => void;
   onSave: (entryId: number | null, request: MealPlanEntryRequest) => Promise<void>;
 };
@@ -60,7 +59,6 @@ function PlannerRecipePickerModal({
   entry,
   recipes,
   slot,
-  theme,
   onClose,
   onSave,
 }: PlannerRecipePickerModalProps) {
@@ -503,7 +501,6 @@ function PlannerRecipePickerModal({
       selectedRecipeTags={selectedMainRecipeTags}
       setSelectedIngredientTags={setSelectedIngredientTags}
       setSelectedRecipeTags={setSelectedMainRecipeTags}
-      theme={theme}
       variant="panel"
     />
   );
@@ -573,7 +570,6 @@ function PlannerRecipePickerModal({
             inputClassName={plannerPickerStyles.searchInput}
             placeholder={t.planner.mealPickerSearchPlaceholder}
             ref={searchInputRef}
-            theme={theme}
             value={searchTerm}
             onChange={setSearchTerm}
           />
@@ -630,7 +626,6 @@ function PlannerRecipePickerModal({
             selectedIngredientTags={selectedIngredientTags}
             selectedIngredients={selectedIngredients}
             selectedRecipeTags={selectedMainRecipeTags}
-            theme={theme}
             onClear={() => {
               setSelectedIngredientIds([]);
               setSelectedIngredientTags([]);
@@ -698,7 +693,6 @@ function PlannerRecipePickerModal({
             popoverRef={ingredientPickerRef}
             searchTerm={ingredientPickerSearch}
             selectedIngredientIds={selectedIngredientIds}
-            theme={theme}
             x={ingredientPickerPosition.x}
             y={ingredientPickerPosition.y}
             onSearchChange={setIngredientPickerSearch}
@@ -727,7 +721,6 @@ function PlannerRecipePickerModal({
                 ...(mainRecipeSelection === null ? [] : [mainRecipeSelection]),
                 ...supplementaryRecipeSelections,
               ]}
-              theme={theme}
               onSelectIngredient={(ingredient, amount, unit) =>
                 selectOrUpdateMealIngredient(ingredient, amount, unit)
               }

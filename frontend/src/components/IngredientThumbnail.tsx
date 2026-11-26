@@ -1,13 +1,12 @@
 import type { ReactNode } from "react";
 import type { IIngredient } from "../interfaces/IIngredient";
 import { getThumbnailSrc } from "../utils/imageThumbnail";
-import { colorPalette, siteColorClasses, thumbnailStyles, type SiteTheme } from "../styles/appStyles";
+import { colorPalette, siteColorClasses, thumbnailStyles } from "../styles/appStyles";
 
 type IngredientThumbnailProps = {
   ingredient: Pick<IIngredient, "ingredientName" | "tags" | "brand" | "color" | "imageUrl"> & {
     thumbnailUrl?: string | null;
   };
-  theme?: SiteTheme;
   selected?: boolean;
   selectedPresentation?: "outline" | "muted" | "colorBorder";
   mode?: "default" | "compact";
@@ -18,14 +17,8 @@ type IngredientThumbnailProps = {
   onClick?: () => void;
 };
 
-type IngredientTone = {
-  dot: string;
-  text: string;
-};
-
 function IngredientThumbnail({
   ingredient,
-  theme = "dark",
   selected = false,
   selectedPresentation = "outline",
   mode = "default",
@@ -36,7 +29,7 @@ function IngredientThumbnail({
   onClick,
 }: IngredientThumbnailProps) {
   const brandName = ingredient.brand?.name ?? "";
-  const tone = getIngredientTone(ingredient.color, theme);
+  const dotColor = ingredient.color ?? colorPalette.ingredientIconText;
   const imageUrl = getThumbnailSrc(ingredient);
   const selectedClassName =
     selectedPresentation === "colorBorder"
@@ -45,12 +38,9 @@ function IngredientThumbnail({
       ? thumbnailStyles.ingredientSelectedMuted
       : thumbnailStyles.ingredientSelectedOutline;
   const compactClassName = mode === "compact" ? thumbnailStyles.ingredientShellCompact : "";
-  const sharedClassName = `${thumbnailStyles.ingredientShell} ${compactClassName} ${className} ${
+  const sharedClassName = `${thumbnailStyles.ingredientShell} ${thumbnailStyles.ingredientShellText} ${compactClassName} ${className} ${
     selected ? selectedClassName : ""
   } ${disabled ? "cursor-not-allowed" : onClick ? `cursor-pointer ${siteColorClasses.ingredientThumbnailInteractive}` : ""}`;
-  const style = {
-    color: tone.text,
-  };
 
   const content = (
     <>
@@ -59,7 +49,7 @@ function IngredientThumbnail({
         className={`${thumbnailStyles.ingredientImageFrame} ${
           mode === "compact" ? thumbnailStyles.ingredientImageFrameCompact : ""
         }`}
-        style={{ backgroundColor: tone.dot }}
+        style={{ backgroundColor: dotColor }}
       >
         {imageUrl === null ? (
           <span className={thumbnailStyles.ingredientImageFallback}>
@@ -96,7 +86,7 @@ function IngredientThumbnail({
         aria-pressed={selected}
         className={sharedClassName}
         disabled={disabled}
-        style={style}
+       
         type="button"
         onClick={onClick}
       >
@@ -106,7 +96,7 @@ function IngredientThumbnail({
   }
 
   return (
-    <article className={sharedClassName} style={style} aria-label={ingredient.ingredientName}>
+    <article className={sharedClassName} aria-label={ingredient.ingredientName}>
       {content}
     </article>
   );
@@ -119,16 +109,6 @@ function getInitials(value: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("") || "?";
-}
-
-function getIngredientTone(color: string | null, theme: SiteTheme): IngredientTone {
-  const dot = color ?? colorPalette.ingredientIconText;
-  const text = theme === "dark" ? colorPalette.ivory : colorPalette.ingredientIconText;
-
-  return {
-    dot,
-    text,
-  };
 }
 
 export default IngredientThumbnail;

@@ -2,7 +2,6 @@ import type { Dispatch, SetStateAction } from "react";
 import { useIngredientTagCategories, useLanguage } from "../../contexts";
 import type { IngredientTag } from "../../interfaces/IIngredient";
 import type { RecipeTag } from "../../interfaces/IRecipe";
-import type { SiteTheme } from "../../styles/appStyles";
 import { formatIngredientTagCategoryName, formatRecipeTagGroupName, getIngredientTagGroupsWithCustomTags, getRecipeTagGroupsWithCustomTags } from "./formOptions";
 import { formatLabel, recipeBrowserStyles } from "./recipeBrowserStyles";
 import { GroupedFilterGroup } from "./BrowserFilterGroups";
@@ -13,7 +12,6 @@ type BrowserFilterSectionProps = {
   mode: BrowserMode;
   selectedIngredientTags: IngredientTag[];
   selectedRecipeTags: RecipeTag[];
-  theme: SiteTheme;
   variant?: "rail" | "panel";
   setSelectedIngredientTags: Dispatch<SetStateAction<IngredientTag[]>>;
   setSelectedRecipeTags: Dispatch<SetStateAction<RecipeTag[]>>;
@@ -23,7 +21,6 @@ function BrowserFilterSection({
   mode,
   selectedIngredientTags,
   selectedRecipeTags,
-  theme,
   variant = "rail",
   setSelectedIngredientTags,
   setSelectedRecipeTags,
@@ -31,8 +28,8 @@ function BrowserFilterSection({
   const { t } = useLanguage();
   const { ingredientTagCategories } = useIngredientTagCategories();
   const className = variant === "rail"
-    ? recipeBrowserStyles.filterRail(theme)
-    : recipeBrowserStyles.filterPanel(theme);
+    ? recipeBrowserStyles.filterRail
+    : recipeBrowserStyles.filterPanel;
   const ingredientVisibleTagCategories = getIngredientVisibleTagCategories(ingredientTagCategories);
   const recipeVisibleTagCategories = getRecipeVisibleTagCategories(ingredientTagCategories);
   const liveIngredientTagGroups = getIngredientTagGroupsWithCustomTags([], "pantry", ingredientVisibleTagCategories);
@@ -58,7 +55,6 @@ function BrowserFilterSection({
           groupLabels={ingredientTagGroupLabels}
           groups={liveIngredientTagGroups}
           selectedValues={selectedIngredientTags}
-          theme={theme}
           title={t.filters.ingredientTags}
           onToggle={(value) => toggleSelection(value, setSelectedIngredientTags)}
         />
@@ -68,7 +64,6 @@ function BrowserFilterSection({
           groupLabels={recipeTagGroupLabels}
           groups={liveRecipeTagGroups}
           selectedValues={selectedRecipeTags}
-          theme={theme}
           title={t.filters.tags}
           onToggle={(value) => toggleSelection(value, setSelectedRecipeTags)}
         />

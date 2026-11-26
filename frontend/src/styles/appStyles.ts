@@ -236,6 +236,8 @@ export const thumbnailStyles = {
   recipeSubtitleLayoutMicro:
     "mt-0 truncate text-[8px] font-semibold leading-tight",
   ingredientShell: `grid min-h-12 w-full grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-2 rounded-md p-1.5 text-left ${shadowClasses.subtle} transition bg-[#E5D5BC]/45 dark:bg-white/[0.08]`,
+  // The name and initials on an ingredient or recipe line thumbnail.
+  ingredientShellText: "text-[#333929] dark:text-[#FAF7F2]",
   ingredientShellCompact: "min-h-10 grid-cols-[1.75rem_minmax(0,1fr)] p-1",
   ingredientSelectedOutline: "outline outline-2 outline-current",
   ingredientSelectedColorBorder: `border-2 ${siteColorClasses.selectedThumbnailBorder}`,

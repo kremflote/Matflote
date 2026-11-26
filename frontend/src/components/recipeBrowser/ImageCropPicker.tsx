@@ -1,20 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "../../contexts";
 import { getApiAssetUrl } from "../../services/apiClient";
-import type { SiteTheme } from "../../styles/appStyles";
 import { recipeBrowserStyles } from "./recipeBrowserStyles";
 
 type ImageCropPickerProps = {
   inputId: string;
   initialImageUrl?: string | null;
-  theme: SiteTheme;
   onCroppedFileChange: (file: File | null) => void;
 };
 
 const cropOutputSize = 800;
 const placeholderImageUrl = getApiAssetUrl("/images/placeholders/recipe-photo-placeholder.png");
 
-function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFileChange }: ImageCropPickerProps) {
+function ImageCropPicker({ inputId, initialImageUrl = null, onCroppedFileChange }: ImageCropPickerProps) {
   const { t } = useLanguage();
   const cameraInputId = `${inputId}-camera`;
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -118,7 +116,7 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
         onChange={(event) => handleImageSelected(event.target.files?.[0] ?? null)}
       />
 
-      <div className={recipeBrowserStyles.cropPreview(theme)}>
+      <div className={recipeBrowserStyles.cropPreview}>
         {previewUrl ? (
           <img className={recipeBrowserStyles.cropImage} src={previewUrl} alt={t.cookbook.imagePreview} />
         ) : currentImageUrl ? (
@@ -139,12 +137,12 @@ function ImageCropPicker({ inputId, initialImageUrl = null, theme, onCroppedFile
           </div>
         )}
         <div className={recipeBrowserStyles.imageUploadActionStack}>
-          <label className={recipeBrowserStyles.imageUploadFloatingButton(theme)} htmlFor={inputId}>
+          <label className={recipeBrowserStyles.imageUploadFloatingButton} htmlFor={inputId}>
             <ImageUploadIcon />
             <span className={recipeBrowserStyles.desktopUploadLabel}>{t.cookbook.chooseFile}</span>
             <span className={recipeBrowserStyles.mobileUploadLabel}>{t.cookbook.choosePhoto}</span>
           </label>
-          <label className={recipeBrowserStyles.imageCaptureButton(theme)} htmlFor={cameraInputId}>
+          <label className={recipeBrowserStyles.imageCaptureButton} htmlFor={cameraInputId}>
             <CameraIcon />
             {t.cookbook.takePhoto}
           </label>
