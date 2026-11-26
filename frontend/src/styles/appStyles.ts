@@ -390,24 +390,9 @@ export const settingsStyles = {
 export const scannerStyles = {
   shell: pageStyles.contentShell,
   header: "grid gap-2",
-  title: (theme: SiteTheme) =>
-    `text-3xl font-bold leading-tight ${theme === "paletteLight" ? "text-[#556145]" : siteColorClasses.plannerCounterAccent}`,
-  intro: (theme: SiteTheme) =>
-    `max-w-2xl text-sm font-semibold leading-[1.5] ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-600"
-    }`,
-  introLink: (theme: SiteTheme) =>
-    `font-extrabold underline underline-offset-2 ${
-      theme === "dark"
-        ? "text-neutral-50"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-950"
-    }`,
+  title: "text-3xl font-bold leading-tight text-[#556145] dark:text-neutral-50",
+  intro: "max-w-2xl text-sm font-semibold leading-[1.5] text-[#556145] dark:text-neutral-300",
+  introLink: "font-extrabold underline underline-offset-2 text-[#556145] dark:text-neutral-50",
   panel: `grid gap-4 rounded-md border p-4 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   desktopScannerHint: `hidden rounded-md border px-4 py-3 text-sm font-semibold leading-[1.45] min-[1101px]:block ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   scannerSurface: "grid gap-4",
@@ -421,196 +406,62 @@ export const scannerStyles = {
   sectionTitleRow: "flex flex-wrap items-center justify-between gap-2",
   autofillHint: autofillHintTextClasses,
   autofillReservedHint: `min-h-3 ${autofillHintTextClasses}`,
-  nutritionSourceText: (theme: SiteTheme) =>
-    `grid gap-1 text-xs font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  nutritionSourceText: "grid gap-1 text-xs font-semibold leading-tight text-[#556145] dark:text-neutral-400",
   nutritionSourceRow: "grid gap-1",
   nutritionSourceLine: "flex flex-wrap items-center gap-x-1.5 gap-y-1",
   nutritionSourcePrimaryLine: "flex flex-wrap items-center justify-between gap-x-3 gap-y-1",
   nutritionSourceSupplementLine: "flex flex-wrap items-center justify-between gap-x-3 gap-y-1",
   nutritionSourceActions: "inline-flex items-center gap-3",
-  nutritionSourceLink: (theme: SiteTheme) =>
-    `text-xs font-bold leading-tight underline underline-offset-2 ${
-      theme === "dark"
-        ? "text-neutral-200 hover:text-white"
-        : theme === "paletteLight"
-          ? "text-[#556145] hover:text-[#3C4A2E]"
-          : "text-neutral-700 hover:text-neutral-950"
-    }`,
-  sourceActionButton: (theme: SiteTheme) =>
-    `h-auto rounded-none border-0 bg-transparent p-0 text-xs font-extrabold underline underline-offset-2 transition-colors ${focusBase} ${siteColorClasses.focus} ${
-      theme === "dark"
-        ? "text-neutral-200 hover:text-white"
-        : theme === "paletteLight"
-          ? "text-[#556145] hover:text-[#3C4A2E]"
-          : "text-neutral-700 hover:text-neutral-950"
-    }`,
-  nutritionSupplementWarning: (theme: SiteTheme) =>
-    `rounded-md border px-3 py-2 text-xs font-bold ${
-      theme === "dark"
-        ? "border-amber-300/25 bg-amber-200/10 text-amber-100"
-        : theme === "paletteLight"
-          ? "border-[#9B7A3D]/30 bg-[#E5D5BC]/65 text-[#5F4A24]"
-          : "border-amber-200 bg-amber-50 text-amber-800"
-    }`,
-  nutritionSupplementWarningRow: (theme: SiteTheme) =>
-    `flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs font-bold ${
-      theme === "dark"
-        ? "border-amber-300/25 bg-amber-200/10 text-amber-100"
-        : theme === "paletteLight"
-          ? "border-[#9B7A3D]/30 bg-[#E5D5BC]/65 text-[#5F4A24]"
-          : "border-amber-200 bg-amber-50 text-amber-800"
-    }`,
+  nutritionSourceLink: "text-xs font-bold leading-tight underline underline-offset-2 text-[#556145] hover:text-[#3C4A2E] dark:text-neutral-200 dark:hover:text-white",
+  sourceActionButton: `h-auto rounded-none border-0 bg-transparent p-0 text-xs font-extrabold underline underline-offset-2 transition-colors ${focusBase} ${siteColorClasses.focus} text-[#556145] hover:text-[#3C4A2E] dark:text-neutral-200 dark:hover:text-white`,
+  nutritionSupplementWarning: "rounded-md border px-3 py-2 text-xs font-bold border-[#9B7A3D]/30 bg-[#E5D5BC]/65 text-[#5F4A24] dark:border-amber-300/25 dark:bg-amber-200/10 dark:text-amber-100",
+  nutritionSupplementWarningRow: "flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs font-bold border-[#9B7A3D]/30 bg-[#E5D5BC]/65 text-[#5F4A24] dark:border-amber-300/25 dark:bg-amber-200/10 dark:text-amber-100",
   input: controlStyles.formField,
   submitButton: controlStyles.primaryButton,
   scannerActions: "grid gap-3 min-[1101px]:hidden",
   cameraButton: `${controlStyles.primaryButton} h-14 w-full text-base`,
   manualEntryButton: `${controlStyles.secondaryButton} h-9 w-fit justify-self-center px-3 text-xs`,
-  cameraFrame: (theme: SiteTheme) =>
-    `relative aspect-video w-full overflow-hidden rounded-md border ${shadowClasses.subtle} ${
-      theme === "dark"
-        ? "border-white/[0.12] bg-neutral-950"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2]"
-          : "border-neutral-200 bg-neutral-950"
-    }`,
+  cameraFrame: `relative aspect-video w-full overflow-hidden rounded-md border ${shadowClasses.subtle} border-[#C8C0B5] bg-[#FAF7F2] dark:border-white/[0.12] dark:bg-neutral-950`,
   cameraVideo: "h-full w-full object-cover",
   cameraGuide:
     "pointer-events-none absolute inset-[18%] rounded-md border-2 border-white/80 shadow-[0_0_0_999px_rgba(0,0,0,0.22)]",
-  cameraStatus: (theme: SiteTheme) =>
-    `text-sm font-semibold leading-[1.45] ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-600"
-    }`,
-  statusError: (theme: SiteTheme) =>
-    `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold ${
-      theme === "dark"
-        ? "border-red-400/30 bg-red-500/10 text-red-200"
-        : theme === "paletteLight"
-          ? "border-red-700/25 bg-red-700/10 text-red-800"
-          : "border-red-200 bg-red-50 text-red-700"
-    }`,
+  cameraStatus: "text-sm font-semibold leading-[1.45] text-[#556145] dark:text-neutral-300",
+  statusError: `${radiusClasses.figma6} border px-3 py-2 text-sm font-semibold border-red-700/25 bg-red-700/10 text-red-800 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-200`,
   emptyState: `rounded-md border p-6 text-center text-sm font-bold ${surfaceClasses.panel}`,
   resultList: "grid gap-3",
   productCard: `grid grid-cols-[6rem_minmax(0,1fr)_auto] gap-4 rounded-md border p-3 max-sm:grid-cols-[5rem_minmax(0,1fr)] ${shadowClasses.subtle} ${surfaceClasses.panel}`,
-  productImageFrame: (theme: SiteTheme) =>
-    `aspect-square overflow-hidden rounded-md border ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-neutral-900"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2]"
-          : "border-neutral-200 bg-white"
-    }`,
+  productImageFrame: "aspect-square overflow-hidden rounded-md border border-[#C8C0B5] bg-[#FAF7F2] dark:border-white/[0.10] dark:bg-neutral-900",
   productImage: "h-full w-full object-cover",
-  productImageFallback: (theme: SiteTheme) =>
-    `flex h-full w-full items-center justify-center px-2 text-center text-xs font-bold ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-400"
-    }`,
+  productImageFallback: "flex h-full w-full items-center justify-center px-2 text-center text-xs font-bold text-[#556145] dark:text-neutral-400",
   productMain: "grid min-w-0 content-start gap-2",
   productTitle: "min-w-0 text-lg font-bold leading-tight",
-  productMeta: (theme: SiteTheme) =>
-    `text-xs font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  productMeta: "text-xs font-semibold leading-tight text-[#556145] dark:text-neutral-400",
   chipRow: "flex flex-wrap gap-2",
-  chip: (theme: SiteTheme) =>
-    `rounded-md px-2 py-1 text-xs font-bold ${
-      theme === "dark"
-        ? "bg-white/[0.10] text-neutral-100"
-        : theme === "paletteLight"
-          ? "bg-[#E5D5BC] text-[#556145]"
-          : "bg-neutral-200 text-neutral-700"
-    }`,
+  chip: "rounded-md px-2 py-1 text-xs font-bold bg-[#E5D5BC] text-[#556145] dark:bg-white/[0.10] dark:text-neutral-100",
   nutritionGrid: "grid grid-cols-4 gap-2 max-md:grid-cols-2 max-sm:grid-cols-1",
   nutritionItem: `rounded-md border px-2 py-1 text-xs font-semibold ${surfaceClasses.panel}`,
   candidateSection: "grid gap-3",
   candidateHeader: "flex flex-wrap items-baseline gap-3",
   candidateTitle: "text-lg font-bold leading-tight",
-  candidateSubtitle: (theme: SiteTheme) =>
-    `text-sm font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  candidateSubtitle: "text-sm font-semibold leading-tight text-[#556145] dark:text-neutral-400",
   candidateList: "grid gap-2",
-  candidateButton: (theme: SiteTheme, selected: boolean) =>
-    `grid w-full grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 rounded-md border p-3 text-left transition-colors max-[380px]:grid-cols-[3.25rem_minmax(0,1fr)] ${shadowClasses.subtle} ${focusBase} ${siteColorClasses.focus} ${
-      selected
-        ? theme === "dark"
-          ? "border-white/[0.28] bg-white/[0.14]"
-          : theme === "paletteLight"
-            ? "border-[#7A8864]/50 bg-[#E5D5BC]/55"
-            : "border-neutral-900 bg-neutral-100"
-        : surfaceClasses.panel
-    }`,
-  candidateImageFrame: (theme: SiteTheme) =>
-    `flex aspect-square w-16 overflow-hidden rounded-md border max-[380px]:w-14 ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-neutral-900"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2]"
-          : "border-neutral-200 bg-white"
-    }`,
+  candidateButton: (selected: boolean) =>
+    `grid w-full grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 rounded-md border p-3 text-left transition-colors max-[380px]:grid-cols-[3.25rem_minmax(0,1fr)] ${shadowClasses.subtle} ${focusBase} ${siteColorClasses.focus} ${selected ? "border-[#7A8864]/50 bg-[#E5D5BC]/55 dark:border-white/[0.28] dark:bg-white/[0.14]" : `${surfaceClasses.panel}`}`,
+  candidateImageFrame: "flex aspect-square w-16 overflow-hidden rounded-md border max-[380px]:w-14 border-[#C8C0B5] bg-[#FAF7F2] dark:border-white/[0.10] dark:bg-neutral-900",
   candidateTextStack: "grid min-w-0 gap-1",
   candidateName: "min-w-0 text-base font-bold leading-tight",
-  candidateMeta: (theme: SiteTheme) =>
-    `min-w-0 text-xs font-semibold leading-tight ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-        : "text-neutral-500"
-    }`,
+  candidateMeta: "min-w-0 text-xs font-semibold leading-tight text-[#556145] dark:text-neutral-400",
   ingredientEditor: `grid gap-3 rounded-md border p-3 ${shadowClasses.subtle} ${surfaceClasses.panel}`,
   editorImageRow: "grid grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-3",
   editorImageLabel: "col-span-2 text-sm font-bold leading-tight",
-  editorImageFrame: (theme: SiteTheme) =>
-    `aspect-square w-[4.5rem] overflow-hidden rounded-md border ${shadowClasses.subtle} ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-neutral-900"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2]"
-          : "border-neutral-200 bg-white"
-    }`,
+  editorImageFrame: `aspect-square w-[4.5rem] overflow-hidden rounded-md border ${shadowClasses.subtle} border-[#C8C0B5] bg-[#FAF7F2] dark:border-white/[0.10] dark:bg-neutral-900`,
   editorImageButton: `${controlStyles.secondaryButton} h-12 min-w-0 cursor-pointer px-4 text-sm`,
   hiddenFileInput: "sr-only",
   compactFormGrid:
     "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-3 max-sm:grid-cols-1",
   groupedTagPanel: "grid gap-3",
-  groupedTagSection: (theme: SiteTheme) =>
-    `grid gap-2 border-b pb-3 last:border-b-0 last:pb-0 ${
-      theme === "dark"
-        ? "border-white/[0.10]"
-        : theme === "paletteLight"
-          ? "border-[#7A8864]/25"
-          : "border-neutral-200"
-    }`,
-  groupedTagTitle: (theme: SiteTheme) =>
-    `text-[11px] font-extrabold uppercase tracking-wide ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  groupedTagSection: "grid gap-2 border-b pb-3 last:border-b-0 last:pb-0 border-[#7A8864]/25 dark:border-white/[0.10]",
+  groupedTagTitle: "text-[11px] font-extrabold uppercase tracking-wide text-[#556145] dark:text-neutral-400",
   tagGrid: "grid grid-cols-2 gap-2",
   tagOption: `flex min-h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${surfaceClasses.field}`,
   colorRow: "grid grid-cols-[minmax(0,1fr)_3rem] items-end gap-3",
@@ -623,70 +474,21 @@ export const scannerStyles = {
   editorModalTitle: "text-2xl font-bold leading-tight max-sm:text-xl",
   editorModalCloseButton: controlStyles.modalCloseButton,
   editorModalBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
-  editorModalFooter: (theme: SiteTheme) =>
-    `flex flex-wrap items-center justify-end gap-3 border-t pt-3 max-sm:flex-nowrap max-sm:[padding-bottom:env(safe-area-inset-bottom)] ${
-      theme === "dark"
-        ? "border-white/[0.10]"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5]"
-          : "border-neutral-200"
-    }`,
+  editorModalFooter: "flex flex-wrap items-center justify-end gap-3 border-t pt-3 max-sm:flex-nowrap max-sm:[padding-bottom:env(safe-area-inset-bottom)] border-[#C8C0B5] dark:border-white/[0.10]",
   editorModalActionButton:
     "max-sm:h-10 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3 max-sm:text-sm",
-  editorModalError: (theme: SiteTheme) =>
-    `basis-full rounded-md px-3 py-2 text-sm font-bold max-sm:text-xs ${
-      theme === "dark"
-        ? "bg-red-500/15 text-red-100"
-        : theme === "paletteLight"
-          ? "bg-[#B44E3A]/10 text-[#8E321F]"
-          : "bg-red-50 text-red-700"
-    }`,
+  editorModalError: "basis-full rounded-md px-3 py-2 text-sm font-bold max-sm:text-xs bg-[#B44E3A]/10 text-[#8E321F] dark:bg-red-500/15 dark:text-red-100",
   matvareCandidateModalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   matvareCandidateModalBody: "grid min-h-0 gap-2 overflow-y-auto pr-1",
   infoModalPanel: `grid ${sizeClasses.viewportModalMaxHeight} w-full max-w-lg grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden ${radiusClasses.figma6} border p-5 max-sm:max-h-[calc(100vh_-_212px)] max-sm:p-4 ${shadowClasses.overlay} ${surfaceClasses.modal}`,
   infoModalBody: "grid min-h-0 gap-3 overflow-y-auto pr-1",
-  infoText: (theme: SiteTheme) =>
-    `text-sm font-semibold leading-[1.5] ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-600"
-    }`,
-  infoList: (theme: SiteTheme) =>
-    `grid list-disc gap-2 pl-5 text-sm font-semibold leading-[1.45] ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-600"
-    }`,
+  infoText: "text-sm font-semibold leading-[1.5] text-[#556145] dark:text-neutral-300",
+  infoList: "grid list-disc gap-2 pl-5 text-sm font-semibold leading-[1.45] text-[#556145] dark:text-neutral-300",
   matvareSearchForm: "grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]",
-  matvareCandidateButton: (theme: SiteTheme) =>
-    `grid gap-1 rounded-md border p-3 text-left transition-colors ${focusBase} ${siteColorClasses.focus} ${
-      theme === "dark"
-        ? "border-white/[0.10] bg-white/[0.05] text-neutral-100 hover:bg-white/[0.10]"
-        : theme === "paletteLight"
-          ? "border-[#C8C0B5] bg-[#FAF7F2]/70 text-[#556145] hover:bg-[#E5D5BC]/55"
-          : "border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-    }`,
+  matvareCandidateButton: `grid gap-1 rounded-md border p-3 text-left transition-colors ${focusBase} ${siteColorClasses.focus} border-[#C8C0B5] bg-[#FAF7F2]/70 text-[#556145] hover:bg-[#E5D5BC]/55 dark:border-white/[0.10] dark:bg-white/[0.05] dark:text-neutral-100 dark:hover:bg-white/[0.10]`,
   matvareCandidateName: "text-sm font-extrabold leading-tight",
-  matvareCandidateMeta: (theme: SiteTheme) =>
-    `text-xs font-bold ${
-      theme === "dark"
-        ? "text-neutral-300"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
-  matvareCandidateMacros: (theme: SiteTheme) =>
-    `text-xs font-semibold leading-[1.4] ${
-      theme === "dark"
-        ? "text-neutral-400"
-        : theme === "paletteLight"
-          ? "text-[#556145]"
-          : "text-neutral-500"
-    }`,
+  matvareCandidateMeta: "text-xs font-bold text-[#556145] dark:text-neutral-300",
+  matvareCandidateMacros: "text-xs font-semibold leading-[1.4] text-[#556145] dark:text-neutral-400",
 } as const;
 
 export const nutritionStyles = {

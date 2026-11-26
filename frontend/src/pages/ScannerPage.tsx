@@ -273,10 +273,10 @@ function ScannerPage({ theme }: ScannerPageProps) {
     <main className={pageStyles.shell}>
       <section className={scannerStyles.shell}>
         <header className={scannerStyles.header}>
-          <h1 className={scannerStyles.title(theme)}>{t.scanner.pageTitle}</h1>
-          <p className={scannerStyles.intro(theme)}>
+          <h1 className={scannerStyles.title}>{t.scanner.pageTitle}</h1>
+          <p className={scannerStyles.intro}>
             {t.scanner.pageIntroBeforeKassalapp}
-            <a className={scannerStyles.introLink(theme)} href="https://kassal.app/" rel="noreferrer" target="_blank">
+            <a className={scannerStyles.introLink} href="https://kassal.app/" rel="noreferrer" target="_blank">
               Kassalapp
             </a>
             {t.scanner.pageIntroAfterKassalapp}
@@ -306,7 +306,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
               </button>
             </div>
             {cameraStatus !== null && (
-              <span className={scannerStyles.cameraStatus(theme)}>
+              <span className={scannerStyles.cameraStatus}>
                 {cameraStatus}
               </span>
             )}
@@ -332,7 +332,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
             </form>
 
             {isCameraOpen && (
-              <div className={scannerStyles.cameraFrame(theme)}>
+              <div className={scannerStyles.cameraFrame}>
                 <video
                   className={scannerStyles.cameraVideo}
                   muted
@@ -343,7 +343,7 @@ function ScannerPage({ theme }: ScannerPageProps) {
               </div>
             )}
 
-            {error !== null && <p className={scannerStyles.statusError(theme)}>{error}</p>}
+            {error !== null && <p className={scannerStyles.statusError}>{error}</p>}
           </section>
 
           {isLoading && (
@@ -360,21 +360,21 @@ function ScannerPage({ theme }: ScannerPageProps) {
             <section className={scannerStyles.candidateSection}>
               <div className={scannerStyles.candidateHeader}>
                 <h2 className={scannerStyles.candidateTitle}>{t.scanner.scanCandidatesTitle}</h2>
-                <span className={scannerStyles.candidateSubtitle(theme)}>{t.scanner.scanCandidatesHelp}</span>
+                <span className={scannerStyles.candidateSubtitle}>{t.scanner.scanCandidatesHelp}</span>
               </div>
               <div className={scannerStyles.candidateList}>
                 {candidates.map((candidate) => (
                   <button
-                    className={scannerStyles.candidateButton(theme, candidate.id === selectedCandidateId)}
+                    className={scannerStyles.candidateButton(candidate.id === selectedCandidateId)}
                     key={candidate.id}
                     type="button"
                     onClick={() => selectCandidate(candidate)}
                   >
-                    <CandidateImage candidate={candidate} theme={theme} />
+                    <CandidateImage candidate={candidate} />
                     <span className={scannerStyles.candidateTextStack}>
                       <span className={scannerStyles.candidateName}>{candidate.name}</span>
                       {candidate.brandName.length > 0 && (
-                        <span className={scannerStyles.candidateMeta(theme)}>{candidate.brandName}</span>
+                        <span className={scannerStyles.candidateMeta}>{candidate.brandName}</span>
                       )}
                     </span>
                   </button>
@@ -410,11 +410,11 @@ function ScannerPage({ theme }: ScannerPageProps) {
                 {isSavingIngredient ? t.scanner.savingIngredient : t.scanner.saveIngredient}
               </button>
               {editorError !== null && (
-                <p className={scannerStyles.editorModalError(theme)}>{editorError}</p>
+                <p className={scannerStyles.editorModalError}>{editorError}</p>
               )}
             </>
           )}
-          footerClassName={scannerStyles.editorModalFooter(theme)}
+          footerClassName={scannerStyles.editorModalFooter}
           headerClassName={scannerStyles.editorModalHeader}
           panelClassName={scannerStyles.editorModalPanel}
           title={ingredientDraft.name || t.scanner.suggestedIngredient}
@@ -514,9 +514,9 @@ function IngredientDraftEditor({
           label={t.scanner.productImageLabel}
           theme={theme}
         />
-        <div className={scannerStyles.editorImageFrame(theme)}>
+        <div className={scannerStyles.editorImageFrame}>
           {imageUrl === null ? (
-            <div className={scannerStyles.productImageFallback(theme)}>{t.scanner.noImage}</div>
+            <div className={scannerStyles.productImageFallback}>{t.scanner.noImage}</div>
           ) : (
             <img className={scannerStyles.productImage} src={imageUrl} alt="" />
           )}
@@ -579,9 +579,9 @@ function IngredientDraftEditor({
         <div className={scannerStyles.nutritionSourceRow}>
           {nutritionSource.primary === null ? (
             <span className={scannerStyles.nutritionSourcePrimaryLine}>
-              <span className={scannerStyles.nutritionSourceText(theme)}>{nutritionSource.text}</span>
+              <span className={scannerStyles.nutritionSourceText}>{nutritionSource.text}</span>
               <button
-                className={scannerStyles.sourceActionButton(theme)}
+                className={scannerStyles.sourceActionButton}
                 type="button"
                 onClick={() => setIsMatvareSearchOpen(true)}
               >
@@ -589,15 +589,15 @@ function IngredientDraftEditor({
               </button>
             </span>
           ) : (
-            <div className={scannerStyles.nutritionSourceText(theme)}>
+            <div className={scannerStyles.nutritionSourceText}>
               <span className={scannerStyles.nutritionSourcePrimaryLine}>
                 <span className={scannerStyles.nutritionSourceLine}>
                   <span>{t.scanner.nutritionFromPrefix}</span>
-                  <NutritionSourceAnchor source={nutritionSource.primary} theme={theme} />
+                  <NutritionSourceAnchor source={nutritionSource.primary} />
                 </span>
                 <span className={scannerStyles.nutritionSourceActions}>
                   <button
-                    className={scannerStyles.sourceActionButton(theme)}
+                    className={scannerStyles.sourceActionButton}
                     type="button"
                     onClick={() => setIsMatvareSearchOpen(true)}
                   >
@@ -607,7 +607,6 @@ function IngredientDraftEditor({
                     <NutritionSourceActions
                       hasMatvaretabellenSupplement={hasMatvaretabellenSupplement}
                       hasMatvaretabellenCandidates={draft.matvaretabellenCandidates.length > 0}
-                      theme={theme}
                       onChangeMatvaretabellen={() => setIsMatvarePickerOpen(true)}
                       onInfo={() => setIsAutofillInfoOpen(true)}
                       onRemoveMatvaretabellen={() => onChange(removeMatvaretabellenSupplement(draft))}
@@ -619,12 +618,11 @@ function IngredientDraftEditor({
                 <span className={scannerStyles.nutritionSourceSupplementLine}>
                   <span className={scannerStyles.nutritionSourceLine}>
                     <span>{t.scanner.nutritionSupplementedByPrefix}</span>
-                    <NutritionSourceAnchor source={nutritionSource.supplement} theme={theme} />
+                    <NutritionSourceAnchor source={nutritionSource.supplement} />
                   </span>
                   <NutritionSourceActions
                     hasMatvaretabellenSupplement={hasMatvaretabellenSupplement}
                     hasMatvaretabellenCandidates={draft.matvaretabellenCandidates.length > 0}
-                    theme={theme}
                     onChangeMatvaretabellen={() => setIsMatvarePickerOpen(true)}
                     onInfo={() => setIsAutofillInfoOpen(true)}
                     onRemoveMatvaretabellen={() => onChange(removeMatvaretabellenSupplement(draft))}
@@ -635,7 +633,7 @@ function IngredientDraftEditor({
           )}
         </div>
         {showMatvaretabellenFailedMessage && (
-          <div className={scannerStyles.nutritionSupplementWarningRow(theme)}>
+          <div className={scannerStyles.nutritionSupplementWarningRow}>
             <span>
               {draft.matvaretabellenCandidates.length > 0
                 ? t.scanner.matvaretabellenNoMatchFound
@@ -643,7 +641,7 @@ function IngredientDraftEditor({
             </span>
             {draft.matvaretabellenCandidates.length > 0 && (
               <button
-                className={scannerStyles.sourceActionButton(theme)}
+                className={scannerStyles.sourceActionButton}
                 type="button"
                 onClick={() => setIsMatvarePickerOpen(true)}
               >
@@ -778,7 +776,6 @@ function IngredientDraftEditor({
       )}
       {isAutofillInfoOpen && (
         <ScannerAutofillInfoModal
-          theme={theme}
           onClose={() => setIsAutofillInfoOpen(false)}
         />
       )}
@@ -809,10 +806,8 @@ function FieldLabel({
 
 function NutritionSourceAnchor({
   source,
-  theme,
 }: {
   source: NutritionSourceLink;
-  theme: SiteTheme;
 }) {
   if (source.url === null) {
     return <span>{source.label}</span>;
@@ -820,7 +815,7 @@ function NutritionSourceAnchor({
 
   return (
     <a
-      className={scannerStyles.nutritionSourceLink(theme)}
+      className={scannerStyles.nutritionSourceLink}
       href={source.url}
       rel="noreferrer"
       target="_blank"
@@ -833,14 +828,12 @@ function NutritionSourceAnchor({
 function NutritionSourceActions({
   hasMatvaretabellenCandidates,
   hasMatvaretabellenSupplement,
-  theme,
   onChangeMatvaretabellen,
   onInfo,
   onRemoveMatvaretabellen,
 }: {
   hasMatvaretabellenCandidates: boolean;
   hasMatvaretabellenSupplement: boolean;
-  theme: SiteTheme;
   onChangeMatvaretabellen: () => void;
   onInfo: () => void;
   onRemoveMatvaretabellen: () => void;
@@ -851,7 +844,7 @@ function NutritionSourceActions({
     <span className={scannerStyles.nutritionSourceActions}>
       {hasMatvaretabellenSupplement && hasMatvaretabellenCandidates && (
         <button
-          className={scannerStyles.sourceActionButton(theme)}
+          className={scannerStyles.sourceActionButton}
           type="button"
           onClick={onChangeMatvaretabellen}
         >
@@ -860,7 +853,7 @@ function NutritionSourceActions({
       )}
       {hasMatvaretabellenSupplement && (
         <button
-          className={scannerStyles.sourceActionButton(theme)}
+          className={scannerStyles.sourceActionButton}
           type="button"
           onClick={onRemoveMatvaretabellen}
         >
@@ -868,7 +861,7 @@ function NutritionSourceActions({
         </button>
       )}
       <button
-        className={scannerStyles.sourceActionButton(theme)}
+        className={scannerStyles.sourceActionButton}
         type="button"
         onClick={onInfo}
       >
@@ -879,10 +872,8 @@ function NutritionSourceActions({
 }
 
 function ScannerAutofillInfoModal({
-  theme,
   onClose,
 }: {
-  theme: SiteTheme;
   onClose: () => void;
 }) {
   const { t } = useLanguage();
@@ -902,15 +893,15 @@ function ScannerAutofillInfoModal({
           {t.common.close}
         </button>
       )}
-      footerClassName={scannerStyles.editorModalFooter(theme)}
+      footerClassName={scannerStyles.editorModalFooter}
       headerClassName={scannerStyles.editorModalHeader}
       panelClassName={scannerStyles.infoModalPanel}
       title={t.scanner.autofillInfoTitle}
       titleClassName={scannerStyles.editorModalTitle}
       onClose={onClose}
     >
-      <p className={scannerStyles.infoText(theme)}>{t.scanner.autofillInfoIntro}</p>
-      <ul className={scannerStyles.infoList(theme)}>
+      <p className={scannerStyles.infoText}>{t.scanner.autofillInfoIntro}</p>
+      <ul className={scannerStyles.infoList}>
         {t.scanner.autofillInfoSteps.map((step) => (
           <li key={step}>{step}</li>
         ))}
@@ -944,7 +935,7 @@ function MatvaretabellenCandidateModal({
           {t.common.cancel}
         </button>
       )}
-      footerClassName={scannerStyles.editorModalFooter(theme)}
+      footerClassName={scannerStyles.editorModalFooter}
       headerClassName={scannerStyles.editorModalHeader}
       panelClassName={scannerStyles.matvareCandidateModalPanel}
       title={t.scanner.chooseMatvaretabellenEntry}
@@ -1082,14 +1073,14 @@ function hasSupplementFilledMissingValue(primary: INutritionFacts, supplement: I
     || (primary.vitaminEMilligrams === null && supplement.vitaminEMilligrams !== null);
 }
 
-function CandidateImage({ candidate, theme }: { candidate: IngredientCandidate; theme: SiteTheme }) {
+function CandidateImage({ candidate }: { candidate: IngredientCandidate; }) {
   const { t } = useLanguage();
   const imageUrl = getApiAssetUrl(candidate.imageUrl);
 
   return (
-    <span className={scannerStyles.candidateImageFrame(theme)}>
+    <span className={scannerStyles.candidateImageFrame}>
       {imageUrl === null ? (
-        <span className={scannerStyles.productImageFallback(theme)}>{t.scanner.noImage}</span>
+        <span className={scannerStyles.productImageFallback}>{t.scanner.noImage}</span>
       ) : (
         <img className={scannerStyles.productImage} src={imageUrl} alt="" />
       )}
