@@ -52,8 +52,8 @@ public class AppSettingsController(
             return BadRequest("Settings payload is required.");
         }
 
-        var validationError = ValidateShoppingListExportSettings(request.ShoppingListExport);
-        validationError ??= ValidateExternalIntegrationSettings(request.ExternalIntegrations);
+        var validationError = AppSettingsService.Validate(request.ShoppingListExport);
+        validationError ??= AppSettingsService.Validate(request.ExternalIntegrations);
         if (validationError is not null)
         {
             return BadRequest(validationError);
@@ -73,7 +73,7 @@ public class AppSettingsController(
             return BadRequest("Settings payload is required.");
         }
 
-        var validationError = ValidateShoppingListExportSettings(request);
+        var validationError = AppSettingsService.Validate(request);
         if (validationError is not null)
         {
             return BadRequest(validationError);
@@ -104,9 +104,9 @@ public class AppSettingsController(
             return BadRequest("Settings payload is required.");
         }
 
-        if (!IsBlankOrAbsoluteUrl(request.BaseUrl))
+        if (AppSettingsService.ValidateKassalappBaseUrl(request.BaseUrl) is { } baseUrlError)
         {
-            return BadRequest("Kassalapp base URL must be an absolute URL.");
+            return BadRequest(baseUrlError);
         }
 
         try
@@ -140,43 +140,4 @@ public class AppSettingsController(
 
         return Ok(await appSettingsService.UpdateGroceryExportRulesAsync(request, cancellationToken));
     }
-
-    private static string? ValidateShoppingListExportSettings(UpdateShoppingListExportSettingsRequest request)
-    {
-        if (!string.Equals(request.Provider, "Vikunja", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Only Vikunja is supported right now.";
-        }
-
-        if (!string.Equals(request.TaskMode, ExportTaskModes.SingleTask, StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(request.TaskMode, ExportTaskModes.SeparateTasks, StringComparison.OrdinalIgnoreCase))
-        {
-            return "Shopping list task mode is not supported.";
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Vikunja.BaseUrl)
-            && !Uri.TryCreate(request.Vikunja.BaseUrl, UriKind.Absolute, out _))
-        {
-            return "Vikunja base URL must be an absolute URL.";
-        }
-
-        return request.Vikunja.ProjectId is <= 0
-            ? "Vikunja project ID must be a positive number."
-            : null;
-    }
-
-    private static string? ValidateExternalIntegrationSettings(UpdateExternalIntegrationSettingsRequest request)
-    {
-        if (!IsBlankOrAbsoluteUrl(request.Kassalapp.BaseUrl))
-        {
-            return "Kassalapp base URL must be an absolute URL.";
-        }
-
-        return !IsBlankOrAbsoluteUrl(request.Helsedirektoratet.BaseUrl)
-            ? "Helsedirektoratet base URL must be an absolute URL."
-            : null;
-    }
-
-    private static bool IsBlankOrAbsoluteUrl(string? value) =>
-        string.IsNullOrWhiteSpace(value) || Uri.TryCreate(value, UriKind.Absolute, out _);
 }

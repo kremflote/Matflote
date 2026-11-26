@@ -107,6 +107,50 @@ public class AppSettingsService(
         return await GetAsync(cancellationToken);
     }
 
+    /// <summary>The first problem with shopping list export settings, or null.</summary>
+    public static string? Validate(UpdateShoppingListExportSettingsRequest request)
+    {
+        if (!string.Equals(request.Provider, "Vikunja", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Only Vikunja is supported right now.";
+        }
+
+        if (!string.Equals(request.TaskMode, ExportTaskModes.SingleTask, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(request.TaskMode, ExportTaskModes.SeparateTasks, StringComparison.OrdinalIgnoreCase))
+        {
+            return "Shopping list task mode is not supported.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Vikunja.BaseUrl)
+            && !Uri.TryCreate(request.Vikunja.BaseUrl, UriKind.Absolute, out _))
+        {
+            return "Vikunja base URL must be an absolute URL.";
+        }
+
+        return request.Vikunja.ProjectId is <= 0
+            ? "Vikunja project ID must be a positive number."
+            : null;
+    }
+
+    /// <summary>The first problem with the external integration settings, or null.</summary>
+    public static string? Validate(UpdateExternalIntegrationSettingsRequest request)
+    {
+        if (ValidateKassalappBaseUrl(request.Kassalapp.BaseUrl) is { } error)
+        {
+            return error;
+        }
+
+        return !IsBlankOrAbsoluteUrl(request.Helsedirektoratet.BaseUrl)
+            ? "Helsedirektoratet base URL must be an absolute URL."
+            : null;
+    }
+
+    public static string? ValidateKassalappBaseUrl(string? baseUrl) =>
+        IsBlankOrAbsoluteUrl(baseUrl) ? null : "Kassalapp base URL must be an absolute URL.";
+
+    private static bool IsBlankOrAbsoluteUrl(string? value) =>
+        string.IsNullOrWhiteSpace(value) || Uri.TryCreate(value, UriKind.Absolute, out _);
+
     public async Task<string?> GetValueAsync(string key, CancellationToken cancellationToken)
     {
         var storedValue = await context.AppSettings

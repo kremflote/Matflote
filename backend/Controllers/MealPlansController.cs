@@ -14,8 +14,6 @@ namespace DinnerPlanner.Api.Controllers;
 [Route("api/[controller]")]
 public class MealPlansController(DinnerPlannerContext context, MealPlanWriter writer) : ControllerBase
 {
-    private const int MaxBatchRangeDays = 62;
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MealPlanEntryDto>>> GetMealPlan(
         [FromQuery] DateOnly from,
@@ -36,7 +34,7 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
             .ThenBy(entry => entry.Slot)
             .ToListAsync();
 
-        return Ok(entries.Select(ToDto));
+        return Ok(entries.Select(MealPlanWriter.ToDto));
     }
 
     [HttpGet("{id:int}")]
@@ -48,7 +46,7 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
                 .ThenInclude(item => item.Ingredient)
             .FirstOrDefaultAsync(mealPlanEntry => mealPlanEntry.MealPlanEntryId == id);
 
-        return entry is null ? NotFound() : Ok(ToDto(entry));
+        return entry is null ? NotFound() : Ok(MealPlanWriter.ToDto(entry));
     }
 
     [HttpPost]
@@ -75,7 +73,7 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
         await context.SaveChangesAsync();
 
         var created = await LoadEntry(entry.MealPlanEntryId);
-        return CreatedAtAction(nameof(GetMealPlanEntry), new { id = entry.MealPlanEntryId }, ToDto(created!));
+        return CreatedAtAction(nameof(GetMealPlanEntry), new { id = entry.MealPlanEntryId }, MealPlanWriter.ToDto(created!));
     }
 
     /// <summary>Replaces an entry. An entry with no items is deleted and the answer is 204 No Content.</summary>
@@ -113,7 +111,7 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
         await context.SaveChangesAsync();
 
         var updated = await LoadEntry(entry.MealPlanEntryId);
-        return Ok(ToDto(updated!));
+        return Ok(MealPlanWriter.ToDto(updated!));
     }
 
     /// <summary>
@@ -127,30 +125,9 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
         var upserts = request.Upsert ?? [];
         var deleteIds = (request.Delete ?? []).Distinct().ToList();
 
-        if (upserts.Count == 0 && deleteIds.Count == 0 && request.ClearRange is null)
+        if (MealPlanWriter.CheckBatchShape(upserts, deleteIds, request.ClearRange) is { } shapeError)
         {
-            return BadRequest("Nothing to do: provide \"upsert\", \"delete\" and/or \"clearRange\".");
-        }
-
-        if (request.ClearRange is { } clearRange)
-        {
-            if (clearRange.From > clearRange.To)
-            {
-                return BadRequest("clearRange.from must be on or before clearRange.to.");
-            }
-
-            if (clearRange.To.DayNumber - clearRange.From.DayNumber >= MaxBatchRangeDays)
-            {
-                return BadRequest($"clearRange can span at most {MaxBatchRangeDays} days.");
-            }
-        }
-
-        var duplicateSlot = upserts
-            .GroupBy(entry => (entry.Date, entry.Slot))
-            .FirstOrDefault(group => group.Count() > 1);
-        if (duplicateSlot is not null)
-        {
-            return BadRequest($"{duplicateSlot.Key.Date:yyyy-MM-dd} {duplicateSlot.Key.Slot} appears more than once in \"upsert\".");
+            return BadRequest(shapeError);
         }
 
         var validationError = await writer.ValidateAsync(upserts, HttpContext.RequestAborted);
@@ -180,9 +157,9 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
 
         var from = dates.Min();
         var to = dates.Max();
-        if (to.DayNumber - from.DayNumber >= MaxBatchRangeDays)
+        if (to.DayNumber - from.DayNumber >= MealPlanWriter.MaxBatchRangeDays)
         {
-            return BadRequest($"A batch can touch at most {MaxBatchRangeDays} days.");
+            return BadRequest($"A batch can touch at most {MealPlanWriter.MaxBatchRangeDays} days.");
         }
 
         var stored = await writer.LoadRangeAsync(from, to, HttpContext.RequestAborted);
@@ -236,7 +213,7 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
             .ThenBy(entry => entry.Slot)
             .ToListAsync(HttpContext.RequestAborted);
 
-        return Ok(new MealPlanBatchResultDto(from, to, entries.Select(ToDto).ToList()));
+        return Ok(new MealPlanBatchResultDto(from, to, entries.Select(MealPlanWriter.ToDto).ToList()));
     }
 
     [HttpDelete("{id:int}")]
@@ -264,26 +241,4 @@ public class MealPlansController(DinnerPlannerContext context, MealPlanWriter wr
             entry.Date == date &&
             entry.Slot == slot &&
             (ignoredEntryId == null || entry.MealPlanEntryId != ignoredEntryId));
-
-    private static MealPlanEntryDto ToDto(MealPlanEntry entry) => new(
-        entry.MealPlanEntryId,
-        entry.Date,
-        entry.Slot,
-        entry.Notes,
-        entry.Recipes
-            .OrderBy(recipe => recipe.SortOrder)
-            .Select(ToDto)
-            .ToList()
-    );
-
-    private static MealPlanRecipeDto ToDto(MealPlanRecipe recipe) => new(
-        recipe.MealPlanRecipeId,
-        recipe.RecipeId,
-        recipe.IngredientId,
-        recipe.Role,
-        recipe.SortOrder,
-        recipe.Portions,
-        recipe.Amount,
-        recipe.Unit
-    );
 }

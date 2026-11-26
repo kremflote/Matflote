@@ -12,6 +12,9 @@ namespace DinnerPlanner.Api.Services;
 
 public class MealPlanWriter(DinnerPlannerContext context)
 {
+    /// <summary>How many days one batch request may touch, so a mistake cannot rewrite a whole year.</summary>
+    public const int MaxBatchRangeDays = 62;
+
     /// <summary>The entries of a date range, tracked and with their items, ready to change.</summary>
     public Task<List<MealPlanEntry>> LoadRangeAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default) =>
         context.MealPlanEntries
@@ -128,4 +131,61 @@ public class MealPlanWriter(DinnerPlannerContext context)
                 Unit = item.IngredientId is null ? null : item.Unit
             })
             .ToList();
+
+    /// <summary>
+    /// The first problem with the shape of a batch request that needs no database to find: nothing to do, a clear
+    /// range that is backwards or too long, or a slot written twice. Null when there is none.
+    /// </summary>
+    public static string? CheckBatchShape(
+        IReadOnlyCollection<MealPlanEntryRequest> upserts,
+        IReadOnlyCollection<int> deleteIds,
+        MealPlanDateRange? clearRange)
+    {
+        if (upserts.Count == 0 && deleteIds.Count == 0 && clearRange is null)
+        {
+            return "Nothing to do: provide \"upsert\", \"delete\" and/or \"clearRange\".";
+        }
+
+        if (clearRange is not null)
+        {
+            if (clearRange.From > clearRange.To)
+            {
+                return "clearRange.from must be on or before clearRange.to.";
+            }
+
+            if (clearRange.To.DayNumber - clearRange.From.DayNumber >= MaxBatchRangeDays)
+            {
+                return $"clearRange can span at most {MaxBatchRangeDays} days.";
+            }
+        }
+
+        var duplicateSlot = upserts
+            .GroupBy(entry => (entry.Date, entry.Slot))
+            .FirstOrDefault(group => group.Count() > 1);
+        return duplicateSlot is null
+            ? null
+            : $"{duplicateSlot.Key.Date:yyyy-MM-dd} {duplicateSlot.Key.Slot} appears more than once in \"upsert\".";
+    }
+
+    public static MealPlanEntryDto ToDto(MealPlanEntry entry) => new(
+        entry.MealPlanEntryId,
+        entry.Date,
+        entry.Slot,
+        entry.Notes,
+        entry.Recipes
+            .OrderBy(recipe => recipe.SortOrder)
+            .Select(ToDto)
+            .ToList()
+    );
+
+    private static MealPlanRecipeDto ToDto(MealPlanRecipe recipe) => new(
+        recipe.MealPlanRecipeId,
+        recipe.RecipeId,
+        recipe.IngredientId,
+        recipe.Role,
+        recipe.SortOrder,
+        recipe.Portions,
+        recipe.Amount,
+        recipe.Unit
+    );
 }
